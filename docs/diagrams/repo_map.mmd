@@ -1,0 +1,20 @@
+%% Nous — repository / asset map (at a glance).
+flowchart TB
+    root["nous/  (MIT; pure standard library)"]:::root
+    root --> src["src/  — 5 modules"]:::dir
+    root --> tests["tests/  — 5 suites (130 checks, 56 fns)"]:::dir
+    root --> runner["run_tests.py · requirements.txt · LICENSE"]:::file
+    root --> docs["docs/"]:::dir
+
+    src --> srcf["nous_store · nous_activation · nous_field<br/>nous_coalitions · nous_perceive"]:::file
+    tests --> testf["test_nous_store / _activation / _coalitions<br/>/ _field / _perceive"]:::file
+
+    docs --> dmain["README · ARCHITECTURE · METHODOLOGY · REPORT"]:::file
+    docs --> dtest["TEST_OUTPUT.txt  (verbatim run; source of all numbers)"]:::file
+    docs --> design["design/  — 13 original vision docs + disclaimer<br/>(quarantined as aspiration)"]:::dir
+    docs --> diagrams["diagrams/  — .mmd sources + figures/*.py + rendered/*.png"]:::dir
+    docs --> report["report/  — nous_report.tex · nous_report.docx<br/>· build_docx.py · figures/"]:::dir
+
+    classDef root fill:#fff3bf,stroke:#f08c00,color:#7e5109;
+    classDef dir fill:#e7f0fb,stroke:#1565c0,color:#0b3d6b;
+    classDef file fill:#f1f3f5,stroke:#868e96,color:#343a40;

@@ -1,0 +1,24 @@
+%% Nous — the recurring "passes on a friendly input" failure mode, and the two remedies.
+%% Conceptual (findings b-f share this shape); no data values.
+flowchart LR
+    C["A claim about<br/>a component"]:::neutral
+    T["Test on a FRIENDLY,<br/>hand-chosen input"]:::weak
+    P["Passes &check;"]:::weak
+    Bel["Believed correct"]:::neutral
+    R["Real / adversarial /<br/>system-generated input"]:::real
+    Fa["Fails &cross; —<br/>a STRUCTURAL bug surfaces"]:::bug
+
+    C --> T --> P --> Bel --> R --> Fa
+    Fa -. "the cycle repeats unless broken" .-> C
+
+    RA["REMEDY 1 — ADVERSARIAL TESTING<br/>write tests that try to BREAK the claim<br/>(lopsided strengths, intra-layer edges,<br/>rings, hash seeds)"]:::fix
+    RL["REMEDY 2 — CLOSE THE LOOP<br/>let inputs be system-generated, not<br/>hand-chosen (perceive -> sources)"]:::fix
+
+    RA -. "breaks" .-> T
+    RL -. "breaks" .-> R
+
+    classDef neutral fill:#eef2ff,stroke:#3b5bdb,color:#1a237e;
+    classDef weak fill:#fff8e1,stroke:#d68910,color:#7e5109;
+    classDef real fill:#fdecea,stroke:#c0392b,color:#7b241c;
+    classDef bug fill:#fdecea,stroke:#c0392b,color:#7b241c;
+    classDef fix fill:#eaf7ea,stroke:#2e7d32,color:#1b5e20;

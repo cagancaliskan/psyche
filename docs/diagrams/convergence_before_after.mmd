@@ -1,0 +1,26 @@
+%% Nous — finding (b): convergence double-counting, before/after.
+%% Diamond-with-tail: a->b, a->c, b->d, c->d, d->f. STRUCTURAL ONLY (no magnitudes;
+%% the report omits the reported magnitude as not reproducible from the artifact).
+flowchart TB
+    subgraph NAIVE["NAIVE re-expansion  (the bug)"]
+        direction LR
+        na((a)) --> nb((b)) --> nd((d))
+        na --> nc((c)) --> nd
+        nd --> nf((f))
+        nnote["d is RE-EXPANDED when c's path arrives later<br/>-> f and everything downstream is OVER-COUNTED"]:::bug
+        nd -.-> nnote
+    end
+
+    subgraph FIXED["SINGLE-EXPANSION, hop-layered  (current)"]
+        direction LR
+        fa((a)) --> fb((b)) --> fd((d))
+        fa --> fc((c)) --> fd
+        fd --> ff((f))
+        fnote["d expands ONCE at hop 2 with the full sum of<br/>both equal-length paths -> f counted EXACTLY ONCE"]:::fix
+        fd -.-> fnote
+    end
+
+    NAIVE --> FIXED
+
+    classDef bug fill:#fdecea,stroke:#c0392b,color:#7b241c;
+    classDef fix fill:#eaf7ea,stroke:#2e7d32,color:#1b5e20;
