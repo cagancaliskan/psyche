@@ -1,0 +1,33 @@
+%% Nous — substrate read vs write paths (src/nous_store.py).
+%% THE INVARIANT: reads are pure. Lazy time-decay is computed as a read-only VIEW;
+%% only writes persist decay, and closure is re-evaluated ONLY on an active crossing.
+%% See docs/METHODOLOGY.md finding (a).
+flowchart TD
+    store[("stored Road<br/>canonical: as of last write<br/>or last offline sweep")]
+
+    subgraph READ["READ path — PURE (mutates nothing)"]
+        r_in["get_road(apply_decay=True)<br/>quality_of / neighbors / roads_from"]
+        r_dec["_compute_decay(road, now)<br/>returns decayed (strength, charges)<br/>as values — does NOT write"]
+        r_copy["return a COPY (decayed VIEW)<br/>last_touched unchanged, closed unchanged"]
+        r_in --> r_dec --> r_copy
+    end
+
+    subgraph WRITE["WRITE path — the only place state changes"]
+        w_in["strengthen() / traverse()"]
+        w_persist["_persist_decay(road, now)<br/>bring road to present, advance last_touched"]
+        w_gain["apply gain + blend charges<br/>traversal_count += 1"]
+        w_close["_open_close_on_crossing()<br/>closure re-evaluated ONLY here,<br/>on an active crossing"]
+        w_in --> w_persist --> w_gain --> w_close
+    end
+
+    store -. "read-only view computed forward from here" .-> r_dec
+    r_copy --> OUT["returned Road copy<br/>(store untouched)"]
+    w_close -. "persists new canonical state" .-> store
+
+    note1["Time alone never reopens a closed road.<br/>Reads never change closed.<br/>Only an active positive crossing reopens it."]
+    w_close -.-> note1
+
+    classDef pure fill:#eafbea,stroke:#27ae60;
+    classDef write fill:#eaf0fb,stroke:#2e86c1;
+    class r_in,r_dec,r_copy,OUT pure;
+    class w_in,w_persist,w_gain,w_close write;

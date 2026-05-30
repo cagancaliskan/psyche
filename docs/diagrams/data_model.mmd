@@ -1,0 +1,41 @@
+%% Nous — substrate data model (src/nous_store.py)
+%% A Node is ALWAYS emotionally neutral; emotion lives on Roads (charges).
+%% Identity is the uuid4 `id`; ordering is the SEPARATE `creation_seq` integer.
+%% One road per (source,target) pair (dedup index); reverse direction is a distinct road.
+%% `closed` is sticky: only an active crossing changes it, never a read or time.
+%% NodeType enum: EVENT | CONCEPT | ENTITY | SENSATION | ABSTRACT
+%% RoadQuality bands (open roads): strength <0.20 DIRT, <0.50 GRAVEL, <0.80 ROAD, else HIGHWAY.
+classDiagram
+    class Node {
+        +str id
+        +str content
+        +NodeType node_type
+        +int creation_seq
+        +float formation_time
+        +float last_accessed
+        +int access_count
+    }
+    class Road {
+        +str id
+        +NodeID source_id
+        +NodeID target_id
+        +int creation_seq
+        +float formation_time
+        +float last_touched
+        +float strength
+        +Dict charges
+        +bool closed
+        +int traversal_count
+        +valence() float
+    }
+    class RoadQuality {
+        <<enumeration>>
+        CLOSED
+        DIRT
+        GRAVEL
+        ROAD
+        HIGHWAY
+    }
+    Node "1" --> "0..*" Road : source (out-roads)
+    Node "1" --> "0..*" Road : target (in-roads)
+    Road ..> RoadQuality : quality_of()

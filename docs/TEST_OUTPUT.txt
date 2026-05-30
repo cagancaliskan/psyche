@@ -1,0 +1,185 @@
+======================================================================
+  NOUS — CAPTURED TEST OUTPUT (verbatim)
+======================================================================
+Generated : 2026-05-30 18:09:11 +03
+Machine   : Darwin 24.5.0 arm64
+Python    : Python 3.13.2
+Command   : PYTHONPATH="$PWD/src" python3 tests/<suite>.py   (one block per suite)
+Note      : Suites use a built-in harness (not pytest); each prints
+            'RESULT: N passed, M failed' and exits non-zero on any failure.
+======================================================================
+
+
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+>>> tests/test_nous_store.py
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+======================================================================
+  NOUS SUBSTRATE STORE — TEST SUITE (Layer 1)
+======================================================================
+
+identity & creation order
+
+stale IDs resolve to NotFound, never to a wrong object
+
+simple graph: one road per (src,tgt) pair, deduped
+
+split primitives: add_road creates, strengthen only strengthens
+
+traverse(): biology lives here — get-or-add then strengthen
+
+strengthening climbs quality dirt → highway; emotion deepens it
+
+a road has an emotional life: multiple feelings on one road
+
+lazy decay: computed on read as a VIEW; stored state untouched
+
+reads do not mutate stored state (atomicity model's load-bearing claim)
+
+closure is sticky: time alone does NOT reopen a traumatized road
+
+Clock.advance is simulated-only (never blocks the event loop)
+
+pin guard: cannot prune a node currently in use
+
+deletion is complete: no dangling index entries; integrity holds
+
+self-region: unowned designated subgraph, separate set
+
+integrity scan passes on a healthy graph of moderate size
+
+======================================================================
+  RESULT: 45 passed, 0 failed
+======================================================================
+[exit code: 0]
+
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+>>> tests/test_nous_activation.py
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+======================================================================
+  NOUS SPREADING ACTIVATION — TEST SUITE
+======================================================================
+
+a missing seed raises NotFound
+
+an isolated seed lights only itself
+
+activation attenuates with distance (near > far)
+
+edge conductance: a stronger road carries more activation
+
+convergent activation SUMS (the cognitive property)
+
+convergence node with a downstream child is NOT double-counted
+
+post-convergence activation is DETERMINISTIC, not order-dependent
+
+ADVERSARIAL determinism: a same-hop edge must not leak into the result
+
+a cycle terminates (no infinite loop, no re-expansion blowup)
+
+locality: a long chain is cut off by the hop budget
+
+locality: the activation floor stops faint propagation
+
+spreading activation mutates NOTHING in the store (pure read)
+
+closed-road policy: weak cue blocked, strong cue leaks (qualitative)
+
+closed road in a spread: blocks a weak cue, leaks a strong one
+
+flow records which edges actually carried activation (and respects closure)
+
+======================================================================
+  RESULT: 35 passed, 0 failed
+======================================================================
+[exit code: 0]
+
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+>>> tests/test_nous_coalitions.py
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+======================================================================
+  NOUS COALITION FORMATION — TEST SUITE
+======================================================================
+
+no coalitions when nothing clears the coherence floor
+
+a connected co-activated neighborhood forms a single coalition
+
+disconnected co-activated groups form separate coalitions
+
+co-activated but UNLINKED nodes do not share a coalition
+
+coalition strength is the sum of member activations
+
+DECISIVE: a real single-seed spread subdivides into MORE THAN ONE coalition
+
+binding respects closure: a blocked road does NOT bind two nodes
+
+a breakthrough-reached node marks its coalition intrusive
+
+an ordinary coalition is not marked intrusive
+
+coalition representative is the most-active member, deterministically
+
+coalition formation mutates NOTHING in the store (pure read)
+
+ADVERSARIAL determinism: clustering identical across hash seeds
+
+======================================================================
+  RESULT: 19 passed, 0 failed
+======================================================================
+[exit code: 0]
+
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+>>> tests/test_nous_field.py
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+======================================================================
+  NOUS MULTI-SOURCE FIELD + FIELD COALITIONS — TEST SUITE
+======================================================================
+
+field: total activation sums across sources at a shared node
+
+field: each node assigned to the source that activates it most
+
+ACCEPTANCE: multi-source recovers communities on the adversarial input
+
+field-based coalition formation mutates NOTHING (pure read)
+
+a breakthrough node marks its basin's coalition intrusive
+
+ADVERSARIAL determinism: field coalitions identical across hash seeds
+
+======================================================================
+  RESULT: 13 passed, 0 failed
+======================================================================
+[exit code: 0]
+
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+>>> tests/test_nous_perceive.py
+vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+======================================================================
+  NOUS PERCEPTION + END-TO-END SLICE — TEST SUITE
+======================================================================
+
+tokenize: lowercases, keeps content words, drops short ones
+
+perceive: input tokens select matching nodes as sources (input-driven)
+
+perceive: input matching nothing yields no sources
+
+perceive: a node named by more tokens is a stronger source
+
+the slice runs end-to-end: text → sources → field → coalitions → thought
+
+the end-to-end slice mutates NOTHING (pure read)
+
+KNOWN LIMITATION: clustered real-input sources do NOT yield clean basins
+      → recorded as a known limitation: clustered sources need grouping/
+        merging before basins are meaningful (a real next-step problem).
+
+ADVERSARIAL determinism: end-to-end result identical across hash seeds
+
+======================================================================
+  RESULT: 18 passed, 0 failed
+======================================================================
+[exit code: 0]

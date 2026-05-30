@@ -1,0 +1,26 @@
+%% Nous — end-to-end "thought" slice (nous_perceive.think)
+%% PROVEN layers are the substrate store and spreading activation.
+%% The field, coalitions, and the final "thought" step are EXPLORATORY;
+%% "strongest coalition = thought" is a PLACEHOLDER for a broadcast phase.
+flowchart TD
+    text["utterance (text)"]
+    perceive["perceive()<br/>tokenize + substring-match against node content<br/>= input-derived sources (not hand-placed)"]
+    sources["sources: NodeID to energy"]
+    field["build_activation_field()<br/>spread_activation once per source<br/>= per-source activation, summed total, dominant basin"]
+    coalitions["form_coalitions_from_field()<br/>group eligible nodes by dominant basin<br/>= candidate coalitions (deterministic order)"]
+    thought["thought = coalitions[0]<br/>(single strongest coalition)"]
+    broadcast["PLACEHOLDER:<br/>workspace competition / BROADCAST<br/>(not implemented)"]
+
+    subgraph PROVEN["substrate + activation — determinism / integrity / purity proven"]
+        store[("SubstrateStore<br/>nodes + roads")]
+        spread["spread_activation()<br/>hop-layered single-expansion<br/>(pure read, deterministic)"]
+    end
+
+    text --> perceive --> sources --> field --> coalitions --> thought
+    thought -. stands in for .-> broadcast
+    field -- "reads (pure)" --> spread
+    spread -- "reads (pure)" --> store
+    perceive -- "reads (pure)" --> store
+
+    classDef placeholder stroke-dasharray:5 5;
+    class broadcast,thought placeholder;
