@@ -6,28 +6,31 @@ flowchart TD
     store[("stored Road<br/>canonical: as of last write<br/>or last offline sweep")]
 
     subgraph READ["READ path — PURE (mutates nothing)"]
+        direction TB
         r_in["get_road(apply_decay=True)<br/>quality_of / neighbors / roads_from"]
         r_dec["_compute_decay(road, now)<br/>returns decayed (strength, charges)<br/>as values — does NOT write"]
         r_copy["return a COPY (decayed VIEW)<br/>last_touched unchanged, closed unchanged"]
-        r_in --> r_dec --> r_copy
+        OUT["returned Road copy<br/>(store untouched)"]
+        r_in --> r_dec --> r_copy --> OUT
     end
 
     subgraph WRITE["WRITE path — the only place state changes"]
+        direction TB
         w_in["strengthen() / traverse()"]
         w_persist["_persist_decay(road, now)<br/>bring road to present, advance last_touched"]
         w_gain["apply gain + blend charges<br/>traversal_count += 1"]
         w_close["_open_close_on_crossing()<br/>closure re-evaluated ONLY here,<br/>on an active crossing"]
+        note1["STICKY CLOSURE<br/>Time alone never reopens a closed road.<br/>Reads never change closed.<br/>Only an active positive crossing reopens it."]
         w_in --> w_persist --> w_gain --> w_close
+        w_close -.-> note1
     end
 
-    store -. "read-only view computed forward from here" .-> r_dec
-    r_copy --> OUT["returned Road copy<br/>(store untouched)"]
-    w_close -. "persists new canonical state" .-> store
-
-    note1["Time alone never reopens a closed road.<br/>Reads never change closed.<br/>Only an active positive crossing reopens it."]
-    w_close -.-> note1
+    store -. "read computes a<br/>decayed VIEW here" .-> r_dec
+    w_close -. "persists new<br/>canonical state" .-> store
 
     classDef pure fill:#eafbea,stroke:#27ae60;
     classDef write fill:#eaf0fb,stroke:#2e86c1;
+    classDef note fill:#f3f0ff,stroke:#7048e8,color:#4a1d96;
     class r_in,r_dec,r_copy,OUT pure;
     class w_in,w_persist,w_gain,w_close write;
+    class note1 note;
