@@ -48,7 +48,7 @@ ax.set_xticks(range(len(suites)))
 ax.set_xticklabels(suites, fontsize=10)
 ax.set_ylabel("Passing assertions (checks)", fontsize=11)
 ax.set_ylim(0, 52)
-ax.set_title("Nous test suite — passing assertions per suite\n"
+ax.set_title("Nous test suite: passing assertions per suite\n"
              "130 passed, 0 failed  •  56 test functions  •  CPython 3.13.2",
              fontsize=12.5, fontweight="bold")
 ax.spines["top"].set_visible(False)
