@@ -86,6 +86,27 @@ def finding(letter_title, claim, bug, root, fix, locked):
         para(body, bold_lead=lead, space_after=3)
 
 
+def _png_size(path):
+    import struct
+    with open(path, "rb") as f:
+        f.read(16)
+        w, h = struct.unpack(">II", f.read(8))
+    return w, h
+
+
+def figure(fname, caption, max_w=6.3, max_h=8.0):
+    """Insert a centered figure sized to fit a page (width capped at max_w in, height
+    at max_h in via aspect), then an italic centered caption. Mirrors a REPORT.md figure."""
+    path = os.path.join(FIG, fname)
+    if os.path.exists(path):
+        w, h = _png_size(path)
+        width_in = min(max_w, max_h * w / h)
+        p = doc.add_paragraph()
+        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+        p.add_run().add_picture(path, width=Inches(width_in))
+    para(caption, italic=True, size=9, align=WD_ALIGN_PARAGRAPH.CENTER)
+
+
 # ---- title -----------------------------------------------------------------
 t = doc.add_heading("", level=0)
 run = t.add_run("Nous: Adversarial Testing of a Dependency-Free Memory-and-"
@@ -194,7 +215,13 @@ para("Semantic priming [10, 11] is named here because it is the worked example f
 # ---- 3 Architecture --------------------------------------------------------
 doc.add_heading("3. System architecture (as built)", level=1)
 para("Nous is pure-Python standard library, organized bottom-up; each layer reads the one below through "
-     "its public surface only. The four diagrams are in Appendix C.")
+     "its public surface only. Figure 1 makes the honest boundary visual; the figures that follow detail "
+     "the data model, the read/write paths, and the end-to-end slice.")
+figure("architecture_stack.png",
+       "Figure 1 — The four-layer stack and the honest boundary. Layers 1–2 (substrate store, spreading "
+       "activation) are PROVEN (determinism, integrity, purity); layers 3–4 (multi-source field, end-to-end "
+       "slice) are EXPLORATORY. It establishes where verification stops; it does NOT claim the exploratory "
+       "layers are cognitively meaningful.")
 
 doc.add_heading("3.1 Substrate store (nous_store.py, 548 lines)", level=2)
 para("The only component that mutates the graph; it holds no cognitive logic.")
@@ -218,6 +245,13 @@ bullet("remove_node refuses to delete a pinned node; adjacency, dedup, and desig
        bold_lead="Pin guard and integrity.")
 bullet("Every mutation is a synchronous method with no await inside, making each mutation atomic by "
        "construction under single-threaded asyncio.", bold_lead="Atomicity.")
+figure("data_model.png",
+       "Figure 2 — Substrate data model. The Node and Road fields; identity (uuid4) is deliberately "
+       "separate from ordering (creation_seq). Describes the data structures only.")
+figure("substrate_read_write.png",
+       "Figure 3 — Read vs. write paths (the purity invariant). Reads compute decay into a copy and never "
+       "mutate; only writes persist decay; closure changes only on an active crossing. Visualizes finding "
+       "(a); it proves a mechanism property, not anything about cognition.")
 
 doc.add_heading("3.2 Spreading activation (nous_activation.py, 281 lines)", level=2)
 para("The first operation that reads across the graph: radiate activation from a seed along directed "
@@ -259,6 +293,10 @@ bullet("The slice (think) runs perceive → build field → form coalitions by b
        "strongest coalition as “the thought.” The final step is an explicit placeholder for an "
        "unbuilt workspace-competition/broadcast phase. The slice is pure and deterministic; what it produces "
        "is not claimed to be meaningful (finding f).", bold_lead="The slice.")
+figure("pipeline.png",
+       "Figure 4 — End-to-end ‘thought’ slice. text → perceive → field → coalitions → thought. The final "
+       "‘strongest coalition = thought’ step is a placeholder for an unbuilt broadcast phase; the figure "
+       "shows data flow, not that the resulting ‘thought’ is meaningful.")
 
 # ---- 4 Methodology ---------------------------------------------------------
 doc.add_heading("4. Methodology", level=1)
@@ -291,9 +329,17 @@ para("Read findings (b)–(f) together and one shape repeats: a component passes
      "hand-chosen. The six findings are each presented as: claim under test → bug → root cause "
      "→ fix → the specific test that now locks it. Reported magnitudes the shipped artifact does "
      "not let one reproduce are omitted rather than asserted.")
+figure("friendly_input_loop.png",
+       "Figure 5 — The recurring ‘friendly-input’ failure mode, and the two remedies. Conceptual: the loop "
+       "shared by findings (b)–(f), broken by adversarial testing and by closing the loop. It illustrates "
+       "the method; it asserts no measurement.")
 
 # ---- 6 The six findings ----------------------------------------------------
 doc.add_heading("6. The six structural findings", level=1)
+figure("six_findings.png",
+       "Figure 6 — The six structural findings at a glance. Each row: claim → bug → root cause → fix → "
+       "locking test. Every cell traces to a module docstring and a named test; no error magnitudes are "
+       "asserted.")
 finding("(a) Read-as-write: a read that could silently re-open a closed wound",
         "reads are pure; stored state changes only on writes.",
         "the natural implementation applies time-decay on access and writes it back, so every read mutates "
@@ -306,6 +352,10 @@ finding("(a) Read-as-write: a read that could silently re-open a closed wound",
         "touches closed; closure is sticky.",
         "test_reads_are_pure; test_lazy_decay; test_closure_is_sticky (time + repeated reads do not reopen a "
         "closed road; only an active positive return does).")
+figure("sticky_closure_state.png",
+       "Figure 7 — A road’s closure lifecycle (finding (a) invariant). Open/Closed transitions happen only "
+       "on active crossings; time passing and reads never reopen a closed road. A mechanism property, "
+       "asserted by test_closure_is_sticky.")
 finding("(b) Convergence double-counting: “first-pop-final” where activation sums",
         "a node downstream of a convergence point is not over-counted.",
         "when activation converges from several paths it must sum, but re-expanding the convergence node as "
@@ -317,6 +367,10 @@ finding("(b) Convergence double-counting: “first-pop-final” where activation
         "test_no_double_count_downstream_of_convergence, which uses deliberately lopsided edge strengths to "
         "prove the result does not depend on them and guards that it is strictly below additive re-expansion; "
         "test_convergent_activation_sums.")
+figure("convergence_before_after.png",
+       "Figure 8 — Convergence double-counting, before/after (finding (b)). Structural schematic of the "
+       "diamond-with-tail: naive re-expansion over-counts everything downstream of the convergence node; "
+       "single-expansion counts it once. No magnitudes are shown (the report omits them as not reproducible).")
 finding("(c) Order-dependence, then nondeterminism: a priority frontier over hashed sets",
         "post-convergence activation depends only on the graph, never on expansion order or process hash seed.",
         "an activation-priority frontier made which late ripple was dropped depend on incidental "
@@ -355,6 +409,11 @@ finding("(e) Binding degeneracy: components on a graph connected by construction
         "test_single_seed_spread_yields_multiple_coalitions; test_acceptance_multisource_recovers_communities "
         "(the field recovers exactly the two communities on the adversarial bridge graph that single-seed "
         "segmentation could not).")
+figure("single_seed_vs_multisource.png",
+       "Figure 9 — Single-seed degeneracy vs. multi-source basins (finding (e)). The same "
+       "two-communities-with-a-thin-bridge graph: one seed yields a single distance-keyed blob; two sources "
+       "yield two basins with the bridge as the seam. The multi-source recovery is the asserted acceptance "
+       "test — in which the two sources are placed one per community (see finding (f) for why that matters).")
 finding("(f) Circular validation: the answer hand-encoded in the input",
         "the cognitive layer works on input the system produced, not input chosen to make it work.",
         "every layer above the substrate had been validated against a fiction of what would feed it. Sources "
@@ -371,6 +430,10 @@ finding("(f) Circular validation: the answer hand-encoded in the input",
         "test_KNOWN_LIMITATION_clustered_sources_give_poor_basins, which asserts the failure on purpose and is "
         "written to flip to green only when source-grouping is fixed (a negative result, not a contribution).")
 
+figure("cognitive_evolution.png",
+       "Figure 10 — The cognitive-layer arc and its dead-ends. connectivity binding → flow-cut → "
+       "multi-source field → closed-loop, and what each step revealed (findings e, f), ending at the known "
+       "limitation. It documents the development path, not a working capability.")
 doc.add_heading("6.7 What the six have in common", level=2)
 para("(b)–(f) are all instances of “passes on a friendly input.” (a) is the dual lesson for "
      "invariants: a property (purity) that an easy test trivially satisfies can be violated by an interaction "
@@ -396,6 +459,11 @@ para("For the substrate store and the spreading-activation engine, the test suit
      "the code does exactly and only what it says, reproducibly — not that the mechanism reproduces any "
      "cognitive phenomenon.")
 
+figure("determinism_seeds.png",
+       "Figure 11 — Adversarial determinism across process hash seeds (before/after). AFTER is the asserted, "
+       "byte-identical result of the four determinism tests (each across its own seed set); BEFORE is the "
+       "documented prior bug (findings c, d), shown qualitatively and NOT re-measured. Reproducibility of "
+       "mechanism only — not cognition.")
 doc.add_heading("7.2 Test suite", level=2)
 para("All figures below are taken verbatim from docs/TEST_OUTPUT.txt (CPython 3.13.2, Darwin 24.5.0 arm64) "
      "and re-confirmed by python3 run_tests.py for this report. Every suite passes with zero failures.")
@@ -426,6 +494,10 @@ for a, b, c, d in [("Source modules (src/)", "5", "1,476", "1,058"),
     r[0].text, r[1].text, r[2].text, r[3].text = a, b, c, d
 para("Per module (wc -l): nous_store.py 548, nous_activation.py 281, nous_coalitions.py 324, "
      "nous_field.py 161, nous_perceive.py 162.")
+figure("test_suite_bars.png",
+       "Figure 12 — Passing assertions per suite (130 total, 0 failed). Counts taken verbatim from "
+       "docs/TEST_OUTPUT.txt. Proves mechanism (and the mechanics of the exploratory layers); it does NOT "
+       "measure cognitive quality. The proven/exploratory colouring matches Figure 1.")
 
 doc.add_heading("7.3 The incoherent-thought known limitation (an asserted negative result)", level=2)
 para("On clustered real input the end-to-end slice does not produce coherent coalitions. When perception "
@@ -434,6 +506,11 @@ para("On clustered real input the end-to-end slice does not produce coherent coa
      "test_KNOWN_LIMITATION_clustered_sources_give_poor_basins, which passes today because the failure holds; "
      "it is written to flip only when the underlying source-grouping problem is solved. It is reported here as "
      "a negative result, not a contribution.")
+figure("closed_loop_known_limitation.png",
+       "Figure 13 — The closed-loop slice and its honest failure (finding (f); asserted NEGATIVE result). On "
+       "the real input ‘coffee in the kitchen this morning,’ the ‘thought’ over-swallows across domains "
+       "(pulls in work/code) and same-domain perceived sources strand as singleton basins, asserted by "
+       "test_KNOWN_LIMITATION_clustered_sources_give_poor_basins. A documented known limitation, not a capability.")
 doc.add_heading("7.4 What these results do and do not establish", level=2)
 para("They establish that the substrate and activation engine are correct, deterministic, "
      "integrity-preserving, and pure, and that the cognitive layers run deterministically and purely. They do "
@@ -547,30 +624,36 @@ mono(
 para("Pure standard library; no dependencies (developed and captured on CPython 3.13.2). The suites use a "
      "built-in harness and must be run as scripts, not under pytest.")
 
-doc.add_heading("Appendix C — Diagrams", level=1)
-para("Rendered from the Mermaid sources in docs/diagrams/.")
-figs = [
-    ("pipeline.png", 3.3,
-     "Figure 1 — End-to-end “thought” slice (pipeline.mmd). Substrate store and spreading "
-     "activation are proven; the field, coalitions, and the final “thought” step are exploratory, "
-     "and “strongest coalition = thought” is a placeholder for an unbuilt broadcast phase."),
-    ("data_model.png", 2.1,
-     "Figure 2 — Substrate data model (data_model.mmd). A Node is always neutral; emotion lives on "
-     "Road.charges. Identity is the uuid4 id; ordering is the separate creation_seq."),
-    ("cognitive_evolution.png", 1.0,
-     "Figure 3 — Cognitive-layer evolution and dead-ends (cognitive_evolution.mmd): connectivity binding "
-     "→ flow-cut → multi-source field → closed-loop, and what each step revealed (findings e, f)."),
-    ("substrate_read_write.png", 3.3,
-     "Figure 4 — Substrate read vs. write paths (substrate_read_write.mmd). Reads are pure (decay computed "
-     "as a view); only writes persist decay, and closure is re-evaluated only on an active crossing (finding a)."),
-]
-for fname, width_in, caption in figs:
-    path = os.path.join(FIG, fname)
-    if os.path.exists(path):
-        p = doc.add_paragraph()
-        p.alignment = WD_ALIGN_PARAGRAPH.CENTER
-        p.add_run().add_picture(path, width=Inches(width_in))
-    cap = para(caption, italic=True, size=9, align=WD_ALIGN_PARAGRAPH.CENTER)
+doc.add_heading("Appendix C — Figure index and sources", level=1)
+para("All figures are embedded inline in the sections above. Their editable sources and "
+     "presentation-resolution renders live in the repository: Mermaid diagrams as docs/diagrams/*.mmd "
+     "(rendered to docs/diagrams/rendered/*.png; the .mmd files also render crisply at mermaid.live or via "
+     "mmdc), and data charts as docs/diagrams/figures/*.py (matplotlib; run them to regenerate the PNGs at "
+     "dpi=200).")
+_idx = doc.add_table(rows=1, cols=4)
+_idx.style = "Light Grid Accent 1"
+_h = _idx.rows[0].cells
+_h[0].text, _h[1].text, _h[2].text, _h[3].text = "Fig", "Section", "Asset (in docs/diagrams/)", "Kind"
+for fig_n, sec, asset, kind in [
+    ("1", "§3", "architecture_stack", "Mermaid"),
+    ("2", "§3.1", "data_model", "Mermaid"),
+    ("3", "§3.1", "substrate_read_write", "Mermaid"),
+    ("4", "§3.4", "pipeline", "Mermaid"),
+    ("5", "§5", "friendly_input_loop", "Mermaid"),
+    ("6", "§6", "six_findings", "Mermaid"),
+    ("7", "§6.1", "sticky_closure_state", "Mermaid"),
+    ("8", "§6.2", "convergence_before_after", "Mermaid"),
+    ("9", "§6.5", "single_seed_vs_multisource", "Mermaid"),
+    ("10", "§6.7", "cognitive_evolution", "Mermaid"),
+    ("11", "§7.1", "figures/determinism_seeds.py", "matplotlib"),
+    ("12", "§7.2", "figures/test_suite_bars.py", "matplotlib"),
+    ("13", "§7.3", "closed_loop_known_limitation", "Mermaid"),
+    ("14", "this appendix", "repo_map", "Mermaid"),
+]:
+    _r = _idx.add_row().cells
+    _r[0].text, _r[1].text, _r[2].text, _r[3].text = fig_n, sec, asset, kind
+figure("repo_map.png",
+       "Figure 14 — Repository / asset map. Orientation only; it shows the package layout, not behavior.")
 
 doc.save(OUT)
 print("wrote", OUT)

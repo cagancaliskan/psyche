@@ -1,0 +1,41 @@
+%% Nous — the six structural findings (methodology centerpiece).
+%% Each row: Claim under test -> Bug -> Root cause -> Fix -> Locking test.
+%% Traceable to module docstrings and the named tests; magnitudes intentionally omitted.
+flowchart TB
+    classDef claim fill:#eef2ff,stroke:#3b5bdb,color:#1a237e;
+    classDef bug   fill:#fff0f0,stroke:#c0392b,color:#7b241c;
+    classDef cause fill:#fff8e1,stroke:#d68910,color:#7e5109;
+    classDef fix   fill:#eaf7ea,stroke:#2e7d32,color:#1b5e20;
+    classDef test  fill:#f3f0ff,stroke:#7048e8,color:#4a1d96;
+
+    subgraph A["(a) Read-as-write"]
+        direction LR
+        a1["CLAIM<br/>reads are pure"]:::claim --> a2["BUG<br/>decay-on-read writes back;<br/>could reopen a closed edge"]:::bug --> a3["ROOT CAUSE<br/>compute vs persist conflated;<br/>a read touches closed"]:::cause --> a4["FIX<br/>pure-view decay; persist only<br/>on writes; sticky closure"]:::fix --> a5["LOCKED BY<br/>test_reads_are_pure;<br/>test_closure_is_sticky"]:::test
+    end
+
+    subgraph B["(b) Convergence double-counting"]
+        direction LR
+        b1["CLAIM<br/>no over-count downstream<br/>of a convergence point"]:::claim --> b2["BUG<br/>re-expanding the convergence<br/>node over-counts downstream"]:::bug --> b3["ROOT CAUSE<br/>Dijkstra first-pop-final where<br/>activation SUMS"]:::cause --> b4["FIX<br/>bounded single-expansion;<br/>equal-length convergence exact"]:::fix --> b5["LOCKED BY<br/>test_no_double_count_<br/>downstream_of_convergence"]:::test
+    end
+
+    subgraph C["(c) Order-dependence then nondeterminism"]
+        direction LR
+        c1["CLAIM<br/>result depends only on the graph"]:::claim --> c2["BUG<br/>priority frontier over hashed<br/>uuid sets varies across runs"]:::bug --> c3["ROOT CAUSE<br/>expansion order load-bearing<br/>over randomized iteration"]:::cause --> c4["FIX<br/>hop-layered, per-layer<br/>frozen snapshot"]:::fix --> c5["LOCKED BY<br/>test_determinism_with_<br/>same_hop_edge_adversarial"]:::test
+    end
+
+    subgraph D["(d) Identity/order leak"]
+        direction LR
+        d1["CLAIM<br/>coalition output identical<br/>across processes"]:::claim --> d2["BUG<br/>tie-break on uuid (regenerated<br/>every run) -> nondeterministic"]:::bug --> d3["ROOT CAUSE<br/>identity used to carry ordering"]:::cause --> d4["FIX<br/>tie-break on stable<br/>creation_seq"]:::fix --> d5["LOCKED BY<br/>test_determinism_adversarial_<br/>across_hash_seeds"]:::test
+    end
+
+    subgraph E["(e) Binding degeneracy"]
+        direction LR
+        e1["CLAIM<br/>binding subdivides into the<br/>right groups"]:::claim --> e2["BUG<br/>seed-rooted region is connected;<br/>flow-cut keys off distance"]:::bug --> e3["ROOT CAUSE<br/>one seed = one peak;<br/>distance, not community"]:::cause --> e4["FIX<br/>reframe to multi-source field;<br/>basins around peaks"]:::fix --> e5["LOCKED BY<br/>test_single_seed..multiple;<br/>test_acceptance_multisource"]:::test
+    end
+
+    subgraph F["(f) Circular validation"]
+        direction LR
+        f1["CLAIM<br/>works on system-produced input"]:::claim --> f2["BUG<br/>sources hand-placed; answer<br/>encoded in the input"]:::bug --> f3["ROOT CAUSE<br/>validated on inputs invented<br/>to make it pass"]:::cause --> f4["FIX<br/>close the loop: real perception<br/>derives the sources"]:::fix --> f5["LOCKED BY<br/>test_KNOWN_LIMITATION_<br/>clustered_sources (negative)"]:::test
+    end
+
+    A --> B --> C --> D --> E --> F

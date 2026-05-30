@@ -22,6 +22,12 @@
 \setlength{\parindent}{0pt}
 
 \newcommand{\code}[1]{\texttt{#1}}
+% figure helper: caps width and height with keepaspectratio so any aspect fits a page
+\newcommand{\nousfig}[3]{%
+  \begin{figure}[htbp]\centering
+    \includegraphics[width=\linewidth,height=0.78\textheight,keepaspectratio]{figures/#1}%
+    \caption{#2}\label{#3}%
+  \end{figure}}
 
 \title{\textbf{Nous: Adversarial Testing of a Dependency-Free\\
 Memory-and-Activation Substrate for Cognitive Architectures}\\[4pt]
@@ -153,8 +159,13 @@ for future validation (\S\ref{sec:future}): an effect whose direction is known i
 \section{System architecture (as built)}\label{sec:arch}
 
 Nous is pure-Python standard library, organized bottom-up; each layer reads the one below through its
-public surface only. Figure~\ref{fig:pipeline} shows the end-to-end slice; Figure~\ref{fig:datamodel}
-the data model; Figure~\ref{fig:readwrite} the substrate read/write paths.
+public surface only. Figure~\ref{fig:archstack} makes the honest boundary visual; the figures that
+follow detail the data model, the read/write paths, and the end-to-end slice.
+
+\nousfig{architecture_stack.png}{\textbf{The four-layer stack and the honest boundary.} Layers 1--2
+(substrate store, spreading activation) are PROVEN (determinism, integrity, purity); layers 3--4
+(multi-source field, end-to-end slice) are EXPLORATORY. It establishes \emph{where verification stops};
+it does \emph{not} claim the exploratory layers are cognitively meaningful.}{fig:archstack}
 
 \subsection{Substrate store (\code{nous_store.py}, 548 lines)}
 The only component that mutates the graph; it holds no cognitive logic.
@@ -184,6 +195,14 @@ The only component that mutates the graph; it holds no cognitive logic.
   \item \textbf{Atomicity.} Every mutation is a synchronous method with no \code{await} inside, making
         each mutation atomic by construction under single-threaded asyncio.
 \end{itemize}
+
+\nousfig{data_model.png}{\textbf{Substrate data model.} The \code{Node} and \code{Road} fields;
+identity (\code{uuid4}) is deliberately separate from ordering (\code{creation_seq}). Describes the
+data structures only.}{fig:datamodel}
+
+\nousfig{substrate_read_write.png}{\textbf{Read vs.\ write paths (the purity invariant).} Reads compute
+decay into a \emph{copy} and never mutate; only writes persist decay; closure changes only on an active
+crossing. Visualizes finding (a); it proves a mechanism property, not anything about cognition.}{fig:readwrite}
 
 \subsection{Spreading activation (\code{nous_activation.py}, 281 lines)}
 The first operation that reads \emph{across} the graph: radiate activation from a seed along directed
@@ -236,6 +255,11 @@ peak, so any segmentation of it keys off distance from the seed rather than comm
         (finding~(f), \S\ref{sec:negresult}).
 \end{itemize}
 
+\nousfig{pipeline.png}{\textbf{End-to-end ``thought'' slice.} text $\rightarrow$ perceive $\rightarrow$
+field $\rightarrow$ coalitions $\rightarrow$ thought. The final ``strongest coalition = thought'' step is
+a placeholder for an unbuilt broadcast phase; the figure shows \emph{data flow}, not that the resulting
+``thought'' is meaningful.}{fig:pipeline}
+
 \section{Methodology}\label{sec:method}
 
 The thesis of this report is that the test process---not the prototype---is the contribution. Two
@@ -275,7 +299,15 @@ $\rightarrow$ fix $\rightarrow$ the specific test that now locks it.} Every clai
 code and the named test; reported magnitudes that the shipped artifact does not let one reproduce are
 omitted rather than asserted.
 
+\nousfig{friendly_input_loop.png}{\textbf{The recurring ``friendly-input'' failure mode, and the two
+remedies.} Conceptual: the loop shared by findings (b)--(f), broken by adversarial testing and by closing
+the loop. It illustrates the \emph{method}; it asserts no measurement.}{fig:friendly}
+
 \section{The six structural findings}\label{sec:findings}
+
+\nousfig{six_findings.png}{\textbf{The six structural findings at a glance.} Each row: claim
+$\rightarrow$ bug $\rightarrow$ root cause $\rightarrow$ fix $\rightarrow$ locking test. Every cell traces
+to a module docstring and a named test; no error magnitudes are asserted.}{fig:sixfindings}
 
 \subsection{(a) Read-as-write: a read that could silently re-open a closed wound}
 \textbf{Claim under test:} reads are pure; stored state changes only on writes.
@@ -290,6 +322,10 @@ only by writes/offline). Decay never touches \code{closed}; closure is sticky.
 \textbf{Locked by:} \code{test_reads_are_pure}; \code{test_lazy_decay}; \code{test_closure_is_sticky}
 (time + repeated reads do not reopen a closed road; only an active positive return does).
 
+\nousfig{sticky_closure_state.png}{\textbf{A road's closure lifecycle (finding (a) invariant).}
+Open/Closed transitions happen \emph{only} on active crossings; time passing and reads never reopen a
+closed road. A mechanism property, asserted by \code{test_closure_is_sticky}.}{fig:closure}
+
 \subsection{(b) Convergence double-counting: ``first-pop-final'' where activation sums}
 \textbf{Claim under test:} a node downstream of a convergence point is not over-counted.
 \textbf{Bug:} when activation converges from several paths it must sum, but re-expanding the convergence
@@ -302,6 +338,11 @@ sum of paths of length $\leq$ its settle hop; equal-length convergence is exact.
 lopsided} edge strengths to prove the result does not depend on them and includes an explicit guard that
 the result is \emph{strictly below} what additive re-expansion would produce;
 \code{test_convergent_activation_sums}.
+
+\nousfig{convergence_before_after.png}{\textbf{Convergence double-counting, before/after (finding (b)).}
+Structural schematic of the diamond-with-tail: naive re-expansion over-counts everything downstream of
+the convergence node; single-expansion counts it once. No magnitudes are shown (the report omits them as
+not reproducible).}{fig:convergence}
 
 \subsection{(c) Order-dependence, then nondeterminism: a priority frontier over hashed sets}
 \textbf{Claim under test:} post-convergence activation depends only on the graph, never on expansion
@@ -351,6 +392,12 @@ sources $\rightarrow$ multiple genuine peaks $\rightarrow$ basins around peaks.
 \code{test_acceptance_multisource_recovers_communities} (the field recovers exactly the two communities
 on the adversarial bridge graph that single-seed segmentation could not).
 
+\nousfig{single_seed_vs_multisource.png}{\textbf{Single-seed degeneracy vs.\ multi-source basins
+(finding (e)).} The same two-communities-with-a-thin-bridge graph: one seed yields a single
+distance-keyed blob; two sources yield two basins with the bridge as the seam. The multi-source recovery
+is the asserted acceptance test --- in which the two sources are \emph{placed one per community} (see
+finding (f) for why that matters).}{fig:singlemulti}
+
 \subsection{(f) Circular validation: the answer hand-encoded in the input}\label{sec:findF}
 \textbf{Claim under test:} the cognitive layer works on input the \emph{system} produced, not input
 chosen to make it work.
@@ -376,6 +423,11 @@ is written to flip to green only when source-grouping is fixed.
 interaction (decay $\times$ closure $\times$ time) that only a purpose-built test exercises. In every
 case the bug was structural and the catching test was adversarial or loop-closing.
 
+\nousfig{cognitive_evolution.png}{\textbf{The cognitive-layer arc and its dead-ends.} connectivity
+binding $\rightarrow$ flow-cut $\rightarrow$ multi-source field $\rightarrow$ closed-loop, and what each
+step revealed (findings (e), (f)), ending at the known limitation. It documents the \emph{development
+path}, not a working capability.}{fig:evolution}
+
 \subsection{Transferable lessons}\label{sec:lessons}
 \begin{enumerate}[nosep]
   \item \textbf{Test the property, not the example}---assert purity, determinism, and ``no
@@ -397,6 +449,11 @@ the hash seeds in \S\ref{sec:method}); \textbf{integrity} (graph indices stay mu
 every mutation; a full scan finds no drift); and \textbf{purity} (reads never mutate stored state). These
 are claims about \emph{mechanism}---the code does exactly and only what it says, reproducibly---not that
 the mechanism reproduces any cognitive phenomenon.
+
+\nousfig{determinism_seeds.png}{\textbf{Adversarial determinism across process hash seeds
+(before/after).} \emph{AFTER} is the asserted, byte-identical result of the four determinism tests (each
+across its own seed set); \emph{BEFORE} is the documented prior bug (findings (c), (d)), shown
+qualitatively and \emph{not} re-measured. Reproducibility of mechanism only --- not cognition.}{fig:determinism}
 
 \subsection{Test suite}
 All figures below are taken verbatim from \code{docs/TEST_OUTPUT.txt} (CPython 3.13.2, Darwin 24.5.0
@@ -442,6 +499,11 @@ Test suites (\code{tests/})  & 5  & 1{,}555 & 1{,}223 \\
 \code{nous_perceive.py} 162.}
 \end{table}
 
+\nousfig{test_suite_bars.png}{\textbf{Passing assertions per suite (130 total, 0 failed).} Counts taken
+verbatim from \code{docs/TEST_OUTPUT.txt}. Proves \emph{mechanism} (and the \emph{mechanics} of the
+exploratory layers); it does \emph{not} measure cognitive quality. Colouring matches
+Figure~\ref{fig:archstack}.}{fig:bars}
+
 \subsection{The incoherent-thought known limitation (an asserted negative result)}\label{sec:negresult}
 On clustered real input the end-to-end slice does \textbf{not} produce coherent coalitions. When
 perception lights up several nodes in the same domain, basins collapse: one source over-swallows across
@@ -449,6 +511,13 @@ domains while same-domain siblings strand as singletons. This is asserted on pur
 \code{test_KNOWN_LIMITATION_clustered_sources_give_poor_basins}, which passes today \emph{because the
 failure holds}; it is written to flip only when the underlying source-grouping problem is solved. It is
 reported here as a \textbf{negative result}, not a contribution.
+
+\nousfig{closed_loop_known_limitation.png}{\textbf{The closed-loop slice and its honest failure
+(finding (f); asserted NEGATIVE result).} On the real input ``coffee in the kitchen this morning,'' the
+``thought'' over-swallows across domains (pulls in \emph{work}/\emph{code}) and same-domain perceived
+sources strand as singleton basins, asserted by
+\code{test_KNOWN_LIMITATION_clustered_sources_give_poor_basins}. A documented \textbf{known limitation},
+not a capability.}{fig:closedloop}
 
 \subsection{What these results do and do not establish}
 They establish that the substrate and activation engine are correct, deterministic,
@@ -570,42 +639,38 @@ PYTHONPATH="$PWD/src" python3 tests/test_nous_store.py
 Pure standard library; no dependencies (developed and captured on CPython 3.13.2). The suites use a
 built-in harness and must be run as scripts, not under pytest.
 
-\section{Diagrams}
-Rendered from the Mermaid sources in \code{docs/diagrams/}.
+\section{Figure index and sources}
+All figures are embedded inline in the sections above. Their editable sources and
+presentation-resolution renders live in the repository: Mermaid diagrams as \code{docs/diagrams/*.mmd}
+(rendered to \code{docs/diagrams/rendered/*.png}; the \code{.mmd} files also render crisply at
+mermaid.live or via \code{mmdc}), and data charts as \code{docs/diagrams/figures/*.py} (matplotlib;
+run them to regenerate the PNGs at \code{dpi=200}).
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.52\textwidth]{figures/pipeline.png}
-\caption{End-to-end ``thought'' slice (\code{pipeline.mmd}). The substrate store and spreading activation
-are proven; the field, coalitions, and the final ``thought'' step are exploratory, and ``strongest
-coalition = thought'' is a placeholder for an unbuilt broadcast phase.}
-\label{fig:pipeline}
-\end{figure}
+\begin{table}[H]
+\centering\small
+\begin{tabular}{rll l}
+\toprule
+\textbf{Fig} & \textbf{Section} & \textbf{Asset (in \code{docs/diagrams/})} & \textbf{Kind} \\
+\midrule
+1  & \S3   & \code{architecture_stack}            & Mermaid \\
+2  & \S3.1 & \code{data_model}                    & Mermaid \\
+3  & \S3.1 & \code{substrate_read_write}          & Mermaid \\
+4  & \S3.4 & \code{pipeline}                      & Mermaid \\
+5  & \S5   & \code{friendly_input_loop}           & Mermaid \\
+6  & \S6   & \code{six_findings}                  & Mermaid \\
+7  & \S6.1 & \code{sticky_closure_state}          & Mermaid \\
+8  & \S6.2 & \code{convergence_before_after}      & Mermaid \\
+9  & \S6.5 & \code{single_seed_vs_multisource}    & Mermaid \\
+10 & \S6.7 & \code{cognitive_evolution}           & Mermaid \\
+11 & \S7.1 & \code{figures/determinism_seeds.py}  & matplotlib \\
+12 & \S7.2 & \code{figures/test_suite_bars.py}    & matplotlib \\
+13 & \S7.3 & \code{closed_loop_known_limitation}  & Mermaid \\
+14 & this appendix & \code{repo_map}              & Mermaid \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-\begin{figure}[H]
-\centering
-\includegraphics[height=0.82\textheight,keepaspectratio]{figures/data_model.png}
-\caption{Substrate data model (\code{data_model.mmd}). A \code{Node} is always neutral; emotion lives on
-\code{Road.charges}. Identity is the uuid4 \code{id}; ordering is the separate \code{creation_seq}.}
-\label{fig:datamodel}
-\end{figure}
-
-\begin{figure}[p]
-\centering
-\includegraphics[height=0.9\textheight,keepaspectratio]{figures/cognitive_evolution.png}
-\caption{Cognitive-layer evolution and dead-ends (\code{cognitive_evolution.mmd}): connectivity binding
-$\rightarrow$ flow-cut $\rightarrow$ multi-source field $\rightarrow$ closed-loop, and what each step
-revealed (findings (e), (f)).}
-\label{fig:evolution}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=0.5\textwidth]{figures/substrate_read_write.png}
-\caption{Substrate read vs.\ write paths (\code{substrate_read_write.mmd}). Reads are pure (decay
-computed as a view); only writes persist decay, and closure is re-evaluated only on an active crossing
-(finding (a)).}
-\label{fig:readwrite}
-\end{figure}
+\nousfig{repo_map.png}{\textbf{Repository / asset map.} Orientation only; it shows the package layout,
+not behavior.}{fig:repomap}
 
 \end{document}

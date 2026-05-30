@@ -1,0 +1,19 @@
+%% Nous — finding (f): the closed-loop slice with its HONEST failure.
+%% The end-to-end run on real input; the final "thought" is incoherent and this is
+%% asserted as a KNOWN LIMITATION (negative result), NOT a feature.
+flowchart TB
+    text["Input text:<br/>'coffee in the kitchen this morning'"]:::io
+    perceive["perceive()<br/>substring-match tokens against node content"]:::proc
+    sources["sources (all in the SAME, warm domain):<br/>coffee, kitchen, morning"]:::proc
+    field["multi-source activation field<br/>(basins)"]:::proc
+    coalitions["coalitions grouped by basin"]:::proc
+    thought["'thought' = strongest coalition<br/>(BROADCAST placeholder)"]:::proc
+
+    text --> perceive --> sources --> field --> coalitions --> thought
+
+    fail["KNOWN LIMITATION  (asserted NEGATIVE result)<br/><br/>- the 'thought' OVER-SWALLOWS across domains (pulls in work / code)<br/>- same-domain perceived sources STRAND as singleton basins<br/><br/>asserted on purpose by<br/>test_KNOWN_LIMITATION_clustered_sources_give_poor_basins<br/>(flips to green only when source-grouping is fixed)"]:::limit
+    thought -.-> fail
+
+    classDef io fill:#eef2ff,stroke:#3b5bdb,color:#1a237e;
+    classDef proc fill:#f1f3f5,stroke:#868e96,color:#343a40;
+    classDef limit fill:#fdecea,stroke:#c0392b,color:#7b241c;

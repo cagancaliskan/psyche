@@ -1,0 +1,18 @@
+%% Nous — a road's closure lifecycle (finding (a) invariant made visual).
+%% Key invariant: time + reads alone NEVER reopen a closed road. Decay is a pure
+%% read-only view; closure changes ONLY on an active crossing.
+stateDiagram-v2
+    [*] --> Open: add_road (faint dirt, strength 0.05)
+    Open --> Open: strengthen / traverse (quality climbs dirt to highway)
+    Open --> Closed: strong NEGATIVE crossing (valence <= -0.75) or one-shot trauma
+    Closed --> Open: ACTIVE POSITIVE return (valence >= -0.30) reopens it
+
+    note right of Open
+        Reads apply decay as a COPY (a view).
+        Stored state is never changed by a read.
+    end note
+    note right of Closed
+        Sticky: time passing and repeated reads
+        do NOT reopen it. Only an active positive
+        crossing does. (Avoidance preserves trauma.)
+    end note
