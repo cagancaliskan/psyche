@@ -41,7 +41,7 @@ Memory-and-Activation Substrate for Cognitive Architectures}\\[4pt]
 \begin{abstract}
 \noindent
 This report describes \textbf{Nous}, a dependency-free Python prototype of a memory-and-activation
-substrate for a cognitive architecture, and---more centrally---the \textbf{software-engineering
+substrate for a cognitive architecture, and (more centrally) the \textbf{software-engineering
 methodology} used to build it. Nous comprises four layers: a graph \emph{substrate store} of concept
 nodes and weighted ``roads''; a deterministic \emph{spreading-activation} engine; a multi-source
 \emph{activation field}; and a thin end-to-end \emph{perceive $\rightarrow$ activate $\rightarrow$ form
@@ -50,11 +50,11 @@ property-style test suite, for three concrete properties: \textbf{determinism} (
 process runs, confirmed in fresh interpreters under randomized hash seeds), \textbf{integrity} (graph
 indices stay mutually consistent across every mutation), and \textbf{purity} (reads never mutate stored
 state). The upper two layers are \textbf{exploratory}: they run and are deterministic, but their
-cognitive \emph{meaningfulness is explicitly not claimed}---and on clustered real input the end-to-end
+cognitive \emph{meaningfulness is explicitly not claimed}, and on clustered real input the end-to-end
 slice produces an \emph{incoherent} ``thought,'' recorded as an asserted \textbf{negative result /
-known limitation}, not a contribution. The central finding is a recurring failure mode---a component
+known limitation}, not a contribution. The central finding is a recurring failure mode: a component
 that \emph{passes on a friendly, hand-chosen input and fails on an adversarial or system-generated
-one}---and the two practices that caught it: \textbf{adversarial/property-based testing} (including
+one}, and the two practices that caught it: \textbf{adversarial/property-based testing} (including
 cross-process determinism and read-purity checks) and \textbf{loop-closure} (driving each stage with
 system-generated rather than hand-placed inputs). Together they exposed \textbf{six distinct structural
 bugs} that ordinary happy-path tests pass over. The artifact's verified totals: \textbf{130 assertions
@@ -68,22 +68,22 @@ that aspiration from what was actually built and proven, and reports the enginee
 between. The subject is a cognitive-architecture prototype; the contribution is the \textbf{testing
 methodology} applied to it.
 
-\textbf{Motivation.} Cognitive-architecture components---graph memories, spreading activation,
-clustering into ``coalitions''---are easy to implement in a way that \emph{looks} correct on a
+\textbf{Motivation:} Cognitive-architecture components (graph memories, spreading activation,
+clustering into ``coalitions'') are easy to implement in a way that \emph{looks} correct on a
 hand-built example and is quietly wrong in structure: it double-counts, it depends on iteration order,
 it bakes the answer into the input. These are not typos; they are bugs in the \emph{shape} of the
 algorithm, and they survive happy-path tests. The question this project answers in the affirmative is
 whether a disciplined, adversarial, property-oriented test process can surface such bugs early and
 force the honest scoping of what has and has not been achieved.
 
-\textbf{Aspiration vs.\ built reality.} Nous began as a large design vision. Those original vision
+\textbf{Aspiration vs.\ built reality:} Nous began as a large design vision. Those original vision
 documents are retained verbatim in the repository under \code{docs/design/}, but they are
 \textbf{quarantined as aspiration}: a disclaimer there states plainly that their grand language
 (``AGI,'' ``a real brain,'' ``mind,'' ``felt experience'') describes intent, not the built code, and
 that of the thirteen documents only the two layer-plan files correspond to anything implemented. This
 report concerns \textbf{only the built artifact} and is bound by the scope below.
 
-\textbf{Scope and non-claims (binding).}
+\textbf{Scope and non-claims (binding):}
 \begin{itemize}[nosep]
   \item Nous is an \textbf{engineering prototype} and a \textbf{testing-methodology case study}.
   \item It is \textbf{not} a mind, consciousness, AGI, or a validated cognitive model, and makes
@@ -97,11 +97,11 @@ report concerns \textbf{only the built artifact} and is bound by the scope below
         here \emph{implements} or \emph{reproduces} them, and no biological fidelity is claimed.
 \end{itemize}
 
-\textbf{Contributions (methodology first).}
+\textbf{Contributions (methodology first):}
 \begin{enumerate}[nosep]
   \item A \textbf{software-engineering experience report} showing that adversarial/property-based
-        testing---determinism verified across process hash seeds, and read-purity verified by hammering
-        reads---and \textbf{loop-closure} caught a sequence of \textbf{six structural bugs} in a
+        testing (determinism verified across process hash seeds, and read-purity verified by hammering
+        reads) and \textbf{loop-closure} caught a sequence of \textbf{six structural bugs} in a
         memory/activation substrate.
   \item A \textbf{verified substrate}: a graph store and a spreading-activation engine that are
         deterministic, integrity-preserving, and pure, with the verification shipped as runnable tests.
@@ -117,38 +117,38 @@ The following bodies of work \textbf{inspired} the design's vocabulary and struc
 implement, validate, or reproduce any of them, and claims no biological fidelity; each is named to
 position the prototype, not to assert a result.
 
-\textbf{Complementary Learning Systems (CLS).} The fast/slow split between a rapidly-learning episodic
+\textbf{Complementary Learning Systems (CLS):} The fast/slow split between a rapidly-learning episodic
 system and a slowly-consolidating semantic one~\cite{mcclelland1995}, updated for intelligent-agent
 design in~\cite{kumaran2016}, \emph{inspires} Nous's separation of \textbf{activation} (what lights up
 now) from \textbf{consolidation} (what is later reinforced). In the prototype this appears only as a
-strict rule---spreading activation is a pure read and never strengthens what it touches---not as a
+strict rule: spreading activation is a pure read and never strengthens what it touches, not as a
 consolidation system.
 
-\textbf{Synaptic Tagging and Capture (STC).} The hypothesis that a weak event sets a local ``tag'' that
+\textbf{Synaptic Tagging and Capture (STC):} The hypothesis that a weak event sets a local ``tag'' that
 can capture plasticity-related products from a nearby strong event~\cite{frey1997, redondo2011}
 \emph{inspires} the framing of reinforcement as a \emph{gated, budgeted} event, which is why Nous keeps
 activation read-only; it does not model tagging dynamics.
 
-\textbf{Global Workspace Theory (GWT).} The idea that specialized processes form coalitions that
+\textbf{Global Workspace Theory (GWT):} The idea that specialized processes form coalitions that
 compete, and a winner is broadcast globally~\cite{baars1988, dehaene2011}, is the source of Nous's
 \textbf{coalition} vocabulary. Only coalition \emph{formation} exists in the code; the
 competition/broadcast step is an explicit, unbuilt placeholder.
 
-\textbf{LIDA cognitive cycle.} LIDA's systems-level \emph{perceive $\rightarrow$ attend $\rightarrow$
+\textbf{LIDA cognitive cycle:} LIDA's systems-level \emph{perceive $\rightarrow$ attend $\rightarrow$
 broadcast} cycle~\cite{franklin2014} loosely shapes the staging of the end-to-end slice, which realizes
 only the early stages.
 
-\textbf{Cognitive architectures.} ACT-R's integrated theory of cognition~\cite{anderson2004} and
+\textbf{Cognitive architectures:} ACT-R's integrated theory of cognition~\cite{anderson2004} and
 SPAUN's large-scale functional brain model~\cite{eliasmith2012} are referenced for \textbf{positioning}:
 Nous is far smaller and makes no behavioral or biological claims; it is a substrate-and-method study,
 not an architecture in their sense.
 
-\textbf{Spreading-activation theory.} Nous's activation engine is a deterministic, engineered variant of
+\textbf{Spreading-activation theory:} Nous's activation engine is a deterministic, engineered variant of
 spreading activation in the sense of Collins \& Loftus~\cite{collins1975}; the convergence-sums property
 is from that lineage, while the hop-layered single-expansion is an engineering choice made for
 determinism (\S\ref{sec:findings}).
 
-\textbf{Arousal and plasticity.} The Yerkes--Dodson inverted-U relating arousal to
+\textbf{Arousal and plasticity:} The Yerkes--Dodson inverted-U relating arousal to
 performance~\cite{yerkes1908} appears in the design notes as motivation for emotion-modulated
 plasticity; in the code this is only charge-modulated strengthening and is best read as design-level
 aspiration.
@@ -162,7 +162,7 @@ Nous is pure-Python standard library, organized bottom-up; each layer reads the 
 public surface only. Figure~\ref{fig:archstack} makes the honest boundary visual; the figures that
 follow detail the data model, the read/write paths, and the end-to-end slice.
 
-\nousfig{architecture_stack.png}{\textbf{The four-layer stack and the honest boundary.} Layers 1--2
+\nousfig{architecture_stack.png}{\textbf{The four-layer stack and the honest boundary:} Layers 1--2
 (substrate store, spreading activation) are PROVEN (determinism, integrity, purity); layers 3--4
 (multi-source field, end-to-end slice) are EXPLORATORY. It establishes \emph{where verification stops};
 it does \emph{not} claim the exploratory layers are cognitively meaningful.}{fig:archstack}
@@ -170,63 +170,63 @@ it does \emph{not} claim the exploratory layers are cognitively meaningful.}{fig
 \subsection{Substrate store (\code{nous_store.py}, 548 lines)}
 The only component that mutates the graph; it holds no cognitive logic.
 \begin{itemize}[nosep]
-  \item \textbf{Nodes and roads.} A \code{Node} is an always-neutral unit of information with a stable
+  \item \textbf{Nodes and roads:} A \code{Node} is an always-neutral unit of information with a stable
         identity and a content string. A \code{Road} is a \emph{directed} edge $\text{source}
         \rightarrow \text{target}$ carrying a scalar \code{strength} (a new road starts at $0.05$) and
         a \emph{multi-valued} emotional life \code{charges} (named feelings $\rightarrow$ intensity in
         $[-1,1]$), from which an aggregate \code{valence} is derived. There is \textbf{one road per
         $(\text{source}, \text{target})$ pair}; the reverse direction is a distinct road.
-  \item \textbf{Stable identity vs.\ ordering.} Every node and road has a stable \code{uuid4} identity
+  \item \textbf{Stable identity vs.\ ordering:} Every node and road has a stable \code{uuid4} identity
         and is never addressed by position; a stale handle resolves to \code{NotFound}, never to a wrong
         object. Formation order, when needed, is a \textbf{separate integer \code{creation_seq}}, kept
         distinct from identity precisely so ordering never has to fall back to a uuid
         (\S\ref{sec:findD}).
-  \item \textbf{Lazy, pure-read decay.} Roads decay with elapsed time, but decay is \textbf{computed on
+  \item \textbf{Lazy, pure-read decay:} Roads decay with elapsed time, but decay is \textbf{computed on
         access as a read-only view}: a read returns a \emph{copy} carrying decayed values and never
         writes. The strength time-constant scales steeply with strength
         ($\tau = 45 \cdot \exp(\text{strength}\cdot 4.2)$), so a ``highway'' is far more stable than a
         ``dirt track.'' This purity is load-bearing (finding~(a)).
-  \item \textbf{Sticky closure.} A strongly-negative crossing (or one-shot trauma) \textbf{closes} a
+  \item \textbf{Sticky closure:} A strongly-negative crossing (or one-shot trauma) \textbf{closes} a
         road; closure is re-evaluated \emph{only on an active crossing}, never by a read or by the
         passage of time, and only an active positive crossing reopens it.
-  \item \textbf{Pin guard and integrity.} \code{remove_node} refuses to delete a \emph{pinned} node;
+  \item \textbf{Pin guard and integrity:} \code{remove_node} refuses to delete a \emph{pinned} node;
         adjacency, dedup, and designation consistency are asserted incrementally on every mutation,
         with a full-graph scan available offline.
-  \item \textbf{Atomicity.} Every mutation is a synchronous method with no \code{await} inside, making
+  \item \textbf{Atomicity:} Every mutation is a synchronous method with no \code{await} inside, making
         each mutation atomic by construction under single-threaded asyncio.
 \end{itemize}
 
-\nousfig{data_model.png}{\textbf{Substrate data model.} The \code{Node} and \code{Road} fields;
+\nousfig{data_model.png}{\textbf{Substrate data model:} The \code{Node} and \code{Road} fields;
 identity (\code{uuid4}) is deliberately separate from ordering (\code{creation_seq}). Describes the
 data structures only.}{fig:datamodel}
 
-\nousfig{substrate_read_write.png}{\textbf{Read vs.\ write paths (the purity invariant).} Reads compute
+\nousfig{substrate_read_write.png}{\textbf{Read vs.\ write paths (the purity invariant):} Reads compute
 decay into a \emph{copy} and never mutate; only writes persist decay; closure changes only on an active
 crossing. Visualizes finding (a); it proves a mechanism property, not anything about cognition.}{fig:readwrite}
 
 \subsection{Spreading activation (\code{nous_activation.py}, 281 lines)}
 The first operation that reads \emph{across} the graph: radiate activation from a seed along directed
-out-roads and report what lit up. \textbf{Pure read.}
+out-roads and report what lit up. \textbf{Pure read:}
 \begin{itemize}[nosep]
-  \item \textbf{Convergence sums.} Activation arriving at a node from several paths is summed.
-  \item \textbf{Hop-layered single-expansion.} The wave expands in hop layers; all hop-$k$
+  \item \textbf{Convergence sums:} Activation arriving at a node from several paths is summed.
+  \item \textbf{Hop-layered single-expansion:} The wave expands in hop layers; all hop-$k$
         contributions accumulate before any hop-$k$ node expands, each node expands \textbf{exactly
         once}, and a per-layer \textbf{frozen snapshot} is used so same-hop (``intra-layer'') edges
         cannot leak iteration order into the result. Equal-length convergence is \textbf{exact}, and
         the algorithm is a deterministic function of store state. This replaced an earlier
         priority-frontier design (findings~(b),~(c)).
-  \item \textbf{Two attenuators.} Transmitted activation is
+  \item \textbf{Two attenuators:} Transmitted activation is
         $\text{outgoing}\cdot\text{road.strength}\cdot\text{decay\_per\_hop}$: \code{road.strength} is
         \textbf{edge conductance}; \code{decay_per_hop} is a \textbf{global distance penalty}. Kept
         separate deliberately.
-  \item \textbf{Leaky closure.} A single swappable policy governs closed roads: below a breakthrough
+  \item \textbf{Leaky closure:} A single swappable policy governs closed roads: below a breakthrough
         threshold nothing crosses; above it, a small attenuated fraction leaks through and is logged.
         The constants are \textbf{uncalibrated guesses on probation}; the tests pin only the qualitative
         regime.
-  \item \textbf{Flow recording.} The engine records, per edge, the activation actually transmitted
+  \item \textbf{Flow recording:} The engine records, per edge, the activation actually transmitted
         (\code{flow}), distinct from static topology. Downstream consumers read \code{flow}, not raw
         edges.
-  \item \textbf{Locality.} A hop budget and an activation floor keep the spread in the seed's
+  \item \textbf{Locality:} A hop budget and an activation floor keep the spread in the seed's
         neighborhood, which makes it affordable in pure Python.
 \end{itemize}
 
@@ -246,7 +246,7 @@ peak, so any segmentation of it keys off distance from the seed rather than comm
         \code{creation_seq}), never set-iteration order.
   \item \textbf{Perception} turns text into sources: tokens (length $\geq 3$) are matched by substring
         against node content, and matched nodes become activation sources with energy scaled by match
-        count. Minimal---no embeddings---but it makes sources \textbf{input-derived rather than
+        count. Minimal: no embeddings, but it makes sources \textbf{input-derived rather than
         hand-placed}.
   \item \textbf{The slice} (\code{think}) runs perceive $\rightarrow$ build field $\rightarrow$ form
         coalitions by basin $\rightarrow$ select the strongest coalition as ``the thought.'' The final
@@ -255,32 +255,32 @@ peak, so any segmentation of it keys off distance from the seed rather than comm
         (finding~(f), \S\ref{sec:negresult}).
 \end{itemize}
 
-\nousfig{pipeline.png}{\textbf{End-to-end ``thought'' slice.} text $\rightarrow$ perceive $\rightarrow$
+\nousfig{pipeline.png}{\textbf{End-to-end ``thought'' slice:} text $\rightarrow$ perceive $\rightarrow$
 field $\rightarrow$ coalitions $\rightarrow$ thought. The final ``strongest coalition = thought'' step is
 a placeholder for an unbuilt broadcast phase; the figure shows \emph{data flow}, not that the resulting
 ``thought'' is meaningful.}{fig:pipeline}
 
 \section{Methodology}\label{sec:method}
 
-The central claim of this report is that the test process---not the prototype---is the contribution. Two
+The central claim of this report is that the test process (not the prototype) is the contribution. Two
 properties were treated as first-class and verified directly.
 
-\textbf{Property-based / adversarial testing.} Each component ships with tests written to \emph{break}
+\textbf{Property-based / adversarial testing:} Each component ships with tests written to \emph{break}
 its central claim, not to confirm it on an easy case: lopsided edge strengths, intra-layer edges,
 equal-activation rings, and a two-dense-communities-joined-by-a-thin-bridge graph built specifically to
 defeat distance-based segmentation.
 
-\textbf{Determinism across processes, not within one.} The natural implementations leak \code{set}-
+\textbf{Determinism across processes, not within one:} The natural implementations leak \code{set}-
 iteration order over \code{uuid4} keys into their results. Within a single process the hash seed is
 fixed, so this cannot be seen; the determinism tests therefore spawn \textbf{fresh interpreters} with
 different \code{PYTHONHASHSEED} values and compare output byte-for-byte. The activation suite uses seeds
 $\{0,1,3,7,42\}$; the coalition and field suites use $\{0,1,2,3,7,42,123,999\}$ (eight seeds); the slice
 uses $\{0,1,2,7,42,999\}$.
 
-\textbf{Read-purity as an asserted invariant.} Read-only operations are run in tight loops and the full
+\textbf{Read-purity as an asserted invariant:} Read-only operations are run in tight loops and the full
 canonical (un-decayed) store state is asserted byte-equal before and after, in every layer.
 
-\textbf{The harness, and a deliberate non-use of pytest.} The suites use a tiny built-in harness: each
+\textbf{The harness, and a deliberate non-use of pytest:} The suites use a tiny built-in harness: each
 \code{check(...)}\,/\,\code{expect_raises(...)} increments a counter, and the suite prints
 \code{RESULT: N passed, M failed} and exits non-zero on any failure. They are intentionally \textbf{not}
 pytest tests: pytest would collect the \code{test_*} functions but would not register a logical
@@ -291,7 +291,7 @@ subprocesses resolve their imports regardless of working directory) and propagat
 \section{Findings overview}
 
 Read findings (b)--(f) together and one shape repeats: \textbf{a component passes on a friendly,
-hand-chosen input and fails on an adversarial or system-generated one.} Each fix had two parts---write
+hand-chosen input and fails on an adversarial or system-generated one.} Each fix had two parts: write
 the test that \emph{tries to break} the claim, and make the inputs \emph{system-generated} rather than
 hand-chosen so a stage can no longer be validated against a fiction of what feeds it. The six findings
 below are each presented as: \emph{claim under test $\rightarrow$ bug $\rightarrow$ root cause
@@ -305,7 +305,7 @@ the loop. It illustrates the \emph{method}; it asserts no measurement.}{fig:frie
 
 \section{The six structural findings}\label{sec:findings}
 
-\nousfig{six_findings.png}{\textbf{The six structural findings at a glance.} Each row: claim
+\nousfig{six_findings.png}{\textbf{The six structural findings at a glance:} Each row: claim
 $\rightarrow$ bug $\rightarrow$ root cause $\rightarrow$ fix $\rightarrow$ locking test. Every cell traces
 to a module docstring and a named test; no error magnitudes are asserted.}{fig:sixfindings}
 
@@ -322,7 +322,7 @@ only by writes/offline). Decay never touches \code{closed}; closure is sticky.
 \textbf{Locked by:} \code{test_reads_are_pure}; \code{test_lazy_decay}; \code{test_closure_is_sticky}
 (time + repeated reads do not reopen a closed road; only an active positive return does).
 
-\nousfig{sticky_closure_state.png}{\textbf{A road's closure lifecycle (finding (a) invariant).}
+\nousfig{sticky_closure_state.png}{\textbf{A road's closure lifecycle (finding (a) invariant):}
 Open/Closed transitions happen \emph{only} on active crossings; time passing and reads never reopen a
 closed road. A mechanism property, asserted by \code{test_closure_is_sticky}.}{fig:closure}
 
@@ -332,14 +332,14 @@ closed road. A mechanism property, asserted by \code{test_closure_is_sticky}.}{f
 node as later paths raise its value counts everything downstream multiple times.
 \textbf{Root cause:} importing Dijkstra's ``first-pop-final'' intuition into an algorithm where
 activation \emph{accumulates} rather than being a shortest-path minimum.
-\textbf{Fix:} bounded single-expansion, hop-layered---each node expands exactly once carrying the full
+\textbf{Fix:} bounded single-expansion, hop-layered: each node expands exactly once carrying the full
 sum of paths of length $\leq$ its settle hop; equal-length convergence is exact.
 \textbf{Locked by:} \code{test_no_double_count_downstream_of_convergence}, which uses \emph{deliberately
 lopsided} edge strengths to prove the result does not depend on them and includes an explicit guard that
 the result is \emph{strictly below} what additive re-expansion would produce;
 \code{test_convergent_activation_sums}.
 
-\nousfig{convergence_before_after.png}{\textbf{Convergence double-counting, before/after (finding (b)).}
+\nousfig{convergence_before_after.png}{\textbf{Convergence double-counting, before/after (finding (b)):}
 Structural schematic of the diamond-with-tail: naive re-expansion over-counts everything downstream of
 the convergence node; single-expansion counts it once. No magnitudes are shown (the report omits them as
 not reproducible).}{fig:convergence}
@@ -349,7 +349,7 @@ not reproducible).}{fig:convergence}
 order or process hash seed.
 \textbf{Bug:} an activation-priority frontier made \emph{which} late ripple was dropped depend on
 incidental edge-strength ordering; and with same-hop edges, which sibling expanded first was decided by
-iterating a \code{set} of uuids---order randomized per process by \code{PYTHONHASHSEED}---so results
+iterating a \code{set} of uuids: order randomized per process by \code{PYTHONHASHSEED}, so results
 swung across runs.
 \textbf{Root cause:} letting expansion order be load-bearing for the result, over a container whose
 iteration order is intentionally randomized.
@@ -364,7 +364,7 @@ results.
 \subsection{(d) Identity/order leak: tie-breaking on a uuid regenerated every run}\label{sec:findD}
 \textbf{Claim under test:} coalition output (partition, ordering, representatives) is identical across
 processes.
-\textbf{Bug:} coalition ordering and representative selection tie-broke on the node id---but ids are
+\textbf{Bug:} coalition ordering and representative selection tie-broke on the node id, but ids are
 \code{uuid4}, regenerated every run, so any tiebreak falling back to the id was nondeterministic across
 processes even when the structure was identical.
 \textbf{Root cause:} using identity (intentionally non-stable across runs) to carry ordering.
@@ -378,7 +378,7 @@ equal-activation nodes plus tie-strength singletons, serializes by stable keys (
 
 \subsection{(e) Binding degeneracy: components on a graph connected by construction}
 \textbf{Claim under test:} coalition binding subdivides a co-activated region into the right groups.
-\textbf{Bug, two stages.} (1) Connectivity binding is structurally degenerate: a seed-rooted spread's
+\textbf{Bug, two stages:} (1) Connectivity binding is structurally degenerate: a seed-rooted spread's
 co-activated subgraph is \textbf{connected by construction}, so connected-components always yields
 \emph{one} coalition. (2) Flow-magnitude cutting does subdivide, but for a single seed the only strong
 signal is \textbf{distance from the seed}, and flow magnitude is even \emph{anti-correlated} with
@@ -395,7 +395,7 @@ on the adversarial bridge graph that single-seed segmentation could not).
 \nousfig{single_seed_vs_multisource.png}{\textbf{Single-seed degeneracy vs.\ multi-source basins
 (finding (e)).} The same two-communities-with-a-thin-bridge graph: one seed yields a single
 distance-keyed blob; two sources yield two basins with the bridge as the seam. The multi-source recovery
-is the asserted acceptance test --- in which the two sources are \emph{placed one per community} (see
+is the asserted acceptance test: in which the two sources are \emph{placed one per community} (see
 finding (f) for why that matters).}{fig:singlemulti}
 
 \subsection{(f) Circular validation: the answer hand-encoded in the input}\label{sec:findF}
@@ -403,7 +403,7 @@ finding (f) for why that matters).}{fig:singlemulti}
 chosen to make it work.
 \textbf{Bug:} every layer above the substrate had been validated against a fiction of what would feed
 it. Sources were \textbf{hand-placed}, and this culminated in the field acceptance test recovering two
-communities \emph{only because one source was hand-placed at the center of each}---the answer was
+communities \emph{only because one source was hand-placed at the center of each}: the answer was
 encoded in the input. (This is visible in the artifact:
 \code{test_acceptance_multisource_recovers_communities} does place one source per community by hand. It
 is honest as a \emph{mechanism} test and would be dishonest if read as evidence that the system finds
@@ -413,7 +413,7 @@ communities on its own.)
 nodes become sources is decided by the input matched against the substrate, not by the test. On real
 clustered input the field then produces an \textbf{incoherent} ``thought'': basins collapse, one source
 over-swallows across domains, and same-domain sibling sources strand as singletons.
-\textbf{Locked by---as a \emph{limitation}, not a result:}
+\textbf{Locked by: as a \emph{limitation}, not a result:}
 \code{test_KNOWN_LIMITATION_clustered_sources_give_poor_basins} \emph{asserts the failure on purpose} and
 is written to flip to green only when source-grouping is fixed.
 
@@ -423,20 +423,20 @@ is written to flip to green only when source-grouping is fixed.
 interaction (decay $\times$ closure $\times$ time) that only a purpose-built test exercises. In every
 case the bug was structural and the catching test was adversarial or loop-closing.
 
-\nousfig{cognitive_evolution.png}{\textbf{The cognitive-layer arc and its dead-ends.} connectivity
+\nousfig{cognitive_evolution.png}{\textbf{The cognitive-layer arc and its dead-ends:} connectivity
 binding $\rightarrow$ flow-cut $\rightarrow$ multi-source field $\rightarrow$ closed-loop, and what each
 step revealed (findings (e), (f)), ending at the known limitation. It documents the \emph{development
 path}, not a working capability.}{fig:evolution}
 
 \subsection{Transferable lessons}\label{sec:lessons}
 \begin{enumerate}[nosep]
-  \item \textbf{Test the property, not the example}---assert purity, determinism, and ``no
+  \item \textbf{Test the property, not the example:} assert purity, determinism, and ``no
         double-count'' directly and across processes, not by spot-checking outputs.
-  \item \textbf{Randomize what you assume is fixed}---running under multiple \code{PYTHONHASHSEED}
+  \item \textbf{Randomize what you assume is fixed:} running under multiple \code{PYTHONHASHSEED}
         values is what makes uuid-set nondeterminism observable.
-  \item \textbf{Close the loop}---let a stage's inputs be produced by the stage below it; hand-chosen
+  \item \textbf{Close the loop:} let a stage's inputs be produced by the stage below it; hand-chosen
         inputs hide both degeneracy and circularity.
-  \item \textbf{Encode known limitations as asserted tests}---a negative result written as a
+  \item \textbf{Encode known limitations as asserted tests:} a negative result written as a
         failing-on-purpose assertion is a standing, checkable claim, not a comment that rots.
 \end{enumerate}
 
@@ -447,13 +447,13 @@ For the substrate store and the spreading-activation engine, the test suite esta
 checks: \textbf{determinism} (identical output across process runs, confirmed in fresh interpreters under
 the hash seeds in \S\ref{sec:method}); \textbf{integrity} (graph indices stay mutually consistent across
 every mutation; a full scan finds no drift); and \textbf{purity} (reads never mutate stored state). These
-are claims about \emph{mechanism}---the code does exactly and only what it says, reproducibly---not that
+are claims about \emph{mechanism}: the code does exactly and only what it says, reproducibly, not that
 the mechanism reproduces any cognitive phenomenon.
 
 \nousfig{determinism_seeds.png}{\textbf{Adversarial determinism across process hash seeds
 (before/after).} \emph{AFTER} is the asserted, byte-identical result of the four determinism tests (each
 across its own seed set); \emph{BEFORE} is the documented prior bug (findings (c), (d)), shown
-qualitatively and \emph{not} re-measured. Reproducibility of mechanism only --- not cognition.}{fig:determinism}
+qualitatively and \emph{not} re-measured. Reproducibility of mechanism only, not cognition.}{fig:determinism}
 
 \subsection{Test suite}
 All figures below are taken verbatim from \code{docs/TEST_OUTPUT.txt} (CPython 3.13.2, Darwin 24.5.0
@@ -499,7 +499,7 @@ Test suites (\code{tests/})  & 5  & 1{,}555 & 1{,}223 \\
 \code{nous_perceive.py} 162.}
 \end{table}
 
-\nousfig{test_suite_bars.png}{\textbf{Passing assertions per suite (130 total, 0 failed).} Counts taken
+\nousfig{test_suite_bars.png}{\textbf{Passing assertions per suite (130 total, 0 failed):} Counts taken
 verbatim from \code{docs/TEST_OUTPUT.txt}. Proves \emph{mechanism} (and the \emph{mechanics} of the
 exploratory layers); it does \emph{not} measure cognitive quality. Colouring matches
 Figure~\ref{fig:archstack}.}{fig:bars}
@@ -529,22 +529,22 @@ claims; this work earns the first and explicitly does not claim the second.
 
 \section{Limitations and threats to validity}
 \begin{itemize}[nosep]
-  \item \textbf{Cognitive meaningfulness is unestablished.} The field/coalition/thought layers are
+  \item \textbf{Cognitive meaningfulness is unestablished:} The field/coalition/thought layers are
         exploratory; the only end-to-end behavioral result on real input is the negative one above.
-  \item \textbf{Uncalibrated constants on probation.} The closed-road breakthrough threshold/leak
+  \item \textbf{Uncalibrated constants on probation:} The closed-road breakthrough threshold/leak
         fraction and the coalition flow-cut fraction are first-pass guesses; tests pin only the
         qualitative regime, and nothing downstream may depend on the magnitudes.
-  \item \textbf{Perception is exact/substring matching only.} No embeddings or fuzzy semantics.
-  \item \textbf{Out-roads-only spread (v1).} Backward spread along in-roads is a deliberate later
+  \item \textbf{Perception is exact/substring matching only:} No embeddings or fuzzy semantics.
+  \item \textbf{Out-roads-only spread (v1):} Backward spread along in-roads is a deliberate later
         addition.
-  \item \textbf{Determinism is ``given store state,'' not over the abstract graph.} The proven property
+  \item \textbf{Determinism is ``given store state,'' not over the abstract graph:} The proven property
         is that output is a deterministic function of the \emph{store's state}, where state includes the
         integer \code{creation_seq} assigned in build order. Two stores isomorphic as abstract graphs but
         built in a different order can differ in \code{creation_seq} and, where ties break on it, can
         produce different (but each individually deterministic and reproducible) tie-break orderings.
         Determinism here means reproducibility across process runs of the same construction, not
         invariance under graph isomorphism.
-  \item \textbf{Scale is unverified.} All tests are small graphs; the prototype makes no scaling claims.
+  \item \textbf{Scale is unverified:} All tests are small graphs; the prototype makes no scaling claims.
 \end{itemize}
 
 \section{Future work}\label{sec:future}
@@ -554,14 +554,14 @@ Nous}. \textbf{Semantic priming} is the worked example: in human studies, recogn
 faster when preceded by a related prime than an unrelated one~\cite{meyer1971}, which the
 spreading-activation account explains via pre-activation spreading to related concepts~\cite{collins1975}.
 A priming-style protocol for Nous would pre-activate a related concept and test whether the target's
-activation is measurably raised relative to an unrelated control---a directional prediction made
+activation is measurably raised relative to an unrelated control: a directional prediction made
 \emph{before} running the system, so the input is no longer chosen to make the answer come out right.
 Two further items follow directly from the findings:
 \begin{itemize}[nosep]
-  \item \textbf{The source-grouping problem (from finding~(f)).} Same-domain perceived sources must be
+  \item \textbf{The source-grouping problem (from finding~(f)):} Same-domain perceived sources must be
         grouped or merged before basins are meaningful; solving it is the condition under which the
         known-limitation test would flip to green.
-  \item \textbf{A real broadcast/competition phase.} The ``strongest coalition = thought'' placeholder
+  \item \textbf{A real broadcast/competition phase:} The ``strongest coalition = thought'' placeholder
         should be replaced by an actual workspace competition, at which point the uncalibrated constants
         can begin to be calibrated against a running cycle rather than guessed.
 \end{itemize}
@@ -569,11 +569,11 @@ Two further items follow directly from the findings:
 \section{Conclusion}
 What was earned is concrete and modest: a correct, deterministic, integrity-preserving, and pure
 memory-and-activation substrate, built in dependency-free Python and shipped with the tests that prove
-those properties across process hash seeds---and, above it, an honestly-scoped exploratory layer whose
+those properties across process hash seeds, and, above it, an honestly-scoped exploratory layer whose
 one end-to-end behavioral probe is a documented negative result. The larger contribution is the
 \textbf{method}: adversarial/property-based testing and loop-closure caught six structural bugs that
 happy-path testing passes over, and the same discipline drew the boundary the project refuses to
-cross---proving mechanism while explicitly declining to claim cognition. What remains open is exactly
+cross: proving mechanism while explicitly declining to claim cognition. What remains open is exactly
 what the method recommends next: evaluate the cognitive layer against an effect whose direction is known
 independently, fix the source-grouping degeneracy, and build the competition phase that would make the
 constants calibratable.
@@ -670,7 +670,7 @@ run them to regenerate the PNGs at \code{dpi=200}).
 \end{tabular}
 \end{table}
 
-\nousfig{repo_map.png}{\textbf{Repository / asset map.} Orientation only; it shows the package layout,
+\nousfig{repo_map.png}{\textbf{Repository / asset map:} Orientation only; it shows the package layout,
 not behavior.}{fig:repomap}
 
 \end{document}

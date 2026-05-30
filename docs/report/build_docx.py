@@ -120,7 +120,7 @@ para("Cagan Caliskan   |   2026", align=WD_ALIGN_PARAGRAPH.CENTER, bold_lead=Non
 doc.add_heading("Abstract", level=1)
 para(
     "This report describes Nous, a dependency-free Python prototype of a memory-and-activation "
-    "substrate for a cognitive architecture, and — more centrally — the software-engineering "
+    "substrate for a cognitive architecture, and (more centrally) the software-engineering "
     "methodology used to build it. Nous comprises four layers: a graph substrate store of concept nodes "
     "and weighted “roads”; a deterministic spreading-activation engine; a multi-source activation "
     "field; and a thin end-to-end perceive → activate → form coalitions → select a thought "
@@ -128,11 +128,11 @@ para(
     "concrete properties: determinism (identical output across process runs, confirmed in fresh "
     "interpreters under randomized hash seeds), integrity (graph indices stay mutually consistent across "
     "every mutation), and purity (reads never mutate stored state). The upper two layers are exploratory: "
-    "they run and are deterministic, but their cognitive meaningfulness is explicitly not claimed — and "
+    "they run and are deterministic, but their cognitive meaningfulness is explicitly not claimed, and "
     "on clustered real input the end-to-end slice produces an incoherent “thought,” recorded as an "
     "asserted negative result / known limitation, not a contribution. The central finding is a recurring "
-    "failure mode — a component that passes on a friendly, hand-chosen input and fails on an adversarial "
-    "or system-generated one — and the two practices that caught it: adversarial/property-based testing "
+    "failure mode: a component that passes on a friendly, hand-chosen input and fails on an adversarial "
+    "or system-generated one, and the two practices that caught it: adversarial/property-based testing "
     "(including cross-process determinism and read-purity checks) and loop-closure (driving each stage "
     "with system-generated rather than hand-placed inputs). Together they exposed six distinct structural "
     "bugs that ordinary happy-path tests pass over. The artifact’s verified totals: 130 assertions "
@@ -145,31 +145,31 @@ para("Most write-ups of ambitious systems describe what the system is meant to b
      "separates that aspiration from what was actually built and proven, and reports the engineering "
      "discipline in between. The subject is a cognitive-architecture prototype; the contribution is the "
      "testing methodology applied to it.")
-para("Cognitive-architecture components — graph memories, spreading activation, clustering into "
-     "“coalitions” — are easy to implement in a way that looks correct on a hand-built example "
+para("Cognitive-architecture components (graph memories, spreading activation, clustering into "
+     "“coalitions”) are easy to implement in a way that looks correct on a hand-built example "
      "and is quietly wrong in structure: it double-counts, it depends on iteration order, it bakes the "
      "answer into the input. These are bugs in the shape of the algorithm, and they survive happy-path "
      "tests. This project answers in the affirmative whether a disciplined, adversarial, property-oriented "
-     "test process can surface such bugs early and force honest scoping.", bold_lead="Motivation.")
+     "test process can surface such bugs early and force honest scoping.", bold_lead="Motivation:")
 para("Nous began as a large design vision. Those original vision documents are retained verbatim under "
      "docs/design/, but are quarantined as aspiration: a disclaimer there states plainly that their grand "
      "language (“AGI,” “a real brain,” “mind”) describes intent, not the built "
      "code, and that of the thirteen documents only the two layer-plan files correspond to anything "
-     "implemented. This report concerns only the built artifact.", bold_lead="Aspiration vs. built reality.")
-para("Scope and non-claims (binding).", bold_lead=None, space_after=2)
+     "implemented. This report concerns only the built artifact.", bold_lead="Aspiration vs. built reality:")
+para("Scope and non-claims (binding):", bold_lead=None, space_after=2)
 bullet("Nous is an engineering prototype and a testing-methodology case study.")
 bullet("It is not a mind, consciousness, AGI, or a validated cognitive model, and makes no claim of "
        "machine cognition.")
 bullet("The substrate store and spreading-activation engine are proven deterministic, "
-       "integrity-preserving, and pure — claims about mechanism.")
+       "integrity-preserving, and pure: claims about mechanism.")
 bullet("The field, coalition, and “thought” layers are exploratory. Their cognitive "
        "meaningfulness is not established; the incoherent-thought behavior on clustered real input is an "
        "honest negative result, not a feature.")
 bullet("Named neuroscience and cognitive theories are conceptual inspiration only. Nothing here "
        "implements or reproduces them, and no biological fidelity is claimed.")
-para("Contributions (methodology first).", space_after=2)
-numbered("A software-engineering experience report showing that adversarial/property-based testing — "
-         "determinism verified across process hash seeds, and read-purity verified by hammering reads — "
+para("Contributions (methodology first):", space_after=2)
+numbered("A software-engineering experience report showing that adversarial/property-based testing: "
+         "determinism verified across process hash seeds, and read-purity verified by hammering reads: "
          "and loop-closure caught a sequence of six structural bugs in a memory/activation substrate.")
 numbered("A verified substrate: a graph store and a spreading-activation engine that are deterministic, "
          "integrity-preserving, and pure, with the verification shipped as runnable tests.")
@@ -186,31 +186,31 @@ para("The following bodies of work inspired the design’s vocabulary and struct
 para("The fast/slow split between a rapidly-learning episodic system and a slowly-consolidating semantic "
      "one [1], updated for intelligent-agent design in [2], inspires Nous’s separation of activation "
      "(what lights up now) from consolidation (what is later reinforced). In the prototype this is only a "
-     "strict rule — spreading activation is a pure read and never strengthens what it touches.",
-     bold_lead="Complementary Learning Systems (CLS).")
+     "strict rule: spreading activation is a pure read and never strengthens what it touches.",
+     bold_lead="Complementary Learning Systems (CLS):")
 para("The hypothesis that a weak event sets a local tag that can capture plasticity-related products from a "
      "nearby strong event [3, 4] inspires the framing of reinforcement as a gated, budgeted event, which is "
      "why Nous keeps activation read-only; it does not model tagging dynamics.",
-     bold_lead="Synaptic Tagging and Capture (STC).")
+     bold_lead="Synaptic Tagging and Capture (STC):")
 para("The idea that specialized processes form coalitions that compete, and a winner is broadcast globally "
      "[5, 6], is the source of Nous’s coalition vocabulary. Only coalition formation exists in the "
      "code; the competition/broadcast step is an explicit, unbuilt placeholder.",
-     bold_lead="Global Workspace Theory (GWT).")
+     bold_lead="Global Workspace Theory (GWT):")
 para("LIDA’s systems-level perceive → attend → broadcast cycle [7] loosely shapes the staging "
-     "of the end-to-end slice, which realizes only the early stages.", bold_lead="LIDA cognitive cycle.")
+     "of the end-to-end slice, which realizes only the early stages.", bold_lead="LIDA cognitive cycle:")
 para("ACT-R’s integrated theory of cognition [8] and SPAUN’s large-scale functional brain model "
      "[9] are referenced for positioning: Nous is far smaller and makes no behavioral or biological claims; "
      "it is a substrate-and-method study, not an architecture in their sense.",
-     bold_lead="Cognitive architectures.")
+     bold_lead="Cognitive architectures:")
 para("Nous’s activation engine is a deterministic, engineered variant of spreading activation in the "
      "sense of Collins & Loftus [10]; the convergence-sums property is from that lineage, while the "
      "hop-layered single-expansion is an engineering choice made for determinism.",
-     bold_lead="Spreading-activation theory.")
+     bold_lead="Spreading-activation theory:")
 para("The Yerkes–Dodson inverted-U relating arousal to performance [12] appears in the design notes as "
      "motivation for emotion-modulated plasticity; in the code this is only charge-modulated strengthening "
-     "and is best read as design-level aspiration.", bold_lead="Arousal and plasticity.")
+     "and is best read as design-level aspiration.", bold_lead="Arousal and plasticity:")
 para("Semantic priming [10, 11] is named here because it is the worked example for future validation: an "
-     "effect whose direction is known independently of Nous.", bold_lead="Semantic priming.")
+     "effect whose direction is known independently of Nous.", bold_lead="Semantic priming:")
 
 # ---- 3 Architecture --------------------------------------------------------
 doc.add_heading("3. System architecture (as built)", level=1)
@@ -218,7 +218,7 @@ para("Nous is pure-Python standard library, organized bottom-up; each layer read
      "its public surface only. Figure 1 makes the honest boundary visual; the figures that follow detail "
      "the data model, the read/write paths, and the end-to-end slice.")
 figure("architecture_stack.png",
-       "Figure 1 — The four-layer stack and the honest boundary. Layers 1–2 (substrate store, spreading "
+       "Figure 1: The four-layer stack and the honest boundary. Layers 1–2 (substrate store, spreading "
        "activation) are PROVEN (determinism, integrity, purity); layers 3–4 (multi-source field, end-to-end "
        "slice) are EXPLORATORY. It establishes where verification stops; it does NOT claim the exploratory "
        "layers are cognitively meaningful.")
@@ -229,49 +229,49 @@ bullet("A Node is an always-neutral unit of information with a stable identity a
        "directed edge source → target carrying a scalar strength (a new road starts at 0.05) and a "
        "multi-valued emotional life charges (named feelings → intensity in [-1, 1]), from which an "
        "aggregate valence is derived. One road per (source, target) pair; the reverse is a distinct road.",
-       bold_lead="Nodes and roads.")
+       bold_lead="Nodes and roads:")
 bullet("Every node and road has a stable uuid4 identity and is never addressed by position; a stale handle "
        "resolves to NotFound, never to a wrong object. Formation order is a separate integer creation_seq, "
-       "kept distinct from identity so ordering never falls back to a uuid.", bold_lead="Stable identity vs. ordering.")
+       "kept distinct from identity so ordering never falls back to a uuid.", bold_lead="Stable identity vs. ordering:")
 bullet("Roads decay with elapsed time, but decay is computed on access as a read-only view: a read returns "
        "a copy carrying decayed values and never writes. The strength time-constant scales steeply with "
        "strength, so a highway is far more stable than a dirt track. This purity is load-bearing (finding a).",
-       bold_lead="Lazy, pure-read decay.")
+       bold_lead="Lazy, pure-read decay:")
 bullet("A strongly-negative crossing (or one-shot trauma) closes a road; closure is re-evaluated only on an "
        "active crossing, never by a read or by time, and only an active positive crossing reopens it.",
-       bold_lead="Sticky closure.")
+       bold_lead="Sticky closure:")
 bullet("remove_node refuses to delete a pinned node; adjacency, dedup, and designation consistency are "
        "asserted incrementally on every mutation, with a full-graph scan available offline.",
-       bold_lead="Pin guard and integrity.")
+       bold_lead="Pin guard and integrity:")
 bullet("Every mutation is a synchronous method with no await inside, making each mutation atomic by "
-       "construction under single-threaded asyncio.", bold_lead="Atomicity.")
+       "construction under single-threaded asyncio.", bold_lead="Atomicity:")
 figure("data_model.png",
-       "Figure 2 — Substrate data model. The Node and Road fields; identity (uuid4) is deliberately "
+       "Figure 2: Substrate data model. The Node and Road fields; identity (uuid4) is deliberately "
        "separate from ordering (creation_seq). Describes the data structures only.")
 figure("substrate_read_write.png",
-       "Figure 3 — Read vs. write paths (the purity invariant). Reads compute decay into a copy and never "
+       "Figure 3: Read vs. write paths (the purity invariant). Reads compute decay into a copy and never "
        "mutate; only writes persist decay; closure changes only on an active crossing. Visualizes finding "
        "(a); it proves a mechanism property, not anything about cognition.")
 
 doc.add_heading("3.2 Spreading activation (nous_activation.py, 281 lines)", level=2)
 para("The first operation that reads across the graph: radiate activation from a seed along directed "
      "out-roads and report what lit up. Pure read.")
-bullet("Activation arriving at a node from several paths is summed.", bold_lead="Convergence sums.")
+bullet("Activation arriving at a node from several paths is summed.", bold_lead="Convergence sums:")
 bullet("The wave expands in hop layers; all hop-k contributions accumulate before any hop-k node expands, "
        "each node expands exactly once, and a per-layer frozen snapshot is used so same-hop edges cannot "
        "leak iteration order into the result. Equal-length convergence is exact, and the algorithm is a "
        "deterministic function of store state. This replaced an earlier priority-frontier design "
-       "(findings b, c).", bold_lead="Hop-layered single-expansion.")
+       "(findings b, c).", bold_lead="Hop-layered single-expansion:")
 bullet("Transmitted activation is outgoing × road.strength × decay_per_hop: road.strength is edge "
        "conductance; decay_per_hop is a global distance penalty. Kept separate deliberately.",
-       bold_lead="Two attenuators.")
+       bold_lead="Two attenuators:")
 bullet("A single swappable policy governs closed roads: below a breakthrough threshold nothing crosses; "
        "above it, a small attenuated fraction leaks through and is logged. The constants are uncalibrated "
-       "guesses on probation; tests pin only the qualitative regime.", bold_lead="Leaky closure.")
+       "guesses on probation; tests pin only the qualitative regime.", bold_lead="Leaky closure:")
 bullet("The engine records, per edge, the activation actually transmitted (flow), distinct from static "
-       "topology. Downstream consumers read flow, not raw edges.", bold_lead="Flow recording.")
+       "topology. Downstream consumers read flow, not raw edges.", bold_lead="Flow recording:")
 bullet("A hop budget and an activation floor keep the spread local, which makes it affordable in pure "
-       "Python.", bold_lead="Locality.")
+       "Python.", bold_lead="Locality:")
 
 doc.add_heading("3.3 Multi-source activation field (nous_field.py, 161 lines)", level=2)
 para("Runs the proven single-source spread once per source and assembles a field: each node’s "
@@ -285,59 +285,59 @@ doc.add_heading("3.4 Coalitions and the end-to-end slice (nous_coalitions.py 324
 bullet("Coalition formation groups co-activated nodes via a flow-cut segmentation of a single spread or a "
        "group-by-basin path for the multi-source field. Every output-affecting order is an explicit total "
        "order over intrinsic keys (activation, then creation_seq), never set-iteration order.",
-       bold_lead="Coalition formation.")
+       bold_lead="Coalition formation:")
 bullet("Perception turns text into sources: tokens (length ≥ 3) are matched by substring against node "
-       "content, and matched nodes become sources with energy scaled by match count. Minimal — no "
-       "embeddings — but it makes sources input-derived rather than hand-placed.", bold_lead="Perception.")
+       "content, and matched nodes become sources with energy scaled by match count. Minimal: no "
+       "embeddings, but it makes sources input-derived rather than hand-placed.", bold_lead="Perception:")
 bullet("The slice (think) runs perceive → build field → form coalitions by basin → select the "
        "strongest coalition as “the thought.” The final step is an explicit placeholder for an "
        "unbuilt workspace-competition/broadcast phase. The slice is pure and deterministic; what it produces "
-       "is not claimed to be meaningful (finding f).", bold_lead="The slice.")
+       "is not claimed to be meaningful (finding f).", bold_lead="The slice:")
 figure("pipeline.png",
-       "Figure 4 — End-to-end ‘thought’ slice. text → perceive → field → coalitions → thought. The final "
+       "Figure 4: End-to-end ‘thought’ slice. text → perceive → field → coalitions → thought. The final "
        "‘strongest coalition = thought’ step is a placeholder for an unbuilt broadcast phase; the figure "
        "shows data flow, not that the resulting ‘thought’ is meaningful.")
 
 # ---- 4 Methodology ---------------------------------------------------------
 doc.add_heading("4. Methodology", level=1)
-para("The central claim is that the test process — not the prototype — is the contribution. Two "
+para("The central claim is that the test process (not the prototype) is the contribution. Two "
      "properties were treated as first-class and verified directly.")
 para("Each component ships with tests written to break its central claim, not confirm it on an easy case: "
      "lopsided edge strengths, intra-layer edges, equal-activation rings, and a "
      "two-dense-communities-joined-by-a-thin-bridge graph built to defeat distance-based segmentation.",
-     bold_lead="Property-based / adversarial testing.")
+     bold_lead="Property-based / adversarial testing:")
 para("The natural implementations leak set-iteration order over uuid4 keys into their results. Within a "
      "single process the hash seed is fixed, so this cannot be seen; the determinism tests spawn fresh "
      "interpreters with different PYTHONHASHSEED values and compare output byte-for-byte. The activation "
      "suite uses seeds {0, 1, 3, 7, 42}; the coalition and field suites use {0, 1, 2, 3, 7, 42, 123, 999} "
-     "(eight seeds); the slice uses {0, 1, 2, 7, 42, 999}.", bold_lead="Determinism across processes.")
+     "(eight seeds); the slice uses {0, 1, 2, 7, 42, 999}.", bold_lead="Determinism across processes:")
 para("Read-only operations are run in tight loops and the full canonical (un-decayed) store state is "
-     "asserted byte-equal before and after, in every layer.", bold_lead="Read-purity as an asserted invariant.")
+     "asserted byte-equal before and after, in every layer.", bold_lead="Read-purity as an asserted invariant:")
 para("The suites use a tiny built-in harness: each check / expect_raises increments a counter, and the "
      "suite prints “RESULT: N passed, M failed” and exits non-zero on any failure. They are "
      "intentionally not pytest tests: pytest would collect the test_* functions but would not register a "
      "logical check(False, ...) as a failed assertion, so it could report green on a real failure. The "
      "honest runner is run_tests.py, which sets an absolute PYTHONPATH (required so the determinism "
      "subprocesses resolve their imports) and propagates non-zero exit codes.",
-     bold_lead="The harness, and a deliberate non-use of pytest.")
+     bold_lead="The harness, and a deliberate non-use of pytest:")
 
 # ---- 5 Findings overview ---------------------------------------------------
 doc.add_heading("5. Findings overview", level=1)
 para("Read findings (b)–(f) together and one shape repeats: a component passes on a friendly, "
-     "hand-chosen input and fails on an adversarial or system-generated one. Each fix had two parts — "
+     "hand-chosen input and fails on an adversarial or system-generated one. Each fix had two parts: "
      "write the test that tries to break the claim, and make the inputs system-generated rather than "
      "hand-chosen. The six findings are each presented as: claim under test → bug → root cause "
      "→ fix → the specific test that now locks it. Reported magnitudes the shipped artifact does "
      "not let one reproduce are omitted rather than asserted.")
 figure("friendly_input_loop.png",
-       "Figure 5 — The recurring ‘friendly-input’ failure mode, and the two remedies. Conceptual: the loop "
+       "Figure 5: The recurring ‘friendly-input’ failure mode, and the two remedies. Conceptual: the loop "
        "shared by findings (b)–(f), broken by adversarial testing and by closing the loop. It illustrates "
        "the method; it asserts no measurement.")
 
 # ---- 6 The six findings ----------------------------------------------------
 doc.add_heading("6. The six structural findings", level=1)
 figure("six_findings.png",
-       "Figure 6 — The six structural findings at a glance. Each row: claim → bug → root cause → fix → "
+       "Figure 6: The six structural findings at a glance. Each row: claim → bug → root cause → fix → "
        "locking test. Every cell traces to a module docstring and a named test; no error magnitudes are "
        "asserted.")
 finding("(a) Read-as-write: a read that could silently re-open a closed wound",
@@ -353,7 +353,7 @@ finding("(a) Read-as-write: a read that could silently re-open a closed wound",
         "test_reads_are_pure; test_lazy_decay; test_closure_is_sticky (time + repeated reads do not reopen a "
         "closed road; only an active positive return does).")
 figure("sticky_closure_state.png",
-       "Figure 7 — A road’s closure lifecycle (finding (a) invariant). Open/Closed transitions happen only "
+       "Figure 7: A road’s closure lifecycle (finding (a) invariant). Open/Closed transitions happen only "
        "on active crossings; time passing and reads never reopen a closed road. A mechanism property, "
        "asserted by test_closure_is_sticky.")
 finding("(b) Convergence double-counting: “first-pop-final” where activation sums",
@@ -362,20 +362,20 @@ finding("(b) Convergence double-counting: “first-pop-final” where activation
         "later paths raise its value counts everything downstream multiple times.",
         "importing Dijkstra’s “first-pop-final” intuition into an algorithm where activation "
         "accumulates rather than being a shortest-path minimum.",
-        "bounded single-expansion, hop-layered — each node expands exactly once carrying the full sum of "
+        "bounded single-expansion, hop-layered: each node expands exactly once carrying the full sum of "
         "paths of length ≤ its settle hop; equal-length convergence is exact.",
         "test_no_double_count_downstream_of_convergence, which uses deliberately lopsided edge strengths to "
         "prove the result does not depend on them and guards that it is strictly below additive re-expansion; "
         "test_convergent_activation_sums.")
 figure("convergence_before_after.png",
-       "Figure 8 — Convergence double-counting, before/after (finding (b)). Structural schematic of the "
+       "Figure 8: Convergence double-counting, before/after (finding (b)). Structural schematic of the "
        "diamond-with-tail: naive re-expansion over-counts everything downstream of the convergence node; "
        "single-expansion counts it once. No magnitudes are shown (the report omits them as not reproducible).")
 finding("(c) Order-dependence, then nondeterminism: a priority frontier over hashed sets",
         "post-convergence activation depends only on the graph, never on expansion order or process hash seed.",
         "an activation-priority frontier made which late ripple was dropped depend on incidental "
         "edge-strength ordering; and with same-hop edges, which sibling expanded first was decided by "
-        "iterating a set of uuids — order randomized per process by PYTHONHASHSEED — so results swung "
+        "iterating a set of uuids: order randomized per process by PYTHONHASHSEED, so results swung "
         "across runs.",
         "letting expansion order be load-bearing for the result, over a container whose iteration order is "
         "intentionally randomized.",
@@ -386,7 +386,7 @@ finding("(c) Order-dependence, then nondeterminism: a priority frontier over has
         "spread in fresh interpreters under PYTHONHASHSEED in {0,1,3,7,42}, asserting byte-identical results.")
 finding("(d) Identity/order leak: tie-breaking on a uuid regenerated every run",
         "coalition output (partition, ordering, representatives) is identical across processes.",
-        "coalition ordering and representative selection tie-broke on the node id — but ids are uuid4, "
+        "coalition ordering and representative selection tie-broke on the node id, but ids are uuid4, "
         "regenerated every run, so any tiebreak falling back to the id was nondeterministic across processes "
         "even when the structure was identical.",
         "using identity (intentionally non-stable across runs) to carry ordering.",
@@ -410,15 +410,15 @@ finding("(e) Binding degeneracy: components on a graph connected by construction
         "(the field recovers exactly the two communities on the adversarial bridge graph that single-seed "
         "segmentation could not).")
 figure("single_seed_vs_multisource.png",
-       "Figure 9 — Single-seed degeneracy vs. multi-source basins (finding (e)). The same "
+       "Figure 9: Single-seed degeneracy vs. multi-source basins (finding (e)). The same "
        "two-communities-with-a-thin-bridge graph: one seed yields a single distance-keyed blob; two sources "
        "yield two basins with the bridge as the seam. The multi-source recovery is the asserted acceptance "
-       "test — in which the two sources are placed one per community (see finding (f) for why that matters).")
+       "test: in which the two sources are placed one per community (see finding (f) for why that matters).")
 finding("(f) Circular validation: the answer hand-encoded in the input",
         "the cognitive layer works on input the system produced, not input chosen to make it work.",
         "every layer above the substrate had been validated against a fiction of what would feed it. Sources "
         "were hand-placed, culminating in the field acceptance test recovering two communities only because "
-        "one source was hand-placed at the center of each — the answer was encoded in the input. "
+        "one source was hand-placed at the center of each: the answer was encoded in the input. "
         "(test_acceptance_multisource_recovers_communities does place one source per community by hand; it is "
         "honest as a mechanism test and would be dishonest if read as evidence the system finds communities on "
         "its own.)",
@@ -431,7 +431,7 @@ finding("(f) Circular validation: the answer hand-encoded in the input",
         "written to flip to green only when source-grouping is fixed (a negative result, not a contribution).")
 
 figure("cognitive_evolution.png",
-       "Figure 10 — The cognitive-layer arc and its dead-ends. connectivity binding → flow-cut → "
+       "Figure 10: The cognitive-layer arc and its dead-ends. connectivity binding → flow-cut → "
        "multi-source field → closed-loop, and what each step revealed (findings e, f), ending at the known "
        "limitation. It documents the development path, not a working capability.")
 doc.add_heading("6.7 What the six have in common", level=2)
@@ -440,13 +440,13 @@ para("(b)–(f) are all instances of “passes on a friendly input.” (a) is th
      "(decay × closure × time) that only a purpose-built test exercises. In every case the bug was "
      "structural and the catching test was adversarial or loop-closing.")
 doc.add_heading("6.8 Transferable lessons", level=2)
-numbered("Test the property, not the example — assert purity, determinism, and “no double-count” "
+numbered("Test the property, not the example: assert purity, determinism, and “no double-count” "
          "directly and across processes, not by spot-checking outputs.")
-numbered("Randomize what you assume is fixed — running under multiple PYTHONHASHSEED values is what makes "
+numbered("Randomize what you assume is fixed: running under multiple PYTHONHASHSEED values is what makes "
          "uuid-set nondeterminism observable.")
-numbered("Close the loop — let a stage’s inputs be produced by the stage below it; hand-chosen inputs "
+numbered("Close the loop: let a stage’s inputs be produced by the stage below it; hand-chosen inputs "
          "hide both degeneracy and circularity.")
-numbered("Encode known limitations as asserted tests — a negative result written as a failing-on-purpose "
+numbered("Encode known limitations as asserted tests: a negative result written as a failing-on-purpose "
          "assertion is a standing, checkable claim, not a comment that rots.")
 
 # ---- 7 Results -------------------------------------------------------------
@@ -455,15 +455,15 @@ doc.add_heading("7.1 Verified properties (the positive results)", level=2)
 para("For the substrate store and the spreading-activation engine, the test suite establishes, as runnable "
      "checks: determinism (identical output across process runs, confirmed in fresh interpreters under the "
      "hash seeds in §4); integrity (graph indices stay mutually consistent across every mutation; a full "
-     "scan finds no drift); and purity (reads never mutate stored state). These are claims about mechanism — "
-     "the code does exactly and only what it says, reproducibly — not that the mechanism reproduces any "
+     "scan finds no drift); and purity (reads never mutate stored state). These are claims about mechanism: "
+     "the code does exactly and only what it says, reproducibly, not that the mechanism reproduces any "
      "cognitive phenomenon.")
 
 figure("determinism_seeds.png",
-       "Figure 11 — Adversarial determinism across process hash seeds (before/after). AFTER is the asserted, "
+       "Figure 11: Adversarial determinism across process hash seeds (before/after). AFTER is the asserted, "
        "byte-identical result of the four determinism tests (each across its own seed set); BEFORE is the "
        "documented prior bug (findings c, d), shown qualitatively and NOT re-measured. Reproducibility of "
-       "mechanism only — not cognition.")
+       "mechanism only, not cognition.")
 doc.add_heading("7.2 Test suite", level=2)
 para("All figures below are taken verbatim from docs/TEST_OUTPUT.txt (CPython 3.13.2, Darwin 24.5.0 arm64) "
      "and re-confirmed by python3 run_tests.py for this report. Every suite passes with zero failures.")
@@ -495,7 +495,7 @@ for a, b, c, d in [("Source modules (src/)", "5", "1,476", "1,058"),
 para("Per module (wc -l): nous_store.py 548, nous_activation.py 281, nous_coalitions.py 324, "
      "nous_field.py 161, nous_perceive.py 162.")
 figure("test_suite_bars.png",
-       "Figure 12 — Passing assertions per suite (130 total, 0 failed). Counts taken verbatim from "
+       "Figure 12: Passing assertions per suite (130 total, 0 failed). Counts taken verbatim from "
        "docs/TEST_OUTPUT.txt. Proves mechanism (and the mechanics of the exploratory layers); it does NOT "
        "measure cognitive quality. The proven/exploratory colouring matches Figure 1.")
 
@@ -507,7 +507,7 @@ para("On clustered real input the end-to-end slice does not produce coherent coa
      "it is written to flip only when the underlying source-grouping problem is solved. It is reported here as "
      "a negative result, not a contribution.")
 figure("closed_loop_known_limitation.png",
-       "Figure 13 — The closed-loop slice and its honest failure (finding (f); asserted NEGATIVE result). On "
+       "Figure 13: The closed-loop slice and its honest failure (finding (f); asserted NEGATIVE result). On "
        "the real input ‘coffee in the kitchen this morning,’ the ‘thought’ over-swallows across domains "
        "(pulls in work/code) and same-domain perceived sources strand as singleton basins, asserted by "
        "test_KNOWN_LIMITATION_clustered_sources_give_poor_basins. A documented known limitation, not a capability.")
@@ -544,7 +544,7 @@ para("The natural next step is to stop validating the cognitive layer against ha
      "preceded by a related prime than an unrelated one [11], which the spreading-activation account explains "
      "via pre-activation spreading to related concepts [10]. A priming-style protocol for Nous would "
      "pre-activate a related concept and test whether the target’s activation is measurably raised "
-     "relative to an unrelated control — a directional prediction made before running the system, so the "
+     "relative to an unrelated control: a directional prediction made before running the system, so the "
      "input is no longer chosen to make the answer come out right. Two further items follow directly from the "
      "findings:")
 bullet("The source-grouping problem (from finding f). Same-domain perceived sources must be grouped or merged "
@@ -558,10 +558,10 @@ bullet("A real broadcast/competition phase. The “strongest coalition = thought
 doc.add_heading("10. Conclusion", level=1)
 para("What was earned is concrete and modest: a correct, deterministic, integrity-preserving, and pure "
      "memory-and-activation substrate, built in dependency-free Python and shipped with the tests that prove "
-     "those properties across process hash seeds — and, above it, an honestly-scoped exploratory layer "
+     "those properties across process hash seeds, and, above it, an honestly-scoped exploratory layer "
      "whose one end-to-end behavioral probe is a documented negative result. The larger contribution is the "
      "method: adversarial/property-based testing and loop-closure caught six structural bugs that happy-path "
-     "testing passes over, and the same discipline drew the boundary the project refuses to cross — "
+     "testing passes over, and the same discipline drew the boundary the project refuses to cross: "
      "proving mechanism while explicitly declining to claim cognition. What remains open is exactly what the "
      "method recommends next: evaluate the cognitive layer against an effect whose direction is known "
      "independently, fix the source-grouping degeneracy, and build the competition phase that would make the "
@@ -602,7 +602,7 @@ for r in refs:
 
 # ---- Appendices ------------------------------------------------------------
 doc.add_page_break()
-doc.add_heading("Appendix A — Verbatim test output", level=1)
+doc.add_heading("Appendix A: Verbatim test output", level=1)
 para("The captured run from docs/TEST_OUTPUT.txt (per-suite result lines; the complete capture, including "
      "every check label and the KNOWN LIMITATION note, is that file in the repository).")
 mono(
@@ -614,7 +614,7 @@ mono(
     "                                                     TOTAL: 130 passed, 0 failed"
 )
 
-doc.add_heading("Appendix B — Reproduction", level=1)
+doc.add_heading("Appendix B: Reproduction", level=1)
 mono(
     "# all five suites (handles the absolute PYTHONPATH for the determinism subprocesses):\n"
     "python3 run_tests.py\n\n"
@@ -624,7 +624,7 @@ mono(
 para("Pure standard library; no dependencies (developed and captured on CPython 3.13.2). The suites use a "
      "built-in harness and must be run as scripts, not under pytest.")
 
-doc.add_heading("Appendix C — Figure index and sources", level=1)
+doc.add_heading("Appendix C: Figure index and sources", level=1)
 para("All figures are embedded inline in the sections above. Their editable sources and "
      "presentation-resolution renders live in the repository: Mermaid diagrams as docs/diagrams/*.mmd "
      "(rendered to docs/diagrams/rendered/*.png; the .mmd files also render crisply at mermaid.live or via "
@@ -653,7 +653,7 @@ for fig_n, sec, asset, kind in [
     _r = _idx.add_row().cells
     _r[0].text, _r[1].text, _r[2].text, _r[3].text = fig_n, sec, asset, kind
 figure("repo_map.png",
-       "Figure 14 — Repository / asset map. Orientation only; it shows the package layout, not behavior.")
+       "Figure 14: Repository / asset map. Orientation only; it shows the package layout, not behavior.")
 
 doc.save(OUT)
 print("wrote", OUT)

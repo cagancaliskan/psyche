@@ -59,11 +59,11 @@ def strip(y, label, label_color, mark, face, edge, tcol, right):
     ax.text(len(seeds) - 0.5 + 0.55, y, right, ha="left", va="center",
             fontsize=8.6, color=tcol, fontweight="bold")
 
-# BEFORE: documented bug — varied across seeds (qualitative, not re-measured)
-strip(1.55, "BEFORE  —  priority frontier + uuid tie-break  (the bug)", "#c0392b",
+# BEFORE: documented bug, varied across seeds (qualitative, not re-measured)
+strip(1.55, "BEFORE: priority frontier + uuid tie-break  (the bug)", "#c0392b",
       "$\\neq$", "#fdecea", "#c0392b", "#c0392b", "output\nVARIED")
-# AFTER: fixed — byte-identical across seeds (the asserted test result)
-strip(0.30, "AFTER  —  hop-layered expansion + creation_seq tie-break  (current)", "#2e7d32",
+# AFTER: fixed, byte-identical across seeds (the asserted test result)
+strip(0.30, "AFTER: hop-layered expansion + creation_seq tie-break  (current)", "#2e7d32",
       "$\\checkmark$", "#e8f5e9", "#2e7d32", "#2e7d32", "output\nIDENTICAL")
 
 ax.set_title("Adversarial determinism across process hash seeds (before / after)\n"
@@ -74,7 +74,7 @@ fig.text(0.5, -0.06,
          "AFTER = the asserted result of the four determinism tests (identical across each test's seed set: "
          "activation {0,1,3,7,42}; coalitions & field {0,1,2,3,7,42,123,999}; slice {0,1,2,7,42,999}).\n"
          "BEFORE = documented prior behavior (findings c, d), shown qualitatively, not re-measured. "
-         "Establishes reproducibility of mechanism only — not cognition.",
+         "Establishes reproducibility of mechanism only, not cognition.",
          ha="center", fontsize=7.8, style="italic")
 
 fig.tight_layout()

@@ -1,4 +1,4 @@
-%% Nous — the recurring "passes on a friendly input" failure mode, and the two remedies.
+%% Nous: the recurring "passes on a friendly input" failure mode, and the two remedies.
 %% Conceptual (findings b-f share this shape); no data values.
 flowchart LR
     C["A claim about<br/>a component"]:::neutral
@@ -6,13 +6,13 @@ flowchart LR
     P["Passes &check;"]:::weak
     Bel["Believed correct"]:::neutral
     R["Real / adversarial /<br/>system-generated input"]:::real
-    Fa["Fails &cross; —<br/>a STRUCTURAL bug surfaces"]:::bug
+    Fa["Fails &cross;: <br/>a STRUCTURAL bug surfaces"]:::bug
 
     C --> T --> P --> Bel --> R --> Fa
     Fa -. "the cycle repeats unless broken" .-> C
 
-    RA["REMEDY 1 — ADVERSARIAL TESTING<br/>write tests that try to BREAK the claim<br/>(lopsided strengths, intra-layer edges,<br/>rings, hash seeds)"]:::fix
-    RL["REMEDY 2 — CLOSE THE LOOP<br/>let inputs be system-generated, not<br/>hand-chosen (perceive -> sources)"]:::fix
+    RA["REMEDY 1: ADVERSARIAL TESTING<br/>write tests that try to BREAK the claim<br/>(lopsided strengths, intra-layer edges,<br/>rings, hash seeds)"]:::fix
+    RL["REMEDY 2: CLOSE THE LOOP<br/>let inputs be system-generated, not<br/>hand-chosen (perceive -> sources)"]:::fix
 
     RA -. "breaks" .-> T
     RL -. "breaks" .-> R
