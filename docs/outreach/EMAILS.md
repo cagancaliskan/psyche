@@ -29,7 +29,7 @@ methodology framing holds up? Even a few lines would help.
 
 Thank you for your time,
 [YOUR NAME]
-[EMAIL] · [REPO OR REPORT LINK]
+[EMAIL] · https://doi.org/10.5281/zenodo.20474613
 
 ---
 
@@ -54,7 +54,7 @@ pursue it under your supervision, as a [thesis / reading project / lab rotation]
 
 Thank you,
 [YOUR NAME]
-[EMAIL] · [REPO OR REPORT LINK]
+[EMAIL] · https://doi.org/10.5281/zenodo.20474613
 
 ---
 
@@ -70,7 +70,7 @@ Please find my submission below. It is a methodology-first engineering project: 
 memory-and-activation substrate built test-first, in which adversarial testing caught six
 structural bugs. I make no cognitive claims beyond what the tests support. The abstract is
 [WORD COUNT] words; I can present as a [talk / poster], and the code and technical report are
-available at [LINK].
+available at https://doi.org/10.5281/zenodo.20474613.
 
 Thank you for considering it,
 [YOUR NAME], [INSTITUTION]
