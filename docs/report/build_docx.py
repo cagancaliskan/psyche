@@ -569,32 +569,39 @@ para("What was earned is concrete and modest: a correct, deterministic, integrit
 
 # ---- 11 References ---------------------------------------------------------
 doc.add_heading("11. References", level=1)
-para("Note to the author: this list is curated and the bibliographic details are believed correct, but verify "
-     "exact page numbers, volumes, and DOIs against the primary sources before submission.", italic=True)
 refs = [
-    "[1] McClelland, J. L., McNaughton, B. L., & O’Reilly, R. C. (1995). Why there are complementary "
-    "learning systems in the hippocampus and neocortex. Psychological Review, 102(3), 419–457.",
+    "[1] McClelland, J. L., McNaughton, B. L., & O'Reilly, R. C. (1995). Why there are complementary "
+    "learning systems in the hippocampus and neocortex: Insights from the successes and failures of "
+    "connectionist models of learning and memory. Psychological Review, 102(3), 419–457. "
+    "https://doi.org/10.1037/0033-295X.102.3.419",
     "[2] Kumaran, D., Hassabis, D., & McClelland, J. L. (2016). What learning systems do intelligent agents "
-    "need? Complementary Learning Systems theory updated. Trends in Cognitive Sciences, 20(7), 512–534.",
-    "[3] Frey, U., & Morris, R. G. M. (1997). Synaptic tagging and long-term potentiation. Nature, 385, "
-    "533–536.",
-    "[4] Redondo, R. L., & Morris, R. G. M. (2011). Making memories last: the synaptic tagging and capture "
-    "hypothesis. Nature Reviews Neuroscience, 12, 17–30.",
-    "[5] Baars, B. J. (1988). A Cognitive Theory of Consciousness. Cambridge University Press.",
+    "need? Complementary Learning Systems theory updated. Trends in Cognitive Sciences, 20(7), 512–534. "
+    "https://doi.org/10.1016/j.tics.2016.05.004",
+    "[3] Frey, U., & Morris, R. G. M. (1997). Synaptic tagging and long-term potentiation. Nature, 385(6616), "
+    "533–536. https://doi.org/10.1038/385533a0",
+    "[4] Redondo, R. L., & Morris, R. G. M. (2011). Making memories last: The synaptic tagging and capture "
+    "hypothesis. Nature Reviews Neuroscience, 12(1), 17–30. https://doi.org/10.1038/nrn2963",
+    "[5] Baars, B. J. (1988). A cognitive theory of consciousness. Cambridge University Press. "
+    "ISBN 0-521-30133-5.",
     "[6] Dehaene, S., & Changeux, J.-P. (2011). Experimental and theoretical approaches to conscious "
-    "processing. Neuron, 70(2), 200–227.",
-    "[7] Franklin, S., Madl, T., D’Mello, S., & Snaider, J. (2014). LIDA: A systems-level architecture "
-    "for cognition, emotion, and learning. IEEE Transactions on Autonomous Mental Development, 6(1), 19–41.",
+    "processing. Neuron, 70(2), 200–227. https://doi.org/10.1016/j.neuron.2011.03.018",
+    "[7] Franklin, S., Madl, T., D'Mello, S., & Snaider, J. (2014). LIDA: A systems-level architecture "
+    "for cognition, emotion, and learning. IEEE Transactions on Autonomous Mental Development, 6(1), 19–41. "
+    "https://doi.org/10.1109/TAMD.2013.2277589",
     "[8] Anderson, J. R., Bothell, D., Byrne, M. D., Douglass, S., Lebiere, C., & Qin, Y. (2004). An "
-    "integrated theory of the mind. Psychological Review, 111(4), 1036–1060.",
+    "integrated theory of the mind. Psychological Review, 111(4), 1036–1060. "
+    "https://doi.org/10.1037/0033-295X.111.4.1036",
     "[9] Eliasmith, C., Stewart, T. C., Choo, X., Bekolay, T., DeWolf, T., Tang, Y., & Rasmussen, D. (2012). "
-    "A large-scale model of the functioning brain. Science, 338(6111), 1202–1205.",
+    "A large-scale model of the functioning brain. Science, 338(6111), 1202–1205. "
+    "https://doi.org/10.1126/science.1225266",
     "[10] Collins, A. M., & Loftus, E. F. (1975). A spreading-activation theory of semantic processing. "
-    "Psychological Review, 82(6), 407–428.",
-    "[11] Meyer, D. E., & Schvaneveldt, R. W. (1971). Facilitation in recognizing pairs of words. Journal of "
-    "Experimental Psychology, 90(2), 227–234.",
+    "Psychological Review, 82(6), 407–428. https://doi.org/10.1037/0033-295X.82.6.407",
+    "[11] Meyer, D. E., & Schvaneveldt, R. W. (1971). Facilitation in recognizing pairs of words: Evidence "
+    "of a dependence between retrieval operations. Journal of Experimental Psychology, 90(2), 227–234. "
+    "https://doi.org/10.1037/h0031564",
     "[12] Yerkes, R. M., & Dodson, J. D. (1908). The relation of strength of stimulus to rapidity of "
-    "habit-formation. Journal of Comparative Neurology and Psychology, 18(5), 459–482.",
+    "habit-formation. Journal of Comparative Neurology and Psychology, 18(5), 459–482. "
+    "https://doi.org/10.1002/cne.920180503",
 ]
 for r in refs:
     p = doc.add_paragraph(r)
