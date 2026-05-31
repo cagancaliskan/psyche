@@ -238,3 +238,66 @@ def star_spec(fan: int, *, source: str = "S", strength_count: int = 3,
         "nodes": [source] + targets,
         "edges": [(source, t, strength_count) for t in targets],
     }
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ADDITIVE (Phase 2B): one-spread, many-reads readout.
+#
+# This is added for the priming study and does NOT change any 2A function above.
+# `retrieval_strength` answers "activation at ONE target"; on a large graph (SWOW),
+# a priming prime has several targets (one per condition) and re-spreading once per
+# target would be wasteful AND would re-do identical work. `read_targets` runs the
+# SAME `spread_activation` call exactly ONCE from the cue and reads several targets
+# out of the one result — so for any single target it returns the IDENTICAL value
+# `retrieval_strength` would (a test asserts this equivalence). Still a pure read.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def read_targets(
+    store: SubstrateStore,
+    cue: str,
+    targets,
+    *,
+    energy: float = DEFAULT_SEED_ENERGY,
+    decay_per_hop: float = DEFAULT_DECAY_PER_HOP,
+    floor: float = DEFAULT_FLOOR,
+    hop_budget: int = DEFAULT_HOP_BUDGET,
+):
+    """Spread once from `cue`; read each NodeID in `targets`. Pure read.
+
+    Returns a dict:
+        {
+          "activation":      {target_id: activation_float, ...},  # 0.0 if unreached
+          "outgoing_total":  float,   # sum of activation transmitted on the cue's own
+                                      # out-roads (the prime's total outgoing activation),
+                                      # used as the denominator for the SECONDARY normalized
+                                      # readout. Read from result.flow on the cue's out-roads.
+          "reached":         int,     # size of the reached set (observability)
+        }
+
+    The single per-target value equals exactly what `retrieval_strength(store, cue,
+    target, ...)` returns for the same knobs — `read_targets` just amortizes one spread
+    over many targets. `outgoing_total` is computed from the spread's recorded per-edge
+    `flow` (what each out-road actually transmitted), so it reflects the same event, not a
+    separate recomputation.
+    """
+    result = spread_activation(
+        store, cue,
+        energy=energy, decay_per_hop=decay_per_hop, floor=floor, hop_budget=hop_budget,
+    )
+    activation = {t: result.activation.get(t, 0.0) for t in targets}
+
+    # outgoing_total = sum of activation transmitted on the cue's own out-roads.
+    # DETERMINISM: store.roads_from yields road IDs in set-iteration order over uuids,
+    # which depends on PYTHONHASHSEED — and float addition is NOT associative, so summing
+    # in that order could differ in the last ULP across processes. We therefore collect
+    # the per-road flow values and sum them in SORTED-VALUE order, which is independent of
+    # the road IDs. The multiset of flow values is identical across builds (equal edge
+    # strengths on a simulated clock), so this sum is byte-identical across hash seeds.
+    flows = [result.flow.get(road_id, 0.0) for road_id in store.roads_from(cue)]
+    flows.sort()
+    outgoing_total = sum(flows)
+    return {
+        "activation": activation,
+        "outgoing_total": outgoing_total,
+        "reached": len(result.activation),
+    }

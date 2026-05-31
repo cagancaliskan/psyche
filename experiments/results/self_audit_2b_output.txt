@@ -1,0 +1,29 @@
+==================================================================
+PHASE 2B SELF-AUDIT  (evidence, not assertion)
+==================================================================
+
+[1] No file under src/ or tests/ was modified (git porcelain, path-scoped):
+    PASS — src/ and tests/ are clean.
+
+[2] The engine src/nous_activation.py and src/nous_store.py were NOT altered:
+    PASS — engine + store unchanged in git.
+
+[3] 2A harness functions UNCHANGED; only ADDITIVE additions (read_targets):
+    PASS — 2A fns present; read_targets added (run test_harness.py separately to confirm 2A still green).
+
+[4] The PREDICTION banner is printed BEFORE any result is computed (priming.py main):
+    print_preregistration() at line 287 ; first data load at line 291
+    PASS — prediction emitted before data is even loaded.
+
+[5] Conditions selected BLIND (swow.py never IMPORTS or CALLS the engine):
+    PASS — swow.py has no engine import and no activation call; selection is topology-only.
+
+[6] Raw SWOW data is NOT committed (size + license):
+    PASS — raw csv is not tracked (gitignored).
+
+[7] Numbers in PRIMING.md match results/priming_output.txt (spot-check key values):
+    PASS — key DIRECT/MEDIATED/median/rho/sign values match the capture.
+
+==================================================================
+SELF-AUDIT: ALL CHECKS PASS
+==================================================================

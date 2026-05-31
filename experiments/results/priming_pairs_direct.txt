@@ -1,0 +1,9 @@
+# prime	direct_target	swow_strength
+ache	belly	0.0207612456747405
+advancement	salary	0.00383141762452107
+admit	presence	0.0037037037037037
+appetizer	dinner	0.03584229390681
+ancestors	age	0.00696864111498258
+adapt	jungle	0.00364963503649635
+aisle	Ainsley	0.00374531835205993
+adjacent	math	0.00364963503649635
