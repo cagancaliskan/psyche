@@ -1,0 +1,37 @@
+==============================================================================
+FAN-EFFECT EXPERIMENT (Phase 2A) — pre-registered
+==============================================================================
+PRE-REGISTERED PREDICTION:
+  Retrieval strength DECREASES as source fan (out-degree) increases.
+
+BRIDGE ASSUMPTION:
+  Human fan effect is retrieval LATENCY; Nous has no latency, so we map higher activation = faster/stronger retrieval. Thus 'slower with higher fan' (human) predicts 'LOWER activation with higher fan' (Nous).
+
+This prediction is fixed BEFORE any measurement below. The verdict is computed
+from the data and may falsify it; a flat/null result is an honest finding.
+==============================================================================
+
+CONTROL — only-varied-factor (fan F). Held constant across all conditions:
+  edge strength (traverse count per edge) = 3
+  seed energy                             = 1.0
+  decay_per_hop                           = 0.65
+  floor                                   = 0.02
+  hop_budget                              = 6
+  trials per condition                    = 5
+  designated readout target               = T1
+
+CONTROL — target symmetry (F=8): every target's activation should be equal.
+  distinct values observed = [0.2433743975]
+  spread across targets    = 0.0  ->  SYMMETRIC
+
+RESULT — fan F vs mean activation at target T1
+    F   mean target activation      spread (max-min)  
+  ---   --------------------------  ------------------
+    1   0.2433743975                0.0               
+    2   0.2433743975                0.0               
+    4   0.2433743975                0.0               
+    8   0.2433743975                0.0               
+   16   0.2433743975                0.0               
+
+VERDICT:
+  DOES NOT MATCH: activation is flat across fan — the engine does not normalize by out-degree (see EXPERIMENT_NOTES.md).

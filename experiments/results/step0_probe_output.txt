@@ -1,0 +1,14 @@
+======================================================================
+STEP 0 PROBE — does spreading activation normalize by out-degree?
+======================================================================
+Setup: one source S, all out-edges EQUAL strength (same traverse count),
+       read activation at target T1. Vary only the source's out-degree.
+
+  out-degree 1  ->  T1 activation = 0.2433743975
+  out-degree 8  ->  T1 activation = 0.2433743975
+
+FINDING: identical. Each out-road transmits the source's FULL activation;
+         energy is NOT divided among out-roads. => NO out-degree normalization.
+CONSEQUENCE: the fan effect will be ABSENT (flat curve) under an equal-strength,
+             connectivity-only manipulation. That is the expected, informative
+             result for the fan experiment — not a bug to fix.
