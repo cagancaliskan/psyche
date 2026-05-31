@@ -43,3 +43,5 @@ example **semantic priming** [10, 11]: does pre-activating a related concept mea
 target's activation?
 
 **The ethos:** this part is proven; that part is not, and here is the failing test that says so.
+
+Report (open access, CC BY 4.0): https://doi.org/10.5281/zenodo.20474613

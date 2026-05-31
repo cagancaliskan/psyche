@@ -115,6 +115,8 @@ t.alignment = WD_ALIGN_PARAGRAPH.CENTER
 sub = para("An Engineering and Methodology Case Study", italic=True,
            align=WD_ALIGN_PARAGRAPH.CENTER)
 para("Cagan Caliskan   |   2026", align=WD_ALIGN_PARAGRAPH.CENTER, bold_lead=None)
+para("DOI: https://doi.org/10.5281/zenodo.20474613", align=WD_ALIGN_PARAGRAPH.CENTER, bold_lead=None)
+para("Archived on Zenodo (open access, CC BY 4.0)", align=WD_ALIGN_PARAGRAPH.CENTER, bold_lead=None, italic=True)
 
 # ---- abstract --------------------------------------------------------------
 doc.add_heading("Abstract", level=1)

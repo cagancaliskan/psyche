@@ -22,6 +22,8 @@
 
 **Author:** Cagan Caliskan
 **Year:** 2026
+**DOI:** https://doi.org/10.5281/zenodo.20474613
+**Archived on Zenodo** (open access, CC BY 4.0).
 **Artifact:** `nous/`: pure-Python standard-library prototype; 5 modules, 5 test suites; MIT-licensed.
 
 ---

@@ -35,6 +35,22 @@ system does something unproven, this documentation says so plainly.
 
 ---
 
+## Citation
+
+This work is archived on **Zenodo** with a permanent DOI:
+**<https://doi.org/10.5281/zenodo.20474613>**
+
+If you use or reference Nous, please cite:
+
+> Caliskan, C. (2026). *Nous: Adversarial Testing of a Dependency-Free Memory-and-Activation
+> Substrate for Cognitive Architectures.* Zenodo. https://doi.org/10.5281/zenodo.20474613
+
+The **report is open access under CC BY 4.0**; the **code is MIT-licensed** (see
+[LICENSE](LICENSE)). A machine-readable [`CITATION.cff`](CITATION.cff) is provided at the
+repository root.
+
+---
+
 ## Scope: what is proven vs. what is exploratory
 
 **Proven (by the test suites):** the substrate store and the spreading-activation engine are
