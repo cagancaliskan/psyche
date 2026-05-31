@@ -17,3 +17,8 @@ docs/outreach/social/*.2x.png
 
 # Office temp / lock files
 ~$*
+
+# Phase 2B: raw association-norm data (large; SWOW license disallows redistribution).
+# See experiments/data/README.md for how to obtain it locally.
+experiments/data/*.csv
+experiments/data/*.tsv
