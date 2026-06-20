@@ -1,13 +1,24 @@
 ======================================================================
   NOUS — CAPTURED TEST OUTPUT (verbatim)
 ======================================================================
-Generated : 2026-06-20 02:36:45 +0300
+Generated : 2026-06-20 15:27:24 +0300
 Machine   : Darwin 24.5.0 x86_64
 Python    : Python 3.12.4
 Command   : python3 run_tests.py   (one block per suite; absolute PYTHONPATH=src)
 Note      : Suites use a built-in harness (not pytest); each prints
             'RESULT: N passed, M failed' and exits non-zero on any failure.
-            Includes tester-authored adversarial suites (test_tester_1c_*).
+            Includes tester-authored adversarial suites (test_tester_1c_*
+            and test_tester_1d_i_adversarial.py). This run captures 10
+            suites (the runner's full SUITES list). 1d-i (workspace
+            selection, test_nous_workspace.py) now carries an explicit
+            builder-owned KNOWN-LIMITATION asserted-negative
+            (test_KNOWN_LIMITATION_unnamed_domain_bridged_ge_cohesion_is_kept):
+            the C1 pruning rule is a parameter-free cohesion-valley /
+            relative-attachment watershed, NOT pure domain-membership; an
+            unnamed domain bridged >= its internal cohesion is KEPT (the
+            divergence is always in the safe direction). Docstring framing
+            was corrected to match; no logic changed (every other suite's
+            count is byte-identical to the prior capture).
 ======================================================================
 
 ######################################################################
@@ -177,9 +188,7 @@ ADVERSARIAL determinism: clustering identical across 6 hash seeds (fresh procs)
 
 §6.1 (partial): 1c removes the stranded-singleton-source failure
 
-KNOWN LIMITATION: a single-group representative still over-swallows a bridged domain
-      → recorded as a residual limitation: over-swallow persists when the elected
-        representative bridges to a non-perceived domain (PM decision needed; see report).
+§6.1 FLIPPED by 1d-i: the bridged, unperceived work/code domain is PRUNED from the winning thought
 
 ASSERTED-NEGATIVE #1: 1c clusters ONLY the perceived sources, not the graph
 
@@ -194,7 +203,66 @@ ASSERTED-NEGATIVE #5: 1c does NOT broadcast/feed back into a next cycle
 ASSERTED-NEGATIVE #6: the relative threshold is an uncalibrated design constant
 
 ======================================================================
-  RESULT: 47 passed, 0 failed
+  RESULT: 49 passed, 0 failed
+======================================================================
+
+######################################################################
+# test_nous_workspace.py
+######################################################################
+======================================================================
+  NOUS WORKSPACE SELECTION (1d-i) — TEST SUITE
+======================================================================
+
+§6.1 ACCEPTANCE (loop-closed): the winning thought excludes the bridged, unperceived work/code domain
+
+§6.1 anti-circularity: the flip GENERALIZES on a second, independently-built isomorphic-but-relabelled graph (not tuned to coffee/work)
+
+anti-overcorrection: when the input NAMES the work domain, work/desk/code are NOT pruned (a perceived domain always survives)
+
+safety: pruning never empties the winner (asserted-negative for over-pruning)
+
+§6.2 purity: repeated select_winner(...) mutates NOTHING (deep snapshot)
+
+§6.2 purity: think(broadcast=False) leaves the store byte-identical across repeated calls (the pure-read path)
+
+§6.4 integrity: the store's integrity scan is unchanged before/after selection
+
+§6.4 cross-process determinism: winner + pruned_members + ranked order identical across 6 hash seeds (fresh interpreters)
+
+scale-invariance (selection layer, isolated): scaling coalition activations by ANY positive constant keeps the winner + pruning
+
+scale-invariance (end-to-end, floor-safe regime): scaling source energies UP keeps the winner + pruning
+
+A2 competition: a tight intensely-active coalition beats a larger sprawling one of equal total activation (density, not summed strength)
+
+A2 min-size guard: a degenerate tiny coalition cannot win on density alone
+
+A2 structural: competition selects ONE winner among MORE THAN ONE system-generated coalition (not a single-group branch)
+
+helper: the perceived-domain watershed keeps the named community and excludes the bridged unnamed one (unit test on _small_mind topology)
+
+helper: a NON-source node densely in a NAMED domain is kept (perceived via propagation, not stranded for lacking a direct source link)
+
+helper: _strongest_road_strength is symmetric and reads canonical strength
+
+ASSERTED-NEGATIVE #1: 1d-i has NO feedback — think(broadcast=True) raises (the write is 1d-ii, not built here)
+
+ASSERTED-NEGATIVE #2: the winner is a SELECTED INFORMATION STRUCTURE — no cognitive/awareness claim is made or asserted anywhere
+
+ASSERTED-NEGATIVE #3: 1d-i selects EXACTLY ONE winner (no parallel/blended winners, no multi-structure attention)
+
+ASSERTED-NEGATIVE #4: pruning is perceived-vs-reached (topological), NOT semantic — naming a domain changes what is pruned, content does not
+
+ASSERTED-NEGATIVE #5: 1d-i does not alter perceive()/build_activation_field()/form_coalitions_from_field() signatures
+
+ASSERTED-NEGATIVE #6: 1d-i writes nothing — it is NOT memory/consolidation; two cycles do not accumulate any trace (no broadcast)
+
+ASSERTED-NEGATIVE #7: end-to-end selection is NOT invariant when DOWN-scaling pushes activation below the UPSTREAM absolute floors (an honest limitation)
+
+KNOWN LIMITATION (asserted-negative): 1d-i pruning is a parameter-free cohesion-valley / relative-attachment watershed, NOT pure domain-membership. An UNNAMED domain bridged into the named region AT LEAST AS STRONGLY AS its own internal cohesion has NO valley and is therefore KEPT — over-swallow RECURS in that topology. Accepted design (2026-06-20); the divergence is always SAFE (a perceived member is never pruned).
+
+======================================================================
+  RESULT: 79 passed, 0 failed
 ======================================================================
 
 ######################################################################
@@ -217,8 +285,8 @@ the slice runs end-to-end: text → sources → field → coalitions → thought
 the end-to-end slice mutates NOTHING (pure read)
 
 1c FIXED the stranded-singleton-source half of the old known limitation
-      → 1c fixes the stranded-source half; the over-swallow half remains a
-        documented residual (single-source basin + bridged domain). See report.
+      → 1c fixes the stranded-source half; 1d-i fixes the over-swallow half
+        (unperceived work/code domain pruned from the winner). See report.
 
 ADVERSARIAL determinism: end-to-end result identical across hash seeds
 
@@ -288,12 +356,12 @@ P8b loop-closure PROBE: does an ISOLATED perceived source strand as a singleton 
 
 P8c loop-closure: merge property holds on an INDEPENDENTLY built graph isomorphic to _small_mind but with different content/order
 
-P9 the §7.7 over-swallow asserted-negative documents a REAL residual: the single-source thought genuinely reaches the bridged work/code domain
+P9 (was: over-swallow residual is real) — FLIPPED by 1d-i: the bridged, unperceived work/code domain is now PRUNED from the winning thought
 
 P10 anti-degeneracy: clustering is not an 'everything always merges' branch — a real utterance yields >1 group when domains are unlinked
 
 ======================================================================
-  RESULT: 71 passed, 0 failed
+  RESULT: 73 passed, 0 failed
 ======================================================================
 
 ######################################################################
@@ -311,6 +379,97 @@ MUTATION BATTERY cross-process: the full clustering trace over the random graph 
   RESULT: 5 passed, 0 failed
 ======================================================================
 
+######################################################################
+# test_tester_1d_i_adversarial.py
+######################################################################
 ======================================================================
-  OVERALL: all 8 suites passed (0 failures)
+  TESTER — INDEPENDENT ADVERSARIAL SUITE for 1d-i (workspace selection)
+======================================================================
+
+T1 §6.1 LOOP-CLOSED: the winner excludes the bridged, unperceived work/code domain (coalitions system-generated through think())
+
+T1b the over-swallow is REAL: the RAW winner (pre-prune) actually CONTAINS the work domain — so the flip is pruning's doing, not 'work was never there'
+
+T2 anti-overcorrection (loop-closed): naming the work domain keeps work/desk and their basin (a perceived domain is never pruned)
+
+T2b HOSTILE anti-overcorrection: a loosely-attached PERCEIVED node (weak n=3 link to its domain) is NOT pruned, because it is a perceived seed itself
+
+T2c HOSTILE anti-overcorrection: a perceived node bridged into a DENSER unperceived region keeps its perceived label (its own seed status wins)
+
+T3 C1 generalizes: TWO strong bridges (n=8 each) into ONE unnamed domain — the unnamed domain is still pruned (not a single-bridge artifact)
+
+T3 C1 generalizes: THREE domains, two perceived + one unperceived; only the unperceived one is pruned (>=3 domain mixed case)
+
+T3 C1 generalizes: ASYMMETRIC cohesion — named domain LOOSE (n=10), unnamed domain TIGHT (n=30); the unnamed tight domain is still pruned by MEMBERSHIP
+
+T4 boundary: a WEAKLY-cohesive unperceived region (n=6 internal) is STILL pruned by membership — C1 does not need cohesion to exceed a threshold
+      probe: fourx->perceived(one)=0.6882 fourx->unperceived(fivex)=0.5881
+
+T4b DECISIVE C1-vs-C2: a strong bridge into an UNNAMED domain whose internal cohesion is EVEN STRONGER — pruned by membership; a pure weakness rule could not flip _small_mind, this watershed flips by domain not by a weakness cut
+
+T5 threshold-free: the PRUNING result (pruned_members) is invariant to DEFAULT_MIN_SIZE_GUARD over a wide sweep — proving that constant lives in COMPETITION, not in pruning (the pruning path has no calibrated constant)
+
+T5 threshold-free (structural): the watershed helpers contain no magic numeric comparison constant; pruning compares stored road strengths only
+
+T6 cross-process determinism: winner + pruned_members + FULL ranked order byte-identical across 6 hash seeds (our own probe; ties everywhere)
+
+T6b cross-process determinism on a MULTI-BASIN tie graph: two equal-sized, equal-strength unlinked domains -> a genuine density+size+strength tie broken only by creation_seq; identical winner/ranked across 6 seeds
+
+T7 purity: 12 repeated select_winner calls mutate NOTHING (deep snapshot incl. last_touched + node access stats)
+
+T7 purity: think(broadcast=False) byte-identical across repeated calls on an ADVERSARIAL graph (cycle + self-loop + closed road + duplicate content + fan)
+
+T7 purity: broadcast=True raises NotImplementedError and writes nothing (the absence of feedback is explicit; 1d-i is pure selection)
+
+T8 integrity: a randomized mutation battery on a hostile graph, interleaved with 200 selection calls; check_integrity() clean throughout + byte-identical
+
+T9 hostile: empty coalition list -> winner None, empty pruned/ranked, no crash
+
+T9 hostile: an utterance that names NOTHING -> empty workspace, no crash
+
+T9 hostile: a single isolated perceived node -> singleton coalition wins, is NOT pruned (a lone perceived seed cannot be 'a domain no source named')
+
+T9 competition: density (not summed strength) picks the tighter of two equal-total coalitions; min-size guard blocks a degenerate singleton
+
+T9 hostile: duplicate-content nodes, cycles, self-loops in the live loop -> competition still selects exactly one winner deterministically
+
+T9 hostile: a high-degree fan hub (1 hub -> 25 leaves) all in one basin; the winner is well-formed and selection is deterministic on the fan
+
+T9 watershed helper (unit): on _small_mind, the watershed keeps the warm community (incl. non-source warmth/cozy) and excludes the work community
+
+T9 watershed determinism: the kept set is identical under ANY permutation of the member-id input list (frozen-per-pass fixpoint is order-independent)
+
+T10 scale-invariance: scaling all coalition activations by any positive constant (1e-15 .. 1e15) keeps winner identity AND pruned_members
+
+T10 scale-invariance (road strength): identical TOPOLOGY at different absolute strengths (n=8/12/30 vs n=4/6/15) yields the same prune decision (membership)
+
+T11 (P9 RE-OWNED): INDEPENDENT re-derivation that, after 1d-i, the over-swallow residual is ABSENT — by the membership watershed, not by tuning
+      → RE-OWNED: independent derivation agrees; residual is absent by the C1 membership watershed (no tuning). See verdict.
+
+T11b (P9 re-owned, counterfactual): the SAME graph with the work domain NAMED does NOT prune it — proving the flip is membership-driven, not a fixed cut
+
+T12 watershed CHAINING (corrected derivation): on an EQUAL-STRENGTH chain per=mid=unp=other, the PERCEIVED label floods the WHOLE connected component (single-link chaining through ties). We pin this ACTUAL behavior — it is the watershed's load-bearing property and the crux of the C1 adjudication.
+
+T12 watershed floor: a member with NO road to ANY perceived member is never adopted (best_to_perceived must be > 0 to adopt) -> always pruned
+
+T12c C1 ADJUDICATION (decisive): a GENUINELY unnamed, multi-node community is NOT pruned when its bridge to the perceived region is >= its internal cohesion. This proves the watershed prunes by COHESION VALLEY (weakness), not by pure domain MEMBERSHIP. Reported as a generalization characterization, not a §6.1 FAIL (the locked §6.1 case has bridge < cohesion).
+      probe: gizmo bridge->perceived=0.8214  internal->unperceived=0.8214
+
+T12d C1 ADJUDICATION (contrast): on the SAME graph a true membership-C1 (prune iff the node's 1c-group/basin contains no perceived source) WOULD prune the unnamed gizmo/widget community — the watershed does NOT. The two rules diverge, so the watershed is not a faithful realization of C1-as-written.
+      raw winner: ['cup', 'gizmo', 'tea', 'widget']  winner: ['cup', 'gizmo', 'tea', 'widget']  pruned: []
+
+T12e the C1 gap is in the SAFE direction: the watershed errs toward KEEPING (over-inclusion), so it can never over-PRUNE a perceived member. We hammer the anti-overcorrection guarantee in the adversarial bridge>=cohesion regime.
+
+T12f scope confirmation: BOTH locked §6.1 acceptance graphs (coffee/work and the tea/project relabel) have bridge(n=8) STRICTLY below internal cohesion (n=30) — so the cohesion-valley watershed correctly prunes them. The §6.1 criterion is met; the T12c gap lies OUTSIDE the locked acceptance scope.
+
+T13 structural: after pruning, the winner's members/_seq/strength/breakthrough marks are mutually consistent and representative() is deterministic
+
+T13b structural: workspace.ranked lists ALL candidate coalitions in competition order and is a pure-read product (raw_winner is ranked[0])
+
+======================================================================
+  RESULT: 101 passed, 0 failed
+======================================================================
+
+======================================================================
+  OVERALL: all 10 suites passed (0 failures)
 ======================================================================

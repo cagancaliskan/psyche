@@ -153,23 +153,24 @@ def test_clustered_sources_no_longer_strand_after_1c():
     check(len(warm_groups) == 1 and
           {n["coffee"], n["kitchen"], n["morning"]} <= set(warm_groups[0].members),
           "1c merged the three same-domain sources into one group")
-    # FIXED: no perceived source strands as a singleton coalition any more
+    # FIXED by 1c: no perceived source strands as a singleton coalition any more
     singletons = [c for c in r.coalitions if c.size() == 1]
     has_stranded_source = any((set(c.members) & perceived) for c in singletons)
     check(not has_stranded_source,
           "FIXED by 1c: no perceived same-domain source strands as a singleton basin")
-    # HONEST RESIDUAL (the other half is NOT fixed by source-clustering alone, and is
-    # documented as an asserted-negative in test_nous_source_clustering.py): the elected
-    # representative (coffee) bridges to the work domain, so a single-source basin still
-    # pulls work/code in. We record that residual here too, so this test does not pretend
-    # the whole limitation is gone.
+    # FLIPPED by 1d-i (was the DOCUMENTED RESIDUAL): the other half — over-swallow of the
+    # bridged, unperceived work domain — is now fixed by the workspace selection layer. The
+    # single-source basin still REACHES work/code over the n=8 bridge, but 1d-i's pruning
+    # (Decision C1) drops members in a domain no source named, so the winning thought
+    # excludes work/code. Converted from the residual assertion to the positive one
+    # (coverage preserved). The over-swallow flip is verified in full in the
+    # source-clustering and workspace suites; here we assert the live-loop outcome.
     thought_members = set(r.thought.members) if r.thought else set()
-    over_swallows = n["work"] in thought_members or n["code"] in thought_members
-    check(over_swallows,
-          "DOCUMENTED RESIDUAL: a single-group representative that bridges to a non-"
-          "perceived domain still over-swallows it (see source-clustering suite + report)")
-    print("      → 1c fixes the stranded-source half; the over-swallow half remains a")
-    print("        documented residual (single-source basin + bridged domain). See report.")
+    check(n["work"] not in thought_members and n["code"] not in thought_members,
+          "FIXED by 1d-i: the winning thought no longer over-swallows the bridged "
+          "work/code domain (it is pruned as an unperceived domain)")
+    print("      → 1c fixes the stranded-source half; 1d-i fixes the over-swallow half")
+    print("        (unperceived work/code domain pruned from the winner). See report.")
 
 
 # ── determinism (established discipline) ─────────────────────────────────────

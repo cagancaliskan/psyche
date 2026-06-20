@@ -1,16 +1,19 @@
 # SPEC-1d — Global workspace + broadcast
 
-Status: **DESIGNED** — not built, not tested. Nothing in this document is `PROVEN` or `BUILT`. Design decisions A–E **locked 2026-06-20** (A2 / B1 / C1 / D1 / take-the-split — see §8); build proceeds 1d-i first.
+Status: **1d-i BUILT · mechanism tester-VERIFIED (PASS); 1d overall DESIGNED** — 1d-ii (broadcast + bounded feedback) not built. Design decisions A–E **locked 2026-06-20** (A2 / B1 / C1 / D1 / take-the-split — see §8); built 1d-i first. **Decision C resolved 2026-06-20 → the realized + accepted C1 is a parameter-free cohesion-valley / relative-attachment watershed (see §3.2 / §8), distinct from both literal domain-membership and the rejected fraction-based C2.** Nothing about 1d-ii's broadcast/feedback is `PROVEN` or `BUILT`.
 Author: architect-pm
 For: builder (test-first) → tester (independent, adversarial verify). **Mechanism-only: 1d is verified by the tester, not the validator.**
 Depends on: 1a (`nous_field`), 1b (`nous_coalitions`), 1c (`nous_source_clustering`), `nous_perceive` (`think()`), Phase 0 substrate (`nous_store`, `nous_activation`).
 Inherits from: SPEC-1c §6.1 (amendment) and §7.7 — the re-scoped "no over-swallow" criterion.
 
-> Scope discipline (CONTRIBUTING.md rules 1–4): this document is **description, not built code**.
-> Nothing here is `PROVEN` or `BUILT` until the tester returns PASS on §6. Mechanism and meaning
-> are graded separately and one never stands in for the other. 1d makes a **mechanism** claim only;
-> it does **not** make an external-data cognitive claim (that is 1e). Until built and tester-verified,
-> 1d stays `DESIGNED` and the roadmap's "you are here" marker does not move past it.
+> Scope discipline (CONTRIBUTING.md rules 1–4): this document is **description**, and a part is now built.
+> Each component is `PROVEN`/`BUILT` only after the tester returns PASS on the §6 bars that apply to it.
+> **1d-i (competition + over-swallow pruning) has returned PASS** (mechanism tester-VERIFIED) and is
+> built; **1d-ii (broadcast + bounded feedback) is still description, not built code** — nothing about
+> it is `PROVEN` or `BUILT`. Mechanism and meaning are graded separately and one never stands in for the
+> other. 1d makes a **mechanism** claim only; it does **not** make an external-data cognitive claim
+> (that is 1e). Because 1d-ii is not built, **1d overall stays `DESIGNED`** and the roadmap's "you are
+> here" marker does not move past 1d.
 
 ---
 
@@ -121,29 +124,56 @@ workspace via attention codelets. Shanahan (2006/2010) — global-workspace dyna
 competition-then-broadcast in an artificial agent. These are cited as the **selection-structure
 lineage**, not as cognitive validation (§1).
 
-### 3.2 Pruning — drop weakly-bridged unperceived members (pure read)
+### 3.2 Pruning — the cohesion-valley / relative-attachment watershed (pure read) — REALIZED + ACCEPTED RULE
 
-The over-swallow flip. A member node is **pruned** from the winning coalition iff it is reached only
-through a **weak bridge into a domain no source named**. Concretely (the exact rule is **Decision C**):
+> **Decision C resolved (2026-06-20).** The earlier framing in this section — "prune any domain no
+> source named" (literal domain-membership) — was the **intent**. The builder's implementation and the
+> tester's proof established that the realized C1 is **not** that literal membership rule; it is a
+> **parameter-free cohesion-valley (relative-attachment) watershed**. Cagan **accepted the valley rule
+> as the intended design** (2026-06-20) — no mechanism rework — requiring this framing be corrected and
+> the divergence logged as an accepted known-limitation (§7, item 8). The realized rule is distinct
+> from both literal-membership and the rejected fraction-based C2. The paragraph below is the
+> authoritative characterization (it matches the module docstring, corrected in parallel).
 
-- A node is **unperceived** if it is not a perceived source and its dominant source is not in the same
-  group/basin as a perceived source — i.e. it belongs to a domain the input did not name.
-- A bridge is **weak** if the flow/road strength connecting the unperceived node's region to the
-  perceived region is small **relative to** the within-coalition cohesion (a *relative* threshold,
-  scale-invariant, never an absolute constant — same discipline as 1c's `DEFAULT_PROXIMITY_FRACTION`
-  and 1b's `DEFAULT_FLOW_CUT_FRACTION`).
+**The realized + accepted rule.** 1d-i pruning is a parameter-free **cohesion-valley /
+relative-attachment watershed**: keep a reached member iff it is pulled toward the named region at
+least as strongly as toward the unnamed region; else prune. It is threshold-free and generalizes. It
+is **NOT** pure domain-membership ('prune any domain no source named'): an unnamed domain bridged **at
+least as strongly as its own internal cohesion** has no valley and is therefore **KEPT**, so
+over-swallow can recur in that topology. Accepted as the intended design (Cagan 2026-06-20); the
+divergence is always in the safe direction (over-inclusion of an unnamed domain — never over-pruning a
+perceived member; verified across 60 random adversarial graphs).
 
-The critical subtlety the inherited limitation documents (SPEC-1c §7.7): on `_small_mind` the
-`coffee→work` bridge has weight `n=8` and is **strong**, while `work`/`code` are genuinely
-**unperceived**. So the pruning criterion that flips this case is *not* "cut weak roads" alone — it is
-**"the destination domain was never named by any source"**. The over-swallow flip therefore hinges on
-the **perceived-vs-merely-reached distinction** (using `perception.sources` / `clustering`), not on
-bridge weakness alone. Decision C must make this explicit and the acceptance test (§6.1) must verify
-that a strong bridge into an *unperceived* domain is still pruned, while a strong bridge into a
-*perceived* domain is **not** pruned (the anti-overcorrection control).
+Concretely, in the realized rule:
 
-This is the heart of why over-swallow is a *workspace* concern, not a *source-grouping* concern: only
-the workspace knows the full set of what was perceived versus what was merely reached by spreading.
+- A reached node's **attachment to the named region** vs its **attachment to the unnamed region** is
+  compared on the same relative-strength scale (no absolute constant, no tunable fraction — scale-
+  invariant, in the spirit of 1c's `DEFAULT_PROXIMITY_FRACTION` and 1b's `DEFAULT_FLOW_CUT_FRACTION`,
+  but with **no** parameter at all: the comparison is the watershed itself).
+- A node is **pruned** when it sits across a **cohesion valley** from the named region — i.e. its pull
+  toward the named region is strictly weaker than its pull toward the unnamed region.
+- A node is **kept** when there is **no valley** — its pull toward the named region is at least as
+  strong as toward the unnamed region. (This is what keeps a non-source node that is densely fused into
+  a perceived domain — it is reached strongly from the named side, so it survives.)
+
+Why this still flips the inherited case (SPEC-1c §7.7): on `_small_mind` the `coffee→work` bridge has
+weight `n=8` and is **strong**, but `work`/`code`'s pull *back into their own unnamed cohesion* is
+stronger still, so a valley exists between the named `coffee` region and the `work`/`code` region and
+they are pruned. The flip therefore does **not** rely on "cut weak roads" (the bridge is strong) and
+does **not** rely on a tuned threshold — it falls out of the parameter-free relative-attachment
+comparison. The acceptance test (§6.1) verifies that this strong-bridge-into-an-unnamed-region case is
+still pruned, while a region the input **named** is **not** pruned (the anti-overcorrection control),
+and that the flip generalizes on an independently-built isomorphic-but-relabelled graph.
+
+The corner case where the watershed **diverges from literal membership** is logged as an accepted
+known-limitation: an unnamed domain bridged **≥ its own internal cohesion** has no valley and is
+**KEPT** → over-swallow can recur in that topology (§7, item 8). It is accepted because the divergence
+is always in the **safe direction** (over-inclusion of an unnamed domain; it never over-prunes a
+perceived member).
+
+This is still the heart of why over-swallow is a *workspace* concern, not a *source-grouping* concern:
+only the workspace sees both the named region and the relative pull of everything spreading reached,
+and can place the watershed between them.
 
 Prior art: the GWT account of selective access — the workspace admits *one coherent content* and
 excludes the rest (Baars 1988; Dehaene & Changeux 2011 model selective amplification/suppression).
@@ -365,6 +395,14 @@ byte-identical across 6 seeds) is required, mirroring tester P2b.
 
 ## 7. Known limitations / asserted negatives (builder ships each as an explicit test)
 
+> **Status note (2026-06-20).** 1d-i (competition + over-swallow pruning; pure selection; no feedback)
+> is **BUILT and its mechanism is tester-VERIFIED (PASS)** — it passes every §6 acceptance bar that
+> applies to selection (§6.1 over-swallow flip + anti-overcorrection + generalization control,
+> §6.2 pure-selection half, §6.4 determinism/integrity). 1d-ii (broadcast + bounded feedback, §6.3 and
+> the §6.2 explicit-write half) is **not built**, so 1d overall stays `DESIGNED`. Limitation item 8
+> below was added when the tester proved the realized pruning rule is the cohesion-valley watershed
+> (§3.2), accepted by Cagan as the intended design.
+
 1. **No cognitive claim.** Passing §6 proves a selection-and-feedback **mechanism**, not a cognitive
    phenomenon. "The winner biases the next cycle" is an internal property; it is **not** priming and
    **not** evidence of awareness. — stated in the delivery report and as a code comment, asserted as a
@@ -374,10 +412,12 @@ byte-identical across 6 seeds) is required, mirroring tester P2b.
 3. **Broadcast magnitude is uncalibrated.** The bounded delta/decay is a documented design constant,
    not tuned against external data; tuning it to produce a 1e result would be circular and is
    forbidden. — asserted-negative.
-4. **Pruning is perceived-vs-reached, not semantic.** 1d prunes by what the input *named* vs. what
-   spreading merely *reached*; it does not understand domains semantically. A node in a genuinely
-   perceived domain is never pruned even if loosely attached (the §6.1 anti-overcorrection control
-   pins this). — asserted-negative.
+4. **Pruning is a relative-attachment watershed, not semantic.** 1d-i prunes by *relative pull* —
+   whether a reached node is attached at least as strongly to the named region as to the unnamed region
+   (§3.2) — anchored on what the input *named* vs. what spreading merely *reached*; it does not
+   understand domains semantically. A node densely fused into a perceived domain is never pruned even if
+   it has no direct source link (it is reached strongly from the named side; the §6.1 anti-overcorrection
+   control pins this). — asserted-negative.
 5. **Single winner only.** 1d selects exactly one coalition; it does not model parallel or blended
    winners, partial broadcast, or attention over multiple structures. — asserted-negative.
 6. **No memory hierarchy / consolidation.** Broadcast is an immediate within-substrate road bias; it
@@ -385,6 +425,18 @@ byte-identical across 6 seeds) is required, mirroring tester P2b.
 7. **Perception and field/coalition surfaces unchanged.** 1d does not alter `perceive()`,
    `build_activation_field()`, or `form_coalitions_from_field()` signatures; it consumes their output
    and adds fields to `ThoughtResult`. — asserted-negative.
+8. **An unnamed domain bridged ≥ its own internal cohesion is KEPT → over-swallow can recur there
+   (ACCEPTED, safe-direction).** The realized pruning rule is the parameter-free cohesion-valley /
+   relative-attachment watershed (§3.2), **not** literal domain-membership. When an unnamed domain is
+   bridged into the named region **at least as strongly as its own internal cohesion**, there is **no
+   valley**, so the watershed **keeps** it — over-swallow can recur in that specific topology. This
+   divergence from literal membership is **accepted as the intended design (Cagan 2026-06-20)** because
+   it is always in the **safe direction**: it over-includes an *unnamed* domain and **never** over-prunes
+   a *perceived* member (verified across 60 random adversarial graphs). Shipped as an explicit
+   asserted-negative — the builder's `test_KNOWN_LIMITATION_unnamed_domain_bridged_ge_cohesion_is_kept`,
+   independently confirmed by the tester's T12c / T12d (the corner-case probes that the bridged-≥-cohesion
+   node is KEPT and that the divergence is safe-direction only). This is a *mechanism* limitation, not a
+   cognitive one; it is **not** a reason to reopen 1d-i — the §6 acceptance bars all pass.
 
 ---
 
@@ -397,7 +449,13 @@ byte-identical across 6 seeds) is required, mirroring tester P2b.
 **LOCKED:**
 - **A → A2:** competition = activation **density-normalized by coalition size, with a minimum-size guard**; `creation_seq` tiebreaks reuse the `nous_coalitions.py` pattern.
 - **B → B1:** broadcast = **bounded strengthening of the winner's internal roads** (reuse `strengthen()`, whose gain∝(1−strength) gives structural boundedness); this is the durable trace 1e needs.
-- **C → C1:** pruning = **unperceived-domain, basin/1c-group-anchored** — prune members in a domain no source named (flips the strong `coffee→work` bridge without tuning a threshold to the test).
+- **C → C1, resolved → valley rule (accepted 2026-06-20):** pruning = the realized + accepted
+  **parameter-free cohesion-valley / relative-attachment watershed** (§3.2). C1's *intent* was literal
+  domain-membership ("prune any domain no source named"); the **realized + accepted** rule keeps a
+  reached member iff it is pulled toward the named region at least as strongly as toward the unnamed
+  region (else prune) — threshold-free, generalizing, and distinct from **both** literal-membership
+  (it KEEPS an unnamed domain bridged ≥ its own cohesion — §7 item 8) **and** the rejected
+  fraction-based C2. It flips the strong `coffee→work` bridge without tuning a threshold to the test.
 - **D → D1:** new module **`src/nous_workspace.py`** + opt-in `broadcast` flag on `think()`; `broadcast=False` stays a pure read, `broadcast=True` is the only writing path.
 - **E → take the split:** build **1d-i** (competition + over-swallow pruning; pure selection; no feedback) first, then **1d-ii** (broadcast + bounded feedback; closes the loop; unblocks 1e).
 
@@ -460,6 +518,13 @@ costs a substrate change and a new neutrality exception; defer it unless 1e show
 coarse. **Lock at build** after Cagan picks.
 
 ### Decision C — Definition of "weakly bridged into an unperceived domain" (the pruning criterion)
+
+> **RESOLVED 2026-06-20 → valley rule (accepted).** The options below are the rationale of record.
+> C1 was selected; the **realized implementation + accepted rule** is the **parameter-free
+> cohesion-valley / relative-attachment watershed** (§3.2), which the tester proved is **not** literal
+> domain-membership and Cagan accepted as the intended design (no mechanism rework). It is distinct
+> from both C1-as-literal-membership and the rejected C2; the accepted corner-case divergence is §7
+> item 8. Read C1 below as the *intent*; read §3.2 for the *realized + accepted* rule.
 
 - **C1 — unperceived-domain pruning (RECOMMENDED).** Prune a member iff its domain (basin / 1c group)
   contains **no perceived source** — i.e. spreading reached it but the input never named anything in
@@ -551,15 +616,18 @@ build/verify cycle, which the project's discipline already pays gladly. **Confir
 
 ## 10. Where this leaves the roadmap
 
-1d stays **`DESIGNED`** until built and tester-verified. It is the **next build**, and it is the brick
-that turns the one-shot pipeline into a real cycle: it replaces the `coalitions[0]` placeholder with
-real competition, flips the over-swallow asserted-negative inherited from 1c (SPEC-1c §6.1 / §7.7)
-through the live loop, and writes a single bounded broadcast that biases the next cycle without
-diverging or locking in. **1d unblocks 1e**; the project's **primary meaning bar remains at 1e**
-(semantic priming vs. human SWOW norms), and 1d itself makes **no cognitive claim** — it is verified
-by the tester, not the validator.
+**1d-i is BUILT and its mechanism is tester-VERIFIED (PASS).** It replaces the `coalitions[0]`
+placeholder with real density-normalized competition (A2) and flips the over-swallow asserted-negative
+inherited from 1c (SPEC-1c §6.1 / §7.7) through the live loop — via the realized + accepted
+cohesion-valley / relative-attachment watershed (§3.2), with the bridged-≥-cohesion corner case logged
+and accepted as a safe-direction known-limitation (§7 item 8). 1d-i makes **no cognitive claim** — its
+mechanism is verified by the tester, not the validator.
 
-**Single next action:** Cagan picks Decisions A–E (recommendations: A2, B1, C1, D1, and **take the
-1d-i/1d-ii split**); then the builder implements **1d-i** (real competition + over-swallow pruning,
-pure selection, no feedback) test-first against §6.1–§6.2(selection) and the §5 bar, and the tester
-independently verifies before 1d-ii (broadcast + bounded feedback) begins.
+**1d overall stays `DESIGNED`** because **1d-ii (broadcast + bounded feedback) is not built.** That is
+the brick that actually closes the loop — the single bounded broadcast that biases the next cycle
+without diverging or locking in — and it is what **unblocks 1e**. The project's **primary meaning bar
+remains at 1e** (semantic priming vs. human SWOW norms).
+
+**Single next action:** build **1d-ii** (broadcast + bounded feedback) test-first against §6.2's
+explicit-write half and the §6.3 both-directions bounded-feedback bar, then have the tester
+independently verify, which moves 1d from `DESIGNED` to built/verified and unblocks 1e.

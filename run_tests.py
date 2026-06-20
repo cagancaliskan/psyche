@@ -37,11 +37,13 @@ SUITES = [
     "test_nous_coalitions.py",
     "test_nous_field.py",
     "test_nous_source_clustering.py",
+    "test_nous_workspace.py",
     "test_nous_perceive.py",
     # independent adversarial verification (tester-authored) — kept in the one runner so the
     # canonical captured output reflects the full verification, not just the builder's suites.
     "test_tester_1c_adversarial.py",
     "test_tester_1c_mutation_battery.py",
+    "test_tester_1d_i_adversarial.py",
 ]
 
 
