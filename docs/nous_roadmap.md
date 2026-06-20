@@ -94,7 +94,7 @@ The missing piece that "strongest coalition = thought" was standing in for. One 
 **1e. First falsifiable cognitive result** — `DESIGNED` · **NOW UNBLOCKED** (the loop closed at 1d-ii, 2026-06-20) *(the project's PRIMARY meaning bar — relocated here 2026-06-20)*
 The moment the cognitive layer earns the word "cognitive." Reproduce **semantic priming** — related primes retrieved faster/stronger than unrelated ones — where relatedness comes from a *published external association norm* (SWOW human association data), never from us. With 1d-ii's bounded broadcast in place, a prime can now leave a trace that biases a later target through the closed loop — the precondition 1e needs. This is the **next build**.
 > **Why the primary bar lives here, not at 1c §6.2 (decision logged 2026-06-20).** Meaning is established at what the system *does*, not at one internal layer's partition shape. 1c §6.2 (a layer's partition vs an automatic partition of the same graph) is low-value as evidence of cognition — even a clean pass shows only that two clustering principles agree. A *behavioral* priming effect, graded against **human** association norms, is the externally-meaningful claim. 1c §6.2 stays a recorded secondary/structural check in the `BUILT · UNVALIDATED` box; this — 1e — is the headline.
-> **Done means:** the known human direction is reproduced on data we did not author, with the prediction fixed before the run, against a baseline/control. (Fan effect is the safer, lower-circularity backup result if priming proves too entangled — but it proves less. NB: Phase 2A/2B already ran pre-registered fan-effect and graded-priming harnesses on SWOW — `experiments/results/` — which is prior scaffolding to reuse here, *not* a substitute for 1e's result through the closed cognitive loop.)
+> **Done means:** the known human direction is reproduced on data we did not author, with the prediction fixed before the run, against a baseline/control. (Fan effect is the safer, lower-circularity backup result if priming proves too entangled — but it proves less. NB: Phase 2A/2B already ran pre-registered fan-effect and graded-priming harnesses on SWOW — `experiments/results/` — which is prior scaffolding to reuse here, *not* a substitute for 1e's result through the closed cognitive loop. This scaffolding sits at the **disciplined-exploratory** assurance tier — a distinct, lower tier than tester-verified mechanism; see "Verification tiers" below.)
 > **Routing:** this is a cognitive claim — the validator designs and runs the falsifiable experiment with a pre-registered, direction-fixed prediction; the builder does not assert its meaning.
 
 > **🎯 Phase 1 milestone:** one complete cognitive cycle that runs on real input, closes the loop, and reproduces at least one external cognitive effect **graded against human data (the primary meaning bar — semantic priming at 1e)**. This is the first result worth a real write-up, and the first "door." The milestone is the *behavioral* effect, not any single layer's internal partition shape (1c §6.2 is a structural check beneath it, not the milestone).
@@ -162,6 +162,28 @@ These are the habits already paid for in Phase 0. They're what keep the stack co
 3. **External yardsticks, never self-authored inputs.** The fastest way to fool ourselves is to grade the system on data we wrote. Relatedness, norms, baselines: all from outside.
 4. **Keep `PROVEN` and `DESIGNED` in separate boxes, always.** The vision docs are description, not specification. Calling something built when it's only designed is the one move that poisons trust in everything else.
 5. **Every phase ends in something shippable.** Even if the road stops at any phase, what's behind us should stand on its own as a real, citable artifact. Phase 0 already does.
+
+---
+
+## Verification tiers / scaffolding status (status note, 2026-06-20)
+
+Not everything in the repo carries the same assurance. Three tiers are in play, and they are kept **distinct** — collapsing them is exactly the kind of overclaim CLAUDE.md forbids. From strongest to weakest:
+
+1. **`PROVEN`** — **Phase 0 core** (substrate store + spreading-activation engine). Verified against hard properties (determinism across processes, integrity, purity), not merely "it runs."
+2. **tester-verified mechanism** (`BUILT · UNVALIDATED`) — **1c** (source-clustering) and **1d** (1d-i workspace competition + over-swallow pruning; 1d-ii broadcast + bounded feedback). Independently and adversarially verified by the tester; mechanism only, **no meaning/cognitive claim**. These are the suites in the canonical runner.
+3. **disciplined-exploratory** — the **Phase 2A/2B experiment scaffolding**, and the 1c §6.2 reproduction that rides on it. **This is a distinct, *lower* assurance tier than the two above: it is not `PROVEN`, not tester-verified, and — being instrument/scaffolding — it makes no cognitive/meaning claim of its own.**
+
+**What is now on `main` and load-bearing (tier 3).** The Phase 2A/2B scaffolding is merged onto `main` and is genuinely depended upon:
+- **Phase 2A** — `experiments/harness.py` (`build_graph_from_spec`) and the fan-effect characterization (`experiments/fan_effect.py`).
+- **Phase 2B** — `experiments/swow.py` (the SWOW loader) and the pre-registered graded semantic-priming study (`experiments/priming.py`).
+- The already-committed **1c §6.2 experiment imports it**: `experiments/exp1c_recovery.py` does `import swow` + `from harness import build_graph_from_spec, SRC_DIR`, and `experiments/exp1c_build_partition.py` does `import swow`.
+- The upcoming **1e priming experiment is built to reuse it** (`experiments/priming.py` already does `import swow` + `from harness import build_graph_from_spec, read_targets`).
+
+**Why it is "disciplined-exploratory," not tier 2.** It is honest, pre-registered, and self-tested — but it has **not** had an independent **tester** or **validator** pass, and it **predates this session's four-agent discipline**. Concretely:
+- Its tests — `experiments/test_harness.py`, `experiments/test_priming.py`, `experiments/test_exp1c.py` — are **NOT in the canonical `run_tests.py` `SUITES`**. The green canonical run (**12 suites, 618 assertions, 0 failures**, `docs/TEST_OUTPUT.txt`) does **not** exercise them.
+- It is **self-tested** (its own test files; a frozen-core regression was run, `experiments/results/frozen_library_regression*.txt`) — which is real diligence, but **self-tested ≠ tester-verified**. No independent adversarial suite has been written against it, and no validator has adjudicated a claim it produces.
+
+**What this tier does *not* establish.** The Phase 2B priming scaffolding is an **instrument**, not a meaning result. Its existence does **not** earn 1e. The project's primary meaning bar remains **1e — semantic priming through the closed cognitive loop, graded against human (SWOW) association norms — and 1e has not yet been run** through that loop. The scaffolding is something 1e *reuses*; it is not a substitute for 1e's result, and nothing here changes the status of 1c, 1d, or Phase 0.
 
 ---
 
