@@ -1,0 +1,10 @@
+
+=== build_graph_from_spec determinism (rebuild → identical readout) ===
+
+=== run_trials reports zero spread (determinism by construction) ===
+
+=== retrieval_strength purity (store byte-unchanged after a read) ===
+
+=== ADVERSARIAL determinism: fan_effect byte-identical across PYTHONHASHSEED ===
+
+RESULT: 17 passed, 0 failed

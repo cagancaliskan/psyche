@@ -1,0 +1,12 @@
+
+=== stats helpers (pure, deterministic) ===
+
+=== pair selection is deterministic and blind (topology only) ===
+
+=== build_graph_from_spec on SWOW: identical readout across rebuilds ===
+
+=== read_targets: pure read + equals retrieval_strength per target ===
+
+=== ADVERSARIAL determinism: priming summary byte-identical across PYTHONHASHSEED ===
+
+RESULT: 22 passed, 0 failed, 0 skipped
