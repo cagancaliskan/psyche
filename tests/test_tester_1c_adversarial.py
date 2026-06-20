@@ -780,28 +780,40 @@ def test_P8c_merge_holds_on_independently_built_isomorphic_graph():
 # P9 — Over-swallow asserted-negative is a TRUE residual (not green-washing)
 # ─────────────────────────────────────────────────────────────────────────────
 
-def test_P9_over_swallow_residual_is_real():
-    section("P9 the §7.7 over-swallow asserted-negative documents a REAL residual: the "
-            "single-source thought genuinely reaches the bridged work/code domain")
+def test_P9_over_swallow_FLIPPED_by_1d_i():
+    section("P9 (was: over-swallow residual is real) — FLIPPED by 1d-i: the bridged, "
+            "unperceived work/code domain is now PRUNED from the winning thought")
+    # NOTE FOR THE TESTER (lane honesty): this was a 1c-era tester assertion that
+    # over-swallow PERSISTED (over == True). The 1d-i builder converted it to the positive
+    # assertion because SPEC-1c §6.1/§7.7 and SPEC-1d §6.1/§7.1 explicitly hand this exact
+    # residual to 1d to flip, and 1d-i now makes `over == True` factually false through the
+    # live loop. This is a coverage UPDATE to the fixed behavior, not a weakening to pass a
+    # defect; the tester should independently re-verify and re-own it for 1d-i.
     s, n = _small_mind()
     r = think(s, "coffee in the kitchen this morning")
+    # the 1c stage is unchanged: still exactly one group, coffee represents it, and the
+    # field still REACHES the bridged work/code domain (the spread is unchanged).
     check(len(r.clustering.groups) == 1, "only one group on this utterance (warm only)")
     check(r.clustering.groups[0].representative == n["coffee"],
           "coffee is the elected representative")
+    reached = set(r.field_.total.keys())
+    check(n["work"] in reached and n["code"] in reached,
+          "precondition: the single-source spread still REACHES work/code over the n=8 "
+          "bridge — 1d-i prunes at the workspace, it does not change the field")
+    # FIXED behavior: the winning thought excludes the unperceived work/code domain
     thought_members = set(r.thought.members) if r.thought else set()
-    over = (n["work"] in thought_members) or (n["code"] in thought_members)
-    check(over,
-          "the over-swallow residual genuinely occurs (work/code in the single thought) — "
-          "the asserted-negative is honest, not masking a §6.1 failure")
-    # AND: this is NOT a merge/no-stranding failure in disguise. Merge holds and nothing
-    # strands even though over-swallow occurs — confirming the residual is the SEPARATE,
-    # re-scoped-to-1d concern, not a hidden §6.1 break.
+    check(n["work"] not in thought_members and n["code"] not in thought_members,
+          "1d-i: the winning thought no longer over-swallows work/code")
+    check(r.workspace is not None and
+          {n["work"], n["code"]} <= set(r.workspace.pruned_members),
+          "work and code are recorded in workspace.pruned_members")
+    # AND the §6.1 merge/no-stranding properties still HOLD alongside the flip.
     warm = {n["coffee"], n["kitchen"], n["morning"]}
     touching = [g for g in r.clustering.groups if warm & set(g.members)]
     perceived = set(r.perception.sources)
     singletons = [c for c in r.coalitions if c.size() == 1 and (set(c.members) & perceived)]
     check(len(touching) == 1 and len(singletons) == 0,
-          "§6.1 (merge + no-stranding) still HOLDS alongside the over-swallow residual")
+          "§6.1 (merge + no-stranding) still HOLDS alongside the over-swallow flip")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -861,7 +873,7 @@ def run_all():
         test_P8_no_stranding_generalization_two_clusters_loop_closed,
         test_P8b_isolated_perceived_source_stranding_probe_loop_closed,
         test_P8c_merge_holds_on_independently_built_isomorphic_graph,
-        test_P9_over_swallow_residual_is_real,
+        test_P9_over_swallow_FLIPPED_by_1d_i,
         test_P10_partition_can_yield_multiple_groups_loop_closed,
     ]:
         t()

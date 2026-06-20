@@ -343,40 +343,42 @@ def test_clustering_no_longer_strands_same_domain_sources():
           f"(stranded: {len(stranded)})")
 
 
-def test_KNOWN_LIMITATION_single_representative_still_swallows_bridged_domain():
-    section("KNOWN LIMITATION: a single-group representative still over-swallows a "
-            "bridged domain")
-    # HONEST RESIDUAL after 1c, shipped as an asserted-negative that PASSES:
+def test_1d_i_over_swallow_FLIPPED_unperceived_domain_pruned():
+    section("§6.1 FLIPPED by 1d-i: the bridged, unperceived work/code domain is PRUNED "
+            "from the winning thought")
+    # WAS: test_KNOWN_LIMITATION_single_representative_still_swallows_bridged_domain — a
+    # PASSING asserted-negative documenting that over-swallow PERSISTED after 1c (the
+    # single-source basin pulled the bridged work/code domain into the thought). SPEC-1c
+    # §6.1/§7.7 handed the flip to 1d; 1d-i now owns it, so this is converted from the
+    # residual to the POSITIVE assertion of the fixed behavior (coverage preserved, not
+    # deleted).
     #
-    # On 'coffee in the kitchen this morning' perception names ONLY warm-domain sources, so
-    # 1c yields exactly ONE group, whose representative is elected by the locked rule
-    # (highest energy, ties on creation_seq asc) = coffee. coffee has a direct road to the
-    # work domain (the n=8 coffee->work bridge in _small_mind). With a single source there
-    # is exactly one basin, so EVERY node the representative reaches — including the bridged
-    # work/code domain — lands in that one coalition. Source-clustering alone cannot keep a
-    # bridged, non-perceived domain out of a single-source basin: there is no competing
-    # source to draw a seam, and the bridge is too strong (n=8) for the relative flow/cut to
-    # sever without tuning a threshold to the test (which is forbidden).
-    #
-    # This is the §6.1 over-swallow criterion NOT being met on _small_mind. It is recorded
-    # honestly here rather than smoothed over. See the delivery report: the full §6.1
-    # acceptance (over-swallow excluded) is a SPEC-vs-SUBSTRATE conflict for the PM to
-    # resolve (e.g. thin the bridge, re-scope the criterion, or extend 1c's mechanism).
+    # WHY 1d-i flips it (no threshold tuned to this test, CLAUDE.md rule 5): perception
+    # names ONLY warm-domain sources, so 1c still yields exactly ONE group (rep = coffee)
+    # and the field still has one basin that REACHES work/code over the strong n=8 bridge.
+    # 1d-i's workspace pruning (Decision C1) then drops members in a domain no source
+    # named, by a scale-invariant watershed seeded from the perceived sources: work is
+    # pulled into its OWN community (n=30 internal ties) far harder than across the n=8
+    # bridge to the perceived region, so it never reaches the PERCEIVED label and is pruned
+    # along with desk/deadline/code. The warm members the input named are kept.
     s, n = _small_mind()
     r = think(s, "coffee in the kitchen this morning")
-    # exactly one group (only warm sources perceived) and coffee represents it
+    # the 1c stage is unchanged: still exactly one group, coffee represents it
     check(len(r.clustering.groups) == 1, "only one source group on this utterance")
     check(r.clustering.groups[0].representative == n["coffee"],
           "the elected representative is coffee (lowest creation_seq among tied energies)")
+    # FIXED behavior: the winning thought contains NEITHER work NOR code
     thought_members = set(r.thought.members) if r.thought else set()
-    over_swallows = n["work"] in thought_members or n["code"] in thought_members
-    check(over_swallows,
-          "DOCUMENTED: the single-source thought still pulls in the bridged work/code "
-          "domain — source-clustering alone does not fix over-swallow here")
-    print("      → recorded as a residual limitation: over-swallow persists when the "
-          "elected")
-    print("        representative bridges to a non-perceived domain (PM decision needed; "
-          "see report).")
+    check(n["work"] not in thought_members and n["code"] not in thought_members,
+          "1d-i: the winning thought no longer over-swallows the bridged work/code domain")
+    # and those nodes are recorded as pruned (the unperceived-domain members)
+    check(r.workspace is not None and
+          n["work"] in r.workspace.pruned_members and
+          n["code"] in r.workspace.pruned_members,
+          "work and code appear in workspace.pruned_members (unperceived domain pruned)")
+    # the perceived warm domain is PRESERVED in the winner (not over-pruned)
+    check({n["coffee"], n["kitchen"], n["morning"]} <= thought_members,
+          "the perceived warm sources remain in the winning thought (warm group preserved)")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -536,9 +538,9 @@ def run_all():
         test_clustering_preserves_integrity,
         test_scale_invariance_of_partition,
         test_determinism_across_hash_seeds,
-        # §6.1 mechanism (the part 1c fixes) + the honest residual
+        # §6.1 mechanism: 1c fixes stranding; 1d-i flips the over-swallow residual
         test_clustering_no_longer_strands_same_domain_sources,
-        test_KNOWN_LIMITATION_single_representative_still_swallows_bridged_domain,
+        test_1d_i_over_swallow_FLIPPED_unperceived_domain_pruned,
         # six asserted-negatives (spec §7)
         test_NEGATIVE_clusters_only_perceived_sources_not_whole_graph,
         test_NEGATIVE_no_cognitive_claim_membership_is_topological_only,
