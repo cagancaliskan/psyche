@@ -39,13 +39,43 @@ claim of consciousness, awareness, subjective experience, or "ignition."
     project's meaning bar lives at 1e and is graded by the validator against external
     human data, never asserted here.
 
-SCOPE — 1d-i ONLY (the split, locked SPEC-1d §8/E):
+SCOPE — 1d-i (selection) + 1d-ii (the single bounded broadcast write):
 
-  - 1d-i is PURE SELECTION. It mutates NOTHING: no broadcast, no feedback, no writes of
-    any kind. `select_winner` is a pure read, exactly like the layers beneath it.
-  - The broadcast / bounded-feedback write (Decision B1) is 1d-ii and is deliberately
-    NOT implemented here. `think(..., broadcast=True)` raises NotImplementedError so the
-    absence of feedback is explicit and cannot be mistaken for a built feature.
+  - 1d-i is PURE SELECTION. `select_winner` mutates NOTHING: no broadcast, no feedback,
+    no writes of any kind — a pure read, exactly like the layers beneath it. Its logic is
+    unchanged by 1d-ii.
+  - 1d-ii adds ONE explicit, named write — `broadcast()` (Decision B1) — and nothing
+    else. It strengthens the roads that already exist AMONG THE WINNER'S SURVIVING MEMBERS
+    (its "internal roads") through the existing proven `strengthen()` primitive, so that on
+    the next cycle those associations conduct activation slightly more ("what just won is
+    slightly easier to think next"). It creates NO new roads and touches NO nodes (nodes
+    stay neutral). This is the ONLY mutation 1d introduces; no read in 1d may call it.
+  - BOUNDEDNESS IS STRUCTURAL, NOT A CLAMP. `broadcast()` adds no cap, no ceiling, no
+    tunable magnitude of its own: it calls `strengthen()` with its default gain, whose
+    `gain ∝ (1 − strength)` saturation makes repeated broadcasts on one winner converge
+    toward strength 1.0 rather than grow without bound (each call closes a fixed FRACTION
+    of the remaining distance to 1.0, so per-cycle deltas shrink geometrically). The
+    no-divergence direction (§6.3) is a property of `strengthen`, inherited here for free.
+  - NO LOCK-IN, STRUCTURALLY (§6.3). The broadcast biases CONDUCTANCE within the winner's
+    own roads; it does NOT seed activation. Selection is dominated by which sources the
+    CURRENT percept lights up (the field is seeded from the perceived sources). A
+    sufficiently strong fresh percept for a different domain seeds THAT domain directly and
+    wins, regardless of accumulated road bias on the prior winner — so the system does not
+    freeze on the first thing it settled on. This is demonstrated, not assumed, by the
+    no-lock-in acceptance test (escape through the live loop).
+  - `broadcast()` is wired behind `think(..., broadcast=True)`. `think(..., broadcast=
+    False)` (the default) remains EXACTLY the pure-read selection path 1d-i shipped — zero
+    mutation — so the existing purity guarantee is preserved and meaningful.
+
+HONEST FRAMING OF THE BROADCAST (hard — CONTRIBUTING.md rule 1; SPEC-1d §1, §7 items 1–2):
+
+  - "broadcast biases the next cycle" is an INTERNAL MECHANISM PROPERTY of the substrate:
+    a measurable change in the next cycle's conduction in a pre-stated direction. It is
+    NOT a claim that the system attends, notices, primes, or experiences anything. It is
+    NOT the 1e priming effect (which is measured against external human data by the
+    validator). 1d-ii closes the information loop that 1e needs; it makes NO cognitive or
+    meaning claim itself. Passing this module's tests proves the FEEDBACK MECHANISM is
+    correct, deterministic, integrity-preserving, and bounded — nothing about meaning.
 
 THE C1 PRUNING PRINCIPLE — a parameter-free COHESION-VALLEY / RELATIVE-ATTACHMENT
 WATERSHED (and, precisely, what it is NOT):
@@ -165,6 +195,44 @@ class WorkspaceResult:
     ranked: List[Coalition]
     raw_winner: Optional[Coalition]
     _seq: Dict[str, int] = field(default_factory=dict)
+
+
+@dataclass(frozen=True)
+class Broadcast:
+    """A record of the single bounded write 1d-ii applied to the substrate (Decision B1).
+
+    This is the description of EXACTLY what `broadcast()` did: which roads it strengthened
+    and by how much. It is produced only by the explicit write path; no pure read ever
+    produces a non-empty Broadcast, because no pure read calls `broadcast()`.
+
+    It is an INTERNAL MECHANISM RECORD — "these associations just won, so they are now
+    slightly easier to conduct next cycle." It is NOT a cognitive/awareness/priming claim
+    (see the module honest-framing note); meaning is the validator's call at 1e.
+
+    road_ids        : the distinct RoadIDs strengthened, in the deterministic order they
+                      were strengthened (by road creation_seq asc — never a uuid, never
+                      set/dict iteration order), so the write is byte-identical across
+                      processes.
+    before          : RoadID -> canonical (apply_decay=False) strength immediately BEFORE
+                      the write, for inspection / the exactly-these-roads-changed test.
+    after           : RoadID -> canonical strength immediately AFTER the write.
+    winner_member_count : the number of surviving winner members the internal roads were
+                      drawn from (0 if there was no winner, in which case nothing was
+                      written and road_ids is empty).
+    """
+    road_ids: List[str]
+    before: Dict[str, float]
+    after: Dict[str, float]
+    winner_member_count: int
+
+    def delta(self, road_id: str) -> float:
+        """How much a given broadcast road's canonical strength moved (after - before)."""
+        return self.after.get(road_id, 0.0) - self.before.get(road_id, 0.0)
+
+    def total_strength_after(self) -> float:
+        """Sum of the broadcast roads' canonical strengths after the write — the bounded
+        aggregate the no-divergence test watches converge across cycles."""
+        return sum(self.after.values())
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -369,4 +437,97 @@ def select_winner(
         ranked=ranked,
         raw_winner=raw_winner,
         _seq=pruned_seq,
+    )
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Broadcast (Decision B1) — the SINGLE bounded write (1d-ii). Closes the loop.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def _internal_road_ids(store: SubstrateStore, winner: Coalition) -> List[str]:
+    """The DISTINCT RoadIDs of roads that already exist among the winner's members — the
+    winner's "internal roads." A road is internal iff BOTH its endpoints are winner members.
+
+    Pure read. Deterministic and convergence-safe:
+      - It collects EXISTING roads only (via `find_road`); it never creates a road.
+      - It considers both ordered directions (a->b and b->a are distinct directed roads in
+        this graph), but DEDUPES BY RoadID, so each underlying road appears AT MOST ONCE —
+        a road can never be counted (and therefore never strengthened) twice in one cycle.
+      - The returned order is by the road's `creation_seq` ascending (a stable, persisted
+        integer), never the uuid and never set/dict iteration order — so the sequence of
+        roads strengthened, and hence the resulting store state, is byte-identical across
+        processes and across hash seeds.
+    """
+    members = sorted(winner.members)  # sorted ids only for a deterministic build scan
+    seen: Set[str] = set()
+    rid_seq: Dict[str, int] = {}
+    for i in range(len(members)):
+        for j in range(len(members)):
+            if i == j:
+                continue
+            rid = store.find_road(members[i], members[j])
+            if rid is None or rid in seen:
+                continue
+            seen.add(rid)
+            # read the stable creation_seq for deterministic ordering (apply_decay
+            # irrelevant: creation_seq is identity-order metadata, not a decaying value)
+            rid_seq[rid] = store.get_road(rid, apply_decay=False).creation_seq
+    return sorted(seen, key=lambda r: rid_seq[r])
+
+
+def broadcast(store: SubstrateStore, winner: Optional[Coalition]) -> Broadcast:
+    """Apply the SINGLE bounded broadcast write (Decision B1): strengthen the winner's
+    internal roads so they conduct slightly more on the next cycle. This is the ONLY
+    mutation 1d introduces, and the ONLY writing path; no pure read calls it.
+
+    Mechanism (in-grain with the substrate, reusing the proven write path):
+      - Find the distinct roads that already exist among the winner's surviving members
+        (`_internal_road_ids`). Create NOTHING new.
+      - Strengthen each such road EXACTLY ONCE, in a deterministic order, via the existing
+        `store.strengthen(rid)` primitive with its DEFAULT gain and NO charge (so nodes
+        stay neutral, closure is untouched, and the emotional life of the road is not
+        altered by this structural bias).
+
+    BOUNDEDNESS IS STRUCTURAL — there is deliberately NO clamp, cap, or tunable magnitude
+    here. `strengthen`'s `gain ∝ (1 − strength)` makes each call close a fixed FRACTION of
+    the remaining distance to the saturation ceiling 1.0, so repeated broadcasts on one
+    winner CONVERGE toward (and never exceed) 1.0; the per-cycle increments shrink
+    geometrically. The §6.3 no-divergence property is therefore inherited from `strengthen`,
+    not added here.
+
+    This biases CONDUCTANCE only; it does not seed activation, so it cannot lock the system
+    onto the prior winner — a strong fresh percept seeds its own domain and can still win
+    (the §6.3 no-lock-in property, demonstrated through the live loop).
+
+    Returns a `Broadcast` describing exactly what changed (the roads, and their canonical
+    strength before/after). If there is no winner (or the winner has no internal roads),
+    NOTHING is written and the returned Broadcast is empty — a no-op write is still a
+    legitimate, recorded outcome.
+
+    NOT a cognitive claim: "what won is easier to think next" is an internal mechanism
+    property, distinct from the 1e priming effect measured against human data. See the
+    module honest-framing note.
+    """
+    if winner is None or not winner.members:
+        return Broadcast(road_ids=[], before={}, after={}, winner_member_count=0)
+
+    road_ids = _internal_road_ids(store, winner)
+
+    before: Dict[str, float] = {
+        rid: store.get_road(rid, apply_decay=False).strength for rid in road_ids
+    }
+
+    # the single write: strengthen each internal road exactly once, in deterministic order
+    for rid in road_ids:
+        store.strengthen(rid)  # default gain; no charge => nodes neutral, closure untouched
+
+    after: Dict[str, float] = {
+        rid: store.get_road(rid, apply_decay=False).strength for rid in road_ids
+    }
+
+    return Broadcast(
+        road_ids=road_ids,
+        before=before,
+        after=after,
+        winner_member_count=len(winner.members),
     )

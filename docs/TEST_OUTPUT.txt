@@ -1,24 +1,14 @@
 ======================================================================
   NOUS — CAPTURED TEST OUTPUT (verbatim)
 ======================================================================
-Generated : 2026-06-20 15:27:24 +0300
+Generated : 2026-06-20 18:56:05 +0300
 Machine   : Darwin 24.5.0 x86_64
 Python    : Python 3.12.4
 Command   : python3 run_tests.py   (one block per suite; absolute PYTHONPATH=src)
 Note      : Suites use a built-in harness (not pytest); each prints
             'RESULT: N passed, M failed' and exits non-zero on any failure.
-            Includes tester-authored adversarial suites (test_tester_1c_*
-            and test_tester_1d_i_adversarial.py). This run captures 10
-            suites (the runner's full SUITES list). 1d-i (workspace
-            selection, test_nous_workspace.py) now carries an explicit
-            builder-owned KNOWN-LIMITATION asserted-negative
-            (test_KNOWN_LIMITATION_unnamed_domain_bridged_ge_cohesion_is_kept):
-            the C1 pruning rule is a parameter-free cohesion-valley /
-            relative-attachment watershed, NOT pure domain-membership; an
-            unnamed domain bridged >= its internal cohesion is KEPT (the
-            divergence is always in the safe direction). Docstring framing
-            was corrected to match; no logic changed (every other suite's
-            count is byte-identical to the prior capture).
+            Includes builder + tester-authored adversarial suites (test_tester_*).
+            State: 1c PROVEN-mechanism + 1d-i + 1d-ii built & tester-verified.
 ======================================================================
 
 ######################################################################
@@ -245,7 +235,7 @@ helper: a NON-source node densely in a NAMED domain is kept (perceived via propa
 
 helper: _strongest_road_strength is symmetric and reads canonical strength
 
-ASSERTED-NEGATIVE #1: 1d-i has NO feedback — think(broadcast=True) raises (the write is 1d-ii, not built here)
+FLIPPED by 1d-ii: think(broadcast=True) now performs the SINGLE bounded write (the 1d-i 'no feedback' asserted-negative is flipped, as 1d-i flipped 1c's over-swallow negatives); the default broadcast=False path still writes nothing
 
 ASSERTED-NEGATIVE #2: the winner is a SELECTED INFORMATION STRUCTURE — no cognitive/awareness claim is made or asserted anywhere
 
@@ -262,7 +252,64 @@ ASSERTED-NEGATIVE #7: end-to-end selection is NOT invariant when DOWN-scaling pu
 KNOWN LIMITATION (asserted-negative): 1d-i pruning is a parameter-free cohesion-valley / relative-attachment watershed, NOT pure domain-membership. An UNNAMED domain bridged into the named region AT LEAST AS STRONGLY AS its own internal cohesion has NO valley and is therefore KEPT — over-swallow RECURS in that topology. Accepted design (2026-06-20); the divergence is always SAFE (a perceived member is never pruned).
 
 ======================================================================
-  RESULT: 79 passed, 0 failed
+  RESULT: 80 passed, 0 failed
+======================================================================
+
+######################################################################
+# test_nous_workspace_broadcast.py
+######################################################################
+======================================================================
+  NOUS WORKSPACE BROADCAST (1d-ii) — TEST SUITE
+======================================================================
+
+§6.2 explicit-write: think(broadcast=True) changes EXACTLY the roads in the returned Broadcast and NOTHING else (no other road, no node touched)
+
+§6.2 scope: the broadcast strengthens ONLY roads internal to the winner; the unperceived domain's roads and the bridge are NOT touched
+
+§6.2 explicit-write: running broadcast twice strengthens the SAME roads further (toward saturation), never other roads
+
+convergence double-counting guard: each broadcast road is strengthened EXACTLY ONCE per cycle (traversal_count increments by exactly 1)
+
+§6.2 scope: broadcast CREATES no road — road_count is unchanged by the write
+
+§6.3 NO DIVERGENCE: over many think(broadcast=True) cycles, road strength stays <= 1.0 and the broadcast aggregate CONVERGES (per-cycle deltas shrink to ~0), never grows without limit
+
+§6.3 NO DIVERGENCE (saturation): after many broadcasts a road approaches but never reaches/exceeds strength 1.0 (the ceiling is approached, not exceeded)
+
+§6.3 NO LOCK-IN: after biasing winner A over many broadcast cycles, a strong fresh percept favoring domain B SWITCHES the winner to B (the system escapes)
+
+§6.3 NO LOCK-IN (follow-through): after escaping to B, broadcasting on B biases B without re-locking onto A — the loop tracks the new percept
+
+PURE-READ PRESERVED: think(broadcast=False) leaves the store byte-identical across repeated calls, even interleaved with broadcast=True on a SEPARATE store
+
+PURE-READ PRESERVED: select_winner (1d-i) is STILL a pure read after 1d-ii — repeated calls mutate nothing
+
+purity nuance: a non-empty Broadcast is produced ONLY by the write path; broadcast=False yields broadcast_ is None and writes nothing
+
+§6.4 integrity: check_integrity() is clean THROUGHOUT many broadcast cycles (the write preserves all graph indices)
+
+§6.4 cross-process determinism: the WHOLE store state after N broadcast cycles is byte-identical across 6 hash seeds (fresh interpreters); ties everywhere
+
+§6.4 cross-process determinism (loop-closed, multi-percept): the winner trace across biasing-A-then-switching-to-B is byte-identical across 6 hash seeds
+
+hostile: think(broadcast=True) on an utterance that names NOTHING is a recorded no-op write (empty Broadcast, no winner, no crash, nothing mutated)
+
+hostile: a lone isolated perceived node wins but has NO internal road -> broadcast writes nothing (empty Broadcast), no crash
+
+hostile (helper): broadcast(store, None) is an empty no-op write; no crash
+
+ASSERTED-NEGATIVE: the broadcast is an INTERNAL MECHANISM (bounded conduction bias), NOT a cognitive/priming/awareness claim; no public name encodes one
+
+ASSERTED-NEGATIVE: boundedness is STRUCTURAL (strengthen's saturation), NOT an added clamp/cap/tunable magnitude in broadcast()
+
+ASSERTED-NEGATIVE: the broadcast writes to ROADS only; nodes stay NEUTRAL (no node state is created or touched, consistent with the substrate's design)
+
+ASSERTED-NEGATIVE: the broadcast magnitude is UNCALIBRATED — it inherits strengthen's default gain and is NOT tuned to any external/cognitive outcome
+
+ASSERTED-NEGATIVE: broadcast writes ONLY the winner's internal roads — it never strengthens an arbitrary or cross-domain road (the write is exactly scoped)
+
+======================================================================
+  RESULT: 63 passed, 0 failed
 ======================================================================
 
 ######################################################################
@@ -419,7 +466,8 @@ T7 purity: 12 repeated select_winner calls mutate NOTHING (deep snapshot incl. l
 
 T7 purity: think(broadcast=False) byte-identical across repeated calls on an ADVERSARIAL graph (cycle + self-loop + closed road + duplicate content + fan)
 
-T7 purity: broadcast=True raises NotImplementedError and writes nothing (the absence of feedback is explicit; 1d-i is pure selection)
+T7c (RE-OWNED for 1d-ii): broadcast=True now performs EXACTLY ONE bounded write (the winner's internal roads, once each, no new road, nodes neutral); broadcast=False still mutates NOTHING
+      → RE-OWNED: independent derivation agrees; broadcast=True performs exactly one write, broadcast=False stays pure. See verdict.
 
 T8 integrity: a randomized mutation battery on a hostile graph, interleaved with 200 selection calls; check_integrity() clean throughout + byte-identical
 
@@ -467,9 +515,62 @@ T13 structural: after pruning, the winner's members/_seq/strength/breakthrough m
 T13b structural: workspace.ranked lists ALL candidate coalitions in competition order and is a pure-read product (raw_winner is ranked[0])
 
 ======================================================================
-  RESULT: 101 passed, 0 failed
+  RESULT: 107 passed, 0 failed
+======================================================================
+
+######################################################################
+# test_tester_1d_ii_adversarial.py
+######################################################################
+======================================================================
+  TESTER — INDEPENDENT ADVERSARIAL SUITE for 1d-ii (broadcast + feedback)
+======================================================================
+
+A NO DIVERGENCE (hostile dense clique): a fully-connected 6-node named clique (30 internal roads) broadcast for 120 cycles — every road stays <= 1.0 and the aggregate PLATEAUS (per-cycle delta -> ~0), not unbounded growth (loop-closed)
+
+A NO DIVERGENCE (near-saturated start): pre-strengthen the winner's internal roads to ~0.99, then broadcast 60 cycles — strength approaches but NEVER exceeds 1.0, and increments are tiny throughout (no overshoot past the ceiling)
+
+A NO DIVERGENCE (tight self-reinforcing loop): a 3-cycle (a->b->c->a) named in full, broadcast 100 cycles — the GLOBAL max road strength over the whole store stays <= 1.0 every cycle (no runaway potentiation in a loop)
+
+B STRUCTURAL BOUNDEDNESS: NEITHER broadcast() NOR _internal_road_ids() contains a clamp/cap/ceiling/tunable magnitude — boundedness must come from strengthen()'s saturation, not from any artificial ceiling added in 1d-ii (code-body audit)
+
+B STRUCTURAL BOUNDEDNESS (analytic): strengthen() with NO charge is the exact geometric contraction s -> s + g*(1-s), g=0.13 — its fixed point is 1.0, approached from below and NEVER exceeded. We verify the closed form matches the store AND that the iterated map provably stays < 1.0 from any start in [0,1).
+
+C NO LOCK-IN (hostile, bridged): after EIGHTY broadcast cycles biasing A on a graph where B->A is bridged (so a B-percept spreads into the heavily-biased A), a strong fresh B percept STILL switches the winner to B. Escape is NON-VACUOUS: A is verified dominant immediately before the switch (loop-closed)
+
+C NO LOCK-IN (mirror): the same deep-bias-then-escape with the bridge reversed (A->B) also escapes — the no-lock-in property is not an artifact of bridge direction (loop-closed)
+
+C FREEZE PROBE: alternating A and B percepts (each with broadcast) — the winner FOLLOWS the current percept every time; it never freezes on the first settled winner. We assert the winner switched on EVERY alternation (loop-closed)
+
+C NO LOCK-IN (close competition, differential): a fixed utterance that names BOTH domains is decided the SAME way on a heavily-A-biased store as on a FRESH store — accumulated bias must NOT flip the winner toward A. This is the precise lock-in failure mode, tested differentially so it cannot false-fail on fixture quirks (loop-closed)
+
+D SINGLE WRITE (dense clique): on a fully-connected named clique, the broadcast changes EXACTLY its internal roads and NOTHING else; no node moves; no index drifts; each internal road's traversal_count increments by EXACTLY 1 (loop-closed)
+
+D SINGLE WRITE (self-loop edge case): a self-loop road (a->a) among the winner's members is NOT strengthened by broadcast (the i==j scan skips it) and causes no crash — we pin the ACTUAL behavior and its consistency (loop-closed)
+
+D SINGLE WRITE (high-degree fan): a hub <-> 25 leaves (bidirectional so the whole fan is one basin regardless of the clustering rep), all named -> the broadcast strengthens exactly the fan's existing internal roads once each; no new road; road_count unchanged (loop-closed)
+
+D SINGLE WRITE (helper, hand-built coalition — UNIT, not acceptance): broadcast() over a coalition whose members have NO roads among them writes nothing and creates nothing (it strengthens EXISTING roads only)
+
+E PURE PATH: think(broadcast=False) is byte-identical across many repeated calls on an adversarial graph (cycle + self-loop + closed road + duplicate content + fan), interleaved with a SEPARATE broadcast=True store — zero mutation
+
+E PURE PATH: select_winner remains a pure read even AFTER many broadcast writes have changed the store — re-running selection on the mutated store mutates nothing
+
+F SUBSTRATE BAR: the WHOLE store state after N broadcast cycles on a HOSTILE graph (dense clique + an unnamed clique + a bridge) is byte-identical across all 6 hash seeds in fresh interpreters (our own probe; ties everywhere)
+
+F SUBSTRATE BAR (loop-closed, multi-percept): the winner+broadcast trace across bias-A-then-escape-to-B on a BRIDGED graph is byte-identical across 6 hash seeds (our own probe) — the write AND the escape selection are both deterministic
+
+F SUBSTRATE BAR: check_integrity() stays clean through 50 broadcast cycles INTERLEAVED with a randomized direct-mutation battery (the write preserves every graph index even as the graph is concurrently mutated by traversals)
+
+G hostile: think(broadcast=True) on an utterance naming NOTHING -> empty Broadcast, no winner, nothing mutated, no crash
+
+G hostile: a CLOSED road internal to the winner is still strengthened via the normal strengthen() path (broadcast adds no special closure handling); we pin the actual behavior and that integrity holds
+
+G hostile (decay active): with an ADVANCING real-mode-like simulated clock between cycles (so lazy decay actually fires inside strengthen), broadcast stays bounded <= 1.0 and still writes exactly the winner's internal roads each cycle
+
+======================================================================
+  RESULT: 110 passed, 0 failed
 ======================================================================
 
 ======================================================================
-  OVERALL: all 10 suites passed (0 failures)
+  OVERALL: all 12 suites passed (0 failures)
 ======================================================================

@@ -59,6 +59,7 @@ from nous_source_clustering import cluster_sources
 from nous_workspace import (
     select_winner, rank_coalitions, WorkspaceResult,
     _density_score, _perceived_domain_members, _strongest_road_strength,
+    _internal_road_ids,
     DEFAULT_MIN_SIZE_GUARD,
 )
 
@@ -666,19 +667,70 @@ def test_T7b_think_broadcast_false_pure_on_adversarial_graph():
           "10 think(broadcast=False) passes on an adversarial graph changed no stored state")
 
 
-def test_T7c_broadcast_true_raises_and_does_not_mutate():
-    section("T7 purity: broadcast=True raises NotImplementedError and writes nothing (the "
-            "absence of feedback is explicit; 1d-i is pure selection)")
+def test_T7c_broadcast_true_now_performs_exactly_one_write_reowned():
+    section("T7c (RE-OWNED for 1d-ii): broadcast=True now performs EXACTLY ONE bounded write "
+            "(the winner's internal roads, once each, no new road, nodes neutral); "
+            "broadcast=False still mutates NOTHING")
+    # ── WHY THIS TEST CHANGED (tester-owned re-derivation, NOT accepted on authority) ──
+    # In the 1d-i era this assertion read "broadcast=True raises NotImplementedError / the
+    # failed attempt mutated nothing" — a tester-owned asserted-NEGATIVE documenting that the
+    # feedback write did not exist yet. 1d-ii (broadcast + bounded feedback) is now built, so
+    # that negative is FALSE BY DESIGN. The builder correctly did NOT edit this tester file to
+    # mask it (that would be a lane violation — the analog of P9->T11 in the 1c cycle); the
+    # builder flipped only its OWN copy. Re-owning it is the tester's job.
+    #
+    # I do not accept the flip on authority. I RE-DERIVE the now-built contract independently
+    # and only re-author the assertion if my derivation agrees. My derivation, from the
+    # mechanism (nous_workspace.broadcast + nous_store.strengthen, both read directly):
+    #   (1) broadcast=True must strengthen EXACTLY the winner's internal roads (both endpoints
+    #       in the winner), each EXACTLY ONCE (deduped by RoadID), creating NO new road, and
+    #       touching NO node (strengthen with no charge moves no node access stat).
+    #   (2) broadcast=False (the default) must remain a pure read — byte-identical store.
+    # Both are checked below on the exact _small_mind graph the old negative used, loop-closed.
     s, n = _small_mind()
-    before = _deep_snapshot(s)
-    raised = False
-    try:
-        think(s, "coffee in the kitchen this morning", broadcast=True)
-    except NotImplementedError:
-        raised = True
-    after = _deep_snapshot(s)
-    check(raised, "broadcast=True raises NotImplementedError")
-    check(before == after, "the failed broadcast=True attempt mutated nothing")
+
+    # (2) first: broadcast=False is still a pure read (the guarantee 1d-i shipped survives).
+    before_pure = _deep_snapshot(s)
+    rf = think(s, "coffee in the kitchen this morning")          # default broadcast=False
+    after_pure = _deep_snapshot(s)
+    check(rf.broadcast_ is None, "broadcast=False records no Broadcast (broadcast_ is None)")
+    check(before_pure == after_pure,
+          "RE-DERIVED: broadcast=False mutates NOTHING (the 1d-i pure-read guarantee holds "
+          "unchanged under 1d-ii)")
+
+    # (1): broadcast=True performs exactly one write — the winner's internal roads, once each.
+    winner = rf.thought
+    expected_roads = set(_internal_road_ids(s, winner))   # independent recomputation
+    rc_before = s.road_count()
+    roads_before, nodes_before = _deep_snapshot(s)
+    tc_before = {rid: s.get_road(rid, apply_decay=False).traversal_count
+                 for rid in expected_roads}
+    rt = think(s, "coffee in the kitchen this morning", broadcast=True)
+    roads_after, nodes_after = _deep_snapshot(s)
+    tc_after = {rid: s.get_road(rid, apply_decay=False).traversal_count
+                for rid in expected_roads}
+
+    check(rt.broadcast_ is not None,
+          "RE-DERIVED: broadcast=True now performs the write (Broadcast record present, no "
+          "NotImplementedError) — the old asserted-negative is correctly false by design")
+    check(set(rt.broadcast_.road_ids) == expected_roads,
+          "the write targets EXACTLY the winner's internal roads (independently recomputed)")
+    changed = {rid for rid in roads_after if roads_before.get(rid) != roads_after[rid]}
+    check(changed == expected_roads,
+          f"EXACTLY the winner's internal roads changed and nothing else "
+          f"(changed={len(changed)} expected={len(expected_roads)})")
+    check(all(tc_after[rid] - tc_before[rid] == 1 for rid in expected_roads),
+          "each internal road was strengthened EXACTLY ONCE (traversal_count +1; no "
+          "double-count at a convergence point)")
+    check(rc_before == s.road_count(),
+          "broadcast created NO new road (road_count unchanged)")
+    check(nodes_before == nodes_after,
+          "broadcast touched NO node (nodes stay neutral — the substrate requires it)")
+    # CONCLUSION (re-owned): my independent derivation AGREES with the flip. broadcast=True
+    # now performs exactly one bounded write and broadcast=False is still a pure read, so I
+    # re-author the assertion in my own voice to reflect the now-built 1d-ii behavior.
+    print("      → RE-OWNED: independent derivation agrees; broadcast=True performs exactly "
+          "one write, broadcast=False stays pure. See verdict.")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1265,7 +1317,7 @@ def run_all():
         # T7 purity (zero mutation)
         test_T7_select_winner_is_pure_read_deep_snapshot,
         test_T7b_think_broadcast_false_pure_on_adversarial_graph,
-        test_T7c_broadcast_true_raises_and_does_not_mutate,
+        test_T7c_broadcast_true_now_performs_exactly_one_write_reowned,
         # T8 integrity mutation battery
         test_T8_mutation_battery_integrity_and_purity,
         # T9 hostile topologies + competition

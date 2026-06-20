@@ -1,19 +1,23 @@
 # SPEC-1d — Global workspace + broadcast
 
-Status: **1d-i BUILT · mechanism tester-VERIFIED (PASS); 1d overall DESIGNED** — 1d-ii (broadcast + bounded feedback) not built. Design decisions A–E **locked 2026-06-20** (A2 / B1 / C1 / D1 / take-the-split — see §8); built 1d-i first. **Decision C resolved 2026-06-20 → the realized + accepted C1 is a parameter-free cohesion-valley / relative-attachment watershed (see §3.2 / §8), distinct from both literal domain-membership and the rejected fraction-based C2.** Nothing about 1d-ii's broadcast/feedback is `PROVEN` or `BUILT`.
+Status: **1d-i AND 1d-ii both BUILT · mechanism tester-VERIFIED (PASS); 1d overall `BUILT · UNVALIDATED`** — the cognitive cycle now closes end-to-end (perceive → activate → cluster → compete → prune → broadcast → next cycle). 1d makes a **mechanism** claim only; it makes **no external-data cognitive claim**, so it is **mechanism-verified, not meaning-validated** — meaning lives at 1e. Design decisions A–E **locked 2026-06-20** (A2 / B1 / C1 / D1 / take-the-split — see §8); built 1d-i first, then 1d-ii. **Decision C resolved 2026-06-20 → the realized + accepted C1 is a parameter-free cohesion-valley / relative-attachment watershed (see §3.2 / §8), distinct from both literal domain-membership and the rejected fraction-based C2.** Nothing here is `PROVEN` against external data; "mechanism tester-VERIFIED" means determinism + integrity + the declared selection/feedback properties hold — it is **not** a cognitive result.
 Author: architect-pm
 For: builder (test-first) → tester (independent, adversarial verify). **Mechanism-only: 1d is verified by the tester, not the validator.**
 Depends on: 1a (`nous_field`), 1b (`nous_coalitions`), 1c (`nous_source_clustering`), `nous_perceive` (`think()`), Phase 0 substrate (`nous_store`, `nous_activation`).
 Inherits from: SPEC-1c §6.1 (amendment) and §7.7 — the re-scoped "no over-swallow" criterion.
 
-> Scope discipline (CONTRIBUTING.md rules 1–4): this document is **description**, and a part is now built.
-> Each component is `PROVEN`/`BUILT` only after the tester returns PASS on the §6 bars that apply to it.
-> **1d-i (competition + over-swallow pruning) has returned PASS** (mechanism tester-VERIFIED) and is
-> built; **1d-ii (broadcast + bounded feedback) is still description, not built code** — nothing about
-> it is `PROVEN` or `BUILT`. Mechanism and meaning are graded separately and one never stands in for the
+> Scope discipline (CONTRIBUTING.md rules 1–4): this document began as **description**; both components are
+> now built and tester-VERIFIED. Each component is `BUILT` only after the tester returns PASS on the §6
+> bars that apply to it. **1d-i (competition + over-swallow pruning) returned PASS** (mechanism
+> tester-VERIFIED) and **1d-ii (broadcast + bounded feedback) has now also returned PASS** (mechanism
+> tester-VERIFIED): the §6.2 explicit-write half and the §6.3 both-directions bounded-feedback bar are
+> met on hostile topologies. Mechanism and meaning are graded separately and one never stands in for the
 > other. 1d makes a **mechanism** claim only; it does **not** make an external-data cognitive claim
-> (that is 1e). Because 1d-ii is not built, **1d overall stays `DESIGNED`** and the roadmap's "you are
-> here" marker does not move past 1d.
+> (that is 1e). Because the loop now closes but no external-data claim is made, **1d overall sits at
+> `BUILT · UNVALIDATED`** — mechanism-verified, not meaning-validated. The roadmap's "you are here"
+> marker moves to **1e** (the loop is closed; the next frontier is the primary meaning bar). Nothing
+> here became "validated": closing an information loop with bounded feedback is **not** a cognitive or
+> consciousness result, and no code, comment, test name, or doc may describe it as one.
 
 ---
 
@@ -362,20 +366,32 @@ Two tests that **distinguish** the two modes (this is constraint 4 made concrete
   declared write. Running it twice strengthens the same roads further (toward saturation), never other
   roads.
 
-### 6.3 Bounded feedback — BOTH directions (each an explicit test)
+### 6.3 Bounded feedback — BOTH directions (each an explicit test) — MET (1d-ii, tester-VERIFIED 2026-06-20)
 
-- **No divergence (stability).** Run `think(..., broadcast=True)` for N cycles (N large, e.g. ≥ 50)
-  on the same utterance and store. Assert a hard bound: max road strength stays ≤ 1.0 (saturation
-  holds), and a chosen aggregate (e.g. total activation of the winner's basin, or sum of broadcast
-  road strengths) does **not** grow without limit — it converges (successive-cycle deltas shrink
-  toward 0). Unbounded growth is a FAIL.
-- **No lock-in (responsiveness).** Bias toward winner A for several cycles via broadcast, then present
-  an utterance whose perceived sources strongly favor a different coalition B. Assert the winner
-  **switches to B**. A system where A wins forever regardless of a strong fresh percept is a FAIL.
-  (The direction is fixed in advance: a sufficiently strong new percept overrides accumulated bias.)
+Both directions are now independently confirmed by the tester on hostile topologies; the §6.2
+explicit-write half is also met (single explicit write; pure `broadcast=False` path preserved
+byte-identical). What was specified and what was verified:
 
-These two tests must both pass with the **same** broadcast magnitude/decay constant — they jointly
-pin the constant to the safe regime, without tuning it to any cognitive outcome.
+- **No divergence (stability) — MET.** `think(..., broadcast=True)` over many cycles (tester probes:
+  120 cycles on a dense 6-node clique; 100 on a tight 3-cycle; 60 from a ~0.99 near-saturated start)
+  keeps max road strength **≤ 1.0** and the broadcast aggregate **plateaus** (per-cycle deltas → ~0),
+  never unbounded growth. **Boundedness is structural** — it comes from `strengthen()`'s `(1 −
+  strength)` saturation (fixed point 1.0, approached from below, never exceeded), with **no clamp, cap,
+  ceiling, or tunable magnitude** added in `broadcast()` (tester code-body audit + analytic
+  fixed-point proof confirm this).
+- **No lock-in (responsiveness) — MET, non-vacuously.** After **80** reinforcing cycles biasing winner
+  A on a **hostile bridged graph** (B→A, so a B-percept spreads into the heavily-biased A), a strong
+  fresh B percept still **switches the winner to B**; escape is verified **non-vacuous** (A is checked
+  dominant immediately before the switch). Confirmed under a reversed-bridge mirror, an
+  alternating-percept **freeze probe** (the winner follows the current percept on every alternation,
+  never freezing), and a differential close-competition control (accumulated bias does not flip a
+  both-domains utterance toward A).
+
+These two tests both pass with the **same** broadcast magnitude — it is the **uncalibrated** default
+gain inherited from `strengthen()`, **not** tuned to any cognitive outcome (asserted-negative). The
+direction in each case was fixed in advance. T7c (the single-write probe) was **re-owned by the
+tester** for 1d-ii: independent derivation agrees the write is exactly one bounded write of the
+winner's internal roads (once each, no new road, nodes neutral) and `broadcast=False` mutates nothing.
 
 ### 6.4 Determinism + integrity (the substrate bar, as acceptance)
 
@@ -396,12 +412,16 @@ byte-identical across 6 seeds) is required, mirroring tester P2b.
 ## 7. Known limitations / asserted negatives (builder ships each as an explicit test)
 
 > **Status note (2026-06-20).** 1d-i (competition + over-swallow pruning; pure selection; no feedback)
-> is **BUILT and its mechanism is tester-VERIFIED (PASS)** — it passes every §6 acceptance bar that
-> applies to selection (§6.1 over-swallow flip + anti-overcorrection + generalization control,
-> §6.2 pure-selection half, §6.4 determinism/integrity). 1d-ii (broadcast + bounded feedback, §6.3 and
-> the §6.2 explicit-write half) is **not built**, so 1d overall stays `DESIGNED`. Limitation item 8
-> below was added when the tester proved the realized pruning rule is the cohesion-valley watershed
-> (§3.2), accepted by Cagan as the intended design.
+> **and** 1d-ii (broadcast + bounded feedback) are **both BUILT and tester-VERIFIED (PASS)**. 1d-i
+> passes every §6 acceptance bar that applies to selection (§6.1 over-swallow flip + anti-overcorrection
+> + generalization control, §6.2 pure-selection half, §6.4 determinism/integrity); 1d-ii passes the
+> §6.2 explicit-write half and the §6.3 both-directions bounded-feedback bar (no divergence; no
+> non-vacuous lock-in), plus §6.4 determinism/integrity under the write across 6 seeds after N cycles.
+> The cognitive cycle therefore now **closes end-to-end**. Because 1d makes **no external-data cognitive
+> claim**, **1d overall sits at `BUILT · UNVALIDATED`** (mechanism-verified, not meaning-validated) —
+> not `DESIGNED`, and not "validated." Limitation item 8 below was added when the tester proved the
+> realized pruning rule is the cohesion-valley watershed (§3.2), accepted by Cagan as the intended
+> design; it is a *mechanism* limitation and is unaffected by 1d-ii.
 
 1. **No cognitive claim.** Passing §6 proves a selection-and-feedback **mechanism**, not a cognitive
    phenomenon. "The winner biases the next cycle" is an internal property; it is **not** priming and
@@ -616,18 +636,28 @@ build/verify cycle, which the project's discipline already pays gladly. **Confir
 
 ## 10. Where this leaves the roadmap
 
-**1d-i is BUILT and its mechanism is tester-VERIFIED (PASS).** It replaces the `coalitions[0]`
-placeholder with real density-normalized competition (A2) and flips the over-swallow asserted-negative
-inherited from 1c (SPEC-1c §6.1 / §7.7) through the live loop — via the realized + accepted
-cohesion-valley / relative-attachment watershed (§3.2), with the bridged-≥-cohesion corner case logged
-and accepted as a safe-direction known-limitation (§7 item 8). 1d-i makes **no cognitive claim** — its
-mechanism is verified by the tester, not the validator.
+**1d-i AND 1d-ii are both BUILT and their mechanism is tester-VERIFIED (PASS).** 1d-i replaced the
+`coalitions[0]` placeholder with real density-normalized competition (A2) and flipped the over-swallow
+asserted-negative inherited from 1c (SPEC-1c §6.1 / §7.7) through the live loop — via the realized +
+accepted cohesion-valley / relative-attachment watershed (§3.2), with the bridged-≥-cohesion corner
+case logged and accepted as a safe-direction known-limitation (§7 item 8). 1d-ii added the single,
+explicit, bounded broadcast write (B1: bounded strengthening of the winner's internal roads, reusing
+`strengthen()`), proven bounded **both ways** on hostile topologies — no divergence (plateaus, ≤ 1.0,
+boundedness structural from saturation, no clamp) and no non-vacuous lock-in (escape after 80 cycles on
+a bridged graph, with a freeze probe). 1d makes **no cognitive claim** — its mechanism is verified by
+the tester, not the validator.
 
-**1d overall stays `DESIGNED`** because **1d-ii (broadcast + bounded feedback) is not built.** That is
-the brick that actually closes the loop — the single bounded broadcast that biases the next cycle
-without diverging or locking in — and it is what **unblocks 1e**. The project's **primary meaning bar
-remains at 1e** (semantic priming vs. human SWOW norms).
+**The cognitive cycle now closes end-to-end:** perceive → activate → cluster → compete → prune →
+broadcast → next cycle — a winning coalition leaves a bounded trace that biases the next cycle. Because
+1d makes **no external-data cognitive claim**, **1d overall sits at `BUILT · UNVALIDATED`** (mechanism
+complete and tester-verified, meaning not earned). This is **not** a cognitive or consciousness result;
+it is bounded feedback closing an information loop, with GWT/LIDA cited as engineering lineage only.
+Closing the loop **unblocks 1e**, which remains the project's **primary meaning bar** (semantic priming
+vs. human SWOW norms).
 
-**Single next action:** build **1d-ii** (broadcast + bounded feedback) test-first against §6.2's
-explicit-write half and the §6.3 both-directions bounded-feedback bar, then have the tester
-independently verify, which moves 1d from `DESIGNED` to built/verified and unblocks 1e.
+**Single next action:** begin **1e** (first falsifiable cognitive result — semantic priming graded
+against human SWOW association norms) through the now-closed loop. This is a cognitive claim, so it is
+routed to the **validator** to design and run a pre-registered, direction-fixed, control-baselined
+experiment; the builder does not assert its meaning. (Phase 2A/2B's pre-registered fan-effect and
+graded-priming harnesses in `experiments/results/` are prior scaffolding to reuse — not a substitute
+for 1e's result through the closed cognitive loop.)
