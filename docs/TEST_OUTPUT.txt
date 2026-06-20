@@ -1,18 +1,19 @@
 ======================================================================
   NOUS — CAPTURED TEST OUTPUT (verbatim)
 ======================================================================
-Generated : 2026-05-30 18:09:11 +03
-Machine   : Darwin 24.5.0 arm64
-Python    : Python 3.13.2
-Command   : PYTHONPATH="$PWD/src" python3 tests/<suite>.py   (one block per suite)
+Generated : 2026-06-20 18:56:05 +0300
+Machine   : Darwin 24.5.0 x86_64
+Python    : Python 3.12.4
+Command   : python3 run_tests.py   (one block per suite; absolute PYTHONPATH=src)
 Note      : Suites use a built-in harness (not pytest); each prints
             'RESULT: N passed, M failed' and exits non-zero on any failure.
+            Includes builder + tester-authored adversarial suites (test_tester_*).
+            State: 1c PROVEN-mechanism + 1d-i + 1d-ii built & tester-verified.
 ======================================================================
 
-
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
->>> tests/test_nous_store.py
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+######################################################################
+# test_nous_store.py
+######################################################################
 ======================================================================
   NOUS SUBSTRATE STORE — TEST SUITE (Layer 1)
 ======================================================================
@@ -50,11 +51,10 @@ integrity scan passes on a healthy graph of moderate size
 ======================================================================
   RESULT: 45 passed, 0 failed
 ======================================================================
-[exit code: 0]
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
->>> tests/test_nous_activation.py
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+######################################################################
+# test_nous_activation.py
+######################################################################
 ======================================================================
   NOUS SPREADING ACTIVATION — TEST SUITE
 ======================================================================
@@ -92,11 +92,10 @@ flow records which edges actually carried activation (and respects closure)
 ======================================================================
   RESULT: 35 passed, 0 failed
 ======================================================================
-[exit code: 0]
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
->>> tests/test_nous_coalitions.py
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+######################################################################
+# test_nous_coalitions.py
+######################################################################
 ======================================================================
   NOUS COALITION FORMATION — TEST SUITE
 ======================================================================
@@ -128,11 +127,10 @@ ADVERSARIAL determinism: clustering identical across hash seeds
 ======================================================================
   RESULT: 19 passed, 0 failed
 ======================================================================
-[exit code: 0]
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
->>> tests/test_nous_field.py
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+######################################################################
+# test_nous_field.py
+######################################################################
 ======================================================================
   NOUS MULTI-SOURCE FIELD + FIELD COALITIONS — TEST SUITE
 ======================================================================
@@ -152,11 +150,171 @@ ADVERSARIAL determinism: field coalitions identical across hash seeds
 ======================================================================
   RESULT: 13 passed, 0 failed
 ======================================================================
-[exit code: 0]
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
->>> tests/test_nous_perceive.py
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+######################################################################
+# test_nous_source_clustering.py
+######################################################################
+======================================================================
+  NOUS SOURCE-CLUSTERING (1c) — TEST SUITE
+======================================================================
+
+LOOP-CLOSED: three same-domain perceived sources merge into ONE group
+
+LOOP-CLOSED: perceived sources in unconnected domains form SEPARATE groups
+
+representative election: highest source energy, ties on creation_seq asc
+
+group_seeds maps representatives only (the field is seeded from reps)
+
+integration: think() seeds the field from group representatives, not raw set
+
+read-purity: clustering mutates NOTHING (road strengths + traversal counts)
+
+integrity: the store's integrity scan is unchanged before vs. after clustering
+
+scale-invariance: scaling energies/proximities by a constant keeps the partition
+
+ADVERSARIAL determinism: clustering identical across 6 hash seeds (fresh procs)
+
+§6.1 (partial): 1c removes the stranded-singleton-source failure
+
+§6.1 FLIPPED by 1d-i: the bridged, unperceived work/code domain is PRUNED from the winning thought
+
+ASSERTED-NEGATIVE #1: 1c clusters ONLY the perceived sources, not the graph
+
+ASSERTED-NEGATIVE #2: grouping is topological only — no cognitive claim
+
+ASSERTED-NEGATIVE #3: single-link CHAINING (A-B-C) is intentional
+
+ASSERTED-NEGATIVE #4: perceive()/Perception and field-builder signature are unchanged
+
+ASSERTED-NEGATIVE #5: 1c does NOT broadcast/feed back into a next cycle
+
+ASSERTED-NEGATIVE #6: the relative threshold is an uncalibrated design constant
+
+======================================================================
+  RESULT: 49 passed, 0 failed
+======================================================================
+
+######################################################################
+# test_nous_workspace.py
+######################################################################
+======================================================================
+  NOUS WORKSPACE SELECTION (1d-i) — TEST SUITE
+======================================================================
+
+§6.1 ACCEPTANCE (loop-closed): the winning thought excludes the bridged, unperceived work/code domain
+
+§6.1 anti-circularity: the flip GENERALIZES on a second, independently-built isomorphic-but-relabelled graph (not tuned to coffee/work)
+
+anti-overcorrection: when the input NAMES the work domain, work/desk/code are NOT pruned (a perceived domain always survives)
+
+safety: pruning never empties the winner (asserted-negative for over-pruning)
+
+§6.2 purity: repeated select_winner(...) mutates NOTHING (deep snapshot)
+
+§6.2 purity: think(broadcast=False) leaves the store byte-identical across repeated calls (the pure-read path)
+
+§6.4 integrity: the store's integrity scan is unchanged before/after selection
+
+§6.4 cross-process determinism: winner + pruned_members + ranked order identical across 6 hash seeds (fresh interpreters)
+
+scale-invariance (selection layer, isolated): scaling coalition activations by ANY positive constant keeps the winner + pruning
+
+scale-invariance (end-to-end, floor-safe regime): scaling source energies UP keeps the winner + pruning
+
+A2 competition: a tight intensely-active coalition beats a larger sprawling one of equal total activation (density, not summed strength)
+
+A2 min-size guard: a degenerate tiny coalition cannot win on density alone
+
+A2 structural: competition selects ONE winner among MORE THAN ONE system-generated coalition (not a single-group branch)
+
+helper: the perceived-domain watershed keeps the named community and excludes the bridged unnamed one (unit test on _small_mind topology)
+
+helper: a NON-source node densely in a NAMED domain is kept (perceived via propagation, not stranded for lacking a direct source link)
+
+helper: _strongest_road_strength is symmetric and reads canonical strength
+
+FLIPPED by 1d-ii: think(broadcast=True) now performs the SINGLE bounded write (the 1d-i 'no feedback' asserted-negative is flipped, as 1d-i flipped 1c's over-swallow negatives); the default broadcast=False path still writes nothing
+
+ASSERTED-NEGATIVE #2: the winner is a SELECTED INFORMATION STRUCTURE — no cognitive/awareness claim is made or asserted anywhere
+
+ASSERTED-NEGATIVE #3: 1d-i selects EXACTLY ONE winner (no parallel/blended winners, no multi-structure attention)
+
+ASSERTED-NEGATIVE #4: pruning is perceived-vs-reached (topological), NOT semantic — naming a domain changes what is pruned, content does not
+
+ASSERTED-NEGATIVE #5: 1d-i does not alter perceive()/build_activation_field()/form_coalitions_from_field() signatures
+
+ASSERTED-NEGATIVE #6: 1d-i writes nothing — it is NOT memory/consolidation; two cycles do not accumulate any trace (no broadcast)
+
+ASSERTED-NEGATIVE #7: end-to-end selection is NOT invariant when DOWN-scaling pushes activation below the UPSTREAM absolute floors (an honest limitation)
+
+KNOWN LIMITATION (asserted-negative): 1d-i pruning is a parameter-free cohesion-valley / relative-attachment watershed, NOT pure domain-membership. An UNNAMED domain bridged into the named region AT LEAST AS STRONGLY AS its own internal cohesion has NO valley and is therefore KEPT — over-swallow RECURS in that topology. Accepted design (2026-06-20); the divergence is always SAFE (a perceived member is never pruned).
+
+======================================================================
+  RESULT: 80 passed, 0 failed
+======================================================================
+
+######################################################################
+# test_nous_workspace_broadcast.py
+######################################################################
+======================================================================
+  NOUS WORKSPACE BROADCAST (1d-ii) — TEST SUITE
+======================================================================
+
+§6.2 explicit-write: think(broadcast=True) changes EXACTLY the roads in the returned Broadcast and NOTHING else (no other road, no node touched)
+
+§6.2 scope: the broadcast strengthens ONLY roads internal to the winner; the unperceived domain's roads and the bridge are NOT touched
+
+§6.2 explicit-write: running broadcast twice strengthens the SAME roads further (toward saturation), never other roads
+
+convergence double-counting guard: each broadcast road is strengthened EXACTLY ONCE per cycle (traversal_count increments by exactly 1)
+
+§6.2 scope: broadcast CREATES no road — road_count is unchanged by the write
+
+§6.3 NO DIVERGENCE: over many think(broadcast=True) cycles, road strength stays <= 1.0 and the broadcast aggregate CONVERGES (per-cycle deltas shrink to ~0), never grows without limit
+
+§6.3 NO DIVERGENCE (saturation): after many broadcasts a road approaches but never reaches/exceeds strength 1.0 (the ceiling is approached, not exceeded)
+
+§6.3 NO LOCK-IN: after biasing winner A over many broadcast cycles, a strong fresh percept favoring domain B SWITCHES the winner to B (the system escapes)
+
+§6.3 NO LOCK-IN (follow-through): after escaping to B, broadcasting on B biases B without re-locking onto A — the loop tracks the new percept
+
+PURE-READ PRESERVED: think(broadcast=False) leaves the store byte-identical across repeated calls, even interleaved with broadcast=True on a SEPARATE store
+
+PURE-READ PRESERVED: select_winner (1d-i) is STILL a pure read after 1d-ii — repeated calls mutate nothing
+
+purity nuance: a non-empty Broadcast is produced ONLY by the write path; broadcast=False yields broadcast_ is None and writes nothing
+
+§6.4 integrity: check_integrity() is clean THROUGHOUT many broadcast cycles (the write preserves all graph indices)
+
+§6.4 cross-process determinism: the WHOLE store state after N broadcast cycles is byte-identical across 6 hash seeds (fresh interpreters); ties everywhere
+
+§6.4 cross-process determinism (loop-closed, multi-percept): the winner trace across biasing-A-then-switching-to-B is byte-identical across 6 hash seeds
+
+hostile: think(broadcast=True) on an utterance that names NOTHING is a recorded no-op write (empty Broadcast, no winner, no crash, nothing mutated)
+
+hostile: a lone isolated perceived node wins but has NO internal road -> broadcast writes nothing (empty Broadcast), no crash
+
+hostile (helper): broadcast(store, None) is an empty no-op write; no crash
+
+ASSERTED-NEGATIVE: the broadcast is an INTERNAL MECHANISM (bounded conduction bias), NOT a cognitive/priming/awareness claim; no public name encodes one
+
+ASSERTED-NEGATIVE: boundedness is STRUCTURAL (strengthen's saturation), NOT an added clamp/cap/tunable magnitude in broadcast()
+
+ASSERTED-NEGATIVE: the broadcast writes to ROADS only; nodes stay NEUTRAL (no node state is created or touched, consistent with the substrate's design)
+
+ASSERTED-NEGATIVE: the broadcast magnitude is UNCALIBRATED — it inherits strengthen's default gain and is NOT tuned to any external/cognitive outcome
+
+ASSERTED-NEGATIVE: broadcast writes ONLY the winner's internal roads — it never strengthens an arbitrary or cross-domain road (the write is exactly scoped)
+
+======================================================================
+  RESULT: 63 passed, 0 failed
+======================================================================
+
+######################################################################
+# test_nous_perceive.py
+######################################################################
 ======================================================================
   NOUS PERCEPTION + END-TO-END SLICE — TEST SUITE
 ======================================================================
@@ -173,13 +331,246 @@ the slice runs end-to-end: text → sources → field → coalitions → thought
 
 the end-to-end slice mutates NOTHING (pure read)
 
-KNOWN LIMITATION: clustered real-input sources do NOT yield clean basins
-      → recorded as a known limitation: clustered sources need grouping/
-        merging before basins are meaningful (a real next-step problem).
+1c FIXED the stranded-singleton-source half of the old known limitation
+      → 1c fixes the stranded-source half; 1d-i fixes the over-swallow half
+        (unperceived work/code domain pruned from the winner). See report.
 
 ADVERSARIAL determinism: end-to-end result identical across hash seeds
 
 ======================================================================
-  RESULT: 18 passed, 0 failed
+  RESULT: 19 passed, 0 failed
 ======================================================================
-[exit code: 0]
+
+######################################################################
+# test_tester_1c_adversarial.py
+######################################################################
+======================================================================
+  TESTER — INDEPENDENT ADVERSARIAL SUITE for 1c (source-clustering)
+======================================================================
+
+P1 §6.1 LOOP-CLOSED: merge(coffee/kitchen/morning) + no-stranding via think()
+
+P1b mechanism-dependence: a HAND-ASSIGNED (everyone-singleton) grouping FAILS the merge property — so the property is not trivially true
+
+P1c anti-circularity: the PRE-1c path (field seeded from RAW sources) DOES strand a same-domain sibling; 1c (group reps) removes it — so no-stranding genuinely depends on the mechanism
+
+P2 cross-process determinism: full clustering byte-identical across 6 seeds (our own probe; ties everywhere)
+
+P2b cross-process determinism: full think() coalitions + clustering across 6 seeds (loop-closed end to end)
+
+P3 integrity unchanged before/after clustering (small_mind)
+
+P3b integrity unchanged on an ADVERSARIAL graph (cycle, self-loop, closed/traumatic road, duplicate-content nodes, high-degree fan)
+
+P4 read-purity: deep snapshot (strength/charges/closed/traversal + node access stats) unchanged after many clustering passes
+
+P4b read-purity: full think() (perceive->cluster->field->coalitions) mutates nothing across repeated cycles
+
+P5 scale-invariance: partition + representatives identical under tiny/huge energy scaling (1e-12 .. 1e12)
+
+P5b scale-invariance: identical STRUCTURE at different absolute road strengths yields identical partition shape (relative threshold)
+
+P6 A1 purity: clustering output is unchanged no matter what the activation field does (the field cannot leak back into the grouping)
+
+P6b A1 purity (structural): cluster_sources has NO field/per_source parameter
+
+P7 edge: zero sources -> empty clustering, no crash
+
+P7 edge: a single source -> one singleton group, rep = itself, seed = energy
+
+P7 edge: a source id NOT present in the store is silently dropped (filtered)
+
+P7 edge: sources with NO roads between them -> each is its own singleton group
+
+P7 edge: ties in BOTH energy and creation_seq -> still deterministic, no uuid fallback (single in-process check + cross-process check)
+
+P7 edge: single-link CHAINING A-B-C grouped though A-C not directly near
+
+P7 edge: a long single-link chain A-B-C-D-E all merges (transitive closure)
+
+P7 edge: a self-loop on a source does not corrupt grouping or representative
+
+P7 edge: a high-degree fan hub as a source groups only with its perceived spokes, not with the whole fan
+
+P7 edge: a CLOSED (traumatic) road still contributes its canonical strength to proximity (clustering reads strength, independent of closure/breakthrough)
+
+P7 edge: two nodes with IDENTICAL content but NO road do not merge (membership is topological, not content-based)
+
+P8 loop-closure: no-stranding on a SYSTEM-GENERATED two-cluster utterance (two internally-linked domains, no cross bridge)
+
+P8b loop-closure PROBE: does an ISOLATED perceived source strand as a singleton basin through the real think() loop? (reports the exact behavior)
+      → isolated source its own group: True; stranded singleton coalitions touching a perceived source: 1
+
+P8c loop-closure: merge property holds on an INDEPENDENTLY built graph isomorphic to _small_mind but with different content/order
+
+P9 (was: over-swallow residual is real) — FLIPPED by 1d-i: the bridged, unperceived work/code domain is now PRUNED from the winning thought
+
+P10 anti-degeneracy: clustering is not an 'everything always merges' branch — a real utterance yields >1 group when domains are unlinked
+
+======================================================================
+  RESULT: 73 passed, 0 failed
+======================================================================
+
+######################################################################
+# test_tester_1c_mutation_battery.py
+######################################################################
+======================================================================
+  TESTER — 1c RANDOMIZED MUTATION BATTERY (integrity / purity / determinism)
+======================================================================
+
+MUTATION BATTERY: random hostile graph; interleave 300 clustering calls with integrity scans; store must be byte-identical and integral throughout
+
+MUTATION BATTERY cross-process: the full clustering trace over the random graph is byte-identical across 6 PYTHONHASHSEED values
+
+======================================================================
+  RESULT: 5 passed, 0 failed
+======================================================================
+
+######################################################################
+# test_tester_1d_i_adversarial.py
+######################################################################
+======================================================================
+  TESTER — INDEPENDENT ADVERSARIAL SUITE for 1d-i (workspace selection)
+======================================================================
+
+T1 §6.1 LOOP-CLOSED: the winner excludes the bridged, unperceived work/code domain (coalitions system-generated through think())
+
+T1b the over-swallow is REAL: the RAW winner (pre-prune) actually CONTAINS the work domain — so the flip is pruning's doing, not 'work was never there'
+
+T2 anti-overcorrection (loop-closed): naming the work domain keeps work/desk and their basin (a perceived domain is never pruned)
+
+T2b HOSTILE anti-overcorrection: a loosely-attached PERCEIVED node (weak n=3 link to its domain) is NOT pruned, because it is a perceived seed itself
+
+T2c HOSTILE anti-overcorrection: a perceived node bridged into a DENSER unperceived region keeps its perceived label (its own seed status wins)
+
+T3 C1 generalizes: TWO strong bridges (n=8 each) into ONE unnamed domain — the unnamed domain is still pruned (not a single-bridge artifact)
+
+T3 C1 generalizes: THREE domains, two perceived + one unperceived; only the unperceived one is pruned (>=3 domain mixed case)
+
+T3 C1 generalizes: ASYMMETRIC cohesion — named domain LOOSE (n=10), unnamed domain TIGHT (n=30); the unnamed tight domain is still pruned by MEMBERSHIP
+
+T4 boundary: a WEAKLY-cohesive unperceived region (n=6 internal) is STILL pruned by membership — C1 does not need cohesion to exceed a threshold
+      probe: fourx->perceived(one)=0.6882 fourx->unperceived(fivex)=0.5881
+
+T4b DECISIVE C1-vs-C2: a strong bridge into an UNNAMED domain whose internal cohesion is EVEN STRONGER — pruned by membership; a pure weakness rule could not flip _small_mind, this watershed flips by domain not by a weakness cut
+
+T5 threshold-free: the PRUNING result (pruned_members) is invariant to DEFAULT_MIN_SIZE_GUARD over a wide sweep — proving that constant lives in COMPETITION, not in pruning (the pruning path has no calibrated constant)
+
+T5 threshold-free (structural): the watershed helpers contain no magic numeric comparison constant; pruning compares stored road strengths only
+
+T6 cross-process determinism: winner + pruned_members + FULL ranked order byte-identical across 6 hash seeds (our own probe; ties everywhere)
+
+T6b cross-process determinism on a MULTI-BASIN tie graph: two equal-sized, equal-strength unlinked domains -> a genuine density+size+strength tie broken only by creation_seq; identical winner/ranked across 6 seeds
+
+T7 purity: 12 repeated select_winner calls mutate NOTHING (deep snapshot incl. last_touched + node access stats)
+
+T7 purity: think(broadcast=False) byte-identical across repeated calls on an ADVERSARIAL graph (cycle + self-loop + closed road + duplicate content + fan)
+
+T7c (RE-OWNED for 1d-ii): broadcast=True now performs EXACTLY ONE bounded write (the winner's internal roads, once each, no new road, nodes neutral); broadcast=False still mutates NOTHING
+      → RE-OWNED: independent derivation agrees; broadcast=True performs exactly one write, broadcast=False stays pure. See verdict.
+
+T8 integrity: a randomized mutation battery on a hostile graph, interleaved with 200 selection calls; check_integrity() clean throughout + byte-identical
+
+T9 hostile: empty coalition list -> winner None, empty pruned/ranked, no crash
+
+T9 hostile: an utterance that names NOTHING -> empty workspace, no crash
+
+T9 hostile: a single isolated perceived node -> singleton coalition wins, is NOT pruned (a lone perceived seed cannot be 'a domain no source named')
+
+T9 competition: density (not summed strength) picks the tighter of two equal-total coalitions; min-size guard blocks a degenerate singleton
+
+T9 hostile: duplicate-content nodes, cycles, self-loops in the live loop -> competition still selects exactly one winner deterministically
+
+T9 hostile: a high-degree fan hub (1 hub -> 25 leaves) all in one basin; the winner is well-formed and selection is deterministic on the fan
+
+T9 watershed helper (unit): on _small_mind, the watershed keeps the warm community (incl. non-source warmth/cozy) and excludes the work community
+
+T9 watershed determinism: the kept set is identical under ANY permutation of the member-id input list (frozen-per-pass fixpoint is order-independent)
+
+T10 scale-invariance: scaling all coalition activations by any positive constant (1e-15 .. 1e15) keeps winner identity AND pruned_members
+
+T10 scale-invariance (road strength): identical TOPOLOGY at different absolute strengths (n=8/12/30 vs n=4/6/15) yields the same prune decision (membership)
+
+T11 (P9 RE-OWNED): INDEPENDENT re-derivation that, after 1d-i, the over-swallow residual is ABSENT — by the membership watershed, not by tuning
+      → RE-OWNED: independent derivation agrees; residual is absent by the C1 membership watershed (no tuning). See verdict.
+
+T11b (P9 re-owned, counterfactual): the SAME graph with the work domain NAMED does NOT prune it — proving the flip is membership-driven, not a fixed cut
+
+T12 watershed CHAINING (corrected derivation): on an EQUAL-STRENGTH chain per=mid=unp=other, the PERCEIVED label floods the WHOLE connected component (single-link chaining through ties). We pin this ACTUAL behavior — it is the watershed's load-bearing property and the crux of the C1 adjudication.
+
+T12 watershed floor: a member with NO road to ANY perceived member is never adopted (best_to_perceived must be > 0 to adopt) -> always pruned
+
+T12c C1 ADJUDICATION (decisive): a GENUINELY unnamed, multi-node community is NOT pruned when its bridge to the perceived region is >= its internal cohesion. This proves the watershed prunes by COHESION VALLEY (weakness), not by pure domain MEMBERSHIP. Reported as a generalization characterization, not a §6.1 FAIL (the locked §6.1 case has bridge < cohesion).
+      probe: gizmo bridge->perceived=0.8214  internal->unperceived=0.8214
+
+T12d C1 ADJUDICATION (contrast): on the SAME graph a true membership-C1 (prune iff the node's 1c-group/basin contains no perceived source) WOULD prune the unnamed gizmo/widget community — the watershed does NOT. The two rules diverge, so the watershed is not a faithful realization of C1-as-written.
+      raw winner: ['cup', 'gizmo', 'tea', 'widget']  winner: ['cup', 'gizmo', 'tea', 'widget']  pruned: []
+
+T12e the C1 gap is in the SAFE direction: the watershed errs toward KEEPING (over-inclusion), so it can never over-PRUNE a perceived member. We hammer the anti-overcorrection guarantee in the adversarial bridge>=cohesion regime.
+
+T12f scope confirmation: BOTH locked §6.1 acceptance graphs (coffee/work and the tea/project relabel) have bridge(n=8) STRICTLY below internal cohesion (n=30) — so the cohesion-valley watershed correctly prunes them. The §6.1 criterion is met; the T12c gap lies OUTSIDE the locked acceptance scope.
+
+T13 structural: after pruning, the winner's members/_seq/strength/breakthrough marks are mutually consistent and representative() is deterministic
+
+T13b structural: workspace.ranked lists ALL candidate coalitions in competition order and is a pure-read product (raw_winner is ranked[0])
+
+======================================================================
+  RESULT: 107 passed, 0 failed
+======================================================================
+
+######################################################################
+# test_tester_1d_ii_adversarial.py
+######################################################################
+======================================================================
+  TESTER — INDEPENDENT ADVERSARIAL SUITE for 1d-ii (broadcast + feedback)
+======================================================================
+
+A NO DIVERGENCE (hostile dense clique): a fully-connected 6-node named clique (30 internal roads) broadcast for 120 cycles — every road stays <= 1.0 and the aggregate PLATEAUS (per-cycle delta -> ~0), not unbounded growth (loop-closed)
+
+A NO DIVERGENCE (near-saturated start): pre-strengthen the winner's internal roads to ~0.99, then broadcast 60 cycles — strength approaches but NEVER exceeds 1.0, and increments are tiny throughout (no overshoot past the ceiling)
+
+A NO DIVERGENCE (tight self-reinforcing loop): a 3-cycle (a->b->c->a) named in full, broadcast 100 cycles — the GLOBAL max road strength over the whole store stays <= 1.0 every cycle (no runaway potentiation in a loop)
+
+B STRUCTURAL BOUNDEDNESS: NEITHER broadcast() NOR _internal_road_ids() contains a clamp/cap/ceiling/tunable magnitude — boundedness must come from strengthen()'s saturation, not from any artificial ceiling added in 1d-ii (code-body audit)
+
+B STRUCTURAL BOUNDEDNESS (analytic): strengthen() with NO charge is the exact geometric contraction s -> s + g*(1-s), g=0.13 — its fixed point is 1.0, approached from below and NEVER exceeded. We verify the closed form matches the store AND that the iterated map provably stays < 1.0 from any start in [0,1).
+
+C NO LOCK-IN (hostile, bridged): after EIGHTY broadcast cycles biasing A on a graph where B->A is bridged (so a B-percept spreads into the heavily-biased A), a strong fresh B percept STILL switches the winner to B. Escape is NON-VACUOUS: A is verified dominant immediately before the switch (loop-closed)
+
+C NO LOCK-IN (mirror): the same deep-bias-then-escape with the bridge reversed (A->B) also escapes — the no-lock-in property is not an artifact of bridge direction (loop-closed)
+
+C FREEZE PROBE: alternating A and B percepts (each with broadcast) — the winner FOLLOWS the current percept every time; it never freezes on the first settled winner. We assert the winner switched on EVERY alternation (loop-closed)
+
+C NO LOCK-IN (close competition, differential): a fixed utterance that names BOTH domains is decided the SAME way on a heavily-A-biased store as on a FRESH store — accumulated bias must NOT flip the winner toward A. This is the precise lock-in failure mode, tested differentially so it cannot false-fail on fixture quirks (loop-closed)
+
+D SINGLE WRITE (dense clique): on a fully-connected named clique, the broadcast changes EXACTLY its internal roads and NOTHING else; no node moves; no index drifts; each internal road's traversal_count increments by EXACTLY 1 (loop-closed)
+
+D SINGLE WRITE (self-loop edge case): a self-loop road (a->a) among the winner's members is NOT strengthened by broadcast (the i==j scan skips it) and causes no crash — we pin the ACTUAL behavior and its consistency (loop-closed)
+
+D SINGLE WRITE (high-degree fan): a hub <-> 25 leaves (bidirectional so the whole fan is one basin regardless of the clustering rep), all named -> the broadcast strengthens exactly the fan's existing internal roads once each; no new road; road_count unchanged (loop-closed)
+
+D SINGLE WRITE (helper, hand-built coalition — UNIT, not acceptance): broadcast() over a coalition whose members have NO roads among them writes nothing and creates nothing (it strengthens EXISTING roads only)
+
+E PURE PATH: think(broadcast=False) is byte-identical across many repeated calls on an adversarial graph (cycle + self-loop + closed road + duplicate content + fan), interleaved with a SEPARATE broadcast=True store — zero mutation
+
+E PURE PATH: select_winner remains a pure read even AFTER many broadcast writes have changed the store — re-running selection on the mutated store mutates nothing
+
+F SUBSTRATE BAR: the WHOLE store state after N broadcast cycles on a HOSTILE graph (dense clique + an unnamed clique + a bridge) is byte-identical across all 6 hash seeds in fresh interpreters (our own probe; ties everywhere)
+
+F SUBSTRATE BAR (loop-closed, multi-percept): the winner+broadcast trace across bias-A-then-escape-to-B on a BRIDGED graph is byte-identical across 6 hash seeds (our own probe) — the write AND the escape selection are both deterministic
+
+F SUBSTRATE BAR: check_integrity() stays clean through 50 broadcast cycles INTERLEAVED with a randomized direct-mutation battery (the write preserves every graph index even as the graph is concurrently mutated by traversals)
+
+G hostile: think(broadcast=True) on an utterance naming NOTHING -> empty Broadcast, no winner, nothing mutated, no crash
+
+G hostile: a CLOSED road internal to the winner is still strengthened via the normal strengthen() path (broadcast adds no special closure handling); we pin the actual behavior and that integrity holds
+
+G hostile (decay active): with an ADVANCING real-mode-like simulated clock between cycles (so lazy decay actually fires inside strengthen), broadcast stays bounded <= 1.0 and still writes exactly the winner's internal roads each cycle
+
+======================================================================
+  RESULT: 110 passed, 0 failed
+======================================================================
+
+======================================================================
+  OVERALL: all 12 suites passed (0 failures)
+======================================================================

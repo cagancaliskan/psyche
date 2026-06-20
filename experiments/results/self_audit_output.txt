@@ -1,0 +1,22 @@
+==================================================================
+PHASE 2A SELF-AUDIT  (evidence, not assertion)
+==================================================================
+
+[1] No file under src/ or tests/ was modified (git porcelain, path-scoped):
+    PASS — src/ and tests/ are clean.
+
+[2] The engine src/nous_activation.py was NOT altered to force an effect:
+    PASS — nous_activation.py unchanged in git.
+
+[3] The PREDICTION is printed BEFORE any result is computed (fan_effect.py main):
+    print_preregistration() call at line 182 ; compute_fan_table() call at line 189
+    PASS — prediction is emitted before the result is computed.
+
+[4] All reported numbers match results/fan_effect_output.txt (captured literally):
+    activation value in captured output: 0.2433743975
+    PASS — FAN_EFFECT.md cites the captured value 0.2433743975.
+    PASS — no non-captured value in the write-ups (FAN_EFFECT.md, EXPERIMENT_NOTES.md).
+
+==================================================================
+SELF-AUDIT: ALL CHECKS PASS
+==================================================================

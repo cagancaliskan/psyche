@@ -1,0 +1,45 @@
+==============================================================================
+PHASE 2B — GRADED SEMANTIC PRIMING ON SWOW-EN — pre-registered
+==============================================================================
+PRE-REGISTERED PREDICTIONS (fixed before any activation computed):
+  P1 SANITY (instrument check, NOT the cognitive result): within DIRECT pairs, higher SWOW association strength -> higher target activation.
+  P2 REAL TEST: target activation ordering DIRECT > MEDIATED > UNRELATED.
+  PRIMARY COGNITIVE CONTRAST: MEDIATED vs UNRELATED — does a real 2-step associative path beat an unrelated node beyond what hop-distance forces? (DIRECT>MEDIATED is partly mechanical: decay attenuates 2 hops > 1 hop.)
+
+READOUT: PRIMARY = raw target activation (harness.read_targets / retrieval_strength).
+         SECONDARY = normalized (target activation / prime outgoing total).
+
+SUBSTRATE: full SWOW-EN graph; edge traverse_count = min(10, 1+floor(strength*100));
+           Clock(simulated=True); library default activation knobs.
+CONDITIONS (BLIND, topology+strength only, seed=20250531):
+           DIRECT=1-hop response; MEDIATED=2-hop & not direct;
+           UNRELATED=in-degree>0 & no path within K=4 hops.
+A null/flat result is an honest finding; verdicts below are computed from data.
+==============================================================================
+
+loaded 1388741 directed edges (strength>0, no self-loops).
+selected 300 primes (one DIRECT/MEDIATED/UNRELATED target each), BLIND to activation.
+N per condition = 300.
+
+substrate built: 133763 nodes, 1388741 roads (Clock simulated).
+
+RESULT — RAW target activation by condition (PRIMARY readout):
+  DIRECT     N=300   mean=0.750332  median=0.330680  min=0.112775  max=13.229589  nonzero=300/300
+  MEDIATED   N=300   mean=0.136601  median=0.027447  min=0.000000  max=5.158383  nonzero=185/300
+  UNRELATED  N=300   mean=0.000000  median=0.000000  min=0.000000  max=0.000000  nonzero=0/300
+
+RESULT — NORMALIZED activation (SECONDARY: share of prime's outgoing total):
+  DIRECT     N=300   mean=0.049879  median=0.021410  min=0.005270  max=0.903757  nonzero=300/300
+  MEDIATED   N=300   mean=0.009029  median=0.001797  min=0.000000  max=0.332900  nonzero=185/300
+  UNRELATED  N=300   mean=0.000000  median=0.000000  min=0.000000  max=0.000000  nonzero=0/300
+
+PRIMARY CONTRAST — MEDIATED vs UNRELATED (the cognitive test):
+  mean:   MEDIATED=0.136601   UNRELATED=0.000000   diff=0.136601
+  median: MEDIATED=0.027447   UNRELATED=0.000000
+  within-prime sign test (N=300): MEDIATED>UNRELATED in 185, equal in 115, < in 0
+  nonzero: MEDIATED=185/300  UNRELATED=0/300
+
+VERDICTS (computed from the data above):
+  P1 VERDICT: PASS (instrument sane) — Spearman(strength, direct activation) rho=0.2894
+  P2 VERDICT: MATCHES: full ordering DIRECT > MEDIATED > UNRELATED — graded priming reproduced.
+  PRIMARY VERDICT: MEDIATED > UNRELATED — median 0.027447 vs 0.000000; MEDIATED>UNRELATED in 185/300 primes (61.7%).

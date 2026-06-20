@@ -18,7 +18,8 @@ rather than on sources chosen by hand. This module is that slice:
     text input ─► perceive() ─► sources (matched substrate nodes)
                               ─► multi-source activation field
                               ─► coalitions (grouped by basin)
-                              ─► strongest coalition = "the thought"   [BROADCAST placeholder]
+                              ─► workspace selection: one winner + over-swallow pruning
+                                 (1d-i, nous_workspace.select_winner) = "the thought"
 
 PERCEPTION (deliberately minimal, deliberately NOT hand-tuned): an incoming utterance
 is tokenized; each token is matched against existing node content; the nodes whose
@@ -31,18 +32,29 @@ HONESTY ABOUT WHAT IS REAL vs PLACEHOLDER (so the loop-closing does not itself b
 new fiction):
   - REAL: sources are now derived from input, not hand-placed. That is the whole point.
   - REAL: the substrate, activation engine, flow, and multi-source field underneath.
+  - REAL (1d-i): the "thought" is now the WINNER of a deterministic, pure-read workspace
+    selection (density competition + unperceived-domain pruning) — no longer the bare
+    coalitions[0] placeholder. It is a SELECTED INFORMATION STRUCTURE, not a claim of
+    awareness; see nous_workspace's honest-framing note.
+  - REAL (1d-ii): the BROADCAST write that biases the next cycle is now built and wired
+    behind think(broadcast=True) — a single, bounded strengthening of the winner's internal
+    roads (nous_workspace.broadcast). This is what closes the one-shot pipeline into a loop.
+    "Broadcast biases the next cycle" is an INTERNAL MECHANISM property (a measurable change
+    in next-cycle conduction), NOT priming, awareness, or a cognitive claim — that is 1e,
+    graded by the validator. think(broadcast=False) (the default) stays a PURE READ.
   - PLACEHOLDER: perception is exact/substring token matching — no embeddings, no
     fuzzy semantics. A real PERCEPTION system (Layer 2) would do far more. This is the
     minimal thing that makes sources real.
-  - PLACEHOLDER: "strongest coalition is the thought" stands in for the BROADCAST phase
-    (the workspace competition). Picking the top coalition is a placeholder, labeled.
-  - NOT ESTABLISHED: that the resulting "thought" is cognitively meaningful. The slice
-    lets us OBSERVE end-to-end behavior on real input; it does not prove the behavior
-    is right. It just stops proving it on inputs invented to make it right.
+  - NOT ESTABLISHED: that the resulting "thought" is cognitively meaningful, or that the
+    broadcast bias reproduces any cognitive effect. The slice lets us OBSERVE end-to-end
+    behavior on real input; it does not prove the behavior is right. It just stops proving
+    it on inputs invented to make it right.
 
-PURE READ: perception reads the store to match; it does not yet write new perceptions
+PURE READ BY DEFAULT: perception reads the store to match; it does not write new perceptions
 into the substrate (that is a PERCEPTION-system job — turning input into nodes/roads —
-deferred). The slice composes pure-read stages; it mutates nothing.
+deferred). With broadcast=False (the default) the whole slice composes pure-read stages and
+mutates nothing. The ONLY write the slice can perform is the single 1d-ii broadcast, and
+ONLY on the explicit broadcast=True path.
 """
 
 from __future__ import annotations
@@ -54,6 +66,8 @@ from typing import Dict, List, Set, Optional, Tuple
 from nous_store import SubstrateStore
 from nous_field import build_activation_field, ActivationField
 from nous_coalitions import form_coalitions_from_field, Coalition
+from nous_source_clustering import cluster_sources, SourceClustering
+from nous_workspace import select_winner, WorkspaceResult, broadcast as _broadcast, Broadcast
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -121,13 +135,31 @@ def perceive(
 @dataclass
 class ThoughtResult:
     """What the system did with an utterance, end to end.
-    `perception` is the matched sources; `field_` is the multi-source activation field;
-    `coalitions` are the basins as candidate thoughts; `thought` is the strongest
-    coalition (the BROADCAST-placeholder winner), or None if nothing was perceived."""
+    `perception` is the matched sources; `clustering` is the 1c source-grouping of those
+    sources (pre-processing between perception and the field); `field_` is the multi-source
+    activation field built from the GROUP REPRESENTATIVES (not the raw perceived set);
+    `coalitions` are the basins as candidate thoughts; `workspace` is the 1d-i
+    competition+pruning outcome; `thought` is the selected winner AFTER pruning
+    (`workspace.winner`), or None if nothing was perceived.
+
+    `thought` is a SELECTED INFORMATION STRUCTURE (the workspace-selection winner), not a
+    claim of awareness or experience — see nous_workspace's honest-framing note.
+
+    `broadcast_` is the record of the SINGLE bounded write 1d-ii applied to the substrate
+    (the winner's internal roads strengthened so they conduct slightly more next cycle). It
+    is present (non-None) ONLY when think() is invoked with broadcast=True; with the default
+    broadcast=False it is None and the store is left byte-identical (pure read). It is an
+    internal mechanism record, NOT a cognitive/priming claim — see nous_workspace.
+
+    `clustering` and `workspace` are recorded for inspection; adding them does not change
+    the perception surface or the field-builder signature."""
     perception: Perception
+    clustering: Optional[SourceClustering]
     field_: Optional[ActivationField]
     coalitions: List[Coalition]
+    workspace: Optional[WorkspaceResult]
     thought: Optional[Coalition]
+    broadcast_: Optional[Broadcast] = None
 
 
 def think(
@@ -136,27 +168,81 @@ def think(
     *,
     source_energy: float = DEFAULT_SOURCE_ENERGY,
     hop_budget: int = 6,
+    broadcast: bool = False,
 ) -> ThoughtResult:
-    """The first end-to-end pass: perceive an utterance, build the field from the
-    perceived sources, form coalitions, and select the strongest as 'the thought'.
+    """The end-to-end pass: perceive an utterance, build the field from the perceived
+    sources, form coalitions, and select ONE winner via the workspace (1d-i).
 
     The sources are produced by perception from the input — NOT hand-placed. This is
-    the loop-closing pass: behavior is now observed on system-generated input.
+    the loop-closing pass: behavior is observed on system-generated input.
 
-    'Strongest coalition is the thought' is a placeholder for BROADCAST. Pure read.
+    1c (source-clustering) runs BETWEEN perception and the field: the raw perceived
+    sources are grouped by graph proximity, and the field is seeded from ONE representative
+    per group (group_seeds) rather than every raw source. This changes WHICH sources reach
+    the field; it does not change the perception surface or the field-builder signature.
+    The grouping is decided by the substrate (a pure, deterministic function of graph
+    state), never by hand.
+
+    1d-i (workspace selection) replaces the old `coalitions[0]` placeholder: a
+    deterministic, PURE-READ competition (density-normalized, min-size guard) selects one
+    winner, then over-swallow pruning drops members in a domain no source named. The
+    winner is `workspace.winner` and is exposed as `thought`. It is a SELECTED INFORMATION
+    STRUCTURE, not a claim of awareness — see nous_workspace's honest-framing note.
+
+    `broadcast` is the opt-in write flag for the 1d-ii bounded feedback that biases the
+    NEXT cycle (Decision B1).
+
+      - broadcast=False (DEFAULT): think() is a PURE READ end to end — perceive, cluster,
+        field, coalitions, selection — and mutates NOTHING. `broadcast_` is None. This is
+        exactly the path 1d-i shipped; the existing end-to-end purity guarantee holds.
+      - broadcast=True: after selection, the SINGLE bounded broadcast write is applied —
+        the winner's internal roads are strengthened via the proven `strengthen()` so they
+        conduct slightly more next cycle (nous_workspace.broadcast). This is the ONLY
+        mutation think() can perform, and the ONLY writing path. `broadcast_` records
+        exactly what was written. Boundedness is STRUCTURAL (strengthen's saturation), not
+        a clamp; it biases conductance only, so a strong fresh percept can still change the
+        winner (no lock-in). It is an INTERNAL MECHANISM property — NOT a cognitive/priming
+        claim (that is 1e, graded by the validator). 1d-ii closes the loop 1e needs.
     """
     perception = perceive(store, utterance, source_energy=source_energy)
     if not perception.sources:
-        return ThoughtResult(perception=perception, field_=None, coalitions=[], thought=None)
+        # Nothing was perceived: no winner, so there is nothing to broadcast. Under
+        # broadcast=True this is a recorded no-op write (empty Broadcast); under the
+        # default broadcast=False, `broadcast_` stays None and this path is byte-identical
+        # to the 1d-i pure-read return (no write attempted either way).
+        return ThoughtResult(
+            perception=perception, clustering=None, field_=None,
+            coalitions=[], workspace=None, thought=None,
+            broadcast_=(_broadcast(store, None) if broadcast else None),
+        )
+
+    # 1c: group nearby sources, then seed the field from group representatives only.
+    clustering = cluster_sources(store, perception.sources)
 
     field_ = build_activation_field(
         store,
-        list(perception.sources.keys()),
+        list(clustering.group_seeds.keys()),
         hop_budget=hop_budget,
-        source_energies=perception.sources,
+        source_energies=clustering.group_seeds,
     )
     coalitions = form_coalitions_from_field(field_, store)
-    thought = coalitions[0] if coalitions else None
+
+    # 1d-i: competition (one winner) + over-swallow pruning. PURE READ — unchanged.
+    workspace = select_winner(
+        store, coalitions, field_, clustering, perception.sources,
+    )
+    thought = workspace.winner
+
+    # 1d-ii: the SINGLE bounded broadcast write, ONLY when explicitly requested. Everything
+    # above this line is a pure read; this is the one and only mutation think() performs,
+    # and only on the broadcast=True path. With broadcast=False nothing below runs and the
+    # store is left byte-identical (the existing purity guarantee).
+    broadcast_record: Optional[Broadcast] = None
+    if broadcast:
+        broadcast_record = _broadcast(store, thought)
+
     return ThoughtResult(
-        perception=perception, field_=field_, coalitions=coalitions, thought=thought,
+        perception=perception, clustering=clustering, field_=field_,
+        coalitions=coalitions, workspace=workspace, thought=thought,
+        broadcast_=broadcast_record,
     )
