@@ -133,35 +133,43 @@ def test_slice_is_pure_read():
 
 # ── the HONEST behavioral finding (documents a real limitation) ──────────────
 
-def test_KNOWN_LIMITATION_clustered_sources_give_poor_basins():
-    section("KNOWN LIMITATION: clustered real-input sources do NOT yield clean basins")
-    # When real perception lights up several nodes in the SAME domain (which it does —
-    # "coffee in the kitchen this morning" names three warm-domain nodes), the
-    # multi-source field does not produce one-coalition-per-concern. Basins collapse:
-    # one source swallows most nodes, its same-domain siblings strand as singletons.
-    # This is the same structural issue the review exposed (multiple sources in one
-    # community), now arising naturally from real input. We ASSERT the problem exists,
-    # so this test documents it honestly and will FLIP when source-grouping is fixed.
+def test_clustered_sources_no_longer_strand_after_1c():
+    section("1c FIXED the stranded-singleton-source half of the old known limitation")
+    # This is the FLIP of the old test_KNOWN_LIMITATION_clustered_sources_give_poor_basins.
+    # BEFORE 1c: real perception lit up three same-domain sources (coffee/kitchen/morning)
+    # as SEPARATE field sources, so basins fractured — one source over-swallowed the work
+    # domain AND its same-domain siblings stranded as singleton basins. 1c (source-
+    # clustering) merges the three into ONE group before the field is built, so there is now
+    # a single warm basin and NO perceived source strands as a singleton. Driven through the
+    # real loop on the same input; sources from perceive(), never hand-placed.
     s, n = _small_mind()
     r = think(s, "coffee in the kitchen this morning")
-    # all three warm-domain terms were perceived as separate sources
     perceived = set(r.perception.sources)
     check({n["coffee"], n["kitchen"], n["morning"]} <= perceived,
           "real input named three sources in the same (warm) domain")
-    # the failure signature: the strongest coalition over-swallows (pulls in the
-    # work domain), AND some perceived sources strand as singletons.
+    # 1c merged them into one group (the field now sees one warm source, not three)
+    warm_groups = [g for g in r.clustering.groups
+                   if {n["coffee"], n["kitchen"], n["morning"]} & set(g.members)]
+    check(len(warm_groups) == 1 and
+          {n["coffee"], n["kitchen"], n["morning"]} <= set(warm_groups[0].members),
+          "1c merged the three same-domain sources into one group")
+    # FIXED: no perceived source strands as a singleton coalition any more
+    singletons = [c for c in r.coalitions if c.size() == 1]
+    has_stranded_source = any((set(c.members) & perceived) for c in singletons)
+    check(not has_stranded_source,
+          "FIXED by 1c: no perceived same-domain source strands as a singleton basin")
+    # HONEST RESIDUAL (the other half is NOT fixed by source-clustering alone, and is
+    # documented as an asserted-negative in test_nous_source_clustering.py): the elected
+    # representative (coffee) bridges to the work domain, so a single-source basin still
+    # pulls work/code in. We record that residual here too, so this test does not pretend
+    # the whole limitation is gone.
     thought_members = set(r.thought.members) if r.thought else set()
     over_swallows = n["work"] in thought_members or n["code"] in thought_members
-    singletons = [c for c in r.coalitions if c.size() == 1]
-    has_stranded_source = any(
-        (set(c.members) & perceived) for c in singletons
-    )
     check(over_swallows,
-          "DOCUMENTED: the 'thought' over-swallows across domains (work pulled in)")
-    check(has_stranded_source,
-          "DOCUMENTED: a perceived same-domain source strands as a singleton basin")
-    print("      → recorded as a known limitation: clustered sources need grouping/")
-    print("        merging before basins are meaningful (a real next-step problem).")
+          "DOCUMENTED RESIDUAL: a single-group representative that bridges to a non-"
+          "perceived domain still over-swallows it (see source-clustering suite + report)")
+    print("      → 1c fixes the stranded-source half; the over-swallow half remains a")
+    print("        documented residual (single-source basin + bridged domain). See report.")
 
 
 # ── determinism (established discipline) ─────────────────────────────────────
@@ -213,7 +221,7 @@ def run_all():
         test_energy_scales_with_match_count,
         test_slice_runs_end_to_end_on_real_input,
         test_slice_is_pure_read,
-        test_KNOWN_LIMITATION_clustered_sources_give_poor_basins,
+        test_clustered_sources_no_longer_strand_after_1c,
         test_slice_determinism_across_hash_seeds,
     ]:
         t()
