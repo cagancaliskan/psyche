@@ -22,3 +22,10 @@ docs/outreach/social/*.2x.png
 # See experiments/data/README.md for how to obtain it locally.
 experiments/data/*.csv
 experiments/data/*.tsv
+
+# Phase 1c §6.2 experiment: regenerable result artifacts (deterministic). The external
+# Louvain partition's SHA-256 is recorded in docs/experiments/EXP-1c-swow-recovery.md §3.1
+# and is reproducible via experiments/exp1c_build_partition.py, so the big partition file and
+# its build log are not tracked.
+experiments/results/exp1c_external_partition.tsv
+experiments/results/exp1c_partition_build.txt

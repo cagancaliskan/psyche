@@ -1,0 +1,40 @@
+========================================================================
+EXP-1c — SWOW community recovery (MEANING bar, §6.2)
+Method under test: cluster_sources (1c, single-link / A1 road-strength).
+External labels: FROZEN Louvain partition (different algorithm family).
+========================================================================
+
+PRE-REGISTERED (frozen in docs/experiments/EXP-1c-swow-recovery.md):
+  N_PROBES=200  probe=1 seed + 4 near(1-hop) + 4 far(>4-hop) = 9 words  seed=20250620
+  P-a  mean ARI(1c)        >= 0.30
+  P-b  mean ARI(1c) - ARI(none) >= 0.15  (1c higher)
+  P-c  sign test ARI(1c)>ARI(none) across probes: p < 0.05
+  sanity: mean ARI(random) ~ 0
+  VERDICT = EARNED iff P-a AND P-b AND P-c all hold AND random sanity holds.
+
+frozen partition loaded + hash VERIFIED: /Users/cagancaliskan/Desktop/İşler/Nous/NOUS/nous/experiments/results/exp1c_external_partition.tsv
+  labelled words: 133763
+
+building SWOW store (this is the ~1.39M-road build; please wait) ...
+  store built: 133763 nodes, 1388741 roads
+
+selected 200 blind probe sets (topology select; frozen labels = ground truth).
+
+------------------------------------------------------------------------
+RESULT — mean ARI across 200 probes:
+  ARI(1c)      mean=0.228383  median=0.184337  min=-0.246154  max=1.000000
+  ARI(none)    mean=0.005000  median=0.000000  min=0.000000  max=1.000000
+  ARI(random)  mean=0.010202  median=-0.040970  min=-0.218750  max=0.653846
+  LIFT (1c - none) = 0.223383
+  sign test 1c vs none:  wins=170  losses=30  ties=0  p(two-sided)=6.17314e-25
+  1c groups-per-probe: mean=5.475  min=5  max=8  (all-singleton probes: 0/200)
+
+========================================================================
+VERDICT (thresholds frozen pre-run):
+  P-a  mean ARI(1c) >= 0.30        : FAIL   (0.228383)
+  P-b  lift >= 0.15                 : PASS   (0.223383)
+  P-c  sign test p<0.05 & 1c>none   : PASS   (p=6.17314e-25, wins=170 losses=30)
+  sanity random ~0 (|mean|<0.05)   : PASS   (0.010202)
+------------------------------------------------------------------------
+  OVERALL: NOT YET
+========================================================================

@@ -2,7 +2,7 @@
 
 *A living roadmap. This is a map, not a contract. As real parts get built and tested, what we learn rewrites what comes next. The far end is a horizon, not a checkpoint we can schedule.*
 
-Last updated: 2026-06-20 · Version 0.1 (first draft) · 1c mechanism independently tester-VERIFIED (PASS); §6.1 over-swallow re-scoped to 1d; meaning (§6.2) not yet earned
+Last updated: 2026-06-20 · Version 0.1 (first draft) · 1c mechanism tester-VERIFIED (PASS); §6.1 over-swallow re-scoped to 1d; §6.2 meaning experiment ran → NOT YET (ARI 0.228 < 0.30; beats control decisively, p≈6e-25); 1c stays BUILT · UNVALIDATED
 
 ---
 
@@ -32,7 +32,7 @@ Each step carries a status tag:
               (memory · sleep · interoception · emotion · drive)
   PHASE 1  ▓▓  One honest cognitive cycle            ◄── YOU ARE HERE
               1a field ✓built  1b coalitions ✓built
-              1c source-clustering ✓built + tester-verified (mechanism)
+              1c source-clustering ✓mechanism verified · §6.2 meaning NOT YET
               1d workspace + broadcast   1e first falsifiable result
   PHASE 0  ██  Foundations: substrate + activation             PROVEN
 ```
@@ -67,7 +67,8 @@ Single-source and field-based (basin) coalitions. Same status.
 The real problem the closed loop surfaced: perception emits *clustered, overlapping* source sets, so basins are meaningless until nearby sources are merged or grouped first. Built: a deterministic, pure-read pre-processing stage between perception and field construction that groups nearby sources (single-link on a source proximity graph — A1 topology/road-strength only) and seeds the field from one representative per group. Integrated into the live `think()` loop without changing the perception surface or the field-builder signature.
 > **Done means — §6.1 mechanism (tester), as re-scoped 2026-06-20:** on *real perceived input* through the closed loop, (a) `coffee/kitchen/morning` **merge into one group**, and (b) **no perceived source strands** as a singleton — both now pass; hand-placed groupings = automatic fail. *Tester verdict: PASS — full canonical run is 8 suites / 254 assertions, 0 failures, incl. the tester's adversarial suite and 6-seed cross-process determinism on randomly-generated hostile graphs.*
 > **Re-scoped to 1d (human decision, 2026-06-20):** "no over-swallow of a bridged, unperceived domain" is **not** a 1c criterion. After merging, a single source whose representative bridges into the unperceived `work` domain still pulls it in — there is no competing source to draw a seam. That is workspace-competition / coalition-pruning, which is 1d's job. Shipped as a passing asserted-negative that flips when 1d lands.
-> **Done means — §6.2 meaning (validator), unchanged:** the grouping recovers external SWOW community structure better than the no-clustering control, ARI pre-registered (mean ≥ 0.30; lift ≥ 0.15; sign-test p < 0.05), direction fixed in advance. A null result is reported honestly and leaves the *meaning* unearned.
+> **Done means — §6.2 meaning (validator):** the grouping recovers external SWOW community structure better than the no-clustering control, ARI pre-registered (mean ≥ 0.30; lift ≥ 0.15; sign-test p < 0.05), direction fixed in advance. A null result is reported honestly and leaves the *meaning* unearned.
+> **§6.2 result (2026-06-20 — honest NOT YET):** ran the pre-registered experiment (`docs/experiments/EXP-1c-swow-recovery.md`; external labels = a frozen, hash-verified, independent Louvain partition — a different algorithm family). 1c beats the no-clustering control **decisively** — lift +0.223 (≥0.15 ✓), sign test 170/30 probes p≈6e-25 (✓), random-control sanity ✓ — but the **absolute** bar fails: mean ARI(1c)=0.228 < 0.30. Per the frozen AND-rule the **claim is NOT YET earned**; 1c stays `BUILT · UNVALIDATED`. Reported as *agreement with an independent standard partition*, not ground-truth recovery (1c proximity and Louvain both read the SWOW graph). No threshold was loosened after seeing results.
 > **Decisions (all locked):** proximity = A1 topology only (A2 rejected); §6.2 labels = published SWOW partition preferred, frozen independent Leiden fallback; sequencing = finish 1c now.
 
 **1d. Global workspace + broadcast** — `DESIGNED`
