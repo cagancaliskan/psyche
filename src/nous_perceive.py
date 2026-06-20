@@ -54,6 +54,7 @@ from typing import Dict, List, Set, Optional, Tuple
 from nous_store import SubstrateStore
 from nous_field import build_activation_field, ActivationField
 from nous_coalitions import form_coalitions_from_field, Coalition
+from nous_source_clustering import cluster_sources, SourceClustering
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -121,10 +122,16 @@ def perceive(
 @dataclass
 class ThoughtResult:
     """What the system did with an utterance, end to end.
-    `perception` is the matched sources; `field_` is the multi-source activation field;
-    `coalitions` are the basins as candidate thoughts; `thought` is the strongest
-    coalition (the BROADCAST-placeholder winner), or None if nothing was perceived."""
+    `perception` is the matched sources; `clustering` is the 1c source-grouping of those
+    sources (pre-processing between perception and the field); `field_` is the multi-source
+    activation field built from the GROUP REPRESENTATIVES (not the raw perceived set);
+    `coalitions` are the basins as candidate thoughts; `thought` is the strongest coalition
+    (the BROADCAST-placeholder winner), or None if nothing was perceived.
+
+    `clustering` is recorded for inspection only; adding it does not change the perception
+    surface or the field-builder signature."""
     perception: Perception
+    clustering: Optional[SourceClustering]
     field_: Optional[ActivationField]
     coalitions: List[Coalition]
     thought: Optional[Coalition]
@@ -143,20 +150,34 @@ def think(
     The sources are produced by perception from the input — NOT hand-placed. This is
     the loop-closing pass: behavior is now observed on system-generated input.
 
+    1c (source-clustering) runs BETWEEN perception and the field: the raw perceived
+    sources are grouped by graph proximity, and the field is seeded from ONE representative
+    per group (group_seeds) rather than every raw source. This changes WHICH sources reach
+    the field; it does not change the perception surface or the field-builder signature.
+    The grouping is decided by the substrate (a pure, deterministic function of graph
+    state), never by hand.
+
     'Strongest coalition is the thought' is a placeholder for BROADCAST. Pure read.
     """
     perception = perceive(store, utterance, source_energy=source_energy)
     if not perception.sources:
-        return ThoughtResult(perception=perception, field_=None, coalitions=[], thought=None)
+        return ThoughtResult(
+            perception=perception, clustering=None, field_=None,
+            coalitions=[], thought=None,
+        )
+
+    # 1c: group nearby sources, then seed the field from group representatives only.
+    clustering = cluster_sources(store, perception.sources)
 
     field_ = build_activation_field(
         store,
-        list(perception.sources.keys()),
+        list(clustering.group_seeds.keys()),
         hop_budget=hop_budget,
-        source_energies=perception.sources,
+        source_energies=clustering.group_seeds,
     )
     coalitions = form_coalitions_from_field(field_, store)
     thought = coalitions[0] if coalitions else None
     return ThoughtResult(
-        perception=perception, field_=field_, coalitions=coalitions, thought=thought,
+        perception=perception, clustering=clustering, field_=field_,
+        coalitions=coalitions, thought=thought,
     )

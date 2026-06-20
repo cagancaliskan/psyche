@@ -1,18 +1,18 @@
 ======================================================================
   NOUS — CAPTURED TEST OUTPUT (verbatim)
 ======================================================================
-Generated : 2026-05-30 18:09:11 +03
-Machine   : Darwin 24.5.0 arm64
-Python    : Python 3.13.2
-Command   : PYTHONPATH="$PWD/src" python3 tests/<suite>.py   (one block per suite)
+Generated : 2026-06-20 02:36:45 +0300
+Machine   : Darwin 24.5.0 x86_64
+Python    : Python 3.12.4
+Command   : python3 run_tests.py   (one block per suite; absolute PYTHONPATH=src)
 Note      : Suites use a built-in harness (not pytest); each prints
             'RESULT: N passed, M failed' and exits non-zero on any failure.
+            Includes tester-authored adversarial suites (test_tester_1c_*).
 ======================================================================
 
-
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
->>> tests/test_nous_store.py
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+######################################################################
+# test_nous_store.py
+######################################################################
 ======================================================================
   NOUS SUBSTRATE STORE — TEST SUITE (Layer 1)
 ======================================================================
@@ -50,11 +50,10 @@ integrity scan passes on a healthy graph of moderate size
 ======================================================================
   RESULT: 45 passed, 0 failed
 ======================================================================
-[exit code: 0]
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
->>> tests/test_nous_activation.py
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+######################################################################
+# test_nous_activation.py
+######################################################################
 ======================================================================
   NOUS SPREADING ACTIVATION — TEST SUITE
 ======================================================================
@@ -92,11 +91,10 @@ flow records which edges actually carried activation (and respects closure)
 ======================================================================
   RESULT: 35 passed, 0 failed
 ======================================================================
-[exit code: 0]
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
->>> tests/test_nous_coalitions.py
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+######################################################################
+# test_nous_coalitions.py
+######################################################################
 ======================================================================
   NOUS COALITION FORMATION — TEST SUITE
 ======================================================================
@@ -128,11 +126,10 @@ ADVERSARIAL determinism: clustering identical across hash seeds
 ======================================================================
   RESULT: 19 passed, 0 failed
 ======================================================================
-[exit code: 0]
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
->>> tests/test_nous_field.py
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+######################################################################
+# test_nous_field.py
+######################################################################
 ======================================================================
   NOUS MULTI-SOURCE FIELD + FIELD COALITIONS — TEST SUITE
 ======================================================================
@@ -152,11 +149,57 @@ ADVERSARIAL determinism: field coalitions identical across hash seeds
 ======================================================================
   RESULT: 13 passed, 0 failed
 ======================================================================
-[exit code: 0]
 
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
->>> tests/test_nous_perceive.py
-vvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
+######################################################################
+# test_nous_source_clustering.py
+######################################################################
+======================================================================
+  NOUS SOURCE-CLUSTERING (1c) — TEST SUITE
+======================================================================
+
+LOOP-CLOSED: three same-domain perceived sources merge into ONE group
+
+LOOP-CLOSED: perceived sources in unconnected domains form SEPARATE groups
+
+representative election: highest source energy, ties on creation_seq asc
+
+group_seeds maps representatives only (the field is seeded from reps)
+
+integration: think() seeds the field from group representatives, not raw set
+
+read-purity: clustering mutates NOTHING (road strengths + traversal counts)
+
+integrity: the store's integrity scan is unchanged before vs. after clustering
+
+scale-invariance: scaling energies/proximities by a constant keeps the partition
+
+ADVERSARIAL determinism: clustering identical across 6 hash seeds (fresh procs)
+
+§6.1 (partial): 1c removes the stranded-singleton-source failure
+
+KNOWN LIMITATION: a single-group representative still over-swallows a bridged domain
+      → recorded as a residual limitation: over-swallow persists when the elected
+        representative bridges to a non-perceived domain (PM decision needed; see report).
+
+ASSERTED-NEGATIVE #1: 1c clusters ONLY the perceived sources, not the graph
+
+ASSERTED-NEGATIVE #2: grouping is topological only — no cognitive claim
+
+ASSERTED-NEGATIVE #3: single-link CHAINING (A-B-C) is intentional
+
+ASSERTED-NEGATIVE #4: perceive()/Perception and field-builder signature are unchanged
+
+ASSERTED-NEGATIVE #5: 1c does NOT broadcast/feed back into a next cycle
+
+ASSERTED-NEGATIVE #6: the relative threshold is an uncalibrated design constant
+
+======================================================================
+  RESULT: 47 passed, 0 failed
+======================================================================
+
+######################################################################
+# test_nous_perceive.py
+######################################################################
 ======================================================================
   NOUS PERCEPTION + END-TO-END SLICE — TEST SUITE
 ======================================================================
@@ -173,13 +216,101 @@ the slice runs end-to-end: text → sources → field → coalitions → thought
 
 the end-to-end slice mutates NOTHING (pure read)
 
-KNOWN LIMITATION: clustered real-input sources do NOT yield clean basins
-      → recorded as a known limitation: clustered sources need grouping/
-        merging before basins are meaningful (a real next-step problem).
+1c FIXED the stranded-singleton-source half of the old known limitation
+      → 1c fixes the stranded-source half; the over-swallow half remains a
+        documented residual (single-source basin + bridged domain). See report.
 
 ADVERSARIAL determinism: end-to-end result identical across hash seeds
 
 ======================================================================
-  RESULT: 18 passed, 0 failed
+  RESULT: 19 passed, 0 failed
 ======================================================================
-[exit code: 0]
+
+######################################################################
+# test_tester_1c_adversarial.py
+######################################################################
+======================================================================
+  TESTER — INDEPENDENT ADVERSARIAL SUITE for 1c (source-clustering)
+======================================================================
+
+P1 §6.1 LOOP-CLOSED: merge(coffee/kitchen/morning) + no-stranding via think()
+
+P1b mechanism-dependence: a HAND-ASSIGNED (everyone-singleton) grouping FAILS the merge property — so the property is not trivially true
+
+P1c anti-circularity: the PRE-1c path (field seeded from RAW sources) DOES strand a same-domain sibling; 1c (group reps) removes it — so no-stranding genuinely depends on the mechanism
+
+P2 cross-process determinism: full clustering byte-identical across 6 seeds (our own probe; ties everywhere)
+
+P2b cross-process determinism: full think() coalitions + clustering across 6 seeds (loop-closed end to end)
+
+P3 integrity unchanged before/after clustering (small_mind)
+
+P3b integrity unchanged on an ADVERSARIAL graph (cycle, self-loop, closed/traumatic road, duplicate-content nodes, high-degree fan)
+
+P4 read-purity: deep snapshot (strength/charges/closed/traversal + node access stats) unchanged after many clustering passes
+
+P4b read-purity: full think() (perceive->cluster->field->coalitions) mutates nothing across repeated cycles
+
+P5 scale-invariance: partition + representatives identical under tiny/huge energy scaling (1e-12 .. 1e12)
+
+P5b scale-invariance: identical STRUCTURE at different absolute road strengths yields identical partition shape (relative threshold)
+
+P6 A1 purity: clustering output is unchanged no matter what the activation field does (the field cannot leak back into the grouping)
+
+P6b A1 purity (structural): cluster_sources has NO field/per_source parameter
+
+P7 edge: zero sources -> empty clustering, no crash
+
+P7 edge: a single source -> one singleton group, rep = itself, seed = energy
+
+P7 edge: a source id NOT present in the store is silently dropped (filtered)
+
+P7 edge: sources with NO roads between them -> each is its own singleton group
+
+P7 edge: ties in BOTH energy and creation_seq -> still deterministic, no uuid fallback (single in-process check + cross-process check)
+
+P7 edge: single-link CHAINING A-B-C grouped though A-C not directly near
+
+P7 edge: a long single-link chain A-B-C-D-E all merges (transitive closure)
+
+P7 edge: a self-loop on a source does not corrupt grouping or representative
+
+P7 edge: a high-degree fan hub as a source groups only with its perceived spokes, not with the whole fan
+
+P7 edge: a CLOSED (traumatic) road still contributes its canonical strength to proximity (clustering reads strength, independent of closure/breakthrough)
+
+P7 edge: two nodes with IDENTICAL content but NO road do not merge (membership is topological, not content-based)
+
+P8 loop-closure: no-stranding on a SYSTEM-GENERATED two-cluster utterance (two internally-linked domains, no cross bridge)
+
+P8b loop-closure PROBE: does an ISOLATED perceived source strand as a singleton basin through the real think() loop? (reports the exact behavior)
+      → isolated source its own group: True; stranded singleton coalitions touching a perceived source: 1
+
+P8c loop-closure: merge property holds on an INDEPENDENTLY built graph isomorphic to _small_mind but with different content/order
+
+P9 the §7.7 over-swallow asserted-negative documents a REAL residual: the single-source thought genuinely reaches the bridged work/code domain
+
+P10 anti-degeneracy: clustering is not an 'everything always merges' branch — a real utterance yields >1 group when domains are unlinked
+
+======================================================================
+  RESULT: 71 passed, 0 failed
+======================================================================
+
+######################################################################
+# test_tester_1c_mutation_battery.py
+######################################################################
+======================================================================
+  TESTER — 1c RANDOMIZED MUTATION BATTERY (integrity / purity / determinism)
+======================================================================
+
+MUTATION BATTERY: random hostile graph; interleave 300 clustering calls with integrity scans; store must be byte-identical and integral throughout
+
+MUTATION BATTERY cross-process: the full clustering trace over the random graph is byte-identical across 6 PYTHONHASHSEED values
+
+======================================================================
+  RESULT: 5 passed, 0 failed
+======================================================================
+
+======================================================================
+  OVERALL: all 8 suites passed (0 failures)
+======================================================================
