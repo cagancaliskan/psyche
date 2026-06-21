@@ -266,8 +266,10 @@ not a scalar.** This is the separability lever:
 - **What is graded (downstream, emergent):** **which coalition wins the workspace**, and/or **the size/composition
   of the winning coalition**, and/or **whether the over-swallow pruning boundary moves** — all *emergent products
   of the competition*, computed by `_density_score` over the whole field, not present anywhere in B. A global
-  decay change can flip the winner (a higher decay shrinks far coalitions relative to near ones, changing the
-  density ranking), prune differently, or change the broadcast trace — **none of which is "B read back out."**
+  decay change can flip the winner (a **lower** `decay_per_hop` shrinks far coalitions relative to near ones,
+  changing the density ranking — since `decay_per_hop` is a per-hop transmission multiplier, lower decay ⇒ less
+  reaches far ⇒ more local; this is the engine's real semantics, see `docs/experiments/EXP-2c-interoception.md` §2),
+  prune differently, or change the broadcast trace — **none of which is "B read back out."**
 - **Why this is NOT a pass-through (the concrete separation test, pre-registered):** the pass-through null would
   be "B correlates with a direct echo of B." The genuine claim is "B correlates with an **emergent selection
   outcome** that is a non-trivial function of the *whole field's competition*, not of B alone." The two are
@@ -555,9 +557,15 @@ readout, never a readback of B.
 - **External yardstick:** the **frozen, hashed recorded telemetry trace** (§3.2: REPLAY mode, spanning a real
   low-friction → high-friction range) — a real machine signal the project did not author. **Direction fixed in
   advance** from the resolved headline signal (§6.1, the `perf_counter`/`process_time` friction signal): *higher
-  friction (wall ≫ cpu / longer cycle) ⇒ higher `decay_per_hop` (§6.2) ⇒ activation stays more local ⇒ near,
+  friction (wall ≫ cpu / longer cycle) ⇒ **LOWER** `decay_per_hop` (§6.2) ⇒ activation stays more local ⇒ near,
   tightly-bound coalitions favored over far, diffuse ones*; the exact monotone direction is pre-registered, not
-  discovered.
+  discovered. (**Direction-label correction, prose only — no mechanism change.** In the engine,
+  `decay_per_hop` is a per-hop **transmission multiplier** — `transmitted = outgoing · road.strength · decay_per_hop`
+  in `src/nous_activation.py` — so **higher decay ⇒ more BROAD, lower decay ⇒ more LOCAL**; an earlier draft of
+  this line mislabeled it as "higher decay ⇒ more local." The **implementation was already correct**:
+  `friction_to_decay_factor = 1 − 0.6·friction` in `src/nous_bodysensor.py` is monotone *decreasing*, so higher
+  friction → lower decay → more local — matching both the engine semantics and the Easterbrook narrowing
+  direction. The resolved, pre-registered direction is worked out in full in `docs/experiments/EXP-2c-interoception.md` §2.)
 - **Headline readout (emergent; (C-GRADE-EMERGENT); RESOLVED §6.3):** the **categorical winner-identity flip** —
   across the trace, the **rate of winner-change** as B moves, tested for a **monotone association with B** in the
   pre-registered direction (a within-percept sign test on categorical winner-flips), with **winning-coalition
@@ -639,7 +647,13 @@ the new §3.2 determinism commitment). The options are retained for the record; 
    `decay_per_hop`** — the **upstream, node-naming-free global gain** that most directly changes the near-vs-far
    competition (so it is most likely to produce the emergent winner-flips the pass-through control needs), and a
    first-class `spread_activation` parameter already. It is the cleanest "neuromodulatory gain" analogue. Direction
-   pre-registered: higher B ⇒ higher decay ⇒ near/tight coalitions favored over far/diffuse ones.
+   pre-registered: higher B ⇒ **LOWER** decay ⇒ near/tight coalitions favored over far/diffuse ones. (**Direction
+   label corrected, prose only — no mechanism change; the implementation was already correct.** `decay_per_hop` is
+   a per-hop transmission multiplier (`transmitted = outgoing · road.strength · decay_per_hop`,
+   `src/nous_activation.py`), so higher decay ⇒ more broad and lower decay ⇒ more local;
+   `friction_to_decay_factor = 1 − 0.6·friction` (`src/nous_bodysensor.py`) is monotone decreasing, giving higher
+   friction → lower decay → more local. The resolved, pre-registered direction lives in
+   `docs/experiments/EXP-2c-interoception.md` §2.)
 3. **Emergent readout for the headline (the (C-GRADE-EMERGENT) choice). RESOLVED → winner-identity flips (headline),
    coalition-composition shift (graded corroboration).** Options were (3a) winner-identity flips; (3b) winning-
    coalition compositional shift; (3c) pruning-boundary movement. **The make-or-break headline is the categorical
