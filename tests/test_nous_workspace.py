@@ -647,8 +647,11 @@ def test_NEGATIVE_pruning_is_perceived_vs_reached_not_semantic():
 
 
 def test_NEGATIVE_perception_field_coalition_surfaces_unchanged():
-    section("ASSERTED-NEGATIVE #5: 1d-i does not alter perceive()/build_activation_field()/"
-            "form_coalitions_from_field() signatures")
+    section("ASSERTED-NEGATIVE #5: perceive()/build_activation_field()/"
+            "form_coalitions_from_field() signatures stay unchanged; 2c extended think() "
+            "ONLY with the opt-in, default-off decay_per_hop / body_sensor interoception "
+            "params (the broadcast flag plus the two new kwargs default to no-op)")
+    from nous_perceive import DEFAULT_DECAY_PER_HOP
     from nous_perceive import perceive as _perceive, Perception
     from nous_field import build_activation_field as _baf
     from nous_coalitions import form_coalitions_from_field as _fcf
@@ -666,11 +669,25 @@ def test_NEGATIVE_perception_field_coalition_surfaces_unchanged():
     csig = inspect.signature(_fcf)
     check(list(csig.parameters.keys()) == ["field_", "store", "coherence_floor"],
           "form_coalitions_from_field() signature unchanged")
-    # think() gained ONLY the broadcast kwarg (and keeps its existing surface)
+    # think() keeps its prior surface and gained ONLY opt-in kwargs: the 1d-ii broadcast
+    # flag and the 2c decay_per_hop / body_sensor interoception params. The exact, ordered
+    # parameter list is re-pinned here so any future, unannounced surface change trips.
     tsig = inspect.signature(think)
     check(list(tsig.parameters.keys()) ==
-          ["store", "utterance", "source_energy", "hop_budget", "broadcast"],
-          "think() added only the opt-in broadcast flag")
+          ["store", "utterance", "source_energy", "hop_budget", "broadcast",
+           "decay_per_hop", "body_sensor"],
+          "think() added only the opt-in broadcast / decay_per_hop / body_sensor kwargs")
+    # ...and every added kwarg is OPT-IN / DEFAULT-OFF: with no caller override, think()
+    # does no broadcast and runs interoception OFF (body_sensor=None), at the unmodulated
+    # default decay. This re-pins the NEW opt-in surface and reinforces the default-off
+    # guarantee at the signature level (the behavioral OFF-path purity is separately
+    # confirmed byte-identical by the unchanged prior suites).
+    check(tsig.parameters["broadcast"].default is False,
+          "broadcast defaults OFF (no write unless the caller opts in)")
+    check(tsig.parameters["body_sensor"].default is None,
+          "body_sensor defaults None — interoception is OFF by default (2c is opt-in)")
+    check(tsig.parameters["decay_per_hop"].default == DEFAULT_DECAY_PER_HOP,
+          "decay_per_hop defaults to DEFAULT_DECAY_PER_HOP (unmodulated unless overridden)")
 
 
 def test_NEGATIVE_no_memory_hierarchy_or_consolidation():

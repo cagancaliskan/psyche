@@ -41,6 +41,11 @@ SUITES = [
     "test_nous_workspace.py",
     "test_nous_workspace_broadcast.py",
     "test_nous_perceive.py",
+    # 2c interoception: BodySensor + default-off modulation hook — REPLAY-deterministic
+    # mechanism only (no live telemetry here; the live smoke + populability pilot are
+    # data/telemetry-dependent and stay OUT of the canonical runner, like the 1e selection
+    # runner). Makes NO meaning claim.
+    "test_nous_bodysensor.py",
     # independent adversarial verification (tester-authored) — kept in the one runner so the
     # canonical captured output reflects the full verification, not just the builder's suites.
     "test_tester_1c_adversarial.py",
@@ -53,6 +58,11 @@ SUITES = [
     "test_tester_1e_selector_adversarial.py",
     "test_tester_1e_instrument_adversarial.py",
     "test_tester_1e_loopclosed.py",
+    # 2c interoception — TESTER-authored adversarial verification + pilot fairness audit.
+    # Self-bootstraps src/ and experiments/ onto sys.path; DATA-FREE on the mechanism side
+    # (synthetic adversarial topologies) and reads the ALREADY-FROZEN pilot trace artifact
+    # for the fairness audit (no live capture). Makes no meaning claim.
+    "test_tester_2c_adversarial.py",
 ]
 
 # Experiment-layer MECHANISM suites (SPEC-1e §10 / decision 5): the instrument(s) 1e
