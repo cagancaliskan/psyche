@@ -1,0 +1,45 @@
+==============================================================================
+EXP-1e — BLIND three-arm stimulus selection (SPEC-1e §10) — pre-registered
+==============================================================================
+This is STIMULUS CONSTRUCTION ONLY — topology + R123.Strength, blind to activation.
+It computes NO activation, NO Δ, NO verdict (the validator's graded run does that).
+FROZEN KNOBS: SELECTION_SEED=20260621  MIN_OUTDEG=4  HORIZON_HOPS=3
+  HIGH band = >= 90th pct of prime's own direct strengths (>0); LOW band = 10-25th pct (>0).
+  W(P,T) = min(10, 1+floor(strength*100)); W_gap = W(high)-W(low);
+  S0 = W_gap=0 AND high/low share a global in-degree decile (boundary→lower).
+  S0 tie-break: min |Δindeg| then SELECTION_SEED shuffle. In-degree = structural,
+                unweighted, initial-graph, activation-blind, broadcast-invariant.
+N_S0 >= 30 → PRIMARY S0 loop-work gate; else FALLBACK (V = r_MA - r_W >= 0.20).
+==============================================================================
+
+loaded 1388741 directed edges (strength>0, no self-loops).
+topology: 133763 nodes.
+
+SELECTION COMPLETE (blind, seed=20260621). Per-arm N (reported separately):
+  arm (a)      N = 300
+  arm (b) d1   N = 300   (the headline categorical population)
+  arm (b) d2   N = 300   (sub-arm populated)
+  arm (c)      N = 300
+
+LOOP-WORK LEVERAGE STRATUM S0 (EXP-1e §6.2 / §6.2.0):
+  N_S0  (W_gap=0 AND in-degree-matched) = 7
+  N_S+  (W_gap>0, arm-b-d1 primes)       = 296
+  primes DROPPED from S0 for failing in-degree match = 0
+  global in-degree decile cuts (10th..90th pct) = 1, 1, 1, 1, 1, 2, 2, 5, 15
+
+PER-ARM PAIR-LIST SHA-256 (for the validator's §10.1 follow-up freeze):
+  arm_a      64e128cd6ba2c24cf4648269bb616eeeaab8190e1c2ad4f663ec7736d5ac36f8
+  arm_b_d1   4079350b38945832e7c0112730e8a4bde94b2c048f2a6c33c45b0f6d6565fea0
+  arm_b_d2   0b0297509668a85def389cd21349ce55beb7a8e36f7be6c7adb40e693db311c7
+  arm_c      122cdc103e6acddc3868d6fb7ec7e203800328e0c60ee2c04dbe1cffc99c7897
+  s0         b39173f37f564915085445339a16e1899ad5bde4d4770f6408488987e69d2709
+
+==============================================================================
+GO/NO-GO: NO-GO (S0 underpowered) — N_S0 = 7 < 30.
+  With BOTH the edge-weight path (W_gap=0) AND the target-popularity path
+  (in-degree matching) controlled, SWOW does not supply >= 30 clean leverage
+  pairs. This is an HONEST, INFORMATIVE STRUCTURAL result (EXP-1e §6.2), learned
+  BEFORE any graded run; the verdict routes to the frozen N_S0<30 FALLBACK
+  (V = r_MA - r_W >= 0.20). The in-degree tolerance is NOT widened to manufacture
+  a powered S0. (No activation/graded number is computed here.)
+==============================================================================

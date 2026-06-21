@@ -1,0 +1,8 @@
+# prime	high	low	indeg_high	indeg_low	decile
+prodigal	favored	promised	11	11	8
+pragmatic	decision	attitude	270	270	9
+initiate	novice	initial	33	33	9
+pariah	unaccepted	leach	11	11	8
+bohemian	arty	nomadic	12	12	8
+whatever	carelessness	Paris Hilton	7	7	8
+inspired	inspiration	engaged	71	71	9
