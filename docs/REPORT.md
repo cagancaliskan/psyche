@@ -7,8 +7,13 @@
    - Every number is taken verbatim from docs/TEST_OUTPUT.txt and the measured stats
      in README.md. Do not recompute or estimate.
    - Nous is an engineering prototype AND a testing-methodology case study: never a
-     mind, consciousness, AGI, or a validated cognitive model. The cognitive layers
-     are exploratory; their meaningfulness is explicitly not claimed.
+     mind, consciousness, AGI, or a validated cognitive model. The cognitive cycle now
+     CLOSES end-to-end, but that is a tester-verified MECHANISM result, not a cognitive
+     one; no cognitive meaning is claimed above the substrate.
+   - Three assurance tiers are kept strictly distinct: PROVEN (substrate + activation);
+     tester-verified mechanism (field, coalitions, source-clustering, workspace — the
+     closed cycle); disciplined-exploratory (the experiment scaffolding, incl. the §6.2
+     SWOW structural check, which returned an honest NOT YET).
    - Neuroscience/cognitive theories are conceptual inspiration only: never
      "implemented" or "reproduced"; no claims of biological fidelity.
 
@@ -24,7 +29,7 @@
 **Year:** 2026
 **DOI:** https://doi.org/10.5281/zenodo.20474613
 **Archived on Zenodo** (open access, CC BY 4.0).
-**Artifact:** `nous/`: pure-Python standard-library prototype; 5 modules, 5 test suites; MIT-licensed.
+**Artifact:** `nous/`: pure-Python standard-library prototype; 7 modules, 12 test suites; MIT-licensed.
 
 ---
 
@@ -32,23 +37,36 @@
 
 This report describes **Nous**, a dependency-free Python prototype of a memory-and-activation
 substrate for a cognitive architecture, and (more centrally) the **software-engineering
-methodology** used to build it. Nous comprises four layers: a graph *substrate store* of concept
-nodes and weighted "roads"; a deterministic *spreading-activation* engine; a multi-source
-*activation field*; and a thin end-to-end *perceive → activate → form coalitions → select a
-thought* slice. The lower two layers are verified, by an adversarial property-style test suite,
-for three concrete properties: **determinism** (identical output across process runs, confirmed in
-fresh interpreters under randomized hash seeds), **integrity** (graph indices stay mutually
-consistent across every mutation), and **purity** (reads never mutate stored state). The upper two
-layers are **exploratory**: they run and are deterministic, but their cognitive *meaningfulness is
-explicitly not claimed*, and on clustered real input the end-to-end slice produces an *incoherent*
-"thought," which is recorded as an asserted **negative result / known limitation**, not a
-contribution. The central finding is a recurring failure mode: a component that *passes on a
-friendly, hand-chosen input and fails on an adversarial or system-generated one*, and the two
-practices that caught it: **adversarial/property-based testing** (including cross-process
-determinism and read-purity checks) and **loop-closure** (driving each stage with
+methodology** used to build it. Nous comprises a graph *substrate store* of concept nodes and
+weighted "roads"; a deterministic *spreading-activation* engine; a multi-source *activation
+field*; a *source-clustering* pre-stage that groups nearby perceived sources; and a *workspace*
+that runs one competition among coalitions, prunes the bridged unperceived material from the
+winner, and performs a single **bounded broadcast** back onto the substrate — so the cognitive
+cycle *perceive → activate → cluster → compete → prune → broadcast → next cycle* now **closes
+end-to-end**. The work is reported in **three assurance tiers, kept strictly distinct**.
+**(1) `PROVEN`:** the substrate store and the spreading-activation engine are verified, by an
+adversarial property-style test suite, for **determinism** (identical output across process runs,
+confirmed in fresh interpreters under randomized hash seeds), **integrity** (graph indices stay
+mutually consistent across every mutation), and **purity** (reads never mutate stored state).
+**(2) Tester-verified mechanism:** the field, coalitions, source-clustering, and workspace layers
+are independently and adversarially verified for the same hard properties — plus, for the feedback
+write, that it is bounded **both ways** (no divergence, no lock-in) — which is what lets the cycle
+close. This is a **mechanism** result; their cognitive *meaningfulness is explicitly not claimed*,
+because closing an information loop with bounded feedback is not a cognitive result. **(3)
+Disciplined-exploratory:** a separate body of pre-registered experiment scaffolding (a SWOW
+association-norm loader, a fan-effect characterization, a graded-priming harness), on which one
+structural check was run — comparing the source-clustering grouping against an **independent
+standard partition** of the SWOW graph — and returned an honest **NOT YET** (it beat the
+no-clustering control decisively, but missed the pre-registered absolute ARI bar). The central
+methodological finding is a recurring failure mode: a component that *passes on a friendly,
+hand-chosen input and fails on an adversarial or system-generated one*, and the two practices that
+caught it: **adversarial/property-based testing** and **loop-closure** (driving each stage with
 system-generated rather than hand-placed inputs). Together they exposed **six distinct structural
-bugs** that ordinary happy-path tests pass over. The artifact's verified totals: **130 assertions
-across 56 test functions, all passing, in five suites.**
+bugs** in the substrate/activation layers, and the same discipline — now split across an
+independent builder and an independent adversarial tester — governed the three later bricks that
+closed the cycle. The artifact's verified totals: **618 assertions across 12 test suites, all
+passing.** The first *behavioral* cognitive claim — semantic priming through the closed loop,
+graded against human association norms — has **not** yet been run and is the open frontier.
 
 ---
 
@@ -79,11 +97,18 @@ documents only the two layer-plan files correspond to anything implemented. This
 - Nous is an **engineering prototype** and a **testing-methodology case study**.
 - It is **not** a mind, consciousness, AGI, or a validated cognitive model, and makes **no claim of
   machine cognition**.
-- The substrate store and spreading-activation engine are **proven** deterministic,
+- The substrate store and spreading-activation engine are **`PROVEN`** deterministic,
   integrity-preserving, and pure. These are claims about *mechanism*.
-- The field, coalition, and "thought" layers are **exploratory**. Their cognitive meaningfulness is
-  **not established**; the incoherent-thought behavior on clustered real input is an **honest
-  negative result**, not a feature.
+- The field, coalition, source-clustering, and workspace layers are **tester-verified mechanism**:
+  they are independently and adversarially verified for determinism, integrity, and purity (and the
+  feedback write for bounded, non-locking stability), and together they make the cognitive cycle
+  **close end-to-end**. **Closing the loop is a mechanism result, not a cognitive one**; their
+  cognitive meaningfulness is **not established** and is **not** claimed.
+- The experiment scaffolding is **disciplined-exploratory** — a distinct, lower tier (not in the
+  canonical runner; no independent tester/validator pass). The one structural check run on it
+  (source-clustering vs. an independent SWOW partition) returned an honest **NOT YET**.
+- The first **behavioral** cognitive claim — semantic priming through the closed loop, graded
+  against human association norms — has **not** been run. It is named as future work, not a result.
 - Named neuroscience and cognitive theories are **conceptual inspiration** only. Nothing here
   *implements* or *reproduces* them, and no biological fidelity is claimed.
 
@@ -91,11 +116,15 @@ documents only the two layer-plan files correspond to anything implemented. This
 
 1. **A software-engineering experience report** showing that adversarial/property-based testing
    (determinism verified across process hash seeds, and read-purity verified by hammering reads) and
-   **loop-closure** caught a sequence of **six structural bugs** in a memory/activation substrate.
-2. A **verified substrate**: a graph store and a spreading-activation engine that are deterministic,
+   **loop-closure** caught a sequence of **six structural bugs** in a memory/activation substrate,
+   and that the same discipline — now split across an independent builder and an independent
+   adversarial tester — governed three further bricks that closed the cognitive cycle.
+2. A **`PROVEN` substrate**: a graph store and a spreading-activation engine that are deterministic,
    integrity-preserving, and pure, with the verification shipped as runnable tests.
-3. An **honestly-scoped exploratory cognitive layer**, including an *asserted* known-limitation test
-   that encodes a negative result as a standing, checkable claim.
+3. A **tester-verified, end-to-end-closing cognitive cycle** (source-clustering + workspace
+   competition + pruning + bounded broadcast), with the bounded-feedback write verified to neither
+   diverge nor lock in — delivered explicitly as **mechanism, not meaning**, including one residual
+   over-swallow corner case shipped as a standing, checkable asserted-negative.
 4. A **reusable discipline**: phrased as transferable lessons (§6.8) about how "passes on a friendly
    input" recurs and how to design tests and inputs that defeat it.
 
@@ -119,12 +148,15 @@ reinforcement as a *gated, budgeted* event. Nous borrows the framing to justify 
 read-only; it does not model tagging dynamics.
 
 **Global Workspace Theory (GWT):** The idea that specialized processes form coalitions that compete,
-and a winner is broadcast globally [5, 6], is the source of Nous's *coalition* vocabulary. Only
-coalition **formation** exists in the code; the competition/broadcast step is an explicit,
-unbuilt placeholder.
+and a winner is broadcast globally [5, 6], is the source of Nous's *coalition* vocabulary. Coalition
+**formation**, a one-winner **competition**, and a single **bounded broadcast** back onto the
+substrate now all exist as mechanism. This borrows the theory's *framing* only: no claim of
+conscious access, ignition, or global availability in its sense is made — the broadcast is an
+internal, bounded conduction bias.
 
 **LIDA cognitive cycle:** LIDA's systems-level *perceive → attend → broadcast* cycle [7] loosely
-shapes the staging of the end-to-end slice. The slice realizes only the early stages.
+shapes the staging of the end-to-end cycle, which now **closes** (the broadcast biases the next
+pass). The resemblance is structural framing, not an implementation or validation of the model.
 
 **Cognitive architectures:** ACT-R's integrated theory of cognition [8] and SPAUN's large-scale
 functional brain model [9] are referenced for **positioning**: Nous is far smaller and makes no
@@ -147,16 +179,21 @@ charge-modulated strengthening and is best read as design-level aspiration.
 
 ## 3. System architecture (as built)
 
-Nous is pure-Python standard library, organized bottom-up. Each layer reads the one below through
-its public surface only. Figure 1 makes the honest boundary visual: the lower two layers are proven,
-the upper two are exploratory.
+Nous is pure-Python standard library, organized bottom-up across **seven modules**. Each layer
+reads the one below through its public surface only. The full pipeline is the closed cognitive
+cycle *perceive → cluster → activate (field) → form coalitions → compete → prune → broadcast →
+next cycle*. The honest boundary runs **through** the tiers, not between two halves: the substrate
+store and spreading-activation engine are `PROVEN`; the field, coalitions, source-clustering, and
+workspace are **tester-verified mechanism** (no cognitive claim).
 
 ![Figure 1: architecture layer stack](diagrams/rendered/architecture_stack.png)
 
-**Figure 1: The four-layer stack and the honest boundary.** Layers 1–2 (substrate store, spreading
-activation) are **PROVEN** (determinism, integrity, purity); layers 3–4 (multi-source field, end-to-end
-slice) are **EXPLORATORY**. The figure establishes *where verification stops*; it does **not** claim the
-exploratory layers are cognitively meaningful.
+**Figure 1: The layer stack and the honest boundary.** The substrate store and spreading
+activation are **`PROVEN`** (determinism, integrity, purity); the higher layers (multi-source
+field, coalitions, source-clustering, workspace) are **tester-verified mechanism** that make the
+cycle close end-to-end. The figure establishes *where verification stops* — it does **not** claim
+any layer is cognitively meaningful. (This rendered figure predates the source-clustering and
+workspace bricks; the as-built module set and the closed cycle are described in §3.5–§3.6 below.)
 
 ### 3.1 Substrate store (`nous_store.py`, 548 lines)
 
@@ -230,7 +267,7 @@ one that activates it most: the node's *basin*). Dominant-source ties break on t
 *single* seed yields one activation peak, so any segmentation of it keys off distance from the seed
 rather than community structure (finding (e)); multiple sources yield multiple genuine peaks.
 
-### 3.4 Coalitions and the end-to-end slice (`nous_coalitions.py` 324 lines; `nous_perceive.py` 162 lines)
+### 3.4 Coalitions and perception (`nous_coalitions.py` 324 lines; `nous_perceive.py` 248 lines)
 
 - **Coalition formation** groups co-activated nodes. Two entry points exist: a *flow-cut*
   segmentation of a single spread (cut the region at weak-flow edges), and a *group-by-basin* path
@@ -239,18 +276,64 @@ rather than community structure (finding (e)); multiple sources yield multiple g
 - **Perception** turns text into sources: tokens (length ≥ 3) are matched by substring against node
   content, and matched nodes become activation sources with energy scaled by match count. This is
   deliberately minimal: exact/substring matching, no embeddings, but it makes the sources
-  **input-derived rather than hand-placed**.
-- **The slice** (`think`) runs `perceive → build field → form coalitions by basin → select the
-  strongest coalition as "the thought."` The final step, *"strongest coalition = thought,"* is an
-  explicit **placeholder** standing in for an unbuilt workspace-competition / broadcast phase. The
-  slice is pure and deterministic; what it produces is **not** claimed to be meaningful (finding (f),
-  §7.3).
+  **input-derived rather than hand-placed**. It is the only stage still a placeholder in the cycle.
+- **The closed cycle** (`think`) runs `perceive → cluster_sources → build field (seeded from
+  representatives) → form coalitions by basin → select_winner → prune → (optionally) broadcast`.
+  The earlier draft's final step, *"strongest coalition = thought,"* is **gone**: it has been
+  replaced by a real workspace competition (§3.6). With the default `broadcast=False` the cycle is a
+  **pure read**; with `broadcast=True` it performs the single feedback write that closes the loop.
+  The cycle is deterministic; what it produces is **not** claimed to be cognitively meaningful
+  (finding (f); §7.3).
+
+### 3.5 Source-clustering (`nous_source_clustering.py`, 275 lines)
+
+A **pure-read** pre-stage between perception and the field. The closed loop surfaced that
+perception emits *clustered, overlapping* source sets, so basins are meaningless until nearby
+sources are grouped first. `cluster_sources` groups nearby perceived sources by **single-link
+clustering on a source proximity graph**, where proximity is **topology / road-strength only** (the
+"A1" signal — an activation-overlap signal was rejected at build for circularity), then seeds the
+field from **one representative per group** (highest source energy; `creation_seq` tiebreak).
+Single-link **chaining** is intentional; the relative proximity threshold is an **uncalibrated
+design constant**. It is wired into `think()` without changing the perception surface or the
+field-builder signature. Verified (mechanism only): deterministic across 6 hash seeds in fresh
+interpreters, pure (mutates nothing), integrity-preserving, scale-invariant — and it carries an
+explicit asserted-negative that the grouping is **topological only, no cognitive claim**.
+
+### 3.6 The workspace: competition, pruning, bounded broadcast (`nous_workspace.py`, 533 lines)
+
+What the old placeholder stood in for, built as two bricks.
+
+- **Competition + pruning (1d-i), a pure read.** `select_winner` picks **one winner** by
+  **activation density** (normalized, so a tight intense coalition beats a larger sprawling one of
+  equal total activation) with a **min-size guard**. The winner is then pruned by a **parameter-free
+  cohesion-valley / relative-attachment watershed**: a reached member is kept iff it is pulled toward
+  the named (perceived) region at least as strongly as toward the unnamed region; else it is pruned.
+  This removes the **bridged, unperceived** domain from the winner — the over-swallow half of the old
+  known limitation (§7.3). The watershed is **not** literal domain-membership; an unnamed domain
+  bridged into the named region *at least as strongly as its own internal cohesion* has no valley and
+  is **kept**, so over-swallow can recur in that one topology. The divergence is always
+  **safe-direction** (it can over-include an unnamed domain but never over-prune a perceived member)
+  and is shipped as a standing asserted-negative.
+- **Bounded broadcast + feedback (1d-ii), the single write that closes the loop.** `broadcast`
+  performs the one explicit, bounded write: a bounded strengthening of the winner's internal roads
+  (reusing `strengthen()`), **once each**, **creating no new road** and **touching no node**, that
+  biases the next cycle. It is **bounded both ways**: it does **not diverge** (road strength stays
+  ≤ 1.0, the aggregate plateaus; boundedness is **structural** from `strengthen()`'s `(1 − strength)`
+  saturation, with **no clamp or tunable magnitude** added) and does **not lock in** (a strong fresh
+  percept switches the winner away from a deeply-reinforced one — verified non-vacuously). The
+  broadcast magnitude is **uncalibrated** (the inherited default gain, not tuned to any outcome).
+
+**No cognitive claim in §3.5–§3.6.** The winner is a *selected information structure* and the
+broadcast is a *bounded conduction bias*. Closing an information loop with bounded feedback is a
+**mechanism** property, not priming, awareness, or understanding.
 
 ![Figure 4: end-to-end thought slice](diagrams/rendered/pipeline.png)
 
-**Figure 4: End-to-end "thought" slice.** `text → perceive → field → coalitions → thought`. The final
-"strongest coalition = thought" step is a **placeholder** for an unbuilt broadcast phase. The figure
-shows *data flow*; it does **not** assert the resulting "thought" is meaningful.
+**Figure 4: The end-to-end cognitive cycle.** Data flow `text → perceive → cluster → field →
+coalitions → compete → prune → broadcast → next cycle`. (This rendered figure predates the
+clustering and workspace bricks and shows the earlier `perceive → field → coalitions → thought`
+slice; the as-built closed cycle is described in §3.5–§3.6.) The figure shows *data flow*; it does
+**not** assert the result is cognitively meaningful.
 
 ---
 
@@ -427,11 +510,14 @@ yield two basins with the bridge as the seam. The multi-source recovery is the a
   matched against the substrate, not by the test. On real clustered input the field then produces an
   **incoherent** "thought": basins collapse, one source over-swallows across domains, and same-domain
   sibling sources strand as singletons.
-- **Locked by, as a *limitation*, not a result:**
-  `test_KNOWN_LIMITATION_clustered_sources_give_poor_basins` *asserts the failure on purpose*: it
-  confirms three same-domain sources were perceived, then asserts the "thought" over-swallows and that
-  a perceived same-domain source strands as a singleton. The test is written to flip to green only when
-  source-grouping is fixed: the limitation is encoded as a standing, checkable claim.
+- **Locked by, as a *limitation*, not a result (at the time of finding (f)):** the original slice
+  asserted the failure on purpose — it confirmed three same-domain sources were perceived, then
+  asserted the "thought" over-swallows and that a perceived same-domain source strands as a singleton.
+  The limitation was encoded as a standing, checkable claim, written to flip only when source-grouping
+  was fixed. **It has since flipped:** source-clustering (§3.5) and workspace pruning (§3.6) resolved
+  both halves at the mechanism level, and the assertion has been re-expressed as the now-passing
+  behavior (with one residual cohesion-valley corner case shipped as an asserted-negative; see §3.6 and
+  §7.3). This bullet records the finding as it stood when discovered; §7.3 records its resolution.
 
 ### 6.7 What the six have in common
 
@@ -463,8 +549,8 @@ known limitation. It documents the *development path*, not a working capability.
 
 ### 7.1 Verified properties (the positive results)
 
-For the substrate store and the spreading-activation engine, the test suite establishes, as runnable
-checks:
+For the substrate store and the spreading-activation engine (Tier 1, `PROVEN`), the test suite
+establishes, as runnable checks:
 
 - **Determinism:** identical output across process runs, confirmed in fresh interpreters under the
   hash seeds listed in §4.
@@ -472,8 +558,20 @@ checks:
   every mutation; a full-graph scan finds no drift.
 - **Purity:** reads never mutate stored state; lazy decay is a read-only view.
 
-These are claims about **mechanism**: the code does exactly and only what it says, reproducibly. They
-are *not* claims that the mechanism reproduces any cognitive phenomenon.
+For the field, coalitions, source-clustering, and workspace layers (Tier 2, **tester-verified
+mechanism**), an **independent adversarial tester** establishes the same hard properties on its own
+hostile and loop-closed suites, plus the properties the feedback write requires:
+
+- **The cycle closes end-to-end** — `perceive → cluster → field → coalitions → compete → prune →
+  broadcast → next cycle` — with selection a pure read and exactly one bounded write.
+- **The over-swallow case is resolved through the live cycle** (formerly an asserted-negative; now a
+  real pass) and the flip **generalizes** to an independently-built isomorphic-but-relabelled graph.
+- **The broadcast is bounded both ways:** no divergence (≤ 1.0, plateaus; boundedness structural, no
+  clamp) and no lock-in (a strong fresh percept still switches the winner, verified non-vacuously).
+
+These are claims about **mechanism**: the code does exactly and only what it says, reproducibly.
+They are *not* claims that the mechanism reproduces any cognitive phenomenon — closing the loop is a
+mechanism result, not a cognitive one.
 
 ![Figure 11: determinism across hash seeds](diagrams/rendered/determinism_seeds.png)
 
@@ -484,80 +582,138 @@ establishes reproducibility of *mechanism* only, not cognition.
 
 ### 7.2 Test suite
 
-All figures below are taken verbatim from `docs/TEST_OUTPUT.txt` (CPython 3.13.2, Darwin 24.5.0
-arm64) and re-confirmed by `python3 run_tests.py` for this report. Every suite passes with zero
-failures.
+All figures below are taken verbatim from `docs/TEST_OUTPUT.txt` (CPython 3.12.4, Darwin 24.5.0
+x86_64) and re-confirmed by `python3 run_tests.py` for this report. Every suite passes with zero
+failures. The suites now include the **independent tester-authored adversarial suites**
+(`test_tester_*`), distinct from the builder suites.
 
-| Suite | Layer | Checks passed |
+| Suite | Layer / role | Checks passed |
 |---|---|---:|
 | `test_nous_store.py` | substrate store | 45 |
 | `test_nous_activation.py` | spreading activation | 35 |
 | `test_nous_coalitions.py` | coalition formation | 19 |
 | `test_nous_field.py` | multi-source field | 13 |
-| `test_nous_perceive.py` | perception + end-to-end slice | 18 |
-| **Total** | | **130 passed, 0 failed** |
+| `test_nous_source_clustering.py` | source-clustering (1c) | 49 |
+| `test_nous_workspace.py` | workspace competition + pruning (1d-i) | 80 |
+| `test_nous_workspace_broadcast.py` | bounded broadcast + feedback (1d-ii) | 63 |
+| `test_nous_perceive.py` | perception + closed end-to-end cycle | 19 |
+| `test_tester_1c_adversarial.py` | tester: adversarial 1c | 73 |
+| `test_tester_1c_mutation_battery.py` | tester: 1c randomized mutation battery | 5 |
+| `test_tester_1d_i_adversarial.py` | tester: adversarial 1d-i | 107 |
+| `test_tester_1d_ii_adversarial.py` | tester: adversarial 1d-ii | 110 |
+| **Total** | **12 suites** | **618 passed, 0 failed** |
 
-The total is **130 assertions executed across 56 test functions**, including the cross-process
-determinism checks and one explicitly-asserted known-limitation test. The verbatim run is reproduced
-in Appendix A.
+The total is **618 assertions across 12 suites, 0 failures**, including the cross-process
+determinism checks, randomized mutation batteries, the no-divergence / no-lock-in stability checks
+on the broadcast write, and the resolved over-swallow case now driven through the live cycle. The
+verbatim run is reproduced in Appendix A.
 
 ![Figure 12: passing assertions per suite](diagrams/rendered/test_suite_bars.png)
 
-**Figure 12: Passing assertions per suite (130 total, 0 failed).** Counts taken verbatim from
-`docs/TEST_OUTPUT.txt`. Proves *mechanism* (and the *mechanics* of the exploratory layers); it does
-**not** measure cognitive quality. The proven/exploratory colouring matches Figure 1.
+**Figure 12: Passing assertions per suite.** Counts taken verbatim from `docs/TEST_OUTPUT.txt`.
+(This rendered figure predates the source-clustering and workspace suites and shows the earlier
+five-suite/130-total run; the current canonical total is **618 across 12 suites**, tabulated above.)
+Proves *mechanism* (and the *mechanics* of the higher layers); it does **not** measure cognitive
+quality.
 
 **Code size (measured):**
 
-| | Files | Lines (`wc -l`) | Non-blank, non-comment |
+| | Files | Lines (`wc -l`) | Non-blank, non-comment (approx.) |
 |---|---:|---:|---:|
-| Source modules (`src/`) | 5 | 1,476 | 1,058 |
-| Test suites (`tests/`) | 5 | 1,555 | 1,223 |
-| **Python total** | **10** | **3,031** | **2,281** |
+| Source modules (`src/`) | 7 | 2,370 | ~1,720 |
+| Test suites (`tests/`) | 12 | 7,303 | ~5,591 |
+| **Python total** | **19** | **9,673** | **~7,311** |
 
-Per module (`wc -l`): `nous_store.py` 548, `nous_activation.py` 281, `nous_coalitions.py` 324,
-`nous_field.py` 161, `nous_perceive.py` 162.
+Per module (`wc -l`): `nous_store.py` 548, `nous_workspace.py` 533, `nous_coalitions.py` 324,
+`nous_activation.py` 281, `nous_source_clustering.py` 275, `nous_perceive.py` 248,
+`nous_field.py` 161. (`wc -l` is exact; the non-blank/non-comment column is an approximate
+`grep`-based count, not a precise tokenizer pass.)
 
-### 7.3 The incoherent-thought known limitation (an asserted negative result)
+### 7.3 The over-swallow limitation — resolved at the mechanism level (with a residual asserted-negative)
 
-On clustered real input the end-to-end slice does **not** produce coherent coalitions. When
-perception lights up several nodes in the same domain, basins collapse: one source over-swallows
-across domains while same-domain siblings strand as singletons. This is asserted on purpose by
-`test_KNOWN_LIMITATION_clustered_sources_give_poor_basins`, which passes today *because the failure
-holds*; it is written to flip only when the underlying source-grouping problem is solved. It is
-reported here as a **negative result**, not a contribution.
+The earlier draft of this report recorded an **incoherent "thought"** on clustered real input as an
+asserted negative result: when perception lit up several nodes in the same domain, basins collapsed —
+one source over-swallowed across domains while same-domain siblings stranded as singletons. **This is
+now resolved at the mechanism level**, in two halves: source-clustering (§3.5) groups nearby
+perceived sources before basins are built, fixing the **stranded-singleton** half; workspace pruning
+(§3.6) removes the **bridged unperceived** domain from the winner, fixing the **over-swallow** half.
+The fix was driven through the **live cycle** on system-generated coalitions, and the flip
+**generalizes** to an independently-built isomorphic-but-relabelled graph (so it is not tuned to the
+fixture). The former known-limitation assertion has accordingly been re-expressed as the now-passing
+behavior.
+
+One **residual corner case** remains and is shipped as a standing asserted-negative: because the
+realized pruning rule is a **parameter-free cohesion-valley / relative-attachment watershed** rather
+than literal domain-membership, an unnamed domain bridged into the named region *at least as strongly
+as its own internal cohesion* has no valley and is **kept**, so over-swallow can recur in that one
+topology. The divergence is always **safe-direction** — it can over-include an unnamed domain, but it
+can never over-prune a perceived member. This is documented as a checkable assertion, not hidden.
 
 ![Figure 13: closed-loop slice and its honest failure](diagrams/rendered/closed_loop_known_limitation.png)
 
-**Figure 13: The closed-loop slice and its honest failure (finding (f); asserted NEGATIVE result).**
-On the real input *"coffee in the kitchen this morning,"* the "thought" over-swallows across domains
-(pulls in *work*/*code*) and same-domain perceived sources strand as singleton basins: asserted by
-`test_KNOWN_LIMITATION_clustered_sources_give_poor_basins`. This figure documents a **known
-limitation**, not a capability.
+**Figure 13: The closed-loop cycle (finding (f) lineage).** On the real input *"coffee in the kitchen
+this morning,"* the earlier slice over-swallowed across domains (pulled in *work*/*code*) and stranded
+same-domain sources as singletons. (This rendered figure depicts that earlier *failing* state; in the
+current as-built cycle the failure is **resolved** — see §3.5–§3.6 — with the single residual
+cohesion-valley corner case above shipped as an asserted-negative.)
 
-### 7.4 What these results do and do not establish
+### 7.4 The SWOW structural check (an honest NOT YET) — disciplined-exploratory tier
+
+One structural meaning-style check has been run, on the **disciplined-exploratory** scaffolding
+(Tier 3), and is reported as the honest negative it is. The source-clustering grouping was compared,
+on SWOW association data, against an **independent standard partition** of the same graph (a Louvain
+partition — a *different* clustering-algorithm family), with the prediction pre-registered and its
+direction fixed in advance. By the frozen acceptance rule the verdict is **NOT YET**:
+
+- It **beat the no-clustering control decisively** — lift +0.223 over control; sign test 170/200
+  probes better-aligned with the external partition, p ≈ 6e-25; random-control sanity ≈ 0.
+- It **missed the pre-registered absolute bar** — mean ARI 0.228 < 0.30. The diagnosed cause is
+  **granularity, not direction**: the grouping **under-merges** relative to the coarse standard
+  partition (~5.5 groups per 9-word probe), and ARI penalizes a finer partition against a coarser
+  truth even when the finer one nests correctly.
+
+Framed correctly (as pre-registered): this is **agreement with an independent standard partition, not
+ground-truth recovery** — two unrelated clustering algorithms over a shared external graph agree on
+direction but disagree on grain. It does **not** move source-clustering out of `BUILT · UNVALIDATED`,
+and it is **not** the project's primary meaning bar.
+
+### 7.5 What these results do and do not establish
 
 They establish that the substrate and activation engine are correct, deterministic, integrity-
-preserving, and pure, and that the cognitive layers run deterministically and purely. They do **not**
-establish that any "thought" the cognitive layers produce is cognitively meaningful; on the contrary,
-the one end-to-end behavioral probe on real input is a documented failure. "The mechanism is correct
-and deterministic" and "the mechanism reproduces a cognitive phenomenon" are different claims; this
-work earns the first and explicitly does not claim the second.
+preserving, and pure (Tier 1), and that the field, coalitions, source-clustering, and workspace layers
+are deterministic, pure, integrity-preserving, and — for the feedback write — bounded both ways, which
+is what lets the cognitive cycle **close end-to-end** (Tier 2). They do **not** establish that
+anything the cognitive layers produce is cognitively meaningful: closing the loop is a mechanism
+result, and the one structural meaning-style check (§7.4) returned an honest NOT YET. "The mechanism
+is correct and deterministic" and "the mechanism reproduces a cognitive phenomenon" are different
+claims; this work earns the first and explicitly does not claim the second. The first **behavioral**
+cognitive claim — semantic priming through the closed loop, graded against human association norms —
+**has not been run**; it is the open frontier (§9).
 
 ---
 
 ## 8. Limitations and threats to validity
 
-- **Cognitive meaningfulness is unestablished:** The field/coalition/thought layers are exploratory;
-  the only end-to-end behavioral result on real input is the negative one in §7.3.
-- **Uncalibrated constants on probation:** The closed-road breakthrough threshold/leak fraction and
-  the coalition flow-cut fraction are first-pass guesses. The tests pin only the qualitative regime
-  (weak cues blocked, strong cues leak; weak-flow edges cut), never the magnitudes, and nothing
-  downstream may depend on the numbers.
+- **Cognitive meaningfulness is unestablished:** The field, coalitions, source-clustering, and
+  workspace layers are tester-verified as **mechanism** and make the cycle close end-to-end, but no
+  *behavioral* cognitive effect has been reproduced against external human data. The one structural
+  meaning-style check (§7.4) returned an honest NOT YET. Closing the loop is a mechanism result.
+- **Residual over-swallow corner case:** The workspace pruning watershed (§3.6) keeps an unnamed
+  domain bridged into the named region *at least as strongly as its own internal cohesion*; in that
+  topology over-swallow can recur. The divergence is always safe-direction (never over-prunes a
+  perceived member) and is shipped as an asserted-negative.
+- **Uncalibrated constants on probation:** The closed-road breakthrough threshold/leak fraction, the
+  coalition flow-cut fraction, the source-clustering proximity threshold, and the broadcast gain (the
+  inherited `strengthen()` default, not tuned to any cognitive outcome) are first-pass / inherited
+  defaults. The tests pin only the qualitative regime, never the magnitudes, and nothing downstream
+  may depend on the numbers.
 - **Perception is exact/substring matching only:** No embeddings or fuzzy semantics; it is the minimal
-  step that makes sources input-derived.
+  step that makes sources input-derived, and the only stage still a placeholder in the cycle.
 - **Out-roads-only spread (v1):** Activation follows directed out-roads; backward spread along
   in-roads is a deliberate later addition.
+- **The experiment scaffolding (Tier 3) is not in the canonical runner:** It is self-tested and
+  pre-registered, but it has had no independent tester or validator pass; the 12-suite/618-assertion
+  canonical run does not exercise it. Its existence does not establish a cognitive result.
 - **Determinism is "given store state," not over the abstract graph:** The proven property is that the
   output is a deterministic function of the *store's state*, where state includes the integer
   `creation_seq` assigned in build order. Two stores that are isomorphic as abstract graphs but built
@@ -571,38 +727,52 @@ work earns the first and explicitly does not claim the second.
 
 ## 9. Future work
 
-The natural next step is to stop validating the cognitive layer against hand-built inputs and instead
-validate it against a **measurable cognitive effect whose direction is known independently of Nous**.
-**Semantic priming** is the worked example: in human studies, recognizing a target word is faster
-when preceded by a related prime than an unrelated one [11], a result that the spreading-activation
-account explains via pre-activation spreading to related concepts [10]. A priming-style protocol for
-Nous would pre-activate a related concept and test whether the target's activation is measurably
-raised relative to an unrelated control: a directional prediction made *before* running the system,
-so the input is no longer chosen to make the answer come out right (closing the loop, as in §6.6, at
-the level of evaluation). Two further items follow directly from the findings:
+Two of the items the earlier draft listed as future work are now **done at the mechanism level**: the
+source-grouping problem (resolved by source-clustering, §3.5) and the missing broadcast/competition
+phase (built as the workspace, §3.6, closing the cycle). The remaining — and now central — item is the
+**first behavioral cognitive claim**, and it is **still open**.
 
-- **The source-grouping problem (from finding (f)):** Same-domain perceived sources must be grouped or
-  merged before basins are meaningful; solving it is the condition under which the §7.3 known-limitation
-  test would flip to green.
-- **A real broadcast/competition phase:** The "strongest coalition = thought" placeholder should be
-  replaced by an actual workspace competition, at which point the uncalibrated constants can begin to
-  be calibrated against a running cycle rather than guessed.
+The next step is to validate the *closed cycle* against a **measurable cognitive effect whose
+direction is known independently of Nous**. **Semantic priming** is the worked example: in human
+studies, recognizing a target word is faster when preceded by a related prime than an unrelated one
+[11], a result the spreading-activation account explains via pre-activation spreading to related
+concepts [10]. With the bounded broadcast (§3.6) in place, a prime can now leave a trace that biases a
+later target *through the closed loop* — the precondition such a test needs. The protocol would fix a
+directional prediction **before** running the system, grade it against **human association norms**
+(SWOW), and compare against an unrelated control — so the input is no longer chosen to make the answer
+come out right (closing the loop at the level of evaluation). **This has not yet been run**, and until
+it is, no behavioral cognitive effect is claimed.
+
+- **Routing:** because this is a cognitive claim, it is for an independent validator to design and run
+  with a pre-registered, direction-fixed prediction — not for the builder to assert.
+- **Reusable scaffolding (Tier 3), not a substitute:** a pre-registered fan-effect and graded-priming
+  harness on SWOW already exists under `experiments/` and is an *instrument* to reuse; it is not a
+  substitute for the result through the closed loop, and it carries no independent tester/validator
+  pass.
+- **Calibration follows, not precedes, a result:** only once an externally-graded effect exists can
+  the uncalibrated constants begin to be calibrated against it rather than guessed.
 
 ---
 
 ## 10. Conclusion
 
-What was earned is concrete and modest: a correct, deterministic, integrity-preserving, and pure
-memory-and-activation substrate, built in dependency-free Python and shipped with the tests that prove
-those properties across process hash seeds, and, above it, an honestly-scoped exploratory layer whose
-one end-to-end behavioral probe is a documented negative result. The larger contribution is the
-**method**: adversarial/property-based testing and loop-closure caught six structural bugs that
-happy-path testing passes over, and the same discipline drew the boundary the project refuses to
-cross: proving mechanism while explicitly declining to claim cognition. What remains open is exactly
-what the method recommends next: evaluate the cognitive layer against an effect whose direction is
-known independently, fix the source-grouping degeneracy, and build the competition phase that would
-make the constants calibratable. The honest version of "it works" used throughout this project is the
-useful one: *this part is proven; that part is not, and here is the failing test that says so.*
+What was earned is concrete and modest, and kept in three strictly-distinct tiers. A correct,
+deterministic, integrity-preserving, and pure memory-and-activation substrate, built in
+dependency-free Python and shipped with the tests that prove those properties across process hash
+seeds (`PROVEN`). Above it, a **tester-verified cognitive cycle that now closes end-to-end** —
+source-clustering, workspace competition, pruning, and a bounded broadcast whose feedback write is
+verified to neither diverge nor lock in — delivered explicitly as **mechanism, not meaning**, with the
+one residual over-swallow corner case shipped as a standing asserted-negative. And, separately, a
+disciplined-exploratory experiment scaffolding on which one structural check returned an honest NOT
+YET. The larger contribution is the **method**: adversarial/property-based testing and loop-closure
+caught six structural bugs that happy-path testing passes over, and the same discipline — now split
+across an independent builder and an independent adversarial tester — drew the boundary the project
+refuses to cross: proving mechanism while explicitly declining to claim cognition. What remains open
+is exactly what the method recommends next, and it is the headline of the next phase: evaluate the
+*closed cycle* against a behavioral effect whose direction is known independently of Nous (semantic
+priming, graded against human association norms) — a result that has not yet been produced. The honest
+version of "it works" used throughout this project is the useful one: *this part is proven; that part
+is tester-verified as mechanism; that part is not yet earned, and here is exactly where the line is.*
 
 ---
 
@@ -656,32 +826,39 @@ https://doi.org/10.1002/cne.920180503
 
 ## Appendix A: Verbatim test output
 
-The following is the captured run from `docs/TEST_OUTPUT.txt` (section headers preserved; per-suite
-result lines in bold are the source of the totals in §7.2).
+The following is the captured run from `docs/TEST_OUTPUT.txt` (per-suite result lines are the source
+of the totals in §7.2).
 
 ```
-NOUS SUBSTRATE STORE: TEST SUITE (Layer 1)        → RESULT: 45 passed, 0 failed   [exit 0]
-NOUS SPREADING ACTIVATION: TEST SUITE             → RESULT: 35 passed, 0 failed   [exit 0]
-NOUS COALITION FORMATION: TEST SUITE              → RESULT: 19 passed, 0 failed   [exit 0]
-NOUS MULTI-SOURCE FIELD + FIELD COALITIONS         → RESULT: 13 passed, 0 failed   [exit 0]
-NOUS PERCEPTION + END-TO-END SLICE: TEST SUITE    → RESULT: 18 passed, 0 failed   [exit 0]
-                                                     TOTAL: 130 passed, 0 failed
+test_nous_store.py                  → RESULT: 45 passed, 0 failed
+test_nous_activation.py             → RESULT: 35 passed, 0 failed
+test_nous_coalitions.py             → RESULT: 19 passed, 0 failed
+test_nous_field.py                  → RESULT: 13 passed, 0 failed
+test_nous_source_clustering.py      → RESULT: 49 passed, 0 failed
+test_nous_workspace.py              → RESULT: 80 passed, 0 failed
+test_nous_workspace_broadcast.py    → RESULT: 63 passed, 0 failed
+test_nous_perceive.py               → RESULT: 19 passed, 0 failed
+test_tester_1c_adversarial.py       → RESULT: 73 passed, 0 failed
+test_tester_1c_mutation_battery.py  → RESULT:  5 passed, 0 failed
+test_tester_1d_i_adversarial.py     → RESULT: 107 passed, 0 failed
+test_tester_1d_ii_adversarial.py    → RESULT: 110 passed, 0 failed
+                                       OVERALL: all 12 suites passed (0 failures); 618 assertions
 ```
 
-The complete, unabridged capture (including every individual check label and the
-`KNOWN LIMITATION` note) is the file `docs/TEST_OUTPUT.txt` in the repository.
+The complete, unabridged capture (including every individual check label and the asserted-negative
+notes) is the file `docs/TEST_OUTPUT.txt` in the repository.
 
 ## Appendix B: Reproduction
 
 ```bash
-# all five suites (handles the absolute PYTHONPATH for the determinism subprocesses):
+# all 12 suites (handles the absolute PYTHONPATH for the determinism subprocesses):
 python3 run_tests.py
 
 # a single suite directly:
 PYTHONPATH="$PWD/src" python3 tests/test_nous_store.py
 ```
 
-Pure standard library; no dependencies (developed and captured on CPython 3.13.2). The suites use a
+Pure standard library; no dependencies (developed and captured on CPython 3.12.4). The suites use a
 built-in harness and must be run as scripts, not under pytest (§4).
 
 ## Appendix C: Figure index and sources

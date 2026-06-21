@@ -1,37 +1,57 @@
 # Nous: Architecture (as built)
 
 This is the **as-built** technical reference for the code in `src/`. It describes what the
-five modules actually do, the data model, the public surfaces and their invariants, and the
+seven modules actually do, the data model, the public surfaces and their invariants, and the
 key design decisions and *why* they were made. Claims here are traceable to the code and its
 docstrings; design rationale draws on the two implementation-plan documents,
 [`design/nous_plan_layer0_topology.md`](design/nous_plan_layer0_topology.md) and
-[`design/nous_plan_layer1_substrate_store.md`](design/nous_plan_layer1_substrate_store.md).
+[`design/nous_plan_layer1_substrate_store.md`](design/nous_plan_layer1_substrate_store.md),
+and on the specs in [`specs/`](specs/).
 
-Where a component is exploratory or a placeholder, it is labeled as such. The development
-history that produced these decisions (the bugs found and fixed) is a separate document:
-[METHODOLOGY.md](METHODOLOGY.md).
+Where a component is exploratory, or where a property is mechanism-verified but its *cognitive
+meaning* is not claimed, it is labeled as such. The development history that produced these
+decisions (the bugs found and fixed) is a separate document: [METHODOLOGY.md](METHODOLOGY.md).
+
+**Assurance, in one line:** the substrate store and spreading-activation engine are `PROVEN`
+(determinism, integrity, purity); the field, coalitions, source-clustering, and workspace are
+**tester-verified mechanism** that make the cognitive cycle *close end-to-end* — a mechanism
+result, with **no cognitive claim**. The first behavioral cognitive claim (semantic priming
+against human norms) has not been run.
 
 ## Layering
 
 ```
-text ─► perceive() ─► sources ─► build_activation_field() ─► form_coalitions_from_field() ─► "thought"
-                                        │                            │                          │
-        nous_perceive.py                │   nous_field.py            │  nous_coalitions.py      │ (placeholder
-                                        ▼                            ▼                          ▼  for broadcast)
-                              spread_activation()  ◄── reads ──  SubstrateStore
-                              nous_activation.py                 nous_store.py
+text ─► perceive() ─► cluster_sources() ─► build_activation_field() ─► form_coalitions_from_field()
+                            │                       │                          │
+   nous_perceive.py         │  nous_source_         │   nous_field.py          │  nous_coalitions.py
+                            │  clustering.py         ▼                          ▼
+                            │              spread_activation()  ◄── reads ──  SubstrateStore
+                            │              nous_activation.py                 nous_store.py
+                            ▼                                                       ▲
+                     select_winner() ─► prune ─► broadcast()  ── single bounded write ──┘
+                     nous_workspace.py                          (biases the next cycle; closes the loop)
 ```
 
 - **`nous_store.py`: SubstrateStore (Layer 1):** Holds the graph; the only component that
-  mutates. Contains no "cognitive" logic. **Verified: determinism, integrity, purity.**
+  mutates. Contains no "cognitive" logic. **`PROVEN`: determinism, integrity, purity.**
 - **`nous_activation.py`: spreading activation:** The first operation that *reads across* the
-  graph. Pure read. **Verified: determinism, purity; principled approximation.**
+  graph. Pure read. **`PROVEN`: determinism, purity; principled approximation.**
 - **`nous_field.py`: multi-source field:** Composes per-source spreads into basins.
-  Deterministic, pure. *Exploratory.*
+  Deterministic, pure. *Tester-verified mechanism; no cognitive claim.*
 - **`nous_coalitions.py`: coalition formation:** Groups co-activated nodes. Deterministic,
-  pure. *Exploratory.*
-- **`nous_perceive.py`: perception + end-to-end slice:** Turns text into sources and runs the
-  whole pipeline. Pure read. *Exploratory; the final "thought" step is a placeholder.*
+  pure. *Tester-verified mechanism; no cognitive claim.*
+- **`nous_source_clustering.py`: source-clustering (1c):** A pure-read pre-stage between
+  perception and the field that groups nearby perceived sources and seeds the field from one
+  representative per group. Deterministic, pure, integrity-preserving. *Tester-verified
+  mechanism; no cognitive claim.*
+- **`nous_workspace.py`: workspace (1d):** One competition among coalitions (1d-i), pruning of
+  the bridged unperceived material from the winner (1d-i), and a single bounded broadcast back
+  onto the substrate that biases the next cycle (1d-ii). Selection is a pure read; the broadcast
+  is the one explicit write. *Tester-verified mechanism — including no-divergence and
+  no-lock-in stability of the write; no cognitive claim.*
+- **`nous_perceive.py`: perception + the closed cycle:** Turns text into sources and runs the
+  whole loop. `think(..., broadcast=False)` (the default) is a pure read; `broadcast=True`
+  performs the single feedback write. *Tester-verified mechanism; the loop closes.*
 
 Everything is pure-Python standard library. Each layer reads the one below it through its
 public surface only.
@@ -284,31 +304,140 @@ the same flow/basin structure as everything else, not by fiat. Asserted by
 
 ---
 
-## 6. Perception and the end-to-end slice
+## 6. Source-clustering (the pre-field stage, 1c)
+
+`cluster_sources(store, sources, …) → SourceClustering`. The closed loop surfaced a real
+problem: perception emits *clustered, overlapping* source sets (e.g. `coffee`, `kitchen`,
+`morning` all in one domain), so basins are meaningless until nearby sources are merged or
+grouped first. This stage sits **between perception and the field** and is a **pure read**.
+
+- **Mechanism.** It groups nearby perceived sources by **single-link clustering on a source
+  proximity graph**, where proximity is **topology / road-strength only** (the "A1" signal:
+  the strongest directed road between two sources). It then seeds the field from **one
+  representative per group** (highest source energy; ties broken on `creation_seq`, never the
+  uuid). Single-link **chaining** (A–B–C grouped though A–C are not directly near) is
+  intentional. The relative proximity threshold is an **uncalibrated design constant**
+  (`DEFAULT_PROXIMITY_FRACTION`), pinned only qualitatively by the tests.
+- **Integration.** It is wired into the live `think()` loop **without changing the perception
+  surface or the field-builder signature**: the field is seeded from group representatives
+  rather than the raw source set.
+- **Why A1 and not activation-overlap (A2).** An activation-overlap proximity signal was
+  rejected at build time for circularity (it would let the field leak back into the grouping).
+  A structural test asserts `cluster_sources` has no field/per-source parameter, so the field
+  *cannot* influence the partition.
+- **Verification (mechanism only).** Deterministic across 6 hash seeds in fresh interpreters,
+  pure (clustering mutates nothing — road strengths and traversal counts unchanged), integrity-
+  preserving (the store's integrity scan is unchanged before/after), and scale-invariant
+  (scaling energies/proximities by a constant keeps the partition). It carries an explicit
+  asserted-negative that the grouping is **topological only — no cognitive claim**.
+
+**No cognitive claim.** Source-clustering is a topological grouping mechanism. A separate,
+non-canonical structural check compared this grouping against an independent standard partition
+of the SWOW graph and returned an honest **NOT YET** (it beats the no-clustering control
+decisively but under-merges relative to a coarse standard partition); that result lives in the
+disciplined-exploratory tier, not here, and does not move this layer out of `BUILT · UNVALIDATED`.
+
+---
+
+## 7. The workspace: competition, pruning, and bounded broadcast (1d)
+
+`nous_workspace.py` is what the old "strongest coalition = the thought" placeholder stood in
+for. It is built as two bricks.
+
+### 7.1 Competition + pruning (1d-i) — a pure read
+
+`select_winner(store, coalitions, …) → Workspace`. Among the system-generated coalitions, **one
+winner** is selected by **activation density** (A2), normalized so a tight, intensely-active
+coalition beats a larger sprawling one of equal *total* activation, with a **min-size guard** so
+a degenerate tiny coalition cannot win on density alone. `Workspace` exposes the `ranked` list of
+all candidates in competition order (`raw_winner` is `ranked[0]`), the chosen `winner`, and the
+`pruned_members`.
+
+- **Pruning rule (the realized, accepted design).** The winner is pruned by a **parameter-free
+  cohesion-valley / relative-attachment watershed**: a reached member is kept iff it is pulled
+  toward the named (perceived) region *at least as strongly* as toward the unnamed region; else
+  it is pruned. This removes the **bridged, unperceived** domain (e.g. a `work`/`code` region
+  reached only through a bridge) from the winner, which is the half of the old over-swallow
+  limitation that 1c could not fix on its own. The rule is **threshold-free** (no calibrated
+  constant lives in pruning) and generalizes.
+- **A known, accepted divergence (shipped as an asserted-negative).** The watershed is **not**
+  literal domain-membership. An unnamed domain bridged into the named region **at least as
+  strongly as its own internal cohesion** has no valley and is therefore **kept** — so
+  over-swallow can recur in that one topology. This divergence is always **safe-direction**: it
+  can over-*include* an unnamed domain, but it can never over-*prune* a perceived member
+  (verified across random adversarial graphs, and with an anti-overcorrection control: a *named*
+  domain is never pruned). It is documented as a standing asserted-negative, not hidden.
+- **Verification (mechanism only).** Exactly one winner is selected deterministically across 6
+  hash seeds; winner + `pruned_members` + ranked order are byte-identical across processes;
+  selection is a pure read (repeated calls mutate nothing); integrity is unchanged; the flip of
+  the over-swallow case generalizes on an independently-built isomorphic-but-relabelled graph
+  (so it is not tuned to the `coffee`/`work` fixture).
+
+### 7.2 Bounded broadcast + feedback (1d-ii) — the single write that closes the loop
+
+`broadcast(store, winner) → Broadcast`. This is the one explicit, bounded write back onto the
+substrate: a **bounded strengthening of the winner's internal roads** (reusing the store's
+`strengthen()`), which biases the next cycle. This is what turns a one-shot pipeline into a
+**loop**.
+
+- **Exactly scoped.** The broadcast strengthens **only** roads internal to the winner, **once
+  each**, **creates no new road**, and **touches no node** (nodes stay neutral, consistent with
+  the substrate design). The bridge and the unperceived domain's roads are not touched. A
+  convergence guard asserts each broadcast road's `traversal_count` increments by exactly 1.
+- **Bounded both ways — and the boundedness is structural, not a clamp.** Over many cycles, road
+  strength stays ≤ 1.0 and the broadcast aggregate **plateaus** (per-cycle deltas → ~0): the
+  system **does not diverge**. This boundedness comes entirely from `strengthen()`'s
+  `(1 − strength)` saturation (fixed point 1.0, approached from below, never exceeded) — there is
+  **no clamp, cap, or tunable magnitude** added in `broadcast()`. It also **does not lock in**:
+  after deeply biasing winner A over many cycles, a strong fresh percept favoring domain B
+  **switches** the winner to B (escape proven **non-vacuously** — A is verified dominant
+  immediately before the switch — on a hostile bridged graph, with a freeze-mode probe and a
+  close-competition differential control).
+- **The broadcast magnitude is uncalibrated.** It inherits `strengthen()`'s default gain and is
+  **not** tuned to any external or cognitive outcome.
+
+### 7.3 `think(broadcast=...)` — pure-read default vs. the single broadcast write
+
+`think(store, utterance, *, hop_budget=6, broadcast=False) → ThoughtResult` is the closed
+end-to-end cycle: `perceive → cluster_sources → build_activation_field (seeded from
+representatives) → form_coalitions_from_field → select_winner → prune → (optionally) broadcast`.
+
+- With the default **`broadcast=False`**, the whole cycle is a **pure read**: the store is
+  byte-identical across repeated calls (asserted, including interleaved with a separate
+  `broadcast=True` store).
+- With **`broadcast=True`**, the cycle additionally performs the **single bounded write** that
+  closes the loop and biases the next cycle; `ThoughtResult` then carries the non-empty
+  `Broadcast` (it is `None` on the pure-read path).
+
+**Hostile inputs are recorded no-ops, not crashes.** An utterance that names nothing, or a lone
+isolated perceived node with no internal road, yields an empty broadcast and mutates nothing.
+
+**No cognitive claim anywhere in §7.** The winner is a *selected information structure* and the
+broadcast is a *bounded conduction bias* — neither is priming, awareness, or understanding.
+Closing an information loop with bounded feedback is a **mechanism** property, verified by the
+tester, not a cognitive result.
+
+---
+
+## 8. Perception (the entry stage)
 
 `perceive(store, utterance, source_energy=1.0) → Perception`. `_tokenize` lowercases, keeps
 `[a-z0-9]+` tokens of length ≥ 3. A node becomes a **source** if any token appears (substring) in
 its lowercased content; energy grows with the number of distinct matching tokens and saturates
-(`scale = 1 − 0.6^hits`, `energy = source_energy · (0.6 + 0.4·scale)`). **The input: matched
-against the substrate: decides which nodes light up; sources are not hand-placed.** That is the
+(`scale = 1 − 0.6^hits`, `energy = source_energy · (0.6 + 0.4·scale)`). **The input — matched
+against the substrate — decides which nodes light up; sources are not hand-placed.** That is the
 whole point of this layer (METHODOLOGY finding (f)). It is deliberately minimal: exact/substring
-matching, **no embeddings, no fuzzy semantics:** a placeholder for a real perception system.
+matching, **no embeddings, no fuzzy semantics** — a placeholder for a real perception system, and
+the only stage that is still a placeholder in the cycle.
 
-`think(store, utterance, *, hop_budget=6) → ThoughtResult` is the first end-to-end pass:
-`perceive → build_activation_field(source_energies = perceived sources) → form_coalitions_from_field
-→ thought = coalitions[0]`. **`thought = the single strongest coalition` is an explicit
-placeholder** standing in for a workspace-competition / **broadcast** phase that does not exist
-yet. `ThoughtResult` carries the perception, the field, the coalitions, and the chosen thought
-(or `None` if nothing was perceived).
-
-**This slice is where the honesty bites:** Asserted *mechanics* (durable): perception is
-input-driven (`test_perceive_matches_content_from_input`), the slice runs end-to-end
-(`test_slice_runs_end_to_end_on_real_input`), and it is pure (`test_slice_is_pure_read`) and
-deterministic across hash seeds (`test_slice_determinism_across_hash_seeds`). Asserted
-*limitation* (not a result): on clustered real input the basins collapse and the "thought"
-over-swallows across domains while same-domain sources strand as singletons;
-`test_KNOWN_LIMITATION_clustered_sources_give_poor_basins` asserts this failure on purpose, so it
-is documented and would flip green only when source-grouping is fixed.
+**The closed loop is where the honesty bites.** Asserted *mechanics* (durable): perception is
+input-driven, the cycle runs end-to-end and closes, it is pure on the `broadcast=False` path, and
+it is deterministic across hash seeds. The earlier draft of this document described the cycle
+ending in an **incoherent "thought"** on clustered input, asserted as a known-limitation; that
+limitation is now **resolved at the mechanism level** by §6 (source-clustering) and §7 (workspace
+pruning) — the perception suite's old known-limitation test has been re-expressed as the now-passing
+behavior (the stranded-source half fixed by 1c; the over-swallow half fixed by 1d-i), with the one
+residual corner case (§7.1) shipped as an asserted-negative.
 
 ---
 
@@ -321,9 +450,19 @@ is documented and would flip green only when source-grouping is fixed.
 - **Determinism is a first-class requirement, not a nicety:** The natural implementations leak
   uuid set-iteration order into results; every layer is built to be a deterministic function of
   store state, and that is verified across process hash-seeds in fresh interpreters.
-- **Uncalibrated constants are quarantined:** The breakthrough threshold/leak fraction and the
-  flow-cut fraction are first-pass guesses; tests pin only the qualitative regime, and nothing
-  downstream may depend on the magnitudes until a running cognitive cycle can calibrate them.
-- **Honest boundary:** Substrate + activation: mechanism proven (determinism, integrity, purity).
-  Field + coalitions + slice: mechanism runs and is deterministic, but cognitive meaningfulness is
-  *not* established: see [METHODOLOGY.md](METHODOLOGY.md) and the README's scope statement.
+- **Uncalibrated constants are quarantined:** The breakthrough threshold/leak fraction, the
+  flow-cut fraction, the source-clustering proximity threshold, and the broadcast gain are
+  first-pass / inherited defaults; tests pin only the qualitative regime, and nothing downstream
+  may depend on the magnitudes until an externally-graded result can calibrate them.
+- **Honest boundary (three tiers, kept distinct):**
+  - **`PROVEN`** — substrate + activation: mechanism proven (determinism, integrity, purity).
+  - **tester-verified mechanism (`BUILT · UNVALIDATED`)** — field, coalitions, source-clustering,
+    and the workspace (competition + pruning + bounded broadcast). The cognitive cycle **closes
+    end-to-end** and is independently, adversarially tester-verified — but **as mechanism only**.
+    Closing the loop is *not* a cognitive result.
+  - **open frontier** — the first behavioral cognitive claim (semantic priming through the closed
+    loop, graded against human SWOW norms) has **not** been run. No cognitive meaning is claimed
+    by any layer above.
+
+  See [METHODOLOGY.md](METHODOLOGY.md), [`nous_roadmap.md`](nous_roadmap.md), and the README's
+  scope statement.
