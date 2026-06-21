@@ -30,6 +30,7 @@ import subprocess
 ROOT = os.path.dirname(os.path.abspath(__file__))
 SRC = os.path.join(ROOT, "src")
 TESTS = os.path.join(ROOT, "tests")
+EXPERIMENTS = os.path.join(ROOT, "experiments")
 
 SUITES = [
     "test_nous_store.py",
@@ -46,17 +47,40 @@ SUITES = [
     "test_tester_1c_mutation_battery.py",
     "test_tester_1d_i_adversarial.py",
     "test_tester_1d_ii_adversarial.py",
+    # 1e measurement-instrument + selector — TESTER-authored adversarial verification.
+    # These self-bootstrap src/ and experiments/ onto sys.path; they are DATA-FREE
+    # (synthetic adversarial topologies only) and make no meaning claim.
+    "test_tester_1e_selector_adversarial.py",
+    "test_tester_1e_instrument_adversarial.py",
+    "test_tester_1e_loopclosed.py",
+]
+
+# Experiment-layer MECHANISM suites (SPEC-1e §10 / decision 5): the instrument(s) 1e
+# depends on are brought into the canonical runner so they are tester-grade, not just
+# self-tested. These live in experiments/ and import the harness by bare name, so they
+# need experiments/ on PYTHONPATH too. They are DATA-FREE (synthetic graphs only) — the
+# data-dependent experiment-RESULT scripts (priming.py, priming_1e.py's selection run,
+# exp1c_*.py) stay OUT of the canonical runner: they need the ~53 MB SWOW file and make
+# meaning claims, which are the validator's, not the mechanism the runner certifies.
+EXPERIMENT_SUITES = [
+    "test_harness.py",              # 2A/2B harness mechanism (determinism/purity)
+    "test_priming_instrument.py",   # SPEC-1e §9 broadcast-Δ instrument (B-i) mechanism
+    "test_priming_1e.py",           # SPEC-1e §10 blind three-arm selector mechanism
 ]
 
 
 def main() -> int:
     env = dict(os.environ)
-    # absolute path so inherited subprocess probes resolve imports regardless of cwd
-    env["PYTHONPATH"] = SRC + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
+    # absolute paths so inherited subprocess probes resolve imports regardless of cwd.
+    # Both src/ (frozen library, bare-name imports) and experiments/ (harness, instrument,
+    # bare-name imports) are needed for the experiment-layer mechanism suites.
+    extra = SRC + os.pathsep + EXPERIMENTS
+    env["PYTHONPATH"] = extra + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
 
     failed_suites = []
-    for suite in SUITES:
-        path = os.path.join(TESTS, suite)
+    all_suites = [(TESTS, s) for s in SUITES] + [(EXPERIMENTS, s) for s in EXPERIMENT_SUITES]
+    for directory, suite in all_suites:
+        path = os.path.join(directory, suite)
         print("#" * 70)
         print(f"# {suite}")
         print("#" * 70)
@@ -75,7 +99,7 @@ def main() -> int:
         print(f"  OVERALL: FAILED — {len(failed_suites)} suite(s): {', '.join(failed_suites)}")
         print("=" * 70)
         return 1
-    print(f"  OVERALL: all {len(SUITES)} suites passed (0 failures)")
+    print(f"  OVERALL: all {len(all_suites)} suites passed (0 failures)")
     print("=" * 70)
     return 0
 

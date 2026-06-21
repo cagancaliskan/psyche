@@ -1,14 +1,15 @@
 ======================================================================
   NOUS — CAPTURED TEST OUTPUT (verbatim)
 ======================================================================
-Generated : 2026-06-20 18:56:05 +0300
+Generated : 2026-06-21 14:05:09 +0300
 Machine   : Darwin 24.5.0 x86_64
 Python    : Python 3.12.4
-Command   : python3 run_tests.py   (one block per suite; absolute PYTHONPATH=src)
-Note      : Suites use a built-in harness (not pytest); each prints
-            'RESULT: N passed, M failed' and exits non-zero on any failure.
-            Includes builder + tester-authored adversarial suites (test_tester_*).
-            State: 1c PROVEN-mechanism + 1d-i + 1d-ii built & tester-verified.
+Command   : python3 run_tests.py   (one block per suite; PYTHONPATH=src:experiments)
+Note      : Built-in harness (not pytest); each suite prints RESULT: N passed, M failed
+            and exits non-zero on any failure. Includes builder + tester-authored
+            adversarial suites (test_tester_*). State: 1c mechanism + 1d-i + 1d-ii
+            tester-verified; 1e instrument + selector (apparatus) built and
+            tester-verified — mechanism only, NOT the priming result.
 ======================================================================
 
 ######################################################################
@@ -571,6 +572,194 @@ G hostile (decay active): with an ADVANCING real-mode-like simulated clock betwe
   RESULT: 110 passed, 0 failed
 ======================================================================
 
+######################################################################
+# test_tester_1e_selector_adversarial.py
+######################################################################
+
+=== weight map W = min(10, 1+floor(strength*100)): floor at <=0.01, cap at >=0.09 ===
+
+=== S0: a HIGH/LOW pair with W_gap != 0 is NEVER admitted (no leak) ===
+
+=== S0: a TRUE W_gap=0 pair (saturating ladder collapses HIGH==LOW) IS admitted ===
+
+=== S0: floor of the ladder also collapses weights (strengths <0.01 -> w=1) ===
+
+=== in-degree match: a weight-blind pair split across deciles is DROPPED + counted ===
+
+=== ASSERTED-NEGATIVE: full select() counts the unmatched weight-blind prime as S0 drop ===
+
+=== decile boundary tie -> LOWER decile (value EQUAL to a cut does not cross it) ===
+
+=== in-degree is UNWEIGHTED structural count of distinct incoming cues (not strength sum) ===
+
+=== S0 tie-break: among matched weight-blind pairs, the tightest |Δindeg| is chosen ===
+
+=== feasibility: S0 can be a TRUE ZERO (every arm-b prime is weight-informative) ===
+
+=== feasibility: S0 CAN populate (saturated weight-blind + matched in-degree) ===
+
+=== HOSTILE: empty / singleton / no-qualifying-prime topologies return empty, no crash ===
+
+=== arm (b)-d1 invariant: HIGH and LOW are BOTH direct (1-hop) responses of the prime ===
+
+=== arm (a): control reachable within HORIZON_HOPS, NOT a direct edge, hops recorded ===
+
+=== arm (a): None when NO in-horizon non-direct node exists (no false control) ===
+
+=== BLINDNESS: priming_1e never imports the activation engine / think ===
+
+=== BLINDNESS: select() consumes only a Topology + structural knobs (no store/engine) ===
+
+=== ANTI-CIRCULARITY: selection depends on STRUCTURE, invariant to label spelling ===
+
+=== DETERMINISM: byte-identical selection across 6 randomized PYTHONHASHSEED (fresh procs) ===
+
+=== save_pair_lists: SHA-256 is a deterministic function of selection content ===
+
+============================================================
+RESULT: 92 passed, 0 failed
+============================================================
+
+######################################################################
+# test_tester_1e_instrument_adversarial.py
+######################################################################
+
+=== RESTORE: the shared store is BYTE-IDENTICAL before and after a measurement ===
+
+=== RESTORE: store stays byte-identical after MANY repeated measurements of one prime ===
+
+=== RESTORE: each internal road field (strength/traversal_count/last_touched/closed) reverts ===
+
+=== SWEEP: each prime's Δ is identical regardless of position (no cross-contamination) ===
+
+=== SWEEP: shared store is byte-identical after a full multi-prime pass ===
+
+=== M-A: RESTORE fast path equals the REBUILD reference EXACTLY ===
+
+=== M-A: Δ != 0 for a winner-internal target (broadcast genuinely raises reachability) ===
+
+=== M-A: the Δ is the broadcast effect, NOT the bare-spread value (they differ) ===
+
+=== M-A named cost: a target OUTSIDE the winner gets Δ == 0 (broadcast cannot reach it) ===
+
+=== M-A: an utterance matching NO node yields an empty broadcast and all-zero Δ (no crash) ===
+
+=== M-B: equals harness.retrieval_strength / read_targets exactly (it IS the bare spread) ===
+
+=== M-B: a bare-spread measurement does not mutate the store (purity) ===
+
+=== REBUILD: the pristine 'before' store is never mutated (purity of the baseline read) ===
+
+=== DETERMINISM: M-A/M-B byte-identical across 6 randomized PYTHONHASHSEED (fresh procs) ===
+
+=== ISOLATION: a RESTORE sweep equals INDEPENDENT per-prime REBUILDs (loop-closed) ===
+
+============================================================
+RESULT: 76 passed, 0 failed
+============================================================
+
+######################################################################
+# test_tester_1e_loopclosed.py
+######################################################################
+
+=== S0: a W_gap = 1 (off-by-one) HIGH/LOW pair is NEVER admitted (no boundary leak) ===
+
+=== S0 INVARIANT (randomized): EVERY admitted S0 pair is weight-blind (W_gap=0), never W_gap!=0 ===
+
+=== RESTORE: exact even after the winner's roads were reinforced toward saturation ===
+
+=== RESTORE-safety: the broadcast does NOT change last_touched on the simulated clock ===
+
+=== SELECTOR PURITY: select() leaves the Topology byte-identical (pure read) ===
+
+=== LOOP-CLOSURE: instrument restore/purity hold on SELECTOR-produced (prime,high,low) pairs ===
+
+=== LOOP-CLOSURE: RESTORE == REBUILD on a selector-produced prime (system-generated) ===
+
+=== DEGENERACY: in-degree distribution collapsing cuts to 0.0 does not crash matching ===
+
+=== HOSTILE INPUT: self-loops and duplicate edges in the float edge list are tolerated ===
+
+=== LOOP-CLOSED DETERMINISM: selector+instrument chain byte-identical across 6 seeds ===
+
+============================================================
+RESULT: 58 passed, 0 failed
+============================================================
+
+######################################################################
+# test_harness.py
+######################################################################
+
+=== build_graph_from_spec determinism (rebuild → identical readout) ===
+
+=== run_trials reports zero spread (determinism by construction) ===
+
+=== retrieval_strength purity (store byte-unchanged after a read) ===
+
+=== ADVERSARIAL determinism: fan_effect byte-identical across PYTHONHASHSEED ===
+
+RESULT: 17 passed, 0 failed
+
+######################################################################
+# test_priming_instrument.py
+######################################################################
+
+=== M-A equals a manual pristine-vs-broadcast read (loop-closed, engine-derived) ===
+
+=== M-A single winner-internal edge: Δ == (after−before)×decay_per_hop (derivable) ===
+
+=== M-A direct-neighbour Δ obeys the strengthen×decay law on the engine's OWN record ===
+
+=== M-A named cost: a target the broadcast cannot reach has Δ = exactly 0 ===
+
+=== M-B equals harness.read_targets / retrieval_strength exactly ===
+
+=== M-B purity: the store is byte-identical before and after repeated M-B reads ===
+
+=== Isolation: RESTORE path Δ == REBUILD path Δ (fast path validated vs reference) ===
+
+=== Isolation: RESTORE leaves the shared store byte-identical (per-prime cleanup) ===
+
+=== Isolation: a multi-prime sweep is ORDER-INDEPENDENT (prime Δ ⊥ position) ===
+
+=== ASSERTED-NEGATIVE: without per-prime restore, an earlier broadcast LEAKS ===
+
+=== ADVERSARIAL determinism: M-A/M-B byte-identical across PYTHONHASHSEED ===
+
+RESULT: 42 passed, 0 failed
+
+######################################################################
+# test_priming_1e.py
+######################################################################
+
+=== percentile() linear-interpolation matches hand computation ===
+
+=== per-prime HIGH/LOW bands match the frozen percentile rule ===
+
+=== global in-degree deciles + decile_of (boundary tie → LOWER decile) ===
+
+=== W(P,T) integer weight map and W_gap ===
+
+=== S0: weight-blind (W_gap=0) AND in-degree-matched (shared decile); tie-break ===
+
+=== ASSERTED-NEGATIVE: weight-blind pair but NO in-degree match → DROPPED from S0 ===
+
+=== arm (b)-d1: HIGH-direct vs LOW-direct, both 1 hop, both direct responses ===
+
+=== arm (a): reachable-unrelated control is in-horizon, non-direct, distance recorded ===
+
+=== arm (c): the full set of P's direct responses with their strengths ===
+
+=== structural guard: the S0 stratum CAN populate AND CAN be empty (both branches fire) ===
+
+=== BLIND: priming_1e imports no engine activation; selection takes only a Topology ===
+
+=== ADVERSARIAL determinism: selection byte-identical across PYTHONHASHSEED ===
+
+=== candidate_primes honors MIN_OUTDEG and is deterministic given the seed ===
+
+RESULT: 67 passed, 0 failed
+
 ======================================================================
-  OVERALL: all 12 suites passed (0 failures)
+  OVERALL: all 18 suites passed (0 failures)
 ======================================================================
