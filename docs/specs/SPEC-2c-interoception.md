@@ -1,13 +1,16 @@
 # SPEC-2c — Interoception ("the body's voice"): telemetry-derived body-state modulation of the cognitive cycle
 
-Status: **FEASIBILITY PRE-CHECK COMPLETE → CLEAN (feasible, with binding design constraints); §6 DESIGN DECISIONS
-RESOLVED (human, 2026-06-21); the determinism two-mode design (§3.2) is now a BINDING first-class commitment.**
-This document **leads with a gating feasibility pre-check (§1)**, exactly as the 1e/fan-effect discipline now
-requires. The full experiment design (§2 onward) is written **only because the pre-check clears**; had it hit a
-structural wall, §1 would have stated the wall and stopped. The pre-check verdict (CLEAN) is **not re-litigated**
-here; this revision folds in the human's six resolved decisions (§6) and makes the determinism two-mode design
-binding (§3.2). **2c stays `DESIGNED`** — nothing here is built, run, or committed by this document; no mechanism
-status changes.
+Status: **2c mechanism `BUILT · UNVALIDATED` (mechanism tester-VERIFIED PASS; meaning pending — the validator's
+graded run is the open item); FEASIBILITY PRE-CHECK COMPLETE → CLEAN (feasible, with binding design constraints);
+§6 DESIGN DECISIONS RESOLVED (human, 2026-06-21); the determinism two-mode design (§3.2) is a BINDING first-class
+commitment.** This document **leads with a gating feasibility pre-check (§1)**, exactly as the 1e/fan-effect
+discipline now requires. The full experiment design (§2 onward) is written **only because the pre-check clears**;
+had it hit a structural wall, §1 would have stated the wall and stopped. The pre-check verdict (CLEAN) is **not
+re-litigated** here; this revision folds in the human's six resolved decisions (§6) and makes the determinism
+two-mode design binding (§3.2). **2c is now `BUILT · UNVALIDATED`** — the `BodySensor` + default-off modulation
+hook are built and mechanism tester-VERIFIED (PASS), in parity with the roadmap; **meaning is NOT validated** (the
+validator's graded run is pending, and the realistic-trace design carries an open caveat — see
+`docs/experiments/EXP-2c-interoception.md` §6.1); no lower-brick mechanism status changes.
 
 Author: architect-pm
 For: the **builder** (who implements the `BodySensor` + default-off modulation hook test-first, replay-
