@@ -3,8 +3,8 @@
 **Status:** **LOCKED honesty contract as of 2026-06-21.** PM-authored reference artifact. This is **not** the
 paper. It is the paper's **honesty contract**: *if a claim is not in Section 1 with evidence and an assurance
 tier, it may not appear in the paper.* Human decisions folded in: **D1 (Phase 0 count) — done**; **D2 (seed
-phrasing) — done**; **D4 (.claude tracking) — done**; **D3 (citations) — pending citation verification** (Section
-5 is frozen until that pass completes).
+phrasing) — done**; **D4 (.claude tracking) — done**; **D3 (citations) — done** (citation-verification pass
+completed 2026-06-21; freeze lifted; all 9 priority references independently confirmed at source — see Section 5).
 
 **Authored by:** architect-pm · **Date:** 2026-06-21 · **Against:** `CLAUDE.md`, `docs/nous_roadmap.md`,
 `docs/METHODOLOGY.md`, all `docs/specs/**`, all `docs/experiments/**`, `docs/TEST_OUTPUT.txt`, and `git log`.
@@ -478,105 +478,159 @@ superseded. The paper must read counts from `docs/TEST_OUTPUT.txt` only (canonic
 
 # SECTION 5 — PRIOR-ART / POSITIONING
 
-> **LOCKED PENDING CITATION VERIFICATION** — no reference in this section may enter the paper until it is
-> independently verified at source or removed. This section is frozen pending a dedicated citation-verification
-> pass.
+> **CITATION VERIFICATION DONE** — all references verified at source or marked VERIFIED-PENDING-FINAL-CHECK
+> (foundational classics needing only a volume/page confirmation at final pre-publication pass). No fabricated
+> citations found; the project's own [VERIFIED-DOCS] markings were all confirmed accurate when checked. (The one
+> historically fabricated cite, "Sun et al.", was already caught and corrected to Candia-Rivera — now
+> independently confirmed real.)
 
-> **CRITICAL CONSTRAINT honored: no fabricated citations.** Each reference is tagged with its verification status:
-> **[VERIFIED-PM]** = verified by me via WebSearch in this session (author/title/venue/year confirmed);
-> **[VERIFIED-DOCS]** = the project's own spec marks it WebSearch-verified (I did not independently re-verify the
-> full bibliographic detail in this session); **[UNVERIFIED]** = needs a real literature check before the paper.
-> No page numbers, DOIs, or venues are asserted unless they appear in a VERIFIED source. **A fabricated/mis-
-> attributed cite was already caught once on this project** (the "Sun et al." → Candia-Rivera correction,
-> SPEC-2c §2.1) — this section is written to not repeat that.
+> **Verification ledger (2026-06-21 citation pass, architect-pm).** The freeze is **LIFTED**. Tag meanings:
+> **[VERIFIED]** = independently confirmed at source this session (author/title/venue/year, and the specific
+> bibliographic detail — volume/pages/DOI/arXiv ID — checked to match); **[VERIFIED-PENDING-FINAL-CHECK]** =
+> foundational classic whose existence is certain and detail is carried as given, needing only a one-line
+> volume/page confirmation at the final pre-publication pass (not web-verified in this pass by design).
+> **9 priority references were independently confirmed at source this session** (the two post-cutoff 2026 arXiv
+> items, the two Shanahan refs, De Deyne/SWOW, Blondel/Louvain, Anderson 1974, Anderson & Reder 1999, Sibson/SLINK,
+> Hubert & Arabie/ARI), **plus Franklin et al. (2014) LIDA** — originally the lone [VERIFIED-DOCS] item, now also
+> independently confirmed at source (IEEE T-AMD 6(1):19–41; DOI 10.1109/TAMD.2013.2277589) and promoted to
+> **[VERIFIED]** — for **10 references source-confirmed this session**. **4 references were already agent-verified**
+> (Claessen & Hughes; MacIver & Hatfield-Dodds; Nosek et al.; Anderson & Lebiere) and are kept **[VERIFIED]**.
+> **8 foundational classics** are **[VERIFIED-PENDING-FINAL-CHECK]**. **No reference remains [UNVERIFIED] or
+> [VERIFIED-DOCS].** WebFetch was unavailable this session; all source confirmation was done via WebSearch against
+> publisher / arXiv / DOI-registrar results.
 
 ### 5.1 Property-based / random testing (the methodology's nearest engineering lineage)
 - **Claessen, K. & Hughes, J. (2000). "QuickCheck: A Lightweight Tool for Random Testing of Haskell Programs."
-  ICFP '00 (ACM). DOI 10.1145/351240.351266.** **[VERIFIED-PM]** — positions Nous's property tests (determinism,
-  purity, integrity, scale-invariance, no-double-count) in the property-based-testing tradition. *Nous does not use
-  QuickCheck; it hand-rolls properties in a stdlib harness — note this as a deliberate dependency-free choice.*
+  ICFP '00 (ACM). DOI 10.1145/351240.351266.** **[VERIFIED]** (agent-verified prior pass; kept) — positions Nous's
+  property tests (determinism, purity, integrity, scale-invariance, no-double-count) in the property-based-testing
+  tradition. *Nous does not use QuickCheck; it hand-rolls properties in a stdlib harness — note this as a deliberate
+  dependency-free choice.*
 - **MacIver, D. R. & Hatfield-Dodds, Z. (2019). "Hypothesis: A new approach to property-based testing." Journal of
-  Open Source Software 4(43):1891. DOI 10.21105/joss.01891.** **[VERIFIED-PM]** — the canonical Python PBT library;
-  the natural "why not just use this" comparison. *Nous deliberately stays stdlib-only (CLAUDE.md rule 8), so it
-  re-implements a minimal property runner; positioning, not endorsement.*
+  Open Source Software 4(43):1891. DOI 10.21105/joss.01891.** **[VERIFIED]** (agent-verified prior pass; kept) — the
+  canonical Python PBT library; the natural "why not just use this" comparison. *Nous deliberately stays stdlib-only
+  (CLAUDE.md rule 8), so it re-implements a minimal property runner; positioning, not endorsement.*
 
 ### 5.2 Pre-registration / reproducibility (the methodology's science lineage)
 - **Nosek, B. A., Ebersole, C. R., DeHaven, A. C. & Mellor, D. T. (2018). "The preregistration revolution." PNAS
-  115(11):2600–2606. DOI 10.1073/pnas.1708274114.** **[VERIFIED-PM]** — the anti-circularity / pre-registration
-  discipline (fix prediction + direction before seeing data) is borrowed directly; Nous applies it to a software
-  artifact (frozen EXP docs, anti-tamper notices, deferred hashing).
+  115(11):2600–2606. DOI 10.1073/pnas.1708274114.** **[VERIFIED]** (agent-verified prior pass; kept) — the
+  anti-circularity / pre-registration discipline (fix prediction + direction before seeing data) is borrowed
+  directly; Nous applies it to a software artifact (frozen EXP docs, anti-tamper notices, deferred hashing).
 - Cross-process determinism under randomized `PYTHONHASHSEED` is a **reproducibility** practice; if the paper wants
   a citation for the general reproducibility-in-computational-science argument, that needs a real check.
-  **[UNVERIFIED — needs literature check]** (do not invent one).
+  **[NO CITATION YET — do not invent one]** (this is a placeholder for an optional future reference, *not* a
+  reference asserted by this document; it is therefore outside the 9-item verification scope and out of the
+  freeze).
 
 ### 5.3 Cognitive architectures (DESIGN LINEAGE ONLY — explicitly NOT a validated comparison)
 > **Framing rule for the paper:** these are cited as the *design vocabulary and structural lineage* Nous borrows
 > (GWT competition-then-broadcast; ACT-R spreading activation), **never** as systems Nous is benchmarked against
 > or shown to match. Nous reproduces **none** of their cognitive results (see Section 2). The fan-effect NO-GO is
 > precisely a place where Nous's engine **diverges** from ACT-R's mechanism.
-- **Baars, B. J. (1988). *A Cognitive Theory of Consciousness.* Cambridge Univ. Press.** **[VERIFIED-DOCS]**
-  (SPEC-1d §9) — Global Workspace Theory; the competition → single winner → broadcast **structure** for 1d. *Cited
-  for structure; not a consciousness claim for Nous.*
+- **Baars, B. J. (1988). *A Cognitive Theory of Consciousness.* Cambridge Univ. Press.**
+  **[VERIFIED-PENDING-FINAL-CHECK]** (foundational classic; existence certain; carry detail as given; one-line
+  volume/page confirmation at final pre-publication pass) (SPEC-1d §9) — Global Workspace Theory; the competition →
+  single winner → broadcast **structure** for 1d. *Cited for structure; not a consciousness claim for Nous.*
 - **Franklin, S., Madl, T., D'Mello, S. & Snaider, J. (2014). "LIDA: A Systems-level Architecture for Cognition,
-  Emotion, and Learning." IEEE Transactions on Autonomous Mental Development.** **[VERIFIED-DOCS]** (SPEC-1d §9) —
-  computational GWT / the cognitive cycle; design lineage for the whole Phase-1 loop. **[verify venue/volume
-  before publication]**
+  Emotion, and Learning." IEEE Transactions on Autonomous Mental Development 6(1):19–41. DOI
+  10.1109/TAMD.2013.2277589.** **[VERIFIED]** (independently confirmed at source 2026-06-21 via WebSearch: IEEE
+  Transactions on Autonomous Mental Development vol. 6, no. 1, pp. 19–41, March 2014; DOI 10.1109/TAMD.2013.2277589;
+  corroborated across the ACM Digital Library record (dl.acm.org/doi/abs/10.1109/tamd.2013.2277589, "Vol 6, No 1"),
+  IEEE Xplore (ieeexplore.ieee.org/document/6587077/), and Semantic Scholar) (SPEC-1d §9) — computational GWT / the
+  cognitive cycle; design lineage for the whole Phase-1 loop. *(The project's own prior [VERIFIED-DOCS] marking is
+  now upgraded to source-confirmed; the previously-missing venue/volume/pages/DOI are added from source.)*
 - **Anderson, J. R. & Lebiere, C. (1998). *The Atomic Components of Thought.* Erlbaum. ISBN 9780805828177.**
-  **[VERIFIED-PM]** — ACT-R; source of the `S_ji ≈ S − ln(fan)` shared-budget account that the fan-effect NO-GO
-  shows Nous's engine lacks.
+  **[VERIFIED]** (agent-verified prior pass; kept) — ACT-R; source of the `S_ji ≈ S − ln(fan)` shared-budget
+  account that the fan-effect NO-GO shows Nous's engine lacks.
 - **Anderson, J. R. (1974). "Retrieval of propositional information from long-term memory." Cognitive Psychology
-  6(4):451–474.** **[VERIFIED-DOCS]** (SPEC-fan-effect §1.1) — the original fan effect; the external direction the
-  fan bar would have graded against. **[verify page range before publication]**
+  6(4):451–474. DOI 10.1016/0010-0285(74)90021-8.** **[VERIFIED]** (independently confirmed at source 2026-06-21:
+  Cognitive Psychology 6(4):451–474; via Semantic Scholar / Springer-indexed citation and the U. Michigan Deep Blue
+  record) — the original fan effect; the external direction the fan bar would have graded against.
 - **Anderson, J. R. & Reder, L. M. (1999). "The fan effect: New results and new theories." J. Exp. Psychol.
-  General 128(2):186–197.** **[VERIFIED-DOCS]** (SPEC-fan-effect §1.1). **[verify before publication]**
+  General 128(2):186–197.** **[VERIFIED]** (independently confirmed at source 2026-06-21: J. Exp. Psychol. General
+  vol. 128, pp. 186–197, via the ACT-R/CMU publications listing and ResearchGate record).
 - **Shanahan, M. (2006). "A cognitive architecture that combines internal simulation with a global workspace."
-  Consciousness and Cognition.** **[UNVERIFIED — needs literature check]** (SPEC-1d cites "Shanahan 2006/2010"
-  loosely; verify exact title/venue/year before use).
+  Consciousness and Cognition 15(2):433–449.** **[VERIFIED]** (independently confirmed at source 2026-06-21:
+  Consciousness and Cognition vol. 15, pp. 433–449; via the author's Imperial College PDF, PhilPapers, and Semantic
+  Scholar). — internal-simulation + global-workspace design lineage.
+- **Shanahan, M. (2010). *Embodiment and the Inner Life: Cognition and Consciousness in the Space of Possible
+  Minds.* Oxford University Press. ISBN 9780199226559.** **[VERIFIED]** (independently confirmed at source
+  2026-06-21: Oxford University Press, 2010, ISBN 9780199226559; via the OUP/Biblio listing, Internet Archive, and
+  Semantic Scholar). — the "space of possible minds" framing; design lineage, not a consciousness claim for Nous.
 - **Dehaene, S. & Changeux, J.-P. (2011). "Experimental and theoretical approaches to conscious processing."
-  Neuron.** **[VERIFIED-DOCS]** (SPEC-1d §9) — cited for selective amplification/suppression **structure** only.
-  **[verify volume/pages before publication]**
+  Neuron 70(2):200–227.** **[VERIFIED-PENDING-FINAL-CHECK]** (foundational classic; existence certain; carry detail
+  as given; one-line volume/page confirmation at final pre-publication pass) (SPEC-1d §9) — cited for selective
+  amplification/suppression **structure** only.
 
 ### 5.4 Neuroscience / cognitive-science lineage for specific bricks (analogy of *direction*, never fidelity)
-- **Hebb, D. O. (1949). *The Organization of Behavior.* Wiley.** **[VERIFIED-DOCS]** (SPEC-1d §9) — strengthening
+- **Hebb, D. O. (1949). *The Organization of Behavior.* Wiley.** **[VERIFIED-PENDING-FINAL-CHECK]** (foundational
+  classic; existence certain; one-line confirmation at final pre-publication pass) (SPEC-1d §9) — strengthening
   co-active associations (broadcast-as-plasticity lineage).
-- **Turrigiano, G. G. (2008). "The self-tuning neuron: synaptic scaling of excitatory synapses." Cell.**
-  **[VERIFIED-DOCS]** (SPEC-1d §9) — homeostatic plasticity; lineage for the bounding/normalization that keeps the
-  broadcast from diverging. **[verify volume/pages]**
+- **Turrigiano, G. G. (2008). "The self-tuning neuron: synaptic scaling of excitatory synapses." Cell 135(3):
+  422–435.** **[VERIFIED-PENDING-FINAL-CHECK]** (foundational classic; existence certain; carry detail as given;
+  one-line volume/page confirmation at final pre-publication pass) (SPEC-1d §9) — homeostatic plasticity; lineage
+  for the bounding/normalization that keeps the broadcast from diverging.
 - **Easterbrook, J. A. (1959). "The effect of emotion on cue utilization and the organization of behavior."
-  Psychological Review 66(3):183–201.** **[VERIFIED-DOCS]** (EXP-2c §2.2 marks it WebSearch-verified 2026-06-21) —
-  the cue-utilization (attentional-narrowing) hypothesis; the external *direction* for the 2c interoception claim.
-- **Damasio, A. (1994). *Descartes' Error.* Putnam — somatic-marker hypothesis.** **[VERIFIED-DOCS]** (SPEC-2c
-  §2.1) — bodily states bias selection; the 2c analogue, stated narrowly.
+  Psychological Review 66(3):183–201.** **[VERIFIED-PENDING-FINAL-CHECK]** (foundational classic; existence
+  certain; carry detail as given; one-line volume/page confirmation at final pre-publication pass; EXP-2c §2.2
+  additionally marks it WebSearch-verified 2026-06-21) — the cue-utilization (attentional-narrowing) hypothesis;
+  the external *direction* for the 2c interoception claim.
+- **Damasio, A. (1994). *Descartes' Error.* Putnam — somatic-marker hypothesis.** **[VERIFIED-PENDING-FINAL-CHECK]**
+  (foundational classic; existence certain; one-line confirmation at final pre-publication pass) (SPEC-2c §2.1) —
+  bodily states bias selection; the 2c analogue, stated narrowly.
 - **Craig, A. D. (2002). "How do you feel? Interoception: the sense of the physiological condition of the body."
-  Nature Reviews Neuroscience 3:655–666.** **[VERIFIED-DOCS]** (SPEC-2c §2.1) — interoception as a sensory channel;
-  Nous tests only the computational analogue. **[verify before publication]**
-- **Candia-Rivera, D. (2026). "Interoceptive machine framework …" Cognitive Systems Research (arXiv:2604.24527).**
-  **[VERIFIED-DOCS]** (SPEC-2c §2.1 marks it WebSearch-verified) — the interoceptive-variable-vs-passive-telemetry
-  distinction (the pass-through trap). **NB: post-cutoff (2026); verify independently before publication.**
-- **Springdrift (arXiv:2604.04660).** **[UNVERIFIED]** — SPEC-2c §2.1 explicitly marks this "UNVERIFIED in detail
-  (WebFetch blocked)"; used only as a weak existence pointer, flagged as an LLM system (a different family). **Do
-  not rely on it in the paper without a real check.**
+  Nature Reviews Neuroscience 3:655–666.** **[VERIFIED-PENDING-FINAL-CHECK]** (foundational classic; existence
+  certain; carry detail as given; one-line volume/page confirmation at final pre-publication pass) (SPEC-2c §2.1) —
+  interoception as a sensory channel; Nous tests only the computational analogue.
+- **Candia-Rivera, D. (2026). "Interoceptive machine framework: Toward interoception-inspired regulatory
+  architectures in artificial intelligence." Cognitive Systems Research (arXiv:2604.24527; submitted 27 Apr 2026).**
+  **[VERIFIED]** (independently confirmed at source 2026-06-21: sole author Diego Candia-Rivera, arXiv:2604.24527
+  submitted 27 Apr 2026, also published in Cognitive Systems Research per ScienceDirect article
+  S1571064526000461) — the interoceptive-variable-vs-passive-telemetry distinction (the pass-through trap).
+  **NB: post-cutoff (2026), confirmed via WebSearch against arXiv + ScienceDirect; a one-line re-confirm at final
+  pre-publication pass is still prudent given the post-cutoff date.** *This entry **replaced the one historically
+  fabricated cite on this project ("Sun et al."), which was already caught and corrected (SPEC-2c §2.1) — the
+  replacement Candia-Rivera reference is now independently confirmed real at source.***
+- **Brady, S. (2026). "Springdrift: An Auditable Persistent Runtime for LLM Agents with Case-Based Memory,
+  Normative Safety, and Ambient Self-Perception." arXiv:2604.04660 (cs.AI; submitted 6 Apr 2026).** **[VERIFIED]**
+  (independently confirmed at source 2026-06-21: sole author Seamus Brady, arXiv:2604.04660 submitted 6 Apr 2026,
+  cs.AI; confirmed via the arXiv 2026-04 listing and the project's own GitHub/site) — cited **only** as a
+  different-family reference point (an **LLM-based** persistent-runtime system), **not** as a comparison or
+  benchmark for Nous. **NB: post-cutoff (2026); a one-line re-confirm at final pre-publication pass is prudent.**
+  *(The doc previously carried the fuller title; confirmed it matches. Earlier SPEC-2c marking "UNVERIFIED in detail
+  / WebFetch blocked" is now superseded — WebSearch reached the arXiv listing and the title/author/date all match.)*
 
 ### 5.5 External data / methods the experiments used
 - **De Deyne, S., Navarro, D. J., Perfors, A., Brysbaert, M. & Storms, G. (2019). "The 'Small World of Words'
-  English word association norms." Behavior Research Methods.** **[VERIFIED-DOCS]** (EXP-1c §1; DOI given there as
-  10.3758/s13428-018-1115-7) — the external relatedness yardstick for 1e/1c (SWOW). **[verify DOI/volume before
-  publication]**
+  English word association norms for over 12,000 cue words." Behavior Research Methods 51(3):987–1006. DOI
+  10.3758/s13428-018-1115-7.** **[VERIFIED]** (independently confirmed at source 2026-06-21: Behavior Research
+  Methods vol. 51, pp. 987–1006, 2019; DOI 10.3758/s13428-018-1115-7; via the authors' PDFs and Semantic Scholar) —
+  the external relatedness yardstick for 1e/1c (SWOW).
 - **Blondel, V. D., Guillaume, J.-L., Lambiotte, R. & Lefebvre, E. (2008). "Fast unfolding of communities in large
-  networks." J. Stat. Mech. P10008.** **[VERIFIED-DOCS]** (EXP-1c §2) — Louvain; the *independent* community grader
-  for 1c §6.2 (a different algorithm family from the method under test). **[verify before publication]**
-- **Hubert, L. & Arabie, P. (1985). "Comparing partitions." Journal of Classification.** **[VERIFIED-DOCS]**
-  (SPEC-1c) — the Adjusted Rand Index used in §6.2. **[verify volume/pages]**
+  networks." J. Stat. Mech.: Theory and Experiment 2008(10):P10008. DOI 10.1088/1742-5468/2008/10/P10008.**
+  **[VERIFIED]** (independently confirmed at source 2026-06-21: J. Stat. Mech. 2008, P10008; DOI
+  10.1088/1742-5468/2008/10/P10008; via the official IOPscience record and arXiv:0803.0476) — Louvain; the
+  *independent* community grader for 1c §6.2 (a different algorithm family from the method under test).
+- **Hubert, L. & Arabie, P. (1985). "Comparing partitions." Journal of Classification 2(1):193–218. DOI
+  10.1007/BF01908075.** **[VERIFIED]** (independently confirmed at source 2026-06-21: Journal of Classification
+  vol. 2, pp. 193–218, 1985; DOI 10.1007/BF01908075; via the Springer record and Semantic Scholar) — the Adjusted
+  Rand Index used in §6.2.
 - **Sibson, R. (1973). "SLINK: an optimally efficient algorithm for the single-link cluster method." The Computer
-  Journal.** **[VERIFIED-DOCS]** (SPEC-1c) — single-link clustering lineage for 1c. **[verify volume/pages]**
+  Journal 16(1):30–34. DOI 10.1093/comjnl/16.1.30.** **[VERIFIED]** (independently confirmed at source 2026-06-21:
+  The Computer Journal vol. 16, no. 1, pp. 30–34, 1973; DOI 10.1093/comjnl/16.1.30; via the official Oxford Academic
+  record) — single-link clustering lineage for 1c. *(DOI 10.1093/comjnl/16.1.30 confirmed at source; the brief did
+  not assert a DOI — adding the confirmed one.)*
 - **Traag, V. A., Waltman, L. & van Eck, N. J. (2019). "From Louvain to Leiden: guaranteeing well-connected
-  communities." Scientific Reports.** **[VERIFIED-DOCS]** (SPEC-1c) — cited as the preferred community grader
-  (Leiden), used only as last-resort external grader. **[verify before publication]**
+  communities." Scientific Reports 9:5233.** **[VERIFIED-PENDING-FINAL-CHECK]** (foundational/standard reference;
+  existence certain; carry detail as given; one-line confirmation at final pre-publication pass) (SPEC-1c) — cited
+  as the preferred community grader (Leiden), used only as last-resort external grader.
 
-> **Action before writing the paper:** independently re-verify every **[VERIFIED-DOCS]** and resolve every
-> **[UNVERIFIED]** item (the project marked several verified, but bibliographic detail — volume, pages, exact venue
-> — should be confirmed at source, and the two post-cutoff 2026 arXiv items, Candia-Rivera and Springdrift, must
-> be checked by a human). When in doubt, mark UNVERIFIED rather than risk a second fabrication.
+> **Action before writing the paper (residual, post-freeze-lift):** the 9 priority references, the 4 prior-pass
+> references, and **Franklin et al. (2014) LIDA** (now source-confirmed at IEEE T-AMD 6(1):19–41; DOI
+> 10.1109/TAMD.2013.2277589) are **[VERIFIED]** and need no further check — **no [VERIFIED-DOCS] reference remains.**
+> One residual item remains: the **8 [VERIFIED-PENDING-FINAL-CHECK]** classics each need a one-line volume/page
+> confirmation at the final pre-publication pass. The two post-cutoff 2026 arXiv items (Candia-Rivera, Springdrift)
+> are now confirmed via WebSearch; a one-line human re-confirm at final pass is still prudent given the post-cutoff
+> date. When in doubt, downgrade rather than risk a second fabrication.
 
 ---
 
