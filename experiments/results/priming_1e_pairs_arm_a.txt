@@ -1,0 +1,301 @@
+# prime	strong_related	unrelated_reachable	control_hops
+apache	tribe	bring together	3
+Olympics	London	March	3
+ignition	car	feds	3
+born	mother	big people	3
+superficial	girls	Amistad	3
+hugs	warm	trixy	3
+console	friend	soy sauce	3
+honest	true	two-way	3
+nobody	love	engulfing	3
+yogi	spiritual	in command	3
+aloud	voice	and dark	3
+total	whole	get better	3
+pliers	tool	Louvre	2
+playground	sand	Pauly	3
+first class	elite	musk	3
+vehicles	van	art ex	3
+watched	pot	pile	2
+zest	spice	dept	3
+unclean	leprosy	fresh smell	2
+points	tennis	treeless	3
+suburban	safe	time warps	3
+things	objects	flea market	3
+quarterback	sport	well intentioned	3
+canvas	artist	renew	2
+steroid	anabolic	body problem	3
+meter	foot	out of this world	3
+guide	lead	cosmetic	3
+shapes	sizes	quarterly	3
+tease	laugh	pure	2
+mixture	Dolly	metallurgy	3
+traveling	train	on a pedestal	3
+carry on	go	intertwine	3
+determination	strong	playable	3
+perverted	twisted	fog	3
+bad	nasty	unanimous	3
+varnish	smell	too simple	3
+sheets	pillow	unfashionable	2
+distracted	driver	1 horn	3
+adorable	cute	no cares	3
+fiesta	piñata	flack	3
+paella	rice	germ ling	3
+opossum	tail	vampire	2
+hypnotic	hypnotist	take on	3
+drip	wet	mongrels	3
+deaf	ear	work site	3
+intelligent	bright	cedric the entertainer	3
+classics	music	Polly	3
+deeply	madly	swim stroke	3
+oblivion	empty	globalise	3
+boisterous	rowdy	Mis spelled a lot	3
+straightforward	right	already happened	3
+consequence	actions	seemed	3
+forgetful	dementia	anniversary	2
+gamble	dice	trivet	3
+fern	gully	aerospace	3
+solemn	hymn	rain cloud	3
+shorts	film	ideogram	3
+retire	finish	accent	2
+local	city	vile	3
+negative	no	refund	2
+suspend	dangle	harps	3
+crumble	crumb	five, six, seven	3
+clock	watch	overseas	3
+screen	TV	strongest	3
+forbidden	hidden	taking in words	3
+preschool	young	theocracy	3
+savory	tasty	change directions	3
+Hawaii	surfing	in out	3
+compose	make	communication error	3
+personal	feelings	alternate universes	3
+linger	rest	housecoat	3
+Freud	dreams	yawed	3
+cluck	hen	Jim Hansen	3
+prodigal	prodigy	tremendously tired	3
+lady	aristocrat	small coins	3
+assembly	group	siege	3
+pragmatic	realistic	Seine	2
+bright	intelligent	dog teeth	3
+favorite	ice cream	nightman	3
+rascal	little	heimdal	3
+inspiration	dream	dumbfounding	3
+tiara	jewel	tracks	3
+homework	teacher	appeals	3
+scar	scab	battleground	3
+psychic	mind-reader	leaning	3
+orange	bright	cellular contents	3
+geometric	square	explorers	3
+snag	problem	are a girl's best friend	3
+interpret	decipher	peephole	3
+fiber	bread	ingested	3
+legislature	law	solve	3
+canvass	politics	stockings	2
+platform	speaker	defend	2
+borrow	loan	food from tree	3
+songs	choir	unheard	3
+forthright	forthcoming	red badge	3
+violin	strings	aristocrat	3
+kindness	warm	hurdle	3
+turncoat	spy	crossing	3
+yogurt	milk	match	3
+profit	loss	riddler	3
+proxy	web	one man show	3
+getting	taking	mighty mouse	3
+surmount	win	at it	2
+politeness	party	defecate	3
+emerge	appear	tiredness	2
+studio	painting	pleasant	2
+hum	whistle	about nature	3
+fusion	atom	minister	3
+tv	video	shower	2
+frown	sad	Girdle	3
+fashionable	pretty	cherish	3
+passover	overlook	he or she	3
+prior	past	competitors	3
+spacecraft	exploration	what makes up things	3
+shoemaker	old	play the fool	3
+opal	Australia	clothing storage	3
+treat	trick	poorly made	3
+Popsicle	summer	study of behavior	3
+chat	room	what you see	3
+corps	marines	migraines	3
+ambiance	feeling	promotions	3
+dominate	strong	Euclid	3
+not	now	cubic zirconium	3
+daffodil	pretty	Etna	3
+chalk	school	letter opener	3
+colander	sieve	swaggering	3
+commute	traffic	one man show	3
+vampire	suck	dealership	3
+infestation	fleas	pip long stockings	3
+kingly	royal	strategize	3
+kittens	babies	censor	3
+crazy	wacky	finch	3
+contraption	contraception	panache	3
+decomposition	smell	toughs it out	3
+investigation	research	firehouse	3
+able	willing	big rock	3
+number	list	support financially	3
+convey	meaning	remote	2
+mouse	tail	stable	3
+assimilate	combine	jewlellery	3
+daddy	kid	impress	2
+fill	full	nobody does	3
+somewhere	rainbow	barristers	3
+goats	horns	nothing of importance  happening	3
+aristocratic	wealth	shellac	3
+bolts	tools	animal sounds	3
+bushes	tree	Terra firms	3
+ex	old	networking	3
+bra	strap	resent	3
+criterion	judgement	needs a space	3
+inn	hostel	Ono band	3
+elves	Santa	ready and waiting	3
+warning	light	yak	3
+hack	program	here comes the	3
+bother	problem	blocked	3
+penetration	sexual	at this point in time	3
+canyon	crayon	elusive	3
+controls	computer	benzodiazepines	3
+decorative	painting	Aborigine	3
+nativity	scene	glistening	3
+lost	sad	homes	3
+lesson	plan	showoff	3
+celibacy	nuns	waitressing	3
+busted	found out	tail gators	3
+woolly	furry	summer camp	3
+rebel	revolution	mittens	2
+initiate	cause	hey diode	3
+explanation	description	pieces of eight	3
+lever	crowbar	Bowman	3
+peasant	feudal	force to	3
+uneducated	thick	awe-inspiring	3
+ejaculation	exclamation	alternat	3
+hers	mine	forearm	3
+indecisive	uncertain	not give up	3
+concerned	involved	R.E.M. sleep	3
+deluge	overwhelming	above & beyond	3
+doctors	white coat	which way	3
+sparkling	stars	monymusk	3
+simple	easy	whist	3
+smug	rude	rorrim	3
+noob	gaming	zeal	3
+pariah	loner	pealing	3
+debt	credit	cuddly	3
+oranges	juice	in swimming pool	3
+destroyed	sad	investigations	3
+Victorian	prudish	regardless	3
+ancestors	forebears	Pdq	3
+cupid	bow	feet tall	3
+rush	time	relieving	2
+exist	real	laying about	3
+deviant	sex	V8	3
+images	photographs	jesus' wounds	3
+ballot	election	firstpersonshooter	3
+calorie	eat	responsive	3
+water	swim	Marnia	3
+handed	offered	-phile	3
+crackers	saltines	torts	3
+true	loyal	abort	3
+export	import	pickpocket	3
+hearsay	unreliable	earthworm	3
+motive	cause	floating	3
+arachnid	legs	globe	3
+blacksmith	metal	stipend	3
+benefits	job	make more	2
+pineapple	spikes	make ready	3
+haha	laugh	fund raiser	3
+blackboard	whiteboard	have your	3
+bohemian	fashion	black beans	3
+as	is	Alaska	3
+optical	visual	out loud	3
+spectacle	grand	Michael Jordan	3
+frigid	ice	brusk	3
+exodus	escape	tentacles	3
+jokes	humor	legalistic	3
+wrongdoing	naughty	remove or discard as from a film	3
+groceries	vegetables	frontiers	3
+vagrant	empty	breathe fast	3
+raspberries	strawberries	pick-up	3
+sprinkles	rainbow	unruly	3
+lampshade	light bulb	our of one	3
+discard	waste	oil change	3
+senior	elderly	mail carrier	3
+cola	drink	coned hat	3
+partridge	family	Arragon	3
+tab	drink	billyclub	3
+genre	music	nonverbal	2
+fields	strawberry	stocks and bonds	3
+based	home	two faced	2
+driver	operator	going away	3
+pair	couple	Mamie	3
+quaint	sweet	ortiz	3
+ergo	so	face-to-face	3
+sieve	strainer	cousin	2
+cosmos	stars	duvet	3
+clarify	simplify	fraudulent	3
+remedy	medicine	decency	3
+tracksuit	velor	pale blue	3
+maze	labyrinth	enclosed	2
+curb	halt	hardheadedness	3
+sickening	gross	small meal	3
+elf	movie	round robin	3
+associate	connect	to look	3
+took	Peregrin	steered	3
+arctic	penguin	window cleaners	3
+museum	dinosaurs	secretions	3
+sacrifice	God	boor	3
+jogger	running	trailer park boys	3
+standards	morals	separations	3
+orientation	sexual	Elixir	3
+g	great	innovator	3
+cope	deal	self-destruction	3
+scandal	sandal	pile-on	3
+sleeping pill	drowsy	exacting	3
+shrimp	pink	Timothy Covey	3
+unplanned	mistake	eusocial	3
+agriculture	food	African American	3
+economy	disaster	Nevada	3
+useful	need	sis	3
+socket	wrench	eggy	3
+drone	buzz	Edward said	3
+three	trinity	the hell	3
+pearls	swine	water dweller	3
+breath	life	speeds	3
+woe	grief	Elucidate	3
+fore	skin	swallow	3
+polyester	fabric	bandits	3
+capsule	tablet	grueling	3
+placement	position	stubborn person	3
+industrious	ant	hold my interest	3
+elevator	down	put back	3
+revolver	western	check-up	3
+thrive	plants	co operational	3
+whatever	carelessness	submarine	3
+echidna	Australia	who what when where how	3
+pessimistic	cynical	came to quick	2
+kneel	beg	Edda	3
+networking	work	Parker brothers	3
+uplifting	nice	Gibberish	3
+oodles	loads	forward looking	3
+terrace	flat	not procedure	3
+woodworker	woodpecker	hold close	3
+sixth	form	pressure system	3
+rabies	bite	bleugh	2
+mesmerize	stare	impertinent	3
+quad	quadrilateral	device	2
+chainsaw	horror	light speed	3
+spank	slap	not extreme	3
+sport	basketball	single minded	3
+bravado	man	insulate	3
+nacho	cheese	nonrestrictive	3
+legality	legal	priests	3
+inspired	artist	ebullience	2
+mechanical	electrical	Sherwood	3
+pillar	white	gonad	3
+debunk	bed	filled up	3
+chops	pork	tossed about	3
+painting	drawing	chimichanga	3
+courteous	caring	pot plants	3
+coleslaw	food	THC	3
