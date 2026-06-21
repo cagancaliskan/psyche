@@ -65,9 +65,11 @@ from typing import Dict, List, Set, Optional, Tuple
 
 from nous_store import SubstrateStore
 from nous_field import build_activation_field, ActivationField
+from nous_activation import DEFAULT_DECAY_PER_HOP
 from nous_coalitions import form_coalitions_from_field, Coalition
 from nous_source_clustering import cluster_sources, SourceClustering
 from nous_workspace import select_winner, WorkspaceResult, broadcast as _broadcast, Broadcast
+from nous_bodysensor import BodySensor, modulated_decay_per_hop
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -152,7 +154,15 @@ class ThoughtResult:
     internal mechanism record, NOT a cognitive/priming claim — see nous_workspace.
 
     `clustering` and `workspace` are recorded for inspection; adding them does not change
-    the perception surface or the field-builder signature."""
+    the perception surface or the field-builder signature.
+
+    `body_friction` is the telemetry-derived body-state scalar (2c) that was read this
+    cycle, or None when interoception is OFF (the default, body_sensor=None). It is a
+    DERIVED SIGNAL from the timing pair, NOT a feeling/emotion/awareness claim — see
+    nous_bodysensor's honest-framing note. `effective_decay_per_hop` records the
+    `decay_per_hop` actually used for the field this cycle (the modulated value when
+    interoception is on; the unmodulated `decay_per_hop` argument otherwise), for
+    inspection and the modulation tests."""
     perception: Perception
     clustering: Optional[SourceClustering]
     field_: Optional[ActivationField]
@@ -160,6 +170,8 @@ class ThoughtResult:
     workspace: Optional[WorkspaceResult]
     thought: Optional[Coalition]
     broadcast_: Optional[Broadcast] = None
+    body_friction: Optional[float] = None
+    effective_decay_per_hop: Optional[float] = None
 
 
 def think(
@@ -169,6 +181,8 @@ def think(
     source_energy: float = DEFAULT_SOURCE_ENERGY,
     hop_budget: int = 6,
     broadcast: bool = False,
+    decay_per_hop: float = DEFAULT_DECAY_PER_HOP,
+    body_sensor: Optional[BodySensor] = None,
 ) -> ThoughtResult:
     """The end-to-end pass: perceive an utterance, build the field from the perceived
     sources, form coalitions, and select ONE winner via the workspace (1d-i).
@@ -203,6 +217,32 @@ def think(
         a clamp; it biases conductance only, so a strong fresh percept can still change the
         winner (no lock-in). It is an INTERNAL MECHANISM property — NOT a cognitive/priming
         claim (that is 1e, graded by the validator). 1d-ii closes the loop 1e needs.
+
+    `body_sensor` is the opt-in 2c INTEROCEPTION hook (default None = OFF). It is the
+    telemetry-derived body-state modulation, and it is DEFAULT-OFF exactly like
+    broadcast=False is the pure path:
+
+      - body_sensor=None (DEFAULT): interoception is OFF. The field is built with the
+        `decay_per_hop` argument unchanged (DEFAULT_DECAY_PER_HOP unless the caller
+        overrides it), so think() is BYTE-IDENTICAL to the current 1c/1d behavior. No
+        telemetry is read; `body_friction` is None. This is the analogue of broadcast=False
+        staying pure: 1c/1d are not re-validated, 2c is strictly additive.
+      - body_sensor=<BodySensor>: interoception is ON. ONE friction scalar is read from the
+        sensor (replay trace in tests; live telemetry in production), and it MODULATES
+        `decay_per_hop` via nous_bodysensor.modulated_decay_per_hop — a diffuse global
+        spreading-gain change that names NO node and NO coalition ((C-INJECT-UPSTREAM)).
+        The modulated value is what the field spread uses, so a different friction can
+        change the activation field, the basins, the competition, and hence WHICH coalition
+        wins — an EMERGENT, categorical change, NOT a readback of the friction scalar
+        ((C-GRADE-EMERGENT)). `body_friction` records the scalar read; `effective_decay_per_hop`
+        records the modulated value used. This is a telemetry-grounded MODULATION mechanism;
+        it is NOT a feeling/emotion/awareness/consciousness claim, and whether it MEANS
+        anything (causally modulates selection, tracks the telemetry) is the validator's
+        call against the frozen trace — see nous_bodysensor's honest-framing note.
+
+    The modulation reads the sensor at MOST once per think() call (one cycle, one body-state
+    read), and only on the body_sensor-provided path; the read mutates only the sensor's own
+    boundary cursor, never the substrate.
     """
     perception = perceive(store, utterance, source_energy=source_energy)
     if not perception.sources:
@@ -210,19 +250,40 @@ def think(
         # broadcast=True this is a recorded no-op write (empty Broadcast); under the
         # default broadcast=False, `broadcast_` stays None and this path is byte-identical
         # to the 1d-i pure-read return (no write attempted either way).
+        #
+        # NB on the 2c hook: nothing is perceived, so there is no field to modulate. The
+        # body_sensor is NOT read on this path — a body-state read only makes sense for a
+        # cycle that actually spreads activation. body_friction stays None. (Reading the
+        # sensor here would burn a replay sample for a no-op and is avoided deliberately.)
         return ThoughtResult(
             perception=perception, clustering=None, field_=None,
             coalitions=[], workspace=None, thought=None,
             broadcast_=(_broadcast(store, None) if broadcast else None),
+            body_friction=None, effective_decay_per_hop=None,
         )
 
     # 1c: group nearby sources, then seed the field from group representatives only.
     clustering = cluster_sources(store, perception.sources)
 
+    # 2c interoception hook (DEFAULT-OFF). With body_sensor=None, effective_decay is the
+    # unmodulated `decay_per_hop` argument (DEFAULT_DECAY_PER_HOP unless overridden) and no
+    # telemetry is read — so the field-build below is byte-identical to current 1c/1d. With
+    # a body_sensor, ONE friction scalar is read and modulates `decay_per_hop` (a diffuse
+    # global gain that names no node; (C-INJECT-UPSTREAM)). The modulated value flows into
+    # the spread, so a different friction can change the field -> basins -> competition ->
+    # winner (an emergent categorical change; (C-GRADE-EMERGENT)), never a readback of the
+    # scalar.
+    body_friction: Optional[float] = None
+    effective_decay = decay_per_hop
+    if body_sensor is not None:
+        body_friction = body_sensor.read()
+        effective_decay = modulated_decay_per_hop(decay_per_hop, body_friction)
+
     field_ = build_activation_field(
         store,
         list(clustering.group_seeds.keys()),
         hop_budget=hop_budget,
+        decay_per_hop=effective_decay,
         source_energies=clustering.group_seeds,
     )
     coalitions = form_coalitions_from_field(field_, store)
@@ -245,4 +306,6 @@ def think(
         perception=perception, clustering=clustering, field_=field_,
         coalitions=coalitions, workspace=workspace, thought=thought,
         broadcast_=broadcast_record,
+        body_friction=body_friction,
+        effective_decay_per_hop=effective_decay,
     )

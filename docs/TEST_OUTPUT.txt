@@ -1,15 +1,16 @@
 ======================================================================
   NOUS — CAPTURED TEST OUTPUT (verbatim)
 ======================================================================
-Generated : 2026-06-21 14:05:09 +0300
+Generated : 2026-06-21 18:39:11 +0300
 Machine   : Darwin 24.5.0 x86_64
 Python    : Python 3.12.4
 Command   : python3 run_tests.py   (one block per suite; PYTHONPATH=src:experiments)
 Note      : Built-in harness (not pytest); each suite prints RESULT: N passed, M failed
             and exits non-zero on any failure. Includes builder + tester-authored
-            adversarial suites (test_tester_*). State: 1c mechanism + 1d-i + 1d-ii
-            tester-verified; 1e instrument + selector (apparatus) built and
-            tester-verified — mechanism only, NOT the priming result.
+            adversarial suites (test_tester_*). State: 1c + 1d-i + 1d-ii tester-verified;
+            1e priming + fan-effect meaning-bars NO-GO; 2c interoception (BodySensor +
+            default-off decay modulation) built and tester-verified, pilot GO 85%
+            (feasibility); meaning UNVALIDATED (validator graded run pending).
 ======================================================================
 
 ######################################################################
@@ -244,7 +245,7 @@ ASSERTED-NEGATIVE #3: 1d-i selects EXACTLY ONE winner (no parallel/blended winne
 
 ASSERTED-NEGATIVE #4: pruning is perceived-vs-reached (topological), NOT semantic — naming a domain changes what is pruned, content does not
 
-ASSERTED-NEGATIVE #5: 1d-i does not alter perceive()/build_activation_field()/form_coalitions_from_field() signatures
+ASSERTED-NEGATIVE #5: perceive()/build_activation_field()/form_coalitions_from_field() signatures stay unchanged; 2c extended think() ONLY with the opt-in, default-off decay_per_hop / body_sensor interoception params (the broadcast flag plus the two new kwargs default to no-op)
 
 ASSERTED-NEGATIVE #6: 1d-i writes nothing — it is NOT memory/consolidation; two cycles do not accumulate any trace (no broadcast)
 
@@ -253,7 +254,7 @@ ASSERTED-NEGATIVE #7: end-to-end selection is NOT invariant when DOWN-scaling pu
 KNOWN LIMITATION (asserted-negative): 1d-i pruning is a parameter-free cohesion-valley / relative-attachment watershed, NOT pure domain-membership. An UNNAMED domain bridged into the named region AT LEAST AS STRONGLY AS its own internal cohesion has NO valley and is therefore KEPT — over-swallow RECURS in that topology. Accepted design (2026-06-20); the divergence is always SAFE (a perceived member is never pruned).
 
 ======================================================================
-  RESULT: 80 passed, 0 failed
+  RESULT: 83 passed, 0 failed
 ======================================================================
 
 ######################################################################
@@ -340,6 +341,57 @@ ADVERSARIAL determinism: end-to-end result identical across hash seeds
 
 ======================================================================
   RESULT: 19 passed, 0 failed
+======================================================================
+
+######################################################################
+# test_nous_bodysensor.py
+######################################################################
+======================================================================
+  NOUS BODYSENSOR + 2c MODULATION HOOK — TEST SUITE (mechanism, replay)
+======================================================================
+
+compute_friction = 1 - cpu/wall (the stall fraction), bounded to [0,1]
+
+REPLAY: the sensor yields exactly the friction sequence its frozen trace encodes
+
+REPLAY: exhausting the frozen trace raises (never loops / re-derives a value)
+
+REPLAY: reset() rewinds so the SAME frozen trace replays byte-identically
+
+REPLAY: BodySensor(simulated=True) WITHOUT a trace is rejected (no live read in replay)
+
+§(D-1) determinism: replay friction sequence byte-identical across 6 hash seeds (fresh interpreters)
+
+MAPPING: friction 0 -> decay factor 1.0 (identity); base decay unchanged
+
+MAPPING: higher friction -> strictly LOWER decay (more local); bounded in (0,1]
+
+DEFAULT-OFF: think() with body_sensor=None is byte-identical to the pre-2c path (field totals, winner, effective decay all unchanged); body_friction is None
+
+DEFAULT-OFF: think(body_sensor=None) is a PURE READ — the store is byte-identical
+
+DEFAULT-OFF nuance: an utterance naming NOTHING does not consume a replay sample (no field to modulate), even with a sensor attached
+
+CAUSAL EFFECT: across a replayed friction range, a DIFFERENT coalition wins (winner-SET identity flips) — the readout is a node-set, NOT the injected scalar ((C-GRADE-EMERGENT) anti-circularity)
+
+CAUSAL EFFECT (upstream): different friction changes the ACTIVATION FIELD itself (total activation), proving the number acts on cycle dynamics, not a pass-through
+
+§(D-1)+(D-5): the loop's winner trace under a replayed friction sweep is byte-identical across 6 hash seeds (the winner-flip is REPRODUCIBLE, not a one-off)
+
+PURITY (ON path): think(body_sensor=..., broadcast=False) reads telemetry but still mutates NOTHING in the store (the modulation is a parameter change, not a write)
+
+INTEGRITY (ON path): the store's integrity scan is clean before and after a modulated cycle
+
+PURITY (sensor): a sensor read mutates ONLY the sensor's cursor, never the store
+
+ASSERTED-NEGATIVE (soft-Wall-1 guard): the BodySensor takes NO store/graph and computes friction ONLY from the telemetry pair — it CANNOT re-derive from substrate
+
+ASSERTED-NEGATIVE (honest framing): no public name in nous_bodysensor encodes a feeling/emotion/awareness/consciousness claim — the headline is 'friction', a derived telemetry signal
+
+KNOWN LIMITATION (asserted-negative): this suite proves the modulation is a REAL causal effect (winner-flip) and DETERMINISTIC — it does NOT establish that the flip tracks the telemetry in a validator-pre-registered direction, nor that it MEANS anything. That is the validator's graded run, gated by the populability pilot.
+
+======================================================================
+  RESULT: 49 passed, 0 failed
 ======================================================================
 
 ######################################################################
@@ -687,6 +739,77 @@ RESULT: 58 passed, 0 failed
 ============================================================
 
 ######################################################################
+# test_tester_2c_adversarial.py
+######################################################################
+======================================================================
+  TESTER 2c ADVERSARIAL — mechanism verification + pilot fairness audit
+======================================================================
+
+A1 DEFAULT-OFF: every ThoughtResult field is byte-identical to the literal pre-2c call shape, across a percept battery (the hook has ZERO off-path effect)
+
+A2 DEFAULT-OFF: store byte-identical under repeated OFF reads (pure), AND the broadcast=True write is byte-identical whether body_sensor is None or absent
+
+A3 DEFAULT-OFF nuance: an utterance matching NOTHING does not read the sensor (no field to modulate); the replay trace is left fully intact
+
+C1 ANTI-CIRCULARITY (the kill): two DISTINCT friction values that map to the SAME effective decay produce the SAME winner — the friction scalar provably cannot leak into the readout (only the decay it induces can)
+
+C2 ANTI-CIRCULARITY: a friction whose modulated decay equals the OFF decay reproduces the OFF (body_sensor=None) field and winner BYTE-IDENTICALLY — the ON path adds nothing beyond the decay value
+
+C3 ANTI-CIRCULARITY: across the full friction sweep, every winner member is a real graph NodeID resolving to node content — never the injected float / a number
+
+C4 ANTI-CIRCULARITY: the body_sensor->think path can change the field ONLY via the global decay_per_hop; passing the modulated decay directly (no sensor) reproduces the ON field exactly — friction names no node
+
+C5 (loop-closed): on the independently-rebuilt contested graph, a DIFFERENT coalition wins across the friction range — the flip is a real emergent crossover, read from the loop, never injected
+
+B1 §(D-1)/(D-5): the loop's winner-vs-friction trace is byte-identical across 6 PYTHONHASHSEED values in fresh interpreters (independently authored driver)
+
+B2 §(D-1): the PILOT's own battery (build_battery + percept_flips at fixed swept frictions) yields byte-identical per-percept winner-set counts across 6 seeds — the pilot's grading surface is itself reproducible
+
+B3 LIVE ISOLATION (runtime trap): with time.perf_counter and time.process_time MONKEYPATCHED to detonate, a full REPLAY-mode modulated cycle still runs — proving the graded/replay surface reads NO live timer
+
+B4 LIVE ISOLATION (static): no live-telemetry call (getloadavg / getrusage) is reachable from the deterministic test surface; perf_counter/process_time appear in nous_bodysensor ONLY inside the live branch of read() and the named secondaries
+
+D1 INTEGRITY/PURITY (ON path): across a friction battery, think(body_sensor=..., broadcast=False) leaves the store byte-identical and integrity clean
+
+D2 PURITY (sensor): sensor reads mutate ONLY the sensor's own cursor, never the substrate; the sensor has no store reference and structurally cannot
+
+D3 ROBUSTNESS: compute_friction stays in [0,1] / neutral on hostile timing pairs (negative, zero, inf, nan-adjacent, cpu>>wall, sub-resolution)
+
+E1 FAIRNESS: build_battery(20260621, 40) is a FIXED-SEED reproducible space — two independent calls yield identical structural parameters (no hidden per-call state, no hand-selection)
+
+E2 FAIRNESS: the battery's bridge_n parameters match an INDEPENDENT re-derivation of random.Random(20260621) drawing randint(1,6)/randint(0,2) — proving the space is principled and seeded, not curated
+
+E3 FAIRNESS (the red-flag test): the battery is NOT all-flippable — sweeping the REAL modulated decay range, some percepts (with d* outside the range) genuinely do NOT flip. A 100% flip rate would mean the construction was rigged to always flip.
+   re-derived flip rate over the FROZEN-TRACE swept levels: 34/40 = 85.0%
+
+E4 FAIRNESS corollary: a percept whose crossover d* lies OUTSIDE the modulated decay band shows a SINGLE winner across the whole band (no flip) — confirming the construction admits genuine non-flips, not just borderline ones
+
+E5 FAIRNESS: the pilot's flip readout is a node-SET (frozenset of contents), never the injected friction scalar — the pilot grades the SAME anti-circular readout
+
+F1 FAIRNESS: the frozen trace's friction values are reproduced by the SAME compute_friction the cycle uses (deltas of perf/proc), and span a REAL low->high range — not hard-coded, not widened
+   real observed friction range from frozen trace: [0.000000 .. 0.999202]
+
+F2 FAIRNESS: the pilot's swept friction levels lie WITHIN the real observed min..max (no inflation beyond what the machine produced)
+
+F3 FAIRNESS (static): the capture path uses REAL perf_counter/process_time and the SAME compute_friction — no hand-set or inflated friction anywhere in the pilot
+
+G1 FAIRNESS: the 0.30 floor and the 20260621 seed are FIXED MODULE CONSTANTS (literals in the file, defined before any computation), not derived from a result
+
+G2 FAIRNESS: the readout (winner-set) and the grading mode (REPLAY over the frozen hashed trace) are pre-stated in the pilot, and the result is COMPUTED not hard-coded
+
+G3 FAIRNESS: the frozen trace hash is a deterministic function of the trace CONTENT (re-hashing the artifact via the pilot's own loader reproduces a stable digest), so a tampered trace would be detected
+
+H1 NO OVERCLAIM: no public name in nous_bodysensor claims a feeling/awareness/consciousness; the headline word is 'friction' (a derived telemetry signal)
+
+H2 NO OVERCLAIM: the pilot frames its number as a populability/feasibility fraction on flip-CAPABLE inputs over a deliberately-extreme range — NOT a meaning result; it explicitly defers meaning to the validator and carries the negations
+
+H3 NO OVERCLAIM (asserted-negative): the mechanism layer asserts a REAL causal effect (winner-flip) and DETERMINISM only — it does NOT assert the flip tracks the telemetry in a pre-registered direction, nor that it MEANS anything
+
+======================================================================
+  RESULT: 350 passed, 0 failed
+======================================================================
+
+######################################################################
 # test_harness.py
 ######################################################################
 
@@ -761,5 +884,5 @@ RESULT: 42 passed, 0 failed
 RESULT: 67 passed, 0 failed
 
 ======================================================================
-  OVERALL: all 18 suites passed (0 failures)
+  OVERALL: all 20 suites passed (0 failures)
 ======================================================================
