@@ -21,8 +21,12 @@ randomized `PYTHONHASHSEED` in fresh subprocesses) and **read-purity** (reads ne
 state). This discipline caught a sequence of **structural** bugs: bugs in the shape of the
 algorithm, not typos, that ordinary happy-path tests would have passed straight over. The same
 discipline, applied honestly, also drew the boundary this project refuses to cross: it shows the
-substrate and activation layers are correct and deterministic, and it shows the cognitive layer
-above them is *not yet* meaningful, and says so in an assertion.
+substrate and activation layers are correct and deterministic, it shows the higher layers
+(field, coalitions, source-clustering, workspace) are tester-verified **as mechanism** — enough
+to close the cognitive cycle end-to-end — and it shows that **no cognitive meaning has been
+earned** above the substrate. The closing sections below carry the same two practices into the
+cycle that closed the loop (findings (g) and (h)); they add a *mechanism* result, not a cognitive
+one.
 
 ## How the tests are built to break things
 
@@ -168,12 +172,16 @@ the system finds communities on its own.)
 decided by the input matched against the substrate, **not** chosen by the test. Run on real
 clustered input, the field then produces an **incoherent** "thought": basins collapse, one source
 over-swallows across domains, and same-domain sibling sources strand as singletons.
-**Locked by: as a *limitation*, not a result:**
-`test_KNOWN_LIMITATION_clustered_sources_give_poor_basins` *asserts the failure on purpose*: it
-confirms real input named three sources in the same domain, then asserts the "thought"
+**Locked by: as a *limitation*, not a result (at the time of finding (f)):**
+`test_KNOWN_LIMITATION_clustered_sources_give_poor_basins` *asserted the failure on purpose*: it
+confirmed real input named three sources in the same domain, then asserted the "thought"
 over-swallows (pulls in the work domain) **and** that a perceived same-domain source strands as a
-singleton. The test is written so it will **flip to green only when source-grouping is actually
-fixed**: the limitation is encoded as a standing, checkable claim rather than a comment.
+singleton. The test was written so it would **flip to green only when source-grouping was actually
+fixed**: the limitation was encoded as a standing, checkable claim rather than a comment.
+**It has since flipped** — see finding (g) below: source-clustering and workspace pruning resolved
+both halves at the mechanism level, and the assertion was re-expressed as the now-passing behavior
+(one residual cohesion-valley corner case remains, shipped as an asserted-negative). This finding
+records the bug as discovered; finding (g) records its resolution.
 
 ---
 
@@ -194,12 +202,103 @@ The honest boundary that falls out of this:
 > **Proven:** the substrate store and the spreading-activation engine are **deterministic**,
 > **integrity-preserving**, and **pure** (verified, including across process hash seeds).
 >
-> **Not established:** that anything the cognitive layer above them produces is **cognitively
-> meaningful**. It is deterministic and pure, and on clustered real input it currently produces an
-> incoherent "thought": documented, in an assertion, as a known limitation.
+> **Tester-verified mechanism:** the field, coalitions, source-clustering, and workspace layers
+> make the cognitive cycle **close end-to-end** and are independently, adversarially verified for
+> the same hard properties — but **as mechanism only**. Closing an information loop with bounded
+> feedback is **not** a cognitive result.
+>
+> **Not established:** that anything the cognitive layer produces is **cognitively meaningful**.
+> No behavioral cognitive effect has been reproduced against external human data.
 
 "The mechanism is correct and deterministic" and "the mechanism reproduces a cognitive phenomenon"
 are different claims. This project earns the first and explicitly does not claim the second. The
 natural next step is to test the cognitive layer against a **measurable** effect whose direction is
-known independently of Nous (for example **semantic priming**), so that, as with the substrate,
-the input is no longer chosen to make the answer come out right.
+known independently of Nous (for example **semantic priming**, graded against human association
+norms), so that, as with the substrate, the input is no longer chosen to make the answer come out
+right. That result has not yet been produced; it is the open frontier.
+
+---
+
+## The same discipline, carried into the cognitive cycle (1c / 1d)
+
+The six findings above were paid for *before* the cognitive cycle closed. After them, three more
+bricks were built — source-clustering (1c), workspace competition + pruning (1d-i), and bounded
+broadcast (1d-ii) — and the *same* two practices (adversarial testing; loop-closure with
+system-generated inputs) governed them. These are **further instances of the discipline**, not a
+recharacterization of the original six. Two changes of process are worth recording, because they
+are themselves methodological:
+
+1. **Verification split across two independent roles.** Each brick was built by a builder and then
+   **independently re-verified by a separate adversarial tester** that writes its *own* hostile and
+   loop-closed suites (`test_tester_1c_*`, `test_tester_1d_i_*`, `test_tester_1d_ii_*` — not the
+   builder's). "Mechanism" is what the tester verifies; a "cognitive claim" would be routed to a
+   separate validator against external data. None of the bricks below makes a cognitive claim, so
+   none reached the validator.
+2. **An asserted known-limitation was *flipped through the live loop*, not edited away.** The
+   earlier slice shipped an incoherent "thought" on clustered real input as a standing
+   asserted-negative (finding (f)). Rather than relax that test, the new bricks made the real
+   behavior change, and the negative was re-expressed as the now-passing behavior — the honest way
+   for a documented limitation to retire.
+
+### (g) The over-swallow flip — fixed at the mechanism level, *through* the cycle
+
+- **Claim under test:** on real clustered input, the closed cycle no longer collapses basins — it
+  neither strands a same-domain perceived source as a singleton, nor over-swallows a bridged
+  unperceived domain into the winning thought.
+- **The two halves, and what fixed each.** Source-clustering (1c) groups nearby perceived sources
+  before the field is built, which fixes the **stranded-singleton** half. Workspace pruning (1d-i)
+  removes the **bridged unperceived** domain from the winner, which fixes the **over-swallow**
+  half. The fix is upstream-then-downstream, in the spirit of finding (e): the real problem was in
+  the *shape* of what fed the field and what left the workspace, not a tuning constant.
+- **Anti-circularity (the loop-closure discipline, applied again).** The flip is driven by
+  coalitions the cycle *generated*, not hand-placed; it is verified to **generalize on a second,
+  independently-built isomorphic-but-relabelled graph**, so it cannot be an artifact tuned to the
+  `coffee`/`work` fixture. A counterfactual control checks the dual: when the input *names* the
+  formerly-pruned domain, it is **not** pruned (the flip is membership-driven, not a fixed cut).
+- **Honest residual, shipped as an asserted-negative.** The realized pruning rule is a
+  **parameter-free cohesion-valley / relative-attachment watershed**, not literal
+  domain-membership. The tester's adjudication (the "C1 adjudication" checks) established
+  decisively that the two rules **diverge**: an unnamed multi-node domain bridged into the named
+  region *at least as strongly as its own internal cohesion* has no valley and is **kept**, so
+  over-swallow can recur in that topology. This was **accepted as the intended design** (a human
+  decision), because the divergence is always **safe-direction** — it can over-include an unnamed
+  domain but can never over-prune a perceived member — and it is documented as a standing
+  asserted-negative rather than hidden. This is the methodology's own rule applied to itself: a
+  limitation is written as a checkable claim, not smoothed over.
+
+### (h) Bounded feedback verified in *both* directions — the harder half of "it doesn't break"
+
+- **Claim under test:** the single broadcast write that closes the loop is bounded **both ways** —
+  it does not diverge (runaway potentiation) and it does not lock in (the cycle can still escape a
+  deeply-reinforced winner).
+- **Why both directions matter.** A feedback write is the first place a "pure read everywhere"
+  substrate gains a way to corrupt itself over time. Testing only that it *settles* would miss the
+  dual failure (it freezes); testing only that it *can change* would miss runaway growth. The
+  tester verifies **no-divergence** (road strength stays ≤ 1.0, the aggregate plateaus, per-cycle
+  deltas → ~0, even from a near-saturated start and inside tight self-reinforcing loops) **and**
+  **no-lock-in** (after biasing winner A over many cycles, a strong fresh percept for B switches
+  the winner — *non-vacuously*: A is verified dominant immediately before the switch — on a hostile
+  bridged graph, mirrored for bridge direction, with a freeze probe and a close-competition
+  differential control).
+- **Boundedness is structural, and that is asserted as such.** A code-body audit asserts that
+  **neither** `broadcast()` **nor** its helpers contain a clamp, cap, ceiling, or tunable
+  magnitude: the boundedness comes entirely from `strengthen()`'s `(1 − strength)` saturation
+  (verified against the closed-form geometric contraction, fixed point 1.0, approached from below
+  and provably never exceeded). This is the same instinct as findings (b)/(c): pin the *property*
+  by its mechanism, not by spot-checking an output.
+- **Re-owned across the role boundary (P9 / T7c).** Two claims that crossed brick boundaries were
+  **re-derived independently by the tester** rather than inherited: that the over-swallow residual
+  is absent after 1d-i by the membership watershed (P9, re-owned as T11), and that
+  `broadcast=True` performs **exactly one** write while `broadcast=False` stays pure (T7c,
+  re-owned for 1d-ii). Independent re-derivation agreeing with the builder's claim is what earns a
+  PASS across a boundary — not the builder asserting it once.
+
+### What (g) and (h) do and do not establish
+
+They establish that the cognitive cycle now **closes end-to-end** and that every property the
+substrate bar demands (determinism across processes, integrity, purity on the read path, and —
+new for the write path — bounded, non-locking feedback) holds under adversarial and loop-closed
+inputs. They establish **no cognitive claim**: the winner is a selected information structure and
+the broadcast is a bounded conduction bias. The line the original six findings drew is unchanged —
+mechanism is verified, meaning is not — and the next step is exactly what the method recommends:
+an externally-graded behavioral effect, run through the now-closed loop.
