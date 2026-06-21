@@ -464,11 +464,13 @@ only.** It is not a formal proof and not a meaning verification. The known-limit
 asserted-negatives (e.g. the 1d-i cohesion-valley corner case), which is honest but is a *documented gap*, not its
 absence.
 
-**L-7. Some prior-art references in the project's own specs are explicitly marked UNVERIFIED.** The paper must
-inherit that caution (Section 5): at least one reference (Springdrift, arXiv:2604.04660) is marked
-"UNVERIFIED in detail," and one earlier mis-attribution ("Sun et al." → corrected to Candia-Rivera) was caught
-and fixed. This is evidence of the discipline, but it also means the literature positioning needs a real check
-before publication.
+**L-7. The prior-art citations have been verified at source; the residual is narrow.** The citation-verification
+pass is **done** (2026-06-21): **14 references are source-confirmed `[VERIFIED]`** and **8 foundational classics
+are `[VERIFIED-PENDING-FINAL-CHECK]`**, needing only a one-line volume/page confirmation at the final
+pre-publication pass (Section 5); **no reference remains `[UNVERIFIED]`**. The discipline is visible in the
+history: one earlier fabricated mis-attribution ("Sun et al.") was caught and corrected to Candia-Rivera — which
+is now itself independently source-confirmed (arXiv:2604.24527; also in Cognitive Systems Research). The only
+residual citation caution is the one-line volume/page check on the 8 classics before publication.
 
 **L-8. The roadmap carries historical snapshots alongside current status.** Several figures in
 `docs/nous_roadmap.md` (e.g. the 8-suite/254-assertion 1c snapshot; the 130/56/5 Phase-0 line) are explicitly
