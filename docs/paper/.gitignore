@@ -1,0 +1,23 @@
+# LaTeX build artifacts (regenerate from source; do not track)
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
+*.lof
+*.lot
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+*.run.xml
+*.bcf
+
+# Compiled main document (build output)
+paper.pdf
+
+# Transfer bundles
+*.zip
+
+# macOS
+.DS_Store

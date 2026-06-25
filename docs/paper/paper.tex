@@ -1,0 +1,135 @@
+%=============================================================================
+% Mechanism Is Not Meaning:
+% A Verification Methodology for Cognitive-Architecture Prototypes
+%
+% STRUCTURE-ONLY SKELETON. No body prose. Each \section carries a single
+% planning comment describing its future content. The body is written later,
+% bound by docs/specs/PAPER_CLAIM_INVENTORY.md (the locked claim contract).
+%
+% Typography rule: no em-dashes. Do not write three consecutive hyphens
+% anywhere in this source. Numeric ranges use an en-dash (two hyphens) only.
+% System name in the paper is "Psyche"; the codebase stays "Nous".
+%=============================================================================
+\documentclass[11pt]{article}
+
+% Suppress one benign cosmetic warning from lmodern ("Command \showhyphens
+% has changed") seen on current TeX Live. Guarded so the document still
+% compiles if the silence package is unavailable; must precede lmodern.
+\IfFileExists{silence.sty}{%
+  \usepackage{silence}%
+  \WarningFilter{lmodern}{Command}%
+}{}
+
+% Input encoding and fonts (Turkish glyphs in the author name)
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+
+% Layout and mathematics
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+
+% Graphics, tables, diagrams
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{tikz}
+
+% Bibliography (author-year via natbib + bibtex)
+\usepackage{natbib}
+\bibliographystyle{plainnat}
+
+% Hyperlinks (loaded after most packages; xcolor arrives via tikz)
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks = true,
+  linkcolor  = black,
+  citecolor  = blue!45!black,
+  urlcolor   = blue!45!black,
+  pdftitle   = {Mechanism Is Not Meaning: A Verification Methodology for Cognitive-Architecture Prototypes},
+  pdfauthor  = {Cagan Caliskan}
+}
+
+% ORCID: use orcidlink if installed, otherwise degrade gracefully
+\IfFileExists{orcidlink.sty}{%
+  \usepackage{orcidlink}%
+  \newcommand{\authororcidicon}{\,\orcidlink{0009-0000-2993-1421}}%
+}{%
+  \newcommand{\authororcidicon}{}%
+}
+
+% Microtypographic refinement when available
+\IfFileExists{microtype.sty}{\usepackage{microtype}}{}
+
+%=============================================================================
+\title{Mechanism Is Not Meaning:\\[2pt]
+       A Verification Methodology for Cognitive-Architecture Prototypes}
+
+\author{%
+  Çağan Çalışkan\authororcidicon \\[4pt]
+  \normalsize ORCID:~\href{https://orcid.org/0009-0000-2993-1421}{0009-0000-2993-1421}%
+}
+
+\date{June 2026}
+
+%=============================================================================
+\begin{document}
+\maketitle
+
+\begin{abstract}
+% ABSTRACT - to be written last
+\end{abstract}
+
+%=============================================================================
+\section{Introduction}
+% Problem: separating mechanism from meaning; false-positive cognitive claims;
+% Psyche as the case study; the methodology is THE central contribution; one
+% sentence on the long-term non-LLM motivation, with scope explicitly limited
+% and not evaluated here.
+% NOTE: the first occurrence of "Psyche" in this section carries the branding
+% bridge footnote, used exactly ONCE:
+%   \footnote{Psyche (developed in the repository under the working name Nous).}
+
+%=============================================================================
+\section{The Substrate and the Closed Cognitive Cycle}
+% Phase 0 PROVEN plus the closed loop, at the mechanism level only, with no
+% cognitive claim. Figure F-1 (closed cognitive-cycle architecture).
+
+%=============================================================================
+\section{The Verification Methodology}
+% THE central contribution: four-agent separation; loop-closure; adversarial
+% and property-based testing; pre-registration; anti-circularity gates.
+% Figures F-2 (four-agent verification topology) and F-6 (six-bug table).
+
+%=============================================================================
+\section{The Methodology in Action: Three Meaning-Bar Attempts}
+% Empirical evidence: 1e priming (circular), the fan effect (mechanism absent),
+% 2c interoception (signal flat); each a NOT-YET with no graded number
+% manufactured. Figures F-3a, F-3b, F-3c.
+
+%=============================================================================
+\section{The Meta-Finding}
+% Three structural walls, one root: the external yardstick.
+% Figures F-5 (meta-finding schematic) and F-4 (three-tier assurance map).
+
+%=============================================================================
+\section{Limitations}
+% L-1 through L-8, stated plainly and up front.
+
+%=============================================================================
+\section{Related Work}
+% Design lineage, NOT comparison; the dependency-free choice (why not QuickCheck
+% or Hypothesis) belongs here.
+
+%=============================================================================
+\section{Conclusion}
+% What was learned; what is claimed (methodology and mechanism) and what is not
+% (no mind, consciousness, AGI, or validated cognition).
+
+%=============================================================================
+% Scaffolding only: \nocite{*} forces every references.bib entry to appear so the
+% reference list can be checked now. Remove once real \cite commands populate the
+% prose (final state: every \cite resolves, and every entry is cited).
+\nocite{*}
+\bibliography{references}
+
+\end{document}
