@@ -4,11 +4,21 @@
 %
 % STRUCTURE-ONLY SKELETON. No body prose. Each \section carries a single
 % planning comment describing its future content. The body is written later,
-% bound by docs/specs/PAPER_CLAIM_INVENTORY.md (the locked claim contract).
+% bound by the locked claim inventory that governs every claim.
 %
-% Typography rule: no em-dashes. Do not write three consecutive hyphens
-% anywhere in this source. Numeric ranges use an en-dash (two hyphens) only.
-% System name in the paper is "Psyche"; the codebase stays "Nous".
+% PERMANENT CONSTRAINTS (whole paper):
+%  - Self-contained: every mechanism, algorithm, and rationale is explained in
+%    the paper text itself. Defer nothing to external code or files.
+%  - Zero source references: no commit hashes, no file paths, no external URL,
+%    and no external-location pointer. Claims rest on the in-text mechanisms and
+%    on the evidence in the appendices (the underlying project stays private).
+%  - Appendices carry key evidence: clean tables as the main vehicle, plus a
+%    few verbatim raw-output excerpts at the most critical points.
+%  - No em-dashes (never three consecutive hyphens); en-dash (two hyphens) only
+%    for numeric ranges. Demonstrate rigor through calibrated, evidence-bound
+%    claims; certainty matched to each claim's assurance tier; full
+%    publication-quality academic register.
+%  - System name in the paper is "Psyche"; the codebase stays "Nous".
 %=============================================================================
 \documentclass[11pt]{article}
 
@@ -93,18 +103,23 @@
 \section{The Substrate and the Closed Cognitive Cycle}
 % Phase 0 PROVEN plus the closed loop, at the mechanism level only, with no
 % cognitive claim. Figure F-1 (closed cognitive-cycle architecture).
+% Verification evidence is summarised in Appendix~\ref{app:verification}.
 
 %=============================================================================
 \section{The Verification Methodology}
 % THE central contribution: four-agent separation; loop-closure; adversarial
 % and property-based testing; pre-registration; anti-circularity gates.
 % Figures F-2 (four-agent verification topology) and F-6 (six-bug table).
+% Suite, assertion, and seed counts are given in-text and in
+% Appendix~\ref{app:verification}; no external artifact is cited.
 
 %=============================================================================
 \section{The Methodology in Action: Three Meaning-Bar Attempts}
 % Empirical evidence: 1e priming (circular), the fan effect (mechanism absent),
 % 2c interoception (signal flat); each a NOT-YET with no graded number
 % manufactured. Figures F-3a, F-3b, F-3c.
+% The concrete numbers for all three are in Appendix~\ref{app:attempts-data};
+% no external artifact is cited.
 
 %=============================================================================
 \section{The Meta-Finding}
@@ -126,7 +141,30 @@
 % (no mind, consciousness, AGI, or validated cognition).
 
 %=============================================================================
-% Scaffolding only: \nocite{*} forces every references.bib entry to appear so the
+\appendix
+
+%=============================================================================
+\section{Verification Summary}\label{app:verification}
+% Appendix A: a clean table of the canonical verification run (20 suites,
+% 1,372 assertions, 0 failures), a per-suite breakdown by component, and the
+% per-suite randomized process-hash-seed counts (5 to 8). This is the evidence
+% that the mechanisms are verified; the numbers come from the canonical run.
+
+%=============================================================================
+\section{The Three Meaning-Bar Attempts: Data}\label{app:attempts-data}
+% Appendix B: the concrete data behind the three NOT-YETs.
+%  - 1e priming: N_S0 = 7, N_S+ = 296, the in-degree decile cuts
+%    (1,1,1,1,1,2,2,5,15), and the unreachable-fallback arithmetic
+%    (r_W ~ 0.97, so the needed r_MA exceeds 1.0).
+%  - Fan effect: the flat sweep (target activation 0.2433743975, spread 0.0
+%    across fan in {1,2,4,8,16}); include one short verbatim raw-output excerpt
+%    here, the byte-identical-across-fan output being the clearest evidence.
+%  - 2c interoception: the friction band, the populability pilot
+%    (34 of 40 winner-flips, 85 per cent), and the scale-invariance argument.
+% Clean tables are the main vehicle, plus the single fan-effect raw excerpt.
+
+%=============================================================================
+% Scaffolding only: \nocite{*} forces every bibliography entry to appear so the
 % reference list can be checked now. Remove once real \cite commands populate the
 % prose (final state: every \cite resolves, and every entry is cited).
 \nocite{*}
