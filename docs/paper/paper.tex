@@ -697,9 +697,106 @@ against without circularity. That the same shape recurred across three unrelated
 itself a finding, and it is the subject of the next section.
 
 %=============================================================================
-\section{The Meta-Finding}
-% Three structural walls, one root: the external yardstick.
-% Figures F-5 (meta-finding schematic) and F-4 (three-tier assurance map).
+\section{The Meta-Finding}\label{sec:metafinding}
+
+Read singly, each of the three episodes of Section~\ref{sec:attempts} is a local
+obstacle. Read together, they show a pattern, and the pattern is the subject of this
+section. In none of the three did the difficulty lie in the mechanism. The substrate
+computed as specified and the cycle closed as specified throughout. The difficulty lay
+each time in the relationship between the mechanism and the external yardstick it was to
+be graded against: whether a signal existed that the built mechanism could both produce
+and be measured by without circularity. Priming failed because the yardstick was the
+construction itself, the variable to be predicted being the very weights the substrate is
+made of. The fan effect failed because the engine does not contain the mechanism that
+generates the effect, so there was nothing for a yardstick to read. Interoception failed
+because the chosen external signal does not vary on the work the system actually does.
+Three different roots, and a single shared locus: not the machine, but the join between
+the machine and an external measure (Figure~\ref{fig:metafinding}).
+
+\begin{figure}[t]
+  \centering
+  % TikZ F-5 to be drawn: three lanes converging on one node.
+  % Lane 1: priming, circular (the prediction variable is the substrate's construction).
+  % Lane 2: the fan effect, mechanism absent (the engine has no shared-budget or
+  %   out-degree normalization). Lane 3: interoception, signal flat (the external signal
+  %   does not vary on realistic work). The three lanes converge on a single node:
+  %   "the obstacle is the external yardstick, not the mechanism." Neutral; no cognitive
+  %   claim.
+  \caption{The three attempts converge on one locus. Priming failed by circularity (the
+    variable to be predicted is the substrate's own construction), the fan effect by an
+    absent generating mechanism, and interoception by an external signal that does not
+    vary on realistic work. The three obstacles differ in kind but share a single locus,
+    the join between the mechanism and an external yardstick. The substrate and the cycle
+    remained verified mechanisms throughout. This is a pattern observed on one substrate
+    and these three yardsticks, not a general law about spreading-activation models,
+    cognitive architectures, or cognition.}
+  \label{fig:metafinding}
+\end{figure}
+
+The distinction between a tally and a finding rests on independence. Had the three
+attempts failed for the same reason, the lesson would be a single nuisance to engineer
+around. They did not. Circularity, an absent generating mechanism, and a flat external
+signal are obstacles of different kinds: one is a confound, one is a missing capability,
+one is a measurement that does not move. That three obstacles so unlike one another arrive
+at the same locus, the join between mechanism and yardstick, is what makes the recurrence
+informative. It locates the genuine difficulty in this style of work. Building a substrate
+that is correct, deterministic, and closes into a loop proved achievable and was achieved.
+Finding an external measure that such a substrate can both produce and be graded against,
+without the measure being a restatement of the substrate, is the harder problem.
+
+The scope of this observation has to be stated plainly, because a synthesis invites
+overreach. What is established is a pattern on one system, Psyche, across three specific
+yardsticks. It is not a law about spreading-activation models, about cognitive
+architectures, or about cognition. Nothing here shows that other substrates face the same
+join, that other yardsticks would fail in the same way, or that the difficulty is
+intrinsic to the enterprise rather than to these particular choices. The pattern is real
+and it was observed three times, which is worth recording. It is not general, and it is
+not offered as general. A reader is entitled to take from it a hypothesis about where such
+difficulty tends to sit, not a result about where it must.
+
+It is worth being exact about what did and did not hold. The proven substrate and the
+mechanism-verified cycle were untouched by any of the three refusals. Their guarantees
+rest on properties checked independently of any cognitive claim, and no cognitive claim
+was ever entered against them. What the three episodes record is the discipline operating
+as designed. The pre-registration and anti-circularity gates exist precisely to stop a
+claim that cannot be graded without circularity from being graded anyway, and on each
+occasion they did so before a number was produced. A discipline that halts a result it
+cannot interpret is not a project failing to obtain one. The two are easy to conflate from
+the outside, and telling them apart is the entire purpose of the gates: a refused graded
+run leaves the tier structure intact, whereas a manufactured one would have corrupted it.
+
+The assurance structure that results is shown in Figure~\ref{fig:tiermap}. A proven
+substrate forms the base, a layer of mechanism-verified components sits above it, and at
+the top the meaning bar is left open, marked unvalidated across three attempts and three
+structural walls. The shape of that figure is the shape of this paper's claims. It also
+indicates where further effort would have to go. Progress on the meaning bar, for a
+substrate of this kind, depends less on more mechanism than on the construction of
+external yardsticks that are gradable and non-circular for a system whose content is its
+own weighted structure. That construction is not attempted here, and this work does not
+claim to have solved it. What it offers is a precise account of why the three natural
+attempts did not, and a map of what stands proven in the meantime.
+
+\begin{figure}[t]
+  \centering
+  % TikZ/diagram F-4 to be drawn: the three-tier assurance map.
+  % Base: PROVEN substrate (store + activation, 80 assertions). Middle:
+  % MECHANISM-VERIFIED cycle components (clustering; competition and pruning; bounded
+  % broadcast; the interoceptive channel), built and adversarially re-verified, no
+  % cognitive claim. Top: the meaning bar, an empty box labelled "UNVALIDATED: three
+  % attempts, three structural walls". Off to the side, at a lower assurance: self-tested
+  % experimental scaffolding, not independently verified. Keep the tiers visually
+  % distinct; do not merge them. Counts come from Appendix~\ref{app:verification}.
+  \caption{The assurance structure of the work. A proven substrate forms the base, its
+    determinism, integrity, and purity established against hard properties. Above it sit
+    the mechanism-verified components of the cycle, built and adversarially re-verified for
+    the same properties but carrying no cognitive claim. At the top, the meaning bar is
+    left open, marked unvalidated across three attempts and three structural walls. A
+    separate, lower-assurance tier of self-tested experimental scaffolding sits to the
+    side. The verification suite underlying the lower two tiers comprises 20 suites and
+    1,372 assertions with no failures, detailed in Appendix~\ref{app:verification}; the
+    tiers are kept distinct and are not summed into a single guarantee.}
+  \label{fig:tiermap}
+\end{figure}
 
 %=============================================================================
 \section{Limitations}
