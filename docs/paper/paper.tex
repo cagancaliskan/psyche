@@ -90,17 +90,68 @@
 \end{abstract}
 
 %=============================================================================
-\section{Introduction}
-% Problem: separating mechanism from meaning; false-positive cognitive claims;
-% Psyche as the case study; the methodology is THE central contribution; one
-% sentence on the long-term non-LLM motivation, with scope explicitly limited
-% and not evaluated here.
-% NOTE: the first occurrence of "Psyche" in this section carries the branding
-% bridge footnote, used exactly ONCE:
-%   \footnote{Psyche (developed in the repository under the working name Nous).}
+\section{Introduction}\label{sec:intro}
+
+A system built toward cognitive claims is under steady pressure to be described as more
+than it is. Each working mechanism invites a larger reading, and the least demanding way
+to support that reading is to grade the system on inputs chosen to make it succeed. The
+effect is a recurring confusion between two statements that resemble each other and are not
+the same: that a mechanism is correct, and that it carries meaning. Holding them apart is
+the central difficulty in this kind of work, and it is a methodological problem before it
+is a scientific one. This paper is about that problem. Its contribution is a verification
+methodology for building cognitive-architecture prototypes without the overclaiming, and
+its evidence is a case study in which the methodology was carried, from the substrate
+upward, through one such prototype.
+
+The prototype is Psyche.\footnote{Psyche (developed in the repository under the working
+name Nous).} It is a dependency-free substrate, a graph store and a spreading-activation
+engine, assembled into a closed cognitive cycle. It was developed under a longer-term
+motivation to explore biologically-motivated, non-LLM cognitive architectures, but that
+motivation is not what this paper evaluates; the paper reports only the methodology used in
+building toward it. Two grades of evidence are kept apart throughout. The substrate's
+properties are proven, in a precise sense established later, to be deterministic across
+separate processes, internally consistent through every change, and free of any read that
+alters what is stored. The cycle built above the substrate is verified as a mechanism and
+nothing more. It is not claimed to perceive, to attend, or to mean. Naming it a cognitive
+cycle borrows a control structure from an established tradition; it does not assert that
+the structure performs cognition.
+
+The methodology that governed this construction is four practices. The first is a
+separation of duties, so that the role which writes a mechanism is never the role that
+certifies it. The second is loop-closure, driving each stage with the input the previous
+stage actually produced rather than input placed by hand. The third is adversarial and
+property-based testing, which asserts invariants designed to break a claim rather than to
+confirm it. The fourth is pre-registration with anti-circularity gates, fixing a prediction
+and the direction it must take before any graded number is computed. None of the four is
+novel on its own. Their combination, turned on a developer's claims about a system they are
+building, is the contribution this paper makes.
+
+The discipline is tested where the temptation to overclaim is strongest: at the step from a
+working mechanism to an externally graded cognitive result. Three times the project reached
+for such a result against data it did not author, attempting semantic priming, the fan
+effect, and an interoceptive modulation of the cycle. Three times the anti-circularity
+gates halted the attempt before any graded number existed, and each time for a structurally
+distinct reason. One claim could not be separated from the construction of the substrate.
+One named a generating mechanism the engine does not contain. One rested on an external
+signal that does not vary on the work the system does. That three independent attempts
+halted at the same place, the join between the mechanism and an external yardstick rather
+than the mechanism itself, is itself a finding. The meaning bar was not cleared, and this
+paper does not present it as cleared. It presents a result about method and about
+mechanism: a discipline that caught its own premature claims before they became numbers,
+over a substrate and a cycle that remained verified throughout.
+
+The paper proceeds as follows. Section~\ref{sec:substrate} describes the substrate and the
+closed cycle at the level of mechanism. Section~\ref{sec:methodology} sets out the
+methodology and the structural errors it caught while the system was built.
+Section~\ref{sec:attempts} recounts the three attempts at a graded cognitive result and the
+reason each was refused. Section~\ref{sec:metafinding} gathers the three into the
+observation that the recurring obstacle is the external yardstick, not the mechanism.
+Section~\ref{sec:limitations} states the limitations, and Section~\ref{sec:related}
+positions the methodology and the prototype against prior work. The verification counts and
+the data behind the three attempts are collected in the appendices.
 
 %=============================================================================
-\section{The Substrate and the Closed Cognitive Cycle}
+\section{The Substrate and the Closed Cognitive Cycle}\label{sec:substrate}
 
 Psyche is built in two layers that carry two different grades of evidence, and the
 distinction between them is maintained throughout this paper. The lower layer, the
@@ -289,7 +340,7 @@ corresponds to a cognitive phenomenon is a separate question, taken up, and left
 later in this paper.
 
 %=============================================================================
-\section{The Verification Methodology}
+\section{The Verification Methodology}\label{sec:methodology}
 
 The substrate and the cycle of the previous section are the case study; the
 contribution of this paper is the discipline that determined what could be claimed
