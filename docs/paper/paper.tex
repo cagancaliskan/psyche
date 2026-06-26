@@ -252,7 +252,7 @@ by equal-length paths is therefore summed once and exactly, independent of the
 relative strengths of the converging roads.
 
 The second choice secures determinism. If expansion follows an activation-ordered
-frontier, which late contribution is discarded depends on incidental orderings of edge
+frontier, which late contribution is discarded depends on incidental orderings of road
 strength. Separately, if same-hop siblings expand in the order a set of
 machine-generated identifiers happens to iterate, that order is randomized from one
 process to the next by the hashing of those identifiers, and the result moves between
@@ -316,7 +316,7 @@ lie close together in the graph, and an activation field built directly on such 
 produces basins that overlap and collapse rather than separate concerns. The first
 stage after perception therefore groups the sources before any field is constructed.
 Psyche builds a small proximity graph over the perceived sources, using only the
-strength of the roads between them, merges them by single linkage, and seeds the
+strength of the roads between them, merges them by single linkage \citep{sibson1973slink}, and seeds the
 downstream field from one representative per group. The rationale is that the grouping
 must come from the structure of the substrate, not from the activation it is about to
 compute, so that the later stages are not handed a partition that already encodes the
@@ -441,7 +441,7 @@ investigators, and it is not presented as such. Its value is that it removes the
 direct route to self-confirmation, not that it supplies an outside party. The
 arrangement and its lane rules are drawn in Figure~\ref{fig:agents}. The validator lane
 is shown only partly exercised, because no cognitive claim was ever certified through
-it: for the three attempts described in the following section, the validator's gates
+it: for the three attempts described in Section~\ref{sec:attempts}, the validator's gates
 returned a refusal before any graded number was produced.
 
 \begin{figure}[t]
@@ -470,8 +470,8 @@ returned a refusal before any graded number was produced.
     adversarially re-verifies each mechanism and never edits production code; a
     validator grades a cognitive claim against external data under a prediction fixed in
     advance. The validator lane is shown only partly exercised: no cognitive claim was
-    certified through it, and for the three meaning-bar attempts of the following
-    section it returned a refusal before any graded number was computed.}
+    certified through it, and for the three meaning-bar attempts of Section~\ref{sec:attempts}
+    it returned a refusal before any graded number was computed.}
   \label{fig:agents}
 \end{figure}
 
@@ -517,11 +517,11 @@ invisible unless a test asserts that the stored state is unchanged after the rea
 defect was caught by precisely that assertion, a check that a battery of reads leaves the
 canonical stored state identical, and was repaired by splitting decay into a pure view
 and a persisting write, with closure re-evaluated only on an active crossing. That split,
-presented as settled design in the previous section, was not the original design; it is
+presented as settled design in Section~\ref{sec:substrate}, was not the original design; it is
 the residue of this error.
 
 The most instructive error lay not in a mechanism but in how a mechanism was judged. An
-early test of community recovery reported success: given a graph of two communities
+early test of community recovery \citep{blondel2008fast, traag2019louvain} reported success: given a graph of two communities
 joined by a thin bridge, the field partitioned it into the two communities. The success
 was an artifact of the test. One source had been placed by hand at the centre of each
 community, so the partition recovered the communities only because the answer had been
@@ -592,7 +592,7 @@ The rationale is the one pre-registration serves elsewhere. If the prediction ma
 adjusted after the data are seen, almost any outcome can be dressed as a confirmation,
 and the test loses its power to discriminate. Fixing the prediction and freezing the
 design in advance removes that freedom. In this project the gates are not a formality.
-As the next section recounts, on each of the three occasions a cognitive claim was put
+As Section~\ref{sec:attempts} recounts, on each of the three occasions a cognitive claim was put
 to them, they returned a refusal before any graded number was computed, because the
 design could not be populated or graded without circularity.
 
@@ -785,7 +785,7 @@ the response was to decline to produce a number rather than to manufacture one t
 not be interpreted. The substrate and the cycle remained verified mechanisms throughout;
 what failed was not the machine but the search for an external yardstick it could be graded
 against without circularity. That the same shape recurred across three unrelated attempts is
-itself a finding, and it is the subject of the next section.
+itself a finding, and it is the subject of Section~\ref{sec:metafinding}.
 
 %=============================================================================
 \section{The Meta-Finding}\label{sec:metafinding}
@@ -1229,10 +1229,6 @@ larger graph does not widen the band.
 \end{table}
 
 %=============================================================================
-% Scaffolding only: \nocite{*} forces every bibliography entry to appear so the
-% reference list can be checked now. Remove once real \cite commands populate the
-% prose (final state: every \cite resolves, and every entry is cited).
-\nocite{*}
 \bibliography{references}
 
 \end{document}
