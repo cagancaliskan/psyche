@@ -628,11 +628,7 @@ statement about separability on this corpus, not a claim that priming is absent.
 
 \begin{figure}[t]
   \centering
-  % TikZ/plot F-3a to be drawn: the weight-blind stratum collapse.
-  % Show the saturating ladder that maps association strength to an integer edge weight,
-  % and that almost all prime pairs land weight-informative (strong band > weak band),
-  % leaving only 7 weight-blind, in-degree-matched pairs against the floor of 30. Built
-  % from the blind selector's structural counts; no activation was computed.
+  \includegraphics[width=0.8\linewidth]{figs/s0_collapse.pdf}
   \caption{Anatomy of the priming attempt: the weight-blind leverage stratum cannot be
     populated. Because association strength is encoded as the integer edge weight on a
     saturating ladder, a prime's strong band almost always outweighs its weak band, so
@@ -678,11 +674,7 @@ nothing about the fan effect in human memory, a matter not in question here.
 
 \begin{figure}[t]
   \centering
-  % plot F-3b to be drawn from real data: the flat fan sweep.
-  % x-axis the fan size over the values tested; y-axis the activation delivered to the
-  % target. The curve is flat, identical to the last digit (spread zero). Annotate that
-  % each out-road receives the source's full activation, with no division by out-degree,
-  % unlike a shared-budget account.
+  \includegraphics[width=0.8\linewidth]{figs/fan_flat.pdf}
   \caption{Anatomy of the fan-effect attempt: the activation delivered to a target is flat
     across fan size. As the number of a concept's associations grows over the sizes tested,
     the target's activation does not change to the last digit, because the engine gives each
@@ -736,11 +728,7 @@ flat on an idle machine and irreproducible under external load.
 
 \begin{figure}[t]
   \centering
-  % plot F-3c to be drawn: friction near zero on a realistic CPU-bound workload.
-  % Contrast the realistic-workload friction (near zero, scale-invariant) with the
-  % manufactured, yield-dominated band produced by an injected wait. Built from the
-  % analytic argument and the recorded band; mark the manufactured band as forbidden for
-  % grading.
+  \includegraphics[width=0.8\linewidth]{figs/friction_band.pdf}
   \caption{Anatomy of the interoception attempt: the chosen friction signal does not vary on
     a realistic workload. Friction rises only when the process waits off the processor, but
     realistic work is CPU-bound and in-memory, so friction stays near zero and, being a
