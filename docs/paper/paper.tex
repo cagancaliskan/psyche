@@ -101,9 +101,192 @@
 
 %=============================================================================
 \section{The Substrate and the Closed Cognitive Cycle}
-% Phase 0 PROVEN plus the closed loop, at the mechanism level only, with no
-% cognitive claim. Figure F-1 (closed cognitive-cycle architecture).
-% Verification evidence is summarised in Appendix~\ref{app:verification}.
+
+Psyche is built in two layers that carry two different grades of evidence, and the
+distinction between them is maintained throughout this paper. The lower layer, the
+\emph{substrate}, is a graph store together with a spreading-activation engine; its
+properties are proven, in the precise sense established below: identical output
+across separate processes under randomized hashing, mutual consistency of the graph
+indices after every mutation, and reads that never alter stored state. The upper
+layer assembles the substrate into a single loop, perceiving, activating,
+clustering, selecting, pruning, and writing, whose stages are verified as mechanisms
+but make no claim to reproduce a cognitive phenomenon. We call the loop a
+\emph{cognitive cycle} because its shape is taken from the global-workspace tradition
+\citep{baars1988cognitive, franklin2014lida}, as a structural template rather than a
+theory the system is claimed to instantiate; the term names a control structure, and
+its use here asserts nothing about cognition. What the loop is shown to do is to
+\emph{close}, as a mechanism, and that is a narrower and more exact statement than it
+may first appear.
+
+\subsection{The substrate store}
+
+The store is a directed graph whose vertices are concept \emph{nodes} and whose edges
+are weighted \emph{roads}. Nodes hold no state of their own; everything that varies
+lives on the roads. A road carries a scalar \emph{strength} together with a record of
+how it has been used, advances through a small set of discrete quality tiers as it is
+traversed, and decays with elapsed time when it is not. A road may also be
+\emph{closed}: a closed road remains in the graph and stays traversable by a
+sufficiently strong cue, so it is leaky rather than severed, but it no longer conducts
+ordinary activation.
+
+The load-bearing decision in the store is that reading and writing are separated at
+the level of decay. An earlier arrangement applied decay at the moment of access and
+wrote the decayed value back, with two consequences a casual reading would miss:
+every read mutated the store, and, because that same step re-evaluated closure, a
+sequence of reads spread over time could let a closed road drift back open although
+nothing had ever crossed it. Psyche instead splits decay into a pure view and a
+persisting write. A read returns a decayed \emph{copy}, computed from the elapsed time
+but stored nowhere, so reading changes nothing; only the active operations,
+traversal and reinforcement and the offline maintenance passes, persist a decayed
+value. Closure is made \emph{sticky} by the same principle: it is re-evaluated only on
+an active qualifying crossing, never by elapsed time and never by a read, so no amount
+of passive inspection can reopen what only an event should reopen. These are the
+properties the substrate is proven to hold: reads are pure, closure does not drift,
+the graph indices stay mutually consistent through every insertion and deletion
+(including on adversarially constructed graphs), and a deletion removes a node
+completely, leaving no dangling entry in any index. The corresponding assertion counts
+appear in Appendix~\ref{app:verification}.
+
+\subsection{The spreading-activation engine}
+
+Activation is the substrate's one dynamic operation. Given a set of seed nodes, the
+engine propagates a diminishing quantity outward along the roads and reports how much
+activation each reached node accumulates. The mechanism is the spreading activation of
+ACT-R \citep{anderson1998atomic}; Psyche borrows it without that architecture's
+empirical commitments. Two design choices make the
+computation well defined.
+
+The first is bounded single-expansion. When activation arriving along several paths
+converges on a node, the quantities must add; the hazard is that the node, once
+re-expanded as later paths raise its value, propagates the surplus, and everything
+downstream of the convergence point is counted more than once. The error is the
+residue of a shortest-path intuition, in which the first time a node is settled is
+final, carried into a setting where contributions accumulate rather than compete.
+Psyche expands each node exactly once, at the first hop at which it is reached,
+carrying the full sum of all paths of length up to that hop; activation that converges
+by equal-length paths is therefore summed once and exactly, independent of the
+relative strengths of the converging roads.
+
+The second choice secures determinism. If expansion follows an activation-ordered
+frontier, which late contribution is discarded depends on incidental orderings of edge
+strength. Separately, if same-hop siblings expand in the order a set of
+machine-generated identifiers happens to iterate, that order is randomized from one
+process to the next by the hashing of those identifiers, and the result moves between
+runs for no reason present in the graph. Psyche instead expands hop by hop and freezes each layer before
+it acts: all contributions that reach distance $k$ are accumulated into a snapshot,
+the snapshot is frozen, and only then do the hop-$k$ nodes expand, reading their values
+from the frozen snapshot rather than from one another. Because no node within a layer
+can observe another's expansion, the outcome cannot depend on the order in which nodes
+or their outgoing roads are visited. The engine is in consequence deterministic across
+separate processes under randomized process hash seeds (5--8 per suite, in fresh
+interpreters), and, like the store, it computes as a pure read: a spread mutates
+nothing.
+
+Together the store and the engine form the substrate, the proven layer of the system.
+Their two suites contribute 45 and 35 assertions respectively, 80 in all, within a
+verification suite that currently stands at 20 suites and 1,372 assertions with no
+failures (Appendix~\ref{app:verification}). Everything above this layer is built on it
+and claims less.
+
+\subsection{The closed cognitive cycle}
+
+Above the substrate, Psyche arranges the operations of the store and the engine into a
+single loop, shown in Figure~\ref{fig:cycle}. A cycle begins by \emph{perceiving}: the
+input text is matched against the substrate, and the nodes it names become the cycle's
+sources. This step is what makes the rest of the loop a genuine test rather than a staged one,
+because the sources are produced by the system from its own contents rather than placed
+by hand; the loop is driven by input it generates, not by input chosen to make it
+succeed.
+
+\begin{figure}[t]
+  \centering
+  % TikZ F-1 to be drawn: the closed cognitive cycle as information flow.
+  % Stages, in order: perceive, activate, cluster, select, prune, write (broadcast),
+  % then back to the next cycle. Use neutral verbs only (select, prune, write);
+  % do not use decide, attend, or experience. Mark the feedback edge from the write
+  % stage to the next cycle as "bounded, default-off feedback".
+  \caption{The closed cycle of Psyche as information flow at the level of mechanism. A
+    cycle proceeds from perception to activation, clusters the perceived sources,
+    selects a single winning coalition, prunes the region that coalition reaches across
+    a bridge, and performs one bounded write, the broadcast, that biases the next
+    cycle. The figure depicts graph operations and a single bounded write; the verbs
+    are select, prune, and write, not decide, attend, or experience. The feedback edge
+    is bounded, default-off feedback. No cognitive process is depicted, and no
+    cognitive claim is made.}
+  \label{fig:cycle}
+\end{figure}
+
+Perception rarely yields a clean set of well-separated sources; it names several that
+lie close together in the graph, and an activation field built directly on such a set
+produces basins that overlap and collapse rather than separate concerns. The first
+stage after perception therefore groups the sources before any field is constructed.
+Psyche builds a small proximity graph over the perceived sources, using only the
+strength of the roads between them, merges them by single linkage, and seeds the
+downstream field from one representative per group. The rationale is that the grouping
+must come from the structure of the substrate, not from the activation it is about to
+compute, so that the later stages are not handed a partition that already encodes the
+answer; using road strength alone keeps the pre-stage topological. The merge is a
+deterministic, pure, integrity-preserving operation, and it is verified as such: it
+asserts nothing about meaning, only about which sources the graph places together. The
+threshold that governs how close is close enough is a fixed design constant rather than
+a calibrated one, and we mark it as such instead of presenting it as tuned.
+
+From the grouped sources the engine computes its field, and the co-activated region is
+partitioned into candidate coalitions, of which exactly one is selected as the cycle's
+result. Selection is a competition normalized for coalition size, so that a coalition
+does not prevail merely by being large, and it returns a single winner
+deterministically. Selection then prunes from the winner any region it has reached
+across a bridge: a perceived concern can extend, through a single connecting road, into
+a neighbouring region the input never named, and that unnamed region should not enter
+the result on the strength of one bridge. The pruning rule is parameter-free. A reached
+element is kept only if it is attached to the named region at least as strongly as to
+the unnamed one; where attachment is stronger toward the unnamed side, the rule finds a
+cohesion valley, a seam of relatively weak connection, and cuts there. The rule has one
+corner case, which we state rather than conceal: an unnamed region bridged into the
+named one at least as strongly as it coheres internally presents no valley to cut at,
+and is retained. The divergence is one-directional and on the safe side, in that the
+rule may keep an unnamed region a stricter criterion would drop but never prunes a
+member the input actually named. Selection, pruning included, is a pure read; it is
+verified as a mechanism and asserts nothing about cognition.
+
+Up to this point the cycle has only read the substrate. Its one write is the final
+stage, the broadcast: the winning coalition is fed back onto the substrate by
+reinforcing its internal roads, biasing the next cycle toward the same region. This
+single write is what turns a pipeline into a loop, and it is also the first opportunity
+the substrate has to corrupt itself over repeated cycles, so its boundedness is
+established in both directions. The reinforcement reuses the store's ordinary
+strengthening rule, which adds to a road's strength a fixed fraction of the distance
+that remains to its ceiling,
+\[
+  s \;\leftarrow\; s + \gamma\,(1 - s), \qquad 0 < \gamma \le 1,
+\]
+so that each application closes part of the gap to $s = 1$ without ever reaching or
+crossing it. Boundedness is thus a structural consequence of the update rather than a
+limit imposed afterwards: the broadcast contains no cap, no ceiling test, and no
+tunable magnitude of its own, the gain $\gamma$ being the store's existing default. In
+the other direction, the feedback does not lock the loop onto its first winner; a
+sufficiently strong later input still moves the result, which was confirmed by driving
+one region to dominance over sustained reinforcement and then verifying that a
+competing input takes the workspace, with the first region checked to be dominant
+immediately before it yields. The broadcast is off by default, and with it off the loop
+is a pure read whose output is byte-for-byte identical to the pre-broadcast pipeline;
+enabling it adds exactly one bounded write per cycle and nothing else.
+
+With the broadcast in place the loop is closed: perception, activation, clustering,
+selection, pruning, and the single feedback write run end to end on input the system
+generates, the read portion is deterministic across processes and pure, and the write
+portion is the one bounded reinforcement just described. This is the precise content of
+the claim that the cycle closes. It is a statement about a mechanism, a pipeline that
+runs to completion on its own output, repeatably and with no side effect beyond one
+bounded write. It is not a statement that the loop perceives, attends, decides, or
+means anything. Each of its stages, the clustering, the competition and pruning, and
+the bounded broadcast, has been independently and adversarially re-verified for the
+same properties the substrate is held to, namely determinism across randomized process
+hash seeds, preserved integrity, and read-purity, and for none of them is any cognitive
+claim entered; their assertion counts are recorded in Appendix~\ref{app:verification}.
+The loop is built and its mechanism is verified. Whether anything it computes
+corresponds to a cognitive phenomenon is a separate question, taken up, and left open,
+later in this paper.
 
 %=============================================================================
 \section{The Verification Methodology}
