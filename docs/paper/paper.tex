@@ -43,6 +43,25 @@
 \usepackage{graphicx}
 \usepackage{booktabs}
 \usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning, calc}
+% Shared diagram palette and styles so F-1, F-2, F-4, and F-5 form one visual family.
+\definecolor{pblue}{HTML}{39516B}
+\definecolor{pred}{HTML}{8F3B3B}
+\definecolor{pgrey}{HTML}{5A5A5A}
+\tikzset{
+  pnode/.style     = {draw=pgrey, line width=0.7pt, rounded corners=2pt, fill=white,
+                      align=center, inner sep=4pt, font=\small, minimum height=8mm},
+  pstage/.style    = {pnode, minimum width=16mm},
+  prole/.style     = {pnode, minimum width=24mm, text width=24mm},
+  ptier/.style     = {pnode, minimum width=70mm, text width=70mm, minimum height=10mm},
+  paccent/.style   = {draw=pblue, line width=1.0pt},
+  popen/.style     = {draw=pred, line width=0.9pt, dash pattern=on 3pt off 2pt},
+  pdim/.style      = {draw=pgrey!55, dash pattern=on 2pt off 2pt, text=pgrey!85},
+  pflow/.style     = {-{Stealth[length=2mm]}, draw=pgrey, line width=0.7pt},
+  pfeedback/.style = {pflow, dashed},
+  pedgelbl/.style  = {font=\footnotesize, text=pgrey, fill=white, inner sep=1.5pt},
+  pnote/.style     = {font=\footnotesize, text=pgrey, align=center},
+}
 
 % Bibliography (author-year via natbib + bibtex)
 \usepackage{natbib}
@@ -265,11 +284,22 @@ succeed.
 
 \begin{figure}[t]
   \centering
-  % TikZ F-1 to be drawn: the closed cognitive cycle as information flow.
-  % Stages, in order: perceive, activate, cluster, select, prune, write (broadcast),
-  % then back to the next cycle. Use neutral verbs only (select, prune, write);
-  % do not use decide, attend, or experience. Mark the feedback edge from the write
-  % stage to the next cycle as "bounded, default-off feedback".
+  \begin{tikzpicture}[node distance=8mm]
+    \node[pstage] (s1) {perceive};
+    \node[pstage, right=of s1] (s2) {activate};
+    \node[pstage, right=of s2] (s3) {cluster};
+    \node[pstage, right=of s3] (s4) {select};
+    \node[pstage, right=of s4] (s5) {prune};
+    \node[pstage, right=of s5, paccent] (s6) {write\\(broadcast)};
+    \draw[pflow] (s1) -- (s2);
+    \draw[pflow] (s2) -- (s3);
+    \draw[pflow] (s3) -- (s4);
+    \draw[pflow] (s4) -- (s5);
+    \draw[pflow] (s5) -- (s6);
+    \draw[pfeedback] (s6.south) -- ++(0,-8mm) -| (s1.south);
+    \node[pnote] at ($(s1.south)!0.5!(s6.south)+(0,-11mm)$)
+      {bounded, default-off feedback};
+  \end{tikzpicture}
   \caption{The closed cycle of Psyche as information flow at the level of mechanism. A
     cycle proceeds from perception to activation, clusters the perceived sources,
     selects a single winning coalition, prunes the region that coalition reaches across
@@ -416,16 +446,24 @@ returned a refusal before any graded number was produced.
 
 \begin{figure}[t]
   \centering
-  % TikZ F-2 to be drawn: the four-role verification topology.
-  % Roles: architect (plan and spec), builder (implement test-first), tester
-  % (adversarial mechanism re-verification, never edits production code), validator
-  % (grade meaning against external data, prediction pre-registered). Show what
-  % crosses between roles (a spec, then code, then an independent adversarial suite,
-  % then a validator pre-registration) and the hard lane rules (architect writes no
-  % production code; tester edits no production code; builder does not certify its own
-  % work). Draw the validator lane PARTLY UNEXERCISED (for example dashed): no
-  % cognitive claim was certified through it, and for the meaning bars it returned a
-  % refusal before grading. Neutral depiction.
+  \resizebox{\linewidth}{!}{%
+  \begin{tikzpicture}[node distance=26mm]
+    \node[prole] (arch) {\textbf{architect}\\[1pt]{\footnotesize plan, spec}};
+    \node[prole, right=of arch] (build) {\textbf{builder}\\[1pt]{\footnotesize implement,\\ test-first}};
+    \node[prole, right=of build] (test) {\textbf{tester}\\[1pt]{\footnotesize adversarial\\ re-verification}};
+    \node[prole, right=of test, pdim] (val) {\textbf{validator}\\[1pt]{\footnotesize meaning vs\\ external data}};
+    \draw[pflow] (arch) -- node[pedgelbl, above] {spec} (build);
+    \draw[pflow] (build) -- node[pedgelbl, above] {code} (test);
+    \draw[pfeedback, draw=pgrey!55] (test) -- node[pedgelbl, above] {cognitive claim} (val);
+    \node[pnote, below=12mm of test] (suite) {independent\\ adversarial suite};
+    \draw[pflow] (suite) -- (test);
+    \node[pnote, below=12mm of val] (preg) {pre-registration;\\ lane unexercised,\\ returned a refusal};
+    \draw[pfeedback, draw=pgrey!55] (preg) -- (val);
+    \node[pnote, above=12mm of arch] {writes no\\ production code};
+    \node[pnote, above=12mm of build] {not its own\\ certifier};
+    \node[pnote, above=12mm of test] {edits no\\ production code};
+  \end{tikzpicture}%
+  }
   \caption{The separation of duties, as roles and contexts operated by AI agents under
     enforced rules, not independent human teams or external auditors. An architect role
     specifies and plans; a builder implements test-first; a separate tester
@@ -768,13 +806,15 @@ the machine and an external measure (Figure~\ref{fig:metafinding}).
 
 \begin{figure}[t]
   \centering
-  % TikZ F-5 to be drawn: three lanes converging on one node.
-  % Lane 1: priming, circular (the prediction variable is the substrate's construction).
-  % Lane 2: the fan effect, mechanism absent (the engine has no shared-budget or
-  %   out-degree normalization). Lane 3: interoception, signal flat (the external signal
-  %   does not vary on realistic work). The three lanes converge on a single node:
-  %   "the obstacle is the external yardstick, not the mechanism." Neutral; no cognitive
-  %   claim.
+  \begin{tikzpicture}[node distance=6mm]
+    \node[pnode, text width=46mm] (l1) {\textbf{priming}\\[1pt]{\footnotesize circular: the variable to be predicted is the substrate's construction}};
+    \node[pnode, text width=46mm, below=of l1] (l2) {\textbf{fan effect}\\[1pt]{\footnotesize mechanism absent: the engine has no shared-budget or out-degree normalization}};
+    \node[pnode, text width=46mm, below=of l2] (l3) {\textbf{interoception}\\[1pt]{\footnotesize signal flat: the external signal does not vary on realistic work}};
+    \node[pnode, paccent, right=20mm of l2, text width=36mm] (obs) {the obstacle is the external yardstick, not the mechanism};
+    \draw[pflow] (l1.east) -- (obs.west);
+    \draw[pflow] (l2.east) -- (obs.west);
+    \draw[pflow] (l3.east) -- (obs.west);
+  \end{tikzpicture}
   \caption{The three attempts converge on one locus. Priming failed by circularity (the
     variable to be predicted is the substrate's own construction), the fan effect by an
     absent generating mechanism, and interoception by an external signal that does not
@@ -831,14 +871,13 @@ attempts did not, and a map of what stands proven in the meantime.
 
 \begin{figure}[t]
   \centering
-  % TikZ/diagram F-4 to be drawn: the three-tier assurance map.
-  % Base: PROVEN substrate (store + activation, 80 assertions). Middle:
-  % MECHANISM-VERIFIED cycle components (clustering; competition and pruning; bounded
-  % broadcast; the interoceptive channel), built and adversarially re-verified, no
-  % cognitive claim. Top: the meaning bar, an empty box labelled "UNVALIDATED: three
-  % attempts, three structural walls". Off to the side, at a lower assurance: self-tested
-  % experimental scaffolding, not independently verified. Keep the tiers visually
-  % distinct; do not merge them. Counts come from Appendix~\ref{app:verification}.
+  \begin{tikzpicture}[node distance=4.5mm]
+    \node[ptier, popen] (top) {\textbf{meaning bar}\\[1pt]{\footnotesize UNVALIDATED: three attempts, three structural walls}};
+    \node[ptier, below=of top] (mid) {\textbf{MECHANISM-VERIFIED} cycle components\\[1pt]{\footnotesize clustering; competition and pruning; bounded broadcast; interoceptive channel \quad (no cognitive claim)}};
+    \node[ptier, paccent, below=of mid] (base) {\textbf{PROVEN} substrate\\[1pt]{\footnotesize graph store and spreading-activation engine \quad (80 assertions)}};
+    \node[pnode, pdim, right=8mm of mid, text width=28mm] (scaf) {experimental scaffolding\\[1pt]{\footnotesize self-tested,\\ not independently\\ verified}};
+    \node[pnote, left=7mm of mid, anchor=east, align=right] {verification suite\\ (lower two tiers):\\ 20 suites, 1{,}372\\ assertions, 0 failures};
+  \end{tikzpicture}
   \caption{The assurance structure of the work. A proven substrate forms the base, its
     determinism, integrity, and purity established against hard properties. Above it sit
     the mechanism-verified components of the cycle, built and adversarially re-verified for
