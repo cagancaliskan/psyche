@@ -290,11 +290,218 @@ later in this paper.
 
 %=============================================================================
 \section{The Verification Methodology}
-% THE central contribution: four-agent separation; loop-closure; adversarial
-% and property-based testing; pre-registration; anti-circularity gates.
-% Figures F-2 (four-agent verification topology) and F-6 (six-bug table).
-% Suite, assertion, and seed counts are given in-text and in
-% Appendix~\ref{app:verification}; no external artifact is cited.
+
+The substrate and the cycle of the previous section are the case study; the
+contribution of this paper is the discipline that determined what could be claimed
+about them, and at what grade of evidence. That discipline exists to counter one
+recurring hazard. A project that builds toward cognitive claims is under steady
+pressure to read more into a working mechanism than the mechanism has earned, and the
+easiest way to do so is to grade the system on inputs chosen to make it succeed. The
+methodology is four practices that, taken together, force every claim to earn its tier
+and hold two statements apart: that a mechanism is correct, and that it carries
+meaning. The first is settled against hard properties, the second against external
+data. The practices are arranged so that neither test can quietly substitute for the
+other.
+
+Two qualifications belong at the front, not only in the limitations. First, the four
+roles described below are AI subagents operating under enforced lane rules, within a
+single project directed by one person. They are a separation of roles and contexts, not
+independent human teams and not external auditors. Second, the discipline is reported
+as what it did, not as a guarantee. It caught the structural errors recounted below and
+it stopped three premature claims, but it is demonstrated on one system, and it
+establishes neither freedom from bugs nor that it would transfer to another project.
+
+\subsection{Separation of duties}
+
+The work is divided among four roles, and the division is the point. An architect role
+specifies each component together with the external criterion by which it will be
+judged, and maintains the project's record of what is built against what is only
+designed. A builder role implements each specification test-first. A separate tester
+role then re-verifies the result: it does not trust the builder's tests, it writes its
+own hostile and loop-closed suites, and it never edits production code. A validator role
+enters only when a cognitive claim is at stake, and grades that claim against external
+data under a prediction fixed in advance. The tester's posture is adversarial, in that
+its suites are built to break the builder's claim rather than to confirm it; the
+validator's posture is the same, turned on claims of meaning.
+
+The reason for the division is that the role which writes a mechanism should not be the
+role that certifies it. When author and certifier coincide, verification decays into
+self-attestation: the tests come to encode the author's own model of the code, and they
+pass for the same reason the code was written. Holding the tester apart makes agreement
+between builder and tester informative, because the tester was trying to falsify rather
+than to agree. The same logic puts meaning beyond the reach of both: a cognitive claim
+is handed to the validator and graded against data the project did not author, since a
+mechanism's own developers are not placed to certify what it means. The tester's checks
+are largely property-based. Rather than fix one output for one input, they assert
+invariants that must hold across inputs of a kind, such as determinism across processes,
+purity of reads, and preservation of graph integrity, in the tradition of property-based
+testing \citep{claessen2000quickcheck, maciver2019hypothesis}. These re-verification
+suites are separate from the builder's, and are tallied in Appendix~\ref{app:verification}.
+
+These roles are AI subagents under enforced lane rules, not human teams, and the
+distinction is not a quibble. The separation is one of role and context, an architecture
+of constraints on who may do what, with the tester and validator confined to roles that
+cannot touch production code or design. It is not the independence of separate
+investigators, and it is not presented as such. Its value is that it removes the most
+direct route to self-confirmation, not that it supplies an outside party. The
+arrangement and its lane rules are drawn in Figure~\ref{fig:agents}. The validator lane
+is shown only partly exercised, because no cognitive claim was ever certified through
+it: for the three attempts described in the following section, the validator's gates
+returned a refusal before any graded number was produced.
+
+\begin{figure}[t]
+  \centering
+  % TikZ F-2 to be drawn: the four-role verification topology.
+  % Roles: architect (plan and spec), builder (implement test-first), tester
+  % (adversarial mechanism re-verification, never edits production code), validator
+  % (grade meaning against external data, prediction pre-registered). Show what
+  % crosses between roles (a spec, then code, then an independent adversarial suite,
+  % then a validator pre-registration) and the hard lane rules (architect writes no
+  % production code; tester edits no production code; builder does not certify its own
+  % work). Draw the validator lane PARTLY UNEXERCISED (for example dashed): no
+  % cognitive claim was certified through it, and for the meaning bars it returned a
+  % refusal before grading. Neutral depiction.
+  \caption{The separation of duties, as roles and contexts operated by AI agents under
+    enforced rules, not independent human teams or external auditors. An architect role
+    specifies and plans; a builder implements test-first; a separate tester
+    adversarially re-verifies each mechanism and never edits production code; a
+    validator grades a cognitive claim against external data under a prediction fixed in
+    advance. The validator lane is shown only partly exercised: no cognitive claim was
+    certified through it, and for the three meaning-bar attempts of the following
+    section it returned a refusal before any graded number was computed.}
+  \label{fig:agents}
+\end{figure}
+
+\subsection{Loop-closure}
+
+The second practice governs the inputs a test may use. A test written in the ordinary
+way hands a stage the input on which it is expected to work, then confirms that the
+expected output appears. Such a test can pass while the stage is structurally wrong,
+because it never confronts the stage with anything the stage was not built to handle. It
+certifies behavior on a fiction of the input, not on the input the system will actually
+produce. Loop-closure is the rule that each stage must instead be driven by input
+generated by the stage before it, so that a component is exercised on what the system
+genuinely feeds it.
+
+This matters because it removes the author's choice of input, which is where
+self-deception enters. As long as the sources feeding a stage are placed by hand,
+``it works'' means only ``it works on my guess of its input,'' and a stage can carry a
+structural defect indefinitely with no test going red. Closing the loop, so that
+perception derives the sources, those sources drive clustering, clustering drives the
+field, and so on through the cycle, forces each stage to consume the previous stage's
+real output. It was this substitution of system-generated for hand-placed input that
+exposed the errors described next, several of which were invisible on friendly inputs
+and surfaced only once the loop was closed.
+
+\subsection{The structural errors the discipline caught}
+
+Applied together, adversarial re-verification and loop-closure caught a series of
+structural errors: defects not in the spelling of the code but in the shape of the
+algorithm, the kind an ordinary pass on a friendly input slides over. Six are on record.
+Three are recounted here, and all six are summarized in Table~\ref{tab:bugs}. The claim
+is only that these errors were caught on this system. The list is not offered as
+exhaustive, and catching them is not evidence that the discipline finds every error or
+that the code is free of them.
+
+The first concerns the boundary between reading and writing. Roads decay with elapsed
+time, and the natural implementation computes that decay at the moment a road is
+accessed and writes the decayed value back. The consequence is easy to overlook: every
+read becomes a write, and if the same access also re-evaluates whether a road is closed,
+then a run of reads spread over time can let a closed road drift back open although
+nothing ever crossed it. A happy-path test passes this by, because reading a value and
+obtaining the right number is exactly what it checks; the mutation left behind is
+invisible unless a test asserts that the stored state is unchanged after the read. The
+defect was caught by precisely that assertion, a check that a battery of reads leaves the
+canonical stored state identical, and was repaired by splitting decay into a pure view
+and a persisting write, with closure re-evaluated only on an active crossing. That split,
+presented as settled design in the previous section, was not the original design; it is
+the residue of this error.
+
+The most instructive error lay not in a mechanism but in how a mechanism was judged. An
+early test of community recovery reported success: given a graph of two communities
+joined by a thin bridge, the field partitioned it into the two communities. The success
+was an artifact of the test. One source had been placed by hand at the centre of each
+community, so the partition recovered the communities only because the answer had been
+written into the input. The mechanism was being graded on a fiction of what would feed
+it, and on that fiction it could not fail. Closing the loop caught it. When the sources
+were instead derived by perception from real input, the same pipeline produced an
+incoherent result, its basins collapsing and one source's region spilling across
+domains. The repair was not to the partitioner but to the validation, which was rebuilt
+to consume system-derived input, and the original failure was preserved as a standing
+assertion set to turn green only once the upstream grouping was genuinely fixed. It has
+since turned green. This is the loop-closure lesson at its sharpest: the error was in the
+grading, and only system-generated input could expose it.
+
+A third error was carried in from a neighbouring problem. When activation reaches a node
+along several paths, the contributions must add. An implementation holding the
+shortest-path intuition, in which the first arrival at a node settles its value, will
+instead re-expand the node as later paths raise it and propagate the surplus, counting
+everything downstream of the convergence point more than once. The intuition is correct
+for shortest paths and wrong for quantities that accumulate. The fix was bounded
+single-expansion: each node expands once, at the first hop it is reached, carrying the
+full sum of equal-length paths, and the locking check confirms the downstream value is
+the exact sum and strictly below what re-expansion would yield.
+
+\begin{table}[t]
+  \centering
+  \caption{The structural errors caught on Psyche by adversarial re-verification and
+    loop-closure. Each is a defect in the shape of an algorithm rather than a surface
+    mistake, of the kind a test run on a hand-chosen input would pass. The table records
+    what this discipline caught on this system. It is not offered as exhaustive, and it
+    is not evidence that the discipline finds every error or that the code is free of
+    them. Magnitudes of error are omitted where the present system cannot reproduce
+    them.}
+  \label{tab:bugs}
+  \footnotesize
+  \setlength{\tabcolsep}{4pt}
+  \begin{tabular}{@{}p{1.9cm}p{3.7cm}p{3.5cm}p{4.5cm}@{}}
+    \toprule
+    Error & Root cause & Fix & Now locked by \\
+    \midrule
+    Read-as-write & decay computed on access wrote back, so a read mutated state and a closed road could drift open & decay split into a pure view and a persisting write; closure changes only on an active crossing & a battery of reads leaves stored state identical, and time and reads never reopen a closed road \\
+    \addlinespace
+    Convergence double-counting & a shortest-path ``first arrival is final'' intuition applied where activation sums & bounded single-expansion, hop-layered, summing equal-length paths & the post-convergence value is the exact sum, strictly below additive re-expansion \\
+    \addlinespace
+    Order-dependent nondeterminism & an activation-ordered frontier, and iteration over a hash-randomized set of identifiers, varied results by process & hop-layered expansion with per-layer frozen values & output is byte-identical across fresh interpreters under randomized process hash seeds \\
+    \addlinespace
+    Identity and order leak & tie-breaking on identifiers regenerated each run gave nondeterministic ordering & tie-break on a stable creation index rather than on identity & partition, ordering, and representatives are identical across processes \\
+    \addlinespace
+    Binding degeneracy & connected components on a graph connected by construction yield one group; flow-cutting keys on distance, not community & reframe to a multi-source field, with basins around several peaks & a single-seed spread yields several coalitions, and a multi-source field recovers a two-community graph \\
+    \addlinespace
+    Circular validation & the answer was placed by hand in the input; a recovery test passed only because a source sat in each community & close the loop so sources are derived by perception from real input & the once-asserted failure on system-derived input has flipped to the passing behavior \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{Pre-registration and anti-circularity gates}
+
+The fourth practice governs claims about meaning, and it is taken directly from the use
+of pre-registration in empirical science \citep{nosek2018preregistration}. Before any
+graded number is computed, the prediction and the direction it must take are fixed and
+frozen. The artifacts of an experiment, its stimulus lists and selection criteria, are
+content-hashed before any graded outcome exists, so that what was committed to in
+advance can be distinguished from what is produced afterward. The selection of stimuli
+is run blind: it consumes only the structure of the data, never the quantity against
+which it will later be judged, so the test set cannot be shaped, even unintentionally,
+by the result it is meant to test.
+
+The rationale is the one pre-registration serves elsewhere. If the prediction may be
+adjusted after the data are seen, almost any outcome can be dressed as a confirmation,
+and the test loses its power to discriminate. Fixing the prediction and freezing the
+design in advance removes that freedom. In this project the gates are not a formality.
+As the next section recounts, on each of the three occasions a cognitive claim was put
+to them, they returned a refusal before any graded number was computed, because the
+design could not be populated or graded without circularity.
+
+Taken together, the four practices form one stance toward the system's own claims.
+Separation of duties removes self-attestation. Loop-closure removes the author's choice
+of input. The structural errors above are what those two caught when turned on the
+mechanism. Pre-registration removes the freedom to fit a prediction to the data after
+the fact. None of this proves that Psyche is correct, that the next error would be
+caught, or that the discipline transfers beyond this system. What it supports is the
+narrower claim this paper makes: on this system, the discipline caught the structural
+errors recorded here and refused three premature claims, and it did so by construction
+rather than by chance.
 
 %=============================================================================
 \section{The Methodology in Action: Three Meaning-Bar Attempts}
