@@ -799,8 +799,55 @@ attempts did not, and a map of what stands proven in the meantime.
 \end{figure}
 
 %=============================================================================
-\section{Limitations}
-% L-1 through L-8, stated plainly and up front.
+\section{Limitations}\label{sec:limitations}
+
+The boundaries of this work are best gathered in one place. The first concerns who
+performed it and how. The work was carried out by one person directing a small set of AI
+subagents, so the separation of duties on which the verification rests is a separation
+among roles, not among independent investigators. The adversarial roles, the tester and
+the validator, operate under enforced lane rules and remove the most direct route to
+self-confirmation, in which whoever writes a mechanism also certifies it. They do not
+constitute outside review, and this paper does not present them as such.
+
+It follows that the word verified carries a specific and limited sense here. It means that
+an independent adversarial role checked a mechanism against hard properties, determinism
+across processes, integrity, and read-purity, and found them to hold. It is not a formal
+proof, and it is not a verification of meaning. Where a mechanism carries a known corner
+case, such as the one in the pruning rule, that case is recorded as a standing negative
+assertion in the test suite. Recording a gap in this way documents it; it does not close
+it.
+
+The meaning bar was not cleared. Across the three attempts of Section~\ref{sec:attempts},
+no cognitive phenomenon was reproduced, and none is claimed. The positive results the paper
+does make are of two kinds. One is a methodology result: that a particular discipline
+caught particular errors and declined particular claims. The other is a mechanism result:
+that a substrate and a cycle hold certain properties. Neither is a cognitive result, and
+the line between them is held throughout.
+
+The artifact is a prototype, not a system. Its core depends on the Python standard library
+alone, by design, and every property reported here was established on small graphs. No
+claim is made about behavior at scale. The one large structure the work touched, the
+word-association corpus of Section~\ref{sec:attempts}, was read only by the blind stimulus
+selector, which computes no activation; the verified core was never run over it. Nothing
+here shows that the core would keep its guarantees, or its speed, on inputs of that size.
+Scale is outside what was tested.
+
+The methodology is demonstrated on a single project, which bounds what may be drawn from
+it. There was no second project, no control condition, and no comparison against
+development that omitted the discipline. The evidence is therefore existential: the
+discipline caught these errors and refused these claims, here. It is not evidence that it
+would do so elsewhere, nor that it improves on any alternative, and the paper is an
+experience report that claims only the former. Within the project, three grades of
+assurance coexist and should not be read as one. The substrate is proven against hard
+properties. The components of the cycle are mechanism-verified but carry no cognitive
+claim. A body of experimental scaffolding, self-tested and predating the discipline, sits
+at a lower grade than either. Only the first two are offered as load-bearing.
+
+A final caveat is procedural. The central references in this paper were checked against
+their sources. A small number of foundational works are carried with their bibliographic
+detail pending a final confirmation of volume and page before publication. Nothing in the
+argument depends on those details, but the reference list should be considered settled only
+once that pass is complete.
 
 %=============================================================================
 \section{Related Work}
