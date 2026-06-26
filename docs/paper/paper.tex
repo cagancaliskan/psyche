@@ -504,12 +504,197 @@ errors recorded here and refused three premature claims, and it did so by constr
 rather than by chance.
 
 %=============================================================================
-\section{The Methodology in Action: Three Meaning-Bar Attempts}
-% Empirical evidence: 1e priming (circular), the fan effect (mechanism absent),
-% 2c interoception (signal flat); each a NOT-YET with no graded number
-% manufactured. Figures F-3a, F-3b, F-3c.
-% The concrete numbers for all three are in Appendix~\ref{app:attempts-data};
-% no external artifact is cited.
+\section{The Methodology in Action: Three Meaning-Bar Attempts}\label{sec:attempts}
+
+The previous section described four practices and claimed, in particular, that the
+anti-circularity gates refused three cognitive claims before any graded number was
+computed. This section makes that claim concrete. Three times the project reached for an
+externally graded cognitive result, and three times the gate declined to grade it. What
+makes the episode evidence rather than anecdote is that the three refusals were not one
+obstacle met three times. They were three structurally distinct obstacles: a claim that
+could not be separated from the construction of the substrate, a claim whose generating
+mechanism the engine does not contain, and a claim whose external signal does not vary on
+a realistic workload. A discipline that halts for three different reasons is responding to
+the structure of each problem, not to a single recurring artifact.
+
+Two points of calibration hold across all three. First, each finding is a statement about
+what could be established on this substrate with this instrument, not about the phenomenon
+in the world. The subsections below report that priming could not be separated from the
+weight map on this corpus, that the fan effect is not produced by the engine as built, and
+that the chosen interoceptive signal does not vary on a realistic workload. None of them
+says, or licenses, that priming, the fan effect, or interoception is absent in human
+cognition. Second, in none of the three cases was a graded result computed. No effect
+size, no slope, and no direction of effect was produced; the gate fired at selection or at
+a feasibility check, before the loop was run for score.
+
+\subsection{Semantic priming}
+
+The first attempt was semantic priming: the expectation that a concept, once activated,
+leaves related concepts more readily activated than unrelated ones, with relatedness drawn
+from a published corpus of human word-association norms \citep{dedeyne2019swow} rather than
+from the system. The difficulty is that the corpus encodes association strength as the
+weight of the edge between two concepts, and Psyche's substrate is built from exactly those
+weighted edges. A naive priming result would then be uninterpretable. The system could
+appear to prime simply by reading back the edge weights it was constructed from, with the
+spreading-activation loop contributing nothing.
+
+The pre-registered design anticipated this and required a weight-blind leverage stratum: a
+set of prime pairs in which the strong associate and the weak associate carry equal edge
+weight, matched also for how many edges point at each target, so that any measured
+difference would have to come from the loop rather than from the weight or from target
+popularity. The gate was whether that stratum could be populated. A blind selector,
+consuming only the graph's structure and the published strengths and computing no
+activation, was run over the full association graph. It found 7 such pairs, against a
+pre-registered floor of 30. The pre-registered fallback was unreachable for the same
+reason: the weight-informative pairs so dominate the corpus that the fallback statistic
+would have had to exceed its own mathematical ceiling of 1 to register an effect. The
+counts, the dominance ratio, and the size of the graph are given in
+Appendix~\ref{app:attempts-data}, and the collapse is shown in Figure~\ref{fig:s0collapse}.
+
+The obstacle is not incidental to this corpus; it is intrinsic to the design. The variable
+the experiment must predict, association strength, is the very quantity the edges encode,
+so a positive result could always be the weight map read straight back out, which is
+precisely what the weight-blind stratum exists to prevent. When that stratum cannot be
+filled, the experiment cannot tell genuine priming-through-the-loop from a mechanical
+read-back, and running it would settle nothing. The calibrated finding is narrow. On this
+corpus, with both the edge-weight path and the target-popularity path controlled,
+priming-through-the-loop cannot be separated from the substrate's own weight map. That is a
+statement about separability on this corpus, not a claim that priming is absent.
+
+\begin{figure}[t]
+  \centering
+  % TikZ/plot F-3a to be drawn: the weight-blind stratum collapse.
+  % Show the saturating ladder that maps association strength to an integer edge weight,
+  % and that almost all prime pairs land weight-informative (strong band > weak band),
+  % leaving only 7 weight-blind, in-degree-matched pairs against the floor of 30. Built
+  % from the blind selector's structural counts; no activation was computed.
+  \caption{Anatomy of the priming attempt: the weight-blind leverage stratum cannot be
+    populated. Because association strength is encoded as the integer edge weight on a
+    saturating ladder, a prime's strong band almost always outweighs its weak band, so
+    pairs of equal weight are rare. Seven were found against a pre-registered floor of 30,
+    and the fallback statistic would need to exceed its ceiling of 1. No activation and no
+    effect size were computed; the selector consumed only graph structure. The figure
+    shows why priming-through-the-loop cannot be separated from the weight map on this
+    corpus, not that priming is absent.}
+  \label{fig:s0collapse}
+\end{figure}
+
+\subsection{The fan effect}
+
+The second attempt was Anderson's fan effect: the finding that the more associations a
+concept acquires, the more slowly any one of them is retrieved
+\citep{anderson1974retrieval, andersonreder1999fan}. It was chosen precisely because it
+escapes the circularity of priming. It rides on the number of a concept's associations
+rather than on the weight of any one of them, so weight and strength are no longer the same
+axis. The reason it could not be graded lies one level deeper, in what produces the effect.
+
+In the account the effect comes from \citep{anderson1998atomic}, retrieval shares a fixed
+budget: a source emits a conserved quantity of activation that is divided among its
+associations, so each receives less as their number grows, and retrieval slows accordingly.
+Psyche's engine conserves no such budget. Each outgoing road receives the source's full
+activation, with no division by the number of roads leaving the node. The consequence is
+direct, and it was measured. As the number of a concept's associations is swept upward, the
+activation delivered to a target does not fall but stays flat to the last digit across the
+fan sizes tested. The sweep, identical across those sizes, is reproduced in
+Appendix~\ref{app:attempts-data} and plotted in Figure~\ref{fig:fanflat}.
+
+This is a different wall from the first. Priming was circular: a mechanical read-back of the
+weights would have predicted the right direction, and the gate existed to keep that
+read-back from being mistaken for a loop effect. Here there is no signal to grade in any
+direction, because the mechanism that would generate one is not in the engine. The two
+failures are in a sense opposites: the first had a confound to rule out, the second has
+nothing to measure. There is an engine change that would create a fan effect, namely
+dividing a source's activation among its outgoing roads, but it is held as a separate
+architectural decision, not a repair undertaken to produce the result. Adopting a
+normalization in order to obtain the effect would not earn the effect, and it would change
+the meaning of every activation result already verified. The calibrated finding is again
+narrow. The fan effect is not produced by the engine as Psyche builds it, which says
+nothing about the fan effect in human memory, a matter not in question here.
+
+\begin{figure}[t]
+  \centering
+  % plot F-3b to be drawn from real data: the flat fan sweep.
+  % x-axis the fan size over the values tested; y-axis the activation delivered to the
+  % target. The curve is flat, identical to the last digit (spread zero). Annotate that
+  % each out-road receives the source's full activation, with no division by out-degree,
+  % unlike a shared-budget account.
+  \caption{Anatomy of the fan-effect attempt: the activation delivered to a target is flat
+    across fan size. As the number of a concept's associations grows over the sizes tested,
+    the target's activation does not change to the last digit, because the engine gives each
+    outgoing road the source's full activation and divides nothing by the number of
+    associations. The flatness is a property of the engine as built. It is not a claim about
+    the fan effect in human memory. The plot is drawn from the measured sweep in
+    Appendix~\ref{app:attempts-data}.}
+  \label{fig:fanflat}
+\end{figure}
+
+\subsection{Interoception}
+
+The third attempt left word association behind entirely; its external signal was the
+machine itself. The cycle was given a body-state scalar, a measure of friction derived from
+the gap between elapsed wall-clock time and the CPU time actually consumed, and this
+friction modulated how far activation was allowed to spread, with higher friction drawing
+the spread inward, in the direction the cue-utilization account associates with load
+\citep{easterbrook1959effect}. The idea follows a lineage in which bodily state biases
+cognition \citep{damasio1994descartes, craig2002interoception}; here it is tested only as a
+computational signal. Unlike the first two attempts, the mechanism is verified. A body-state
+can change which coalition the cycle selects, and a feasibility pilot confirmed that the
+channel is live, moving the outcome on a large fraction of contested inputs. That fraction
+is a feasibility measure, recorded as such in Appendix~\ref{app:attempts-data}; it is not a
+cognitive result.
+
+The obstacle is in the signal, not the channel. Friction defined this way rises only when
+the process waits off the processor. A realistic Psyche workload does not wait. It is
+single-threaded, in-memory computation with no input or output to block on, so the CPU time
+tracks the wall-clock time and the friction sits near zero. The measure is also
+scale-invariant. Being a ratio, it leaves heavier work to lengthen both clocks together and
+does not widen as the graph grows. A range wide enough to grade against could be produced
+only by manufacturing it, for instance by injecting a pause so the process idles, and
+manufacturing the independent variable is exactly what the anti-manufacture rule forbids.
+The friction band recorded under a realistic capture, and the fact that its width came from
+an injected wait rather than from real contention, are given in
+Appendix~\ref{app:attempts-data}; Figure~\ref{fig:frictionflat} contrasts the two.
+
+This is the third distinct wall. The signal is not circular, as priming's was, and the
+modulation mechanism is present, unlike the fan effect's. What is missing is variation: a
+genuine external signal that the verified channel could read, but which does not move on the
+work the system actually does. The point bears stating precisely, because it is easy to
+misread as a defect in the mechanism. The modulation channel is verified and the pilot shows
+it is live; what is flat is the real-world content of the chosen signal. The
+contention-tracking claim is therefore unsupported on this substrate with this signal, a
+statement about what this instrument can measure rather than about interoception. A
+different body-state signal might vary where this one does not, but it would need its own
+feasibility pre-check before any graded run, and the obvious candidates carry problems of
+their own. A memory-pressure signal grows monotonically with the very graph size that drives
+the competition it would feed, which reintroduces circularity, and a system-load signal is
+flat on an idle machine and irreproducible under external load.
+
+\begin{figure}[t]
+  \centering
+  % plot F-3c to be drawn: friction near zero on a realistic CPU-bound workload.
+  % Contrast the realistic-workload friction (near zero, scale-invariant) with the
+  % manufactured, yield-dominated band produced by an injected wait. Built from the
+  % analytic argument and the recorded band; mark the manufactured band as forbidden for
+  % grading.
+  \caption{Anatomy of the interoception attempt: the chosen friction signal does not vary on
+    a realistic workload. Friction rises only when the process waits off the processor, but
+    realistic work is CPU-bound and in-memory, so friction stays near zero and, being a
+    ratio, does not widen as the work grows. A gradable range appears only when a wait is
+    injected, which the anti-manufacture rule forbids. The figure concerns the chosen
+    signal, not the modulation channel: the channel is verified and live, and it is the
+    signal that is flat.}
+  \label{fig:frictionflat}
+\end{figure}
+
+Three attempts, three refusals, and three different reasons: a claim that could not be
+separated from the construction of the substrate, a claim whose generating mechanism the
+engine does not contain, and a claim whose external signal does not vary on the work the
+system does. In each case the gate fired before the loop was run for score, and in each case
+the response was to decline to produce a number rather than to manufacture one that could
+not be interpreted. The substrate and the cycle remained verified mechanisms throughout;
+what failed was not the machine but the search for an external yardstick it could be graded
+against without circularity. That the same shape recurred across three unrelated attempts is
+itself a finding, and it is the subject of the next section.
 
 %=============================================================================
 \section{The Meta-Finding}
