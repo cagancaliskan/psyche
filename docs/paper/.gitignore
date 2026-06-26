@@ -21,3 +21,6 @@ paper.pdf
 
 # macOS
 .DS_Store
+
+# Local figure-review PNGs (raster duplicates of the vector figs/*.pdf)
+article/
