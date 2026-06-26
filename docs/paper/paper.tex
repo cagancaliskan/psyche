@@ -925,23 +925,181 @@ system.
 
 %=============================================================================
 \section{Verification Summary}\label{app:verification}
-% Appendix A: a clean table of the canonical verification run (20 suites,
-% 1,372 assertions, 0 failures), a per-suite breakdown by component, and the
-% per-suite randomized process-hash-seed counts (5 to 8). This is the evidence
-% that the mechanisms are verified; the numbers come from the canonical run.
+
+This appendix records the mechanism-verification evidence beneath the proven and
+mechanism-verified tiers. The counts certify mechanism properties, determinism across
+processes, integrity, and read-purity. They do not certify meaning. Table~\ref{tab:suites}
+gives the per-suite assertion counts of the canonical run, grouped by the component each
+suite exercises. The substrate's two suites contribute 80 assertions; the run totals 20
+suites and 1,372 assertions, with no failures. Table~\ref{tab:seeds} records, for each
+suite that asserts cross-process determinism, the number of randomized process hash seeds
+under which the result is required to be byte-identical in fresh interpreters.
+
+\begin{table}[t]
+  \centering
+  \caption{The canonical verification suite. Per-suite assertion counts, grouped by the
+    component each suite exercises, read from the project's single test runner. The suite
+    certifies mechanism properties; it does not certify meaning. The apparatus built for
+    the priming attempt is verified here as mechanism, which is distinct from the priming
+    result recorded in Appendix~\ref{app:attempts-data}.}
+  \label{tab:suites}
+  \small
+  \begin{tabular}{@{}lr@{}}
+    \toprule
+    Suite & Assertions \\
+    \midrule
+    \multicolumn{2}{@{}l}{\emph{Substrate (proven)}} \\
+    Graph store & 45 \\
+    Spreading-activation engine & 35 \\
+    \addlinespace
+    \multicolumn{2}{@{}l}{\emph{Cycle components}} \\
+    Coalition formation & 19 \\
+    Multi-source field & 13 \\
+    Source clustering & 49 \\
+    Workspace selection & 83 \\
+    Workspace broadcast & 63 \\
+    Perception and end-to-end slice & 19 \\
+    Body-state sensor and modulation hook & 49 \\
+    \addlinespace
+    \multicolumn{2}{@{}l}{\emph{Independent adversarial re-verification}} \\
+    Source clustering & 73 \\
+    Source clustering, mutation battery & 5 \\
+    Workspace selection & 107 \\
+    Workspace broadcast & 110 \\
+    Interoceptive channel & 350 \\
+    \addlinespace
+    \multicolumn{2}{@{}l}{\emph{Priming-attempt apparatus and harness}} \\
+    Priming selector & 67 \\
+    Priming instrument & 42 \\
+    Priming selector, re-verification & 92 \\
+    Priming instrument, re-verification & 76 \\
+    Priming loop-closure, re-verification & 58 \\
+    Experiment harness & 17 \\
+    \midrule
+    Total, 20 suites & 1,372 \\
+    Failures & 0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\begin{table}[t]
+  \centering
+  \caption{Cross-process determinism. For each suite that asserts it, the number of
+    randomized process hash seeds under which the result is required to be byte-identical in
+    fresh interpreters. The activation set is the seeds 0, 1, 3, 7, and 42. The cycle
+    re-verification suites are those for clustering, selection, broadcast, and the
+    interoceptive channel.}
+  \label{tab:seeds}
+  \small
+  \begin{tabular}{@{}lr@{}}
+    \toprule
+    Suite & Hash seeds \\
+    \midrule
+    Spreading-activation engine & 5 \\
+    Coalition formation & 8 \\
+    Multi-source field & 8 \\
+    Perception end-to-end slice & 6 \\
+    Cycle re-verification suites & 6 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 %=============================================================================
 \section{The Three Meaning-Bar Attempts: Data}\label{app:attempts-data}
-% Appendix B: the concrete data behind the three NOT-YETs.
-%  - 1e priming: N_S0 = 7, N_S+ = 296, the in-degree decile cuts
-%    (1,1,1,1,1,2,2,5,15), and the unreachable-fallback arithmetic
-%    (r_W ~ 0.97, so the needed r_MA exceeds 1.0).
-%  - Fan effect: the flat sweep (target activation 0.2433743975, spread 0.0
-%    across fan in {1,2,4,8,16}); include one short verbatim raw-output excerpt
-%    here, the byte-identical-across-fan output being the clearest evidence.
-%  - 2c interoception: the friction band, the populability pilot
-%    (34 of 40 winner-flips, 85 per cent), and the scale-invariance argument.
-% Clean tables are the main vehicle, plus the single fan-effect raw excerpt.
+
+This appendix gives the data behind the three attempts of Section~\ref{sec:attempts}. In
+every case the figures below are those produced before the gate refused a graded run. No
+effect size, no slope, and no direction of effect was computed for any of the three.
+
+\subsection{Semantic priming}
+
+The blind selector ran over the full association graph, computing no activation, and
+populated all four design arms with 300 pairs each. The weight-blind leverage stratum did
+not populate. Table~\ref{tab:priming} gives the counts. The global in-degree decile cuts
+were 1, 1, 1, 1, 1, 2, 2, 5, and 15, and no prime was dropped for an in-degree mismatch.
+The fallback was unreachable by arithmetic. With the weight-informative pairs dominating,
+296 of 300, the weight-only rank-biserial $r_W$ is about 0.97, so the pre-registered margin
+$r_{MA} - r_W \ge 0.20$ would require $r_{MA}$ to reach about 1.17, above its ceiling of 1.
+No activation and no graded number were computed.
+
+\begin{table}[t]
+  \centering
+  \caption{Priming: the blind stimulus selection. All quantities are structural counts from
+    the selector, which computed no activation. The stratum count $N_{S0}$ fell below its
+    pre-registered floor, and the fallback was arithmetically unreachable.}
+  \label{tab:priming}
+  \small
+  \begin{tabular}{@{}lr@{}}
+    \toprule
+    Quantity & Value \\
+    \midrule
+    Association graph, directed edges & 1,388,741 \\
+    Association graph, nodes & 133,763 \\
+    Pairs per design arm (four arms) & 300 \\
+    Weight-blind, in-degree-matched pairs, $N_{S0}$ & 7 \\
+    Pre-registered floor on $N_{S0}$ & 30 \\
+    Weight-informative pairs, $N_{S+}$ & 296 \\
+    Primes dropped for in-degree mismatch & 0 \\
+    \bottomrule
+  \end{tabular}
+\end{table}
+
+\subsection{The fan effect}
+
+The fan sweep held every factor constant except the source's fan and read the activation
+delivered to a fixed target. Each outgoing road receives the source's full activation, with
+no division by the number of roads, so the delivered activation does not change with fan.
+The measured sweep, reproduced from the experiment's output, is the following.
+
+\begin{verbatim}
+    F   mean target activation      spread (max-min)
+    1   0.2433743975                0.0
+    2   0.2433743975                0.0
+    4   0.2433743975                0.0
+    8   0.2433743975                0.0
+   16   0.2433743975                0.0
+\end{verbatim}
+
+The value is identical to its last digit across all five fan sizes, and the spread of
+activation across targets within each condition is zero. There is no fan-dependent signal
+to grade.
+
+\subsection{Interoception}
+
+The modulation channel is verified, and the pilot reported below is a feasibility measure,
+not a meaning result. Table~\ref{tab:interoception} gives the figures. The pilot drove a
+deliberately extreme telemetry range, with friction spanning 0.000000 to 0.999202, over 40
+contrived, flip-capable percepts; 34 of them changed winner, a fraction of 0.85, above the
+pre-registered floor of 0.30. This shows that the channel can move the cycle's outcome,
+which is feasibility, not a cognitive result. The friction band recorded under a realistic
+capture was narrow and high, 0.79 to 0.93 with a mean near 0.86, but its width came from an
+injected 0.5 ms yield rather than from real contention. Because friction is a ratio of
+off-processor time to elapsed time, pure-CPU work of any size leaves it near zero, so a
+larger graph does not widen the band.
+
+\begin{table}[t]
+  \centering
+  \caption{Interoception: the feasibility pilot and the friction band. The flip fraction is
+    a feasibility measure on contrived, flip-capable inputs over a deliberately extreme
+    telemetry range; it is not a cognitive result. The realistic-capture band is
+    yield-dominated, set by an injected pause rather than by real contention.}
+  \label{tab:interoception}
+  \small
+  \begin{tabular}{@{}lr@{}}
+    \toprule
+    Quantity & Value \\
+    \midrule
+    Percepts in the feasibility pilot & 40 \\
+    Percepts whose winner flipped & 34 \\
+    Flip fraction (feasibility, not meaning) & 0.85 \\
+    Pre-registered populability floor & 0.30 \\
+    Pilot telemetry range (friction) & 0.000000 to 0.999202 \\
+    Realistic-capture friction band & 0.79 to 0.93 \\
+    Realistic-capture band mean & 0.86 \\
+    Injected yield setting & 0.5 ms \\
+    \bottomrule
+  \end{tabular}
+\end{table}
 
 %=============================================================================
 % Scaffolding only: \nocite{*} forces every bibliography entry to appear so the
