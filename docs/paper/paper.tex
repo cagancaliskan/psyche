@@ -850,9 +850,70 @@ argument depends on those details, but the reference list should be considered s
 once that pass is complete.
 
 %=============================================================================
-\section{Related Work}
-% Design lineage, NOT comparison; the dependency-free choice (why not QuickCheck
-% or Hypothesis) belongs here.
+\section{Related Work}\label{sec:related}
+
+Two distinct lineages meet in this work, one behind the methodology and one behind the
+artifact to which it was applied. The methodology's testing practice belongs to the
+tradition of property-based testing, in which a test asserts an invariant over a class of
+inputs rather than a fixed output for a fixed input \citep{claessen2000quickcheck,
+maciver2019hypothesis}. The tester's checks are properties of this kind: that a read
+changes nothing, that a spread is deterministic across processes, that the graph indices
+stay consistent. A reasonable question follows. Why not simply adopt one of the
+established property-based testing libraries, several of which are mature and widely used?
+The answer is a constraint, not a verdict on those tools. The substrate is dependency-free
+by design and runs on the standard library alone, so the project re-implements a minimal
+property runner rather than introduce an external dependency. This follows from the
+dependency-free constraint and nothing more. The established tools are more capable, and no
+claim is made that the re-implementation improves on them.
+
+The methodology's second borrowing comes from empirical science rather than from software.
+The pre-registration of predictions, fixing a hypothesis and the direction it must take
+before any data are seen, was developed to keep the human sciences from fitting a claim to
+its result after the fact \citep{nosek2018preregistration}. Applied here, it governs the
+grading of cognitive claims about a computational system: predictions and their directions
+are frozen in advance, and the artifacts of an experiment are content-hashed before any
+graded outcome exists. The adaptation is itself the point of interest. A discipline meant
+to keep an experimenter from deceiving themselves about data is turned on a developer's
+claims about a program they wrote.
+
+The artifact draws on a different body of work, and here the relationship has to be stated
+carefully, because it is one of design lineage and not of comparison. The shape of the
+cycle, a competition among coalitions that yields a single winner which is then broadcast,
+is taken from Global Workspace Theory \citep{baars1988cognitive} and from its realization as
+a computational cognitive cycle \citep{franklin2014lida}, with the wider global-workspace
+literature on selective amplification and internal simulation as further background
+\citep{dehaene2011experimental, shanahan2006combines, shanahan2010embodiment}. The
+spreading-activation mechanism is taken from ACT-R \citep{anderson1998atomic}. These supply
+a structural template and a vocabulary. They do not supply a benchmark. Psyche instantiates
+a control structure of this shape; it is not claimed to instantiate the theories behind it,
+and it reproduces none of their cognitive results. The fan effect makes the boundary
+concrete. In ACT-R the effect follows from a shared activation budget divided among a
+concept's associations \citep{anderson1974retrieval, andersonreder1999fan}, a mechanism that
+architecture has and Psyche's engine does not. The consequence, established in
+Section~\ref{sec:attempts}, is that the effect is not produced. That is a difference in what
+the two engines contain, recorded as a contrast in mechanism, not a comparison of
+performance between systems.
+
+The substrate's own mechanisms have a parallel and equally loose lineage in neuroscience.
+The reinforcement of co-active connections during a broadcast recalls Hebbian strengthening
+\citep{hebb1949organization}, and the saturating bound that keeps the broadcast from
+diverging echoes homeostatic synaptic scaling \citep{turrigiano2008selftuning}. These are
+analogies of direction, drawn on for design intuition, not claims of biological fidelity.
+
+The interoceptive attempt has a lineage of its own. The idea that a body's physiological
+state biases what the mind selects has a long history in cognitive science
+\citep{damasio1994descartes, craig2002interoception}, and the particular direction Psyche
+borrowed, a narrowing of attention under load, comes from the cue-utilization account
+\citep{easterbrook1959effect}. As with the cognitive architectures, these are sources of a
+direction and a rationale, not of a result: the body-state signal was tested only as a
+computational quantity, and none of the cited findings is reproduced. The question of how a
+machine might carry an interoceptive variable rather than passively read telemetry has begun
+to draw contemporary attention \citep{candiarivera2026interoceptive}, and persistent
+runtimes that give a system a form of ambient self-monitoring are being explored in the
+adjacent, language-model-based setting \citep{brady2026springdrift}, a different family from
+the non-LLM substrate studied here. Psyche's contribution to that conversation is the
+negative structural result of Section~\ref{sec:attempts}, not a working interoceptive
+system.
 
 %=============================================================================
 \section{Conclusion}
