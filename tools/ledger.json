@@ -98,6 +98,11 @@
       "status": "BUILT-UNVALIDATED",
       "note": "overlay landed default-off; tester verdict FAIL — 7 of 9 invariants hold. DEFECT-B (N-5) and DEFECT-C (N-7) are the overlay's own and are OPEN. See D-011, D-012."
     },
+    "0c": {
+      "name": "deterministic road ordering",
+      "status": "DESIGNED",
+      "note": "SPEC-0c. Repair brick for the three defects the 0b2 tester pass returned (D-011). Ordering AND math.fsum both land (D-013): _out/_in become insertion-ordered so roads_from() yields creation order, and the convergence accumulator uses math.fsum, so the engine is order-INDEPENDENT rather than merely order-pinned. Also: read each road once per expansion (DEFECT-B), validate sigma and guard non-finite transmission (DEFECT-C). Acceptance signal is inverted: all six asserted-negatives in tests/test_tester_0b2_adversarial.py must go RED. Returns 0a and 0b to PROVEN on tester re-verification. SPEC-0c section 2.5 is an OPEN scope call."
+    },
     "1a": {
       "name": "multi-source field",
       "status": "BUILT-UNVALIDATED"

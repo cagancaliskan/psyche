@@ -369,3 +369,73 @@ Reported honestly, that is a far better paper than one in which everything passe
 **Cost:** Phase 0 is unlabelled until the fix re-verifies. The paper is frozen. Every determinism
 probe in `tests/` needs rewriting to compare bit patterns. This is the most expensive entry in
 this log, and every item in it was bought by one tester pass that was allowed to say FAIL.
+
+## D-013 · 2026-07-26 · `math.fsum` joins the ordering fix in 0c; both land together
+**Decided by:** Cagan
+**Supersedes:** resolves SPEC-0c §2.3, the one call D-012 delegated to architect-pm
+**Context:** D-012 fixed the shape of DEFECT-A's fix — make `_out`/`_in` insertion-ordered so
+`roads_from()` yields creation order — and left one question open: whether `math.fsum` at the
+convergence accumulator is worth its restructure on top, or whether ordering alone is enough.
+
+**Decision: both. Ordering *and* `math.fsum`, in 0c.** Ordering alone gives *determinism* (the
+same program in a different process gives the same bits). Only `fsum` gives *order-independence*
+(a **different** iteration order gives the same bits). The second is the property that closes the
+class; the first only pins it.
+
+**Ground 1, decisive.** Under ordering alone, two of the six asserted-negatives in
+`tests/test_tester_0b2_adversarial.py` keep passing — **truthfully**, because the engine would
+still be order-dependent, merely pinned. **A fix after which our own adversarial suite can still
+honestly assert the pathology is a fix at the symptom, not at the cause.**
+
+**Ground 2 — this repository has already lost this exact bet, on this exact hazard.**
+Ordering-alone's safety rests on a recorded condition being honoured later ("do not reorder
+iteration without adding `fsum` first"). `experiments/harness.py:290` recorded this very hazard in
+writing, worked around it locally, and the substrate carried `PROVEN` for a month regardless while
+the engine went unfixed. A control that depends on a future reader honouring a note has been tried
+here and failed. Do not buy it twice.
+
+**Ground 3 — the reordering change is already planned, in writing.** `nous_activation.py`'s design
+note contemplates a future locality prune that expands "only the top-K most active nodes" within a
+hop layer. Top-K within a layer reorders iteration, which is precisely the condition ground 2 says
+will not be honoured.
+
+**Ground 4 — float correctness here is currently a function of which interpreter runs it, and this
+is now the confirmed mechanism behind BUG-0b1's version-dependence.** BUG-0b1's fix was exactly
+`sum(members.values())` → `math.fsum(members.values())`. CPython 3.12 changed the builtin `sum()`
+to Neumaier compensated summation for floats. Reproduced on this machine over
+`[1.0, 1e-16, 1e-16, 1e-16]`: `sum() == fsum()` is **False** on 3.10.17 and 3.11.15, **True** on
+3.12.4, 3.13.14 and 3.14.4. So the pre-0b1 code was **accidentally correct on 3.12+ and naive on
+3.11** — which is exactly why BUG-0b1 was "invisible on 3.12 and flipped the winner 8 times in 30
+on 3.11", a difference that bug report recorded as unexplained. It is explained now. `math.fsum`
+is exactly rounded on every version, making the semantics uniform by construction rather than
+accidentally-correct on new interpreters.
+
+**One objection was withdrawn rather than carried.** The draft spec claimed ordering-alone
+preserves the tester's git-recovered N-1 oracle. That is false where it matters: ordering changes
+the accumulation *sequence* at in-degree >= 3, and on the unordered store the pre-change engine had
+no single answer to reproduce. The git oracle is well-defined only on **in-degree <= 2**. It breaks
+under both options and was never a differentiator; SPEC-0c §2.3 now states the boundary instead.
+
+**A trap the spec now names.** When the tester re-bases N-1 onto its independent reference
+implementation, that reference must mirror the **intended** semantics — ordered *and* `fsum` — not
+the semantics it was originally written against. A reference still modelling the old naive
+accumulator agrees with a broken engine and disagrees with a correct one: it stops being an oracle
+and becomes a second copy of the bug. Re-basing is part of the fix.
+
+**For the paper's methodology section, as the generalisation:** *"A coverage axis is only evidence
+for the property it can perturb."* This project swept `PYTHONHASHSEED` for a month against a
+nondeterminism that uuid4 caused, and no seed could have found it. Corollary: prefer removing a
+dependence to sampling it.
+
+**Cost:** the accumulator restructures — it is a running total read at layer boundaries, so `fsum`
+requires per-target contribution lists reduced at each boundary. Contained, but a real change to
+the hot loop's data structure. The re-validation surface is unchanged from D-012, because the
+ordering fix already moved every convergent float; `fsum` in the same brick adds no second
+re-validation round.
+
+**Registered:** `0c` is now in the ledger and the roadmap as `DESIGNED`. **SPEC-0c §2.5 is a NEW
+open call** raised while verifying ground 4: three naive `sum()` calls over floats survive in
+`src/` — `nous_workspace.py:428` (the pruned winner's strength, on the 1d-i winner path, which
+BUG-0b1's "both sites" missed — there were three), `nous_workspace.py:235`, and
+`nous_store.py:161` (`Road.valence`, feeding a categorical closure decision). Recommendation is to
+fold all three into 0c; O-16 (cross-interpreter bit-identity) is unachievable while any remain.
