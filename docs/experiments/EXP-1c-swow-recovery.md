@@ -2,7 +2,10 @@
 
 Status: **FROZEN PRE-REGISTRATION** — written before any clustering result was seen.
 Validator: meaning, not mechanism. Mechanism (§6.1) is already independently tester-VERIFIED
-(PASS; see `docs/TEST_OUTPUT.txt`, 8 suites / 254 assertions, 0 failures). This document
+<!-- ledger:allow-count -->
+(PASS; see `docs/TEST_OUTPUT.txt` — *historical snapshot at the time of freezing: 8 suites /
+254 assertions, 0 failures. The current canonical run is 20 suites / 1,372 assertions; this
+document is a frozen pre-registration and is deliberately not rewritten.*). This document
 grades only whether 1c's grouping *corresponds to externally-defined structure*.
 
 > ANTI-TAMPER NOTICE. Nothing in this file may change after any result is observed. The

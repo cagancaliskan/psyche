@@ -18,8 +18,12 @@ The substrate and activation layers are **proven** correct and deterministic. Th
 source-clustering and workspace layers are **mechanism-verified** (independently and
 adversarially tester-verified for determinism, purity, integrity, and stability) but their
 **cognitive meaning is not claimed** — closing the loop is a *mechanism* result, not a
-cognitive one. The first behavioral cognitive claim (semantic priming, graded against human
-association norms) has **not** yet been run; it is the project's open frontier.
+cognitive one. The first behavioral cognitive claim has been **attempted three times and refused three
+times**, each for a structurally distinct reason, and each before any graded number existed:
+semantic priming was **circular** (the external norm *was* the edge weight), the fan effect
+found the **generating mechanism absent**, and interoception found the **signal flat** on
+realistic work. The meaning bar is still open, and the recurring obstacle is the external
+yardstick rather than the mechanism.
 
 ---
 
@@ -110,10 +114,13 @@ earned.
 
 A separate body of pre-registered experiment scaffolding (a SWOW association-norm loader, a
 fan-effect characterization, and a graded semantic-priming harness) lives under `experiments/`
-and is genuinely depended upon by the structural check below. It is honest, pre-registered, and
-self-tested — but it is a **distinct, lower** tier: it is **not** `PROVEN`, **not** in the
-canonical test runner, and has **not** had an independent tester or validator pass. It is an
-*instrument*; its existence does not establish a cognitive result.
+and is genuinely depended upon by the structural check below. It is honest and
+pre-registered, but it is a **distinct, lower** tier: it is **not** `PROVEN` and it has **not**
+had a validator pass. It is an *instrument*; its existence does not establish a cognitive
+result. (The instruments' **mechanism** suites — `test_harness.py`, `test_priming_instrument.py`,
+`test_priming_1e.py` — were since brought into the canonical runner and are tester-verified, per
+SPEC-1e §10. The data-dependent **experiment-result** scripts stay out: they need the ~53 MB
+SWOW file and make meaning claims.)
 
 One structural check has already been run on this scaffolding and is reported as the honest
 negative it is: the source-clustering grouping was compared against an **independent standard
@@ -127,9 +134,8 @@ out of `BUILT · UNVALIDATED`.
 ### The line that matters
 
 **"The mechanism is correct and deterministic" is proven (Tier 1) or tester-verified
-(Tier 2); "the mechanism reproduces a cognitive phenomenon" has not been shown.** The primary
-meaning bar — **semantic priming through the closed cognitive loop, graded against human (SWOW)
-association norms** — is the open frontier and **has not yet been run**.
+(Tier 2); "the mechanism reproduces a cognitive phenomenon" has not been shown.** The meaning
+bar remains open after three structurally distinct refusals — see "Limitations & future work".
 
 ---
 
@@ -139,7 +145,7 @@ Pure standard library: nothing to install (Python 3.8+; developed and captured o
 3.12).
 
 ```bash
-# all 12 suites, with the correct PYTHONPATH handled for you:
+# all 20 suites, with the correct PYTHONPATH handled for you:
 python3 run_tests.py
 
 # or a single suite directly (absolute PYTHONPATH so the determinism subprocess
@@ -155,8 +161,10 @@ failed assertion, so it could report green on a real failure. Run them as script
 
 ### Real results
 
-Captured verbatim in [docs/TEST_OUTPUT.txt](docs/TEST_OUTPUT.txt) (CPython 3.12). Every
-suite passes with zero failures:
+Captured verbatim in [docs/TEST_OUTPUT.txt](docs/TEST_OUTPUT.txt). Every suite passes with
+zero failures. These counts are mirrored in [`tools/ledger.json`](tools/ledger.json), which is
+the single source of truth; `tools/ledger_check.py` fails the build if any document disagrees
+with it.
 
 | Suite | Layer / role | Checks passed |
 |---|---|---:|
@@ -165,16 +173,24 @@ suite passes with zero failures:
 | `test_nous_coalitions.py` | coalition formation | **19** |
 | `test_nous_field.py` | multi-source field | **13** |
 | `test_nous_source_clustering.py` | source-clustering (1c) | **49** |
-| `test_nous_workspace.py` | workspace competition + pruning (1d-i) | **80** |
+| `test_nous_workspace.py` | workspace competition + pruning (1d-i) | **83** |
 | `test_nous_workspace_broadcast.py` | bounded broadcast + feedback (1d-ii) | **63** |
 | `test_nous_perceive.py` | perception + closed end-to-end cycle | **19** |
+| `test_nous_bodysensor.py` | body-state sensor + modulation hook (2c) | **49** |
 | `test_tester_1c_adversarial.py` | tester: adversarial 1c | **73** |
 | `test_tester_1c_mutation_battery.py` | tester: 1c randomized mutation battery | **5** |
 | `test_tester_1d_i_adversarial.py` | tester: adversarial 1d-i | **107** |
 | `test_tester_1d_ii_adversarial.py` | tester: adversarial 1d-ii | **110** |
-| **Total** | **12 suites** | **618 passed, 0 failed** |
+| `test_tester_2c_adversarial.py` | tester: adversarial 2c interoception | **350** |
+| `test_tester_1e_selector_adversarial.py` | tester: 1e blind selector | **92** |
+| `test_tester_1e_instrument_adversarial.py` | tester: 1e broadcast-Δ instrument | **76** |
+| `test_tester_1e_loopclosed.py` | tester: 1e loop-closure | **58** |
+| `test_harness.py` | experiment harness mechanism | **17** |
+| `test_priming_instrument.py` | priming instrument mechanism | **42** |
+| `test_priming_1e.py` | blind three-arm selector mechanism | **67** |
+| **Total** | **20 suites** | **1,372 passed, 0 failed** |
 
-That total is **618 assertions across 12 suites, 0 failures**, including the builder suites
+That total is **1,372 assertions across 20 suites, 0 failures**, including the builder suites
 above and the **independent tester-authored adversarial suites** (`test_tester_*`), which add
 hostile and loop-closed checks: cross-process determinism in fresh interpreters under
 `PYTHONHASHSEED ∈ {0,1,2,3,7,42}`, randomized mutation batteries interleaved with integrity
@@ -182,22 +198,30 @@ scans, no-divergence / no-lock-in stability of the broadcast write, and the reso
 over-swallow case now driven through the live cycle (formerly an asserted-negative limitation,
 now a real pass).
 
+**Determinism is scoped to the interpreters it was swept on.** A cross-process determinism
+failure lived undetected in `Coalition.strength` for a month because the suite was only ever
+run on one CPython minor version: float summation over a uuid4-keyed dict is
+order-dependent, so two identical coalitions differed by one ULP and that resolved the
+competition before the `creation_seq` tie-break could run. It was invisible on 3.12 and
+flipped the winner 10 times in 30 on 3.10, at a *fixed* hash seed. Fixed with `math.fsum`;
+see [docs/BUG-0b1-coalition-strength-determinism.md](docs/BUG-0b1-coalition-strength-determinism.md).
+Captures are now produced by `tools/capture_run.py`, which sweeps every CPython on the
+machine and refuses to capture if they disagree.
+
 ---
 
 ## Project size (measured)
 
 | | Files | Lines (`wc -l`) | Non-blank, non-comment (approx.) |
 |---|---:|---:|---:|
-| Source modules (`src/`) | 7 | 2,370 | ~1,720 |
-| Test suites (`tests/`) | 12 | 7,303 | ~5,591 |
-| **Python total** | **19** | **9,673** | **~7,311** |
+| Source modules (`src/`) | 8 | — | — |
+| Test suites (`tests/` + `experiments/`) | 20 | — | — |
+| **Python total** | **28** | — | — |
 
-Per module (`wc -l`): `nous_store.py` 548 · `nous_workspace.py` 533 ·
-`nous_coalitions.py` 324 · `nous_activation.py` 281 · `nous_source_clustering.py` 275 ·
-`nous_perceive.py` 248 · `nous_field.py` 161.
-
-(`wc -l` figures are exact; the non-blank/non-comment column is an approximate `grep`-based
-count, not a precise tokenizer pass — treat it as indicative.)
+Line counts are deliberately not tabulated here any more: they were hand-maintained, they
+went stale, and nothing depends on them. Run `wc -l src/*.py tests/*.py` for current figures.
+Assertion counts, which *are* load-bearing, live in [`tools/ledger.json`](tools/ledger.json)
+and are checked against every document by `tools/ledger_check.py`.
 
 ---
 
@@ -208,16 +232,17 @@ nous/
 ├── README.md               ← you are here
 ├── LICENSE                 ← MIT
 ├── requirements.txt        ← standard library only (no dependencies)
-├── run_tests.py            ← runs all 12 suites with the correct absolute PYTHONPATH
-├── src/                    ← the 7 modules
+├── run_tests.py            ← runs all 20 suites with the correct absolute PYTHONPATH
+├── src/                    ← the 8 modules
 │   ├── nous_store.py               substrate store (Layer 1): graph, IDs, decay, closure
 │   ├── nous_activation.py          deterministic spreading activation + flow
 │   ├── nous_field.py               multi-source activation field (basins)
 │   ├── nous_coalitions.py          coalition formation (flow-cut & by-basin)
 │   ├── nous_source_clustering.py   source-clustering pre-stage (group nearby sources)
 │   ├── nous_workspace.py           workspace: competition + pruning + bounded broadcast
-│   └── nous_perceive.py            perception + the closed end-to-end cycle
-├── tests/                  ← the 12 test suites (built-in harness; run as scripts)
+│   ├── nous_perceive.py            perception + the closed end-to-end cycle
+│   └── nous_bodysensor.py          body-state sensor + default-off decay modulation (2c)
+├── tests/                  ← the test suites (built-in harness; run as scripts)
 │   ├── test_nous_*.py              builder suites (one per module)
 │   └── test_tester_*.py            independent tester-authored adversarial suites
 ├── experiments/            ← Tier 3 disciplined-exploratory scaffolding (NOT in run_tests.py)
@@ -291,14 +316,27 @@ The honest verb throughout is *"inspired by"* / *"borrows the framing of"*: neve
   the minimal step that makes activation sources *input-derived* rather than hand-placed.
 - **Backward spread is not implemented:** activation follows directed out-roads only (v1).
 
-**The natural next step is the first behavioral cognitive claim, and it is still open.** With
-the loop closed, a prime can now leave a bounded trace that biases a later target — the
-precondition a priming test needs. The open frontier is **semantic priming through the closed
-cognitive loop, graded against human (SWOW) association norms**: a directional prediction fixed
-before the run, against a control, on data the project did not author. This has **not** yet been
-run; until it is, no cognitive effect is claimed. (A pre-registered priming/fan-effect *harness*
-exists under `experiments/` as Tier 3 scaffolding to reuse — it is an instrument, not a
-substitute for that result.)
+**The first behavioral cognitive claim is still open, and three attempts have been refused —
+each before any graded number existed, each for a different structural reason.**
+
+- **Semantic priming (1e) — CIRCULAR.** The substrate encodes SWOW association strength *as*
+  the edge weight, so "related targets activate more" would have been the weight map read back
+  out. The weight-blind leverage stratum the design needed populated at N = 7 against a floor of
+  30, and the fallback margin was arithmetically unreachable. Frozen NO-GO.
+- **Fan effect (1e′) — MECHANISM ABSENT.** The engine gives every out-road the source's full
+  activation, with no division across out-edges and no per-source budget, so the fan response is
+  flat to the last digit. There is no fan-dependent signal to grade. Frozen NO-GO.
+- **Interoception (2c) — SIGNAL FLAT.** The body-state signal is a stall fraction, and a
+  realistic `think()` is CPU-bound, so it sits at ≈ 0 and is scale-invariant. Any gradable band
+  would have to be manufactured, which is forbidden. Recorded NOT-YET; the *mechanism* is
+  tester-verified and is not the defect.
+
+**The pattern is itself the finding**: the substrate and the cycle are real and verified, and the
+recurring hard problem is finding an external yardstick the mechanism can both produce and be
+graded against without circularity. That is the anti-circularity discipline working — three
+unwinnable graded runs caught before any of them produced an uninterpretable "pass" — and it is
+scoped to *this substrate and these three yardsticks*, not offered as a general claim about
+spreading-activation models.
 
 ---
 
