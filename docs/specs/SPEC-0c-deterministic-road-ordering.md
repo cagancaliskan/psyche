@@ -1,6 +1,6 @@
 # SPEC-0c — Deterministic road ordering: removing the order-dependence class at its source
 
-**Status:** SPECIFIED · ready for the builder · **no open calls** (§2.5 and §2.6 decided)
+**Status:** BUILT · **tester verdict FAIL on O-12** (§4.1) · two calls open: §4.1 and §2.7
 **Revises:** 0a (substrate store), 0b (spreading activation), 0b2 (normalization overlay)
 **Depends on:** D-011 (the verdict), D-012 (the resolutions and the fix shapes),
 D-013 (§2.3 — `fsum` joins the ordering fix), D-014 (§2.5, §2.6 and the routing split)
@@ -226,7 +226,15 @@ it matters. Ordering changes the **accumulation sequence** at in-degree ≥ 3, s
 pre-change engine run on an *ordered* store does not reproduce the values it produced on an
 *unordered* one — and on the unordered store it had no single answer to reproduce. The git
 oracle is well-defined only on the region where the pre-change engine was deterministic in
-the first place: **in-degree ≤ 2**. Outside it, the oracle never had a stable value, with or
+the first place. **CORRECTED 2026-07-26, on the tester's measurement — the boundary was
+stated wrongly and off by one.** The draft said "in-degree ≤ 2". But the engine seeds
+`contributions = {seed_node: [energy]}`, so **the seed's own energy is itself a
+contribution**: a seed with in-degree 2 on a cycle accumulates *three* terms and moves.
+Measured: max in-degree 2, seed energy 1e6 — pre-0c `1086319.0400302166`, post-0c
+`…63`. The boundary must be stated on **contributions, not in-degree**: *no node may
+accumulate three or more contributions, counting the seed's own energy*. A structural
+enforcement is in-degree ≤ 2 globally **and ≤ 1 at the seed**. Outside it, the oracle never
+had a stable value, with or
 without `fsum`. It therefore breaks under both options, it is not evidence for either, and
 the spec carries the boundary explicitly instead of the objection.
 
@@ -383,6 +391,48 @@ should fail when the intent is violated, not when an unrelated dependency moves.
 builder wrote the assertion; this is a change to its wording and its rationale, not to its
 subject.
 
+### 2.7 FINDING — a fourth order-dependent aggregate, in a module 0c never touched · **OPEN**
+
+The tester was asked whether the §2.5 sweep was exhaustive. **It was not.**
+`src/nous_field.py:131` and `:124`:
+
+```python
+total[node] = total.get(node, 0.0) + act            # DEFECT-A's exact shape
+merged_flow[rid] = merged_flow.get(rid, 0.0) + fv
+```
+
+Reproduced here: three sources, three mids, one hub — `field.total[m1]` takes **two distinct
+bit patterns** over the 3! source orders (`1.0206966281696925` / `…28`). It reaches
+`Coalition.strength`, and over 60 random trials the ranked winner never flipped — **which is
+exactly how BUG-0b1 hid, and how §2.5's site hid after it.** That is now three times this
+project has met the same shape.
+
+**Scoping, carefully, because this is not a 0c failure.** The source order is
+`ordered_sources`, which is program order, so this site is **order-PINNED, not
+order-INDEPENDENT** — cross-process determinism is unaffected and every O-4 / O-4b / O-5 /
+O-16 result stands. It is also outside 0c's decided scope: §2.5 enumerated builtin `sum()`
+sites, and these are `+=` accumulations, which no decision to date has covered.
+
+But "pinned, not independent" is precisely the state D-013 ground 1 refused to accept for
+the activation accumulator, for reasons that apply here word for word. **Recommendation: a
+follow-on brick** — not a widening of 0c, which is already carrying two scope extensions and
+a failing invariant. 0c's claim should meanwhile be stated as what it is: the *activation
+engine* is order-independent; the *field merge* is order-pinned.
+
+### 2.8 A second neutral-path behaviour change, documented rather than discovered
+
+`math.fsum` raises `OverflowError: intermediate overflow in fsum` where the pre-0c engine
+returned `inf`. At `energy=1e308`, 12-way convergence, `decay_per_hop=1.0`, `floor=0.0`:
+pre-0c `T = inf`, post-0c `OverflowError`. It fires at the layer-boundary freeze, so the
+engine's own non-finite guard never runs and the stdlib exception escapes instead of a
+diagnostic `ValueError`.
+
+It sits outside N-1's `PARAM_SWEEP`, which is why nothing saw it. Probably an improvement —
+refusing an overflow beats returning `inf` — but §7's done-means item 4 requires that a
+changed property be **stated**, not found later by someone else. Whether it should surface
+as the engine's own `ValueError` rather than a stdlib `OverflowError` rides on the §4.1
+decision, since it is the same question about the same guard.
+
 ---
 
 ## 3. DEFECT-B — read each road once per expansion
@@ -445,6 +495,60 @@ analytically in the limit and catastrophic at the literal value. Large finite σ
 — σ = 1e300 was verified byte-identical to `None` — but that is a fact about large finite
 σ, and the spec must not invite a caller to write `inf`.
 
+### 4.1 O-12 FAILS as written — the tester's verdict, and the call it routes · **OPEN**
+
+**Tester verdict on brick 0c: FAIL.** Seventeen of the eighteen enumerated properties hold
+under adversarial and loop-closed conditions. **O-12 does not.**
+
+O-12 says: *"No non-finite value can reach `activation` or `flow`, **by any route**,
+independent of σ."* It does not hold, and the failing input is trivial:
+
+```python
+s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
+A = s.add_node('A', NodeType.CONCEPT)
+spread_activation(s, A, energy=float('nan')).activation[A]   # -> nan     (expected: refused)
+spread_activation(s, A, energy=float('inf')).activation[A]   # -> inf
+spread_activation(s, A, energy=float('-inf')).activation[A]  # -> -inf
+```
+
+**Root cause.** The engine seeds `contributions = {seed_node: [energy]}` before any work,
+and §4's guard is on `transmitted`. A seed that never transmits offers the guard nothing to
+inspect, so the value is returned verbatim. A second route reaches it on a graph that *does*
+have out-roads: `hop_budget=0`.
+
+**Why this one matters more than its blast radius suggests.** The builder's own guard test
+used a two-node fixture `A→B`, where `transmitted` always exists and the guard always fires.
+Delete the edge — an isolated node, which the same suite already exercises elsewhere — and
+the invariant fails. **The test passed on a hand-chosen input and fell apart on the
+adversarial one**, which is the exact failure CONTRIBUTING.md rule 4 exists to catch.
+
+**Honest bounds, verified here, so it is not overstated.** It is **pre-existing**: the
+pre-0c engine returns `nan` on the same input, confirmed against the committed engine. And
+**no internal caller can reach it** — `build_activation_field`'s energies come from
+`perceive()` / `cluster_sources()` and are always finite. It is caller-supplied input, the
+same class σ=inf was before §4 closed that one.
+
+**The call, which is Cagan's.** D-014 declined `energy` validation — but that decision was
+argued about *negative* energy, and this is *non-finite* energy. The two are not the same
+question and the earlier answer should not be stretched to cover it.
+
+- **(A) Close it in code.** Validate `energy` for finiteness at the same boundary σ is
+  validated. Consistent with §4's own reasoning — the NaN hazard was already judged "more
+  general than σ" — and makes O-12 true as written. Cost: one more boundary check, and it
+  reopens the question D-014 closed, though on different grounds.
+- **(B) Narrow O-12's wording** to "no non-finite value can pass the floor guard", and
+  record the seed-energy route as an accepted, asserted limitation. Cost: the invariant no
+  longer says "by any route", and a caller passing `nan` still gets `nan` back silently.
+- **(C) Validate both `energy` and the seed contribution** — a superset of (A) that also
+  covers any future pre-seeded value. Cost: scope creep beyond the defect.
+
+**Recommendation: (A).** §4 already established that the non-finite hazard is not σ's
+alone; leaving the one entry point that bypasses the guard is answering "can a NaN reach
+the output?" with "only if you hand us one." **(B) is defensible** and cheaper, but it
+weakens an invariant to fit an implementation, which is the move this project refuses
+elsewhere. Whichever is chosen, **O-12 cannot stay as it is** — it currently asserts
+something false.
+
 ---
 
 ## 5. The methodology change — the part that outlives the defects
@@ -468,7 +572,7 @@ split by lane.** Each owner rewrites its own; the lanes do not cross for this ei
 `test_nous_source_clustering.py` (1) · `test_nous_workspace.py` (1) ·
 `test_nous_workspace_broadcast.py` (2)
 
-*Tester-owned (5 files, 8 sites):*
+*Tester-owned (5 files, **9** sites — corrected from 8 on the tester's audit):*
 `test_tester_1c_adversarial.py` (3) · `test_tester_1c_mutation_battery.py` (1) ·
 `test_tester_1d_i_adversarial.py` (2) · `test_tester_1d_ii_adversarial.py` (1) ·
 `test_tester_2c_adversarial.py` (1)
@@ -579,7 +683,13 @@ The tester writes its own hostile tests; these are the properties, not the tests
 - **O-5** Generalised: over a battery of randomly generated adversarial graphs including
   high in-degree, cycles, self-loops and closed roads, every graph yields one bit pattern
   across fresh processes.
-- **O-6** Order-perturbation invariance: permuting `roads_from` leaves output bit-identical.
+- **O-6** Order-perturbation invariance: permuting `roads_from` leaves activation **values**,
+  `hops` and the breakthrough **set** bit-identical. **Corrected on the tester's
+  measurement:** the draft said "leaves output bit-identical", which claims more than holds.
+  `activation`'s **key order** necessarily moves — key order is first-arrival order, and
+  perturbing arrival order is the whole point of the probe (0 value differences in 6,090
+  comparisons; 1,159 key-order differences). Assert invariance of what is invariant, and
+  assert the key-order movement rather than pretending it away.
   **Required unconditionally** under the §2.3 decision, and it is the invariant that
   distinguishes a fix at the cause from a fix at the symptom. The tester already built the
   permuting store proxy during the 0b2 pass; it changes role here from demonstrating the
@@ -709,14 +819,28 @@ are not, and the input is the graph the defect was found on.
   N-1 failure has **two** possible causes and they mean opposite things:
   - **(i) the oracle is stale** — it still models the naive accumulator, so it agrees with a
     broken engine and disagrees with a correct one. This is O-8's TRAP firing, it is
-    *expected* on the first run after the fix, and it is **not** a falsifier. The signature
-    is precise: mismatches occur **only** where a node accumulates three or more
-    contributions, `flow` / `hops` / `broke_through` remain byte-identical, and the new
-    `activation` equals `fsum` over that node's own distinct per-edge flows. The builder
-    measured exactly this — 14,397 of 17,017 comparisons byte-identical with **zero**
-    mismatches among the spreads that have no 3+ convergence, and a maximum gap of 2 ULP in
-    the rest. Under this signature the correct action is to **re-base the oracle**, not to
-    revert the fix.
+    *expected* on the first run after the fix, and it is **not** a falsifier.
+
+    **The signature, CORRECTED 2026-07-26 — the builder's version of it was wrong in three
+    details and the tester falsified it by measurement.** The builder reported that
+    `flow`/`hops`/`broke_through` stay byte-identical, that mismatches occur only at 3+
+    contributions, and that 14,397 of 17,017 comparisons matched. Measured independently:
+    **`flow` does differ** (16 spreads against the git oracle, 35 against the reference),
+    **11 mismatches occur below the 3-contribution line** — which is the off-by-one this
+    spec had in its own boundary, see §2.3 — and the byte-identical count is **15,606**, not
+    14,397. Only "max gap 2 ULP" survived intact.
+
+    The *conclusion* nonetheless stands, and the tester established it on a stronger and
+    non-tunable criterion than the one it replaced: **every deviation is downstream
+    propagation, not a change in the transmission rule.** All out-roads of a moved source
+    shift by **one common ratio** — 25/25 and 35/35 groups, maximum relative move 4.44e-16.
+    A changed rule could not produce a single shared ratio across a source's whole
+    out-neighbourhood; a changed *input* to an unchanged rule is exactly what does.
+
+    Use the common-ratio criterion, not the byte-identity counts. Under it the correct
+    action is to **re-base the oracle**, not to revert the fix. Recording this because a
+    plausible-sounding signature that is wrong in its details is worse than none: it invites
+    the next reader to match on the wrong features.
   - **(ii) the fix genuinely changed neutral behaviour** — the real falsifier. The signature
     is anything the above does not cover: a mismatch at a node with fewer than three
     contributions that is not explained by a differing *upstream* flow, or any difference in

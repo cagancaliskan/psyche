@@ -520,3 +520,73 @@ invariant (O-4b) and one new reproduction case. O-15 and O-16 become uncondition
 `nous_workspace.py:426` conversion changes `Coalition.strength` values by ULPs on the competition
 path, so 1b, 1d-i and 1d-ii re-verification — already required by §2.4 — now has a specific place to
 look.
+
+## D-015 · 2026-07-26 · The 0c tester verdict is FAIL on O-12; three findings recorded, two calls open
+**Decided by:** tester (the verdict) · architect-pm (the record) · **the two calls below are NOT
+decided and belong to Cagan**
+**Context:** the tester adversarially verified brick 0c against SPEC-0c §6 (O-1 … O-17, incl. O-4b),
+re-based the N-1 oracle, and re-adjudicated the 0b2 suite. This entry records the verdict as fact
+and separates cleanly what was decided from what is open.
+
+**The verdict (recorded, not decided). FAIL.** Seventeen of the eighteen enumerated properties hold
+under adversarial and loop-closed conditions. **O-12 does not hold as written.** Coverage swept:
+five interpreters (3.10.17 / 3.11.15 / 3.12.4 / 3.13.14 / 3.14.4) × hash seeds {0,1,2,3,7,42}.
+`test_tester_0b2_adversarial.py` rewritten: 104 passed. `test_tester_0c_adversarial.py` new: 123
+passed. O-4 one bit pattern over 60 processes; O-4b one strength, one membership, one full ranking;
+O-16 one SHA-256 across all five interpreters; O-17 **104 with `.git` and 104 without** — the
+environment-dependence is closed.
+
+**What 0c did achieve, and it is most of the brick.** The determinism leg of Phase 0's done-means is
+restored and verified **structurally rather than sampled** (O-1…O-6, O-16), with integrity and
+purity re-verified (O-3). §1 case 1 and case 2 each yield one bit pattern across processes and
+interpreters. On that evidence `0a` and `0b` are **eligible** to return to `PROVEN` — the tester
+said so explicitly and correctly declined to re-label anything it had just certified. No label is
+changed by this entry.
+
+**OPEN CALL 1 — how is O-12 closed?** See SPEC-0c §4.1 for the failing input and the options.
+`spread_activation(s, isolated_node, energy=float('nan')).activation[A]` returns `nan`: the engine
+seeds `contributions = {seed: [energy]}` and §4's guard is on `transmitted`, so a seed that never
+transmits bypasses it. **Verified pre-existing** (the committed pre-0c engine returns `nan` on the
+same input) and **unreachable from any internal caller** (`build_activation_field`'s energies come
+from `perceive()`/`cluster_sources()` and are always finite). Options: (A) validate `energy` for
+finiteness at the boundary σ is validated; (B) narrow O-12's wording to "cannot pass the floor
+guard" and assert the seed route as an accepted limitation; (C) validate both energy and the seed
+contribution. **architect-pm recommendation: (A)** — §4 already judged the non-finite hazard "more
+general than σ", and D-014's refusal of `energy` validation was argued about *negative* energy, not
+*non-finite* energy. Whichever is chosen, **O-12 cannot stand as written**, because it currently
+asserts something false.
+
+**OPEN CALL 2 — the fourth order-dependent aggregate.** SPEC-0c §2.7. `src/nous_field.py:131` and
+`:124` accumulate with `+=` in source order — DEFECT-A's exact shape at a site 0c never touched
+(§2.5 enumerated builtin `sum()` sites; these are `+=`). Reproduced: `field.total[m1]` takes two
+distinct bit patterns over 3! source orders, and it reaches `Coalition.strength`. **Cross-process
+determinism is unaffected** — source order is program order, so the site is order-PINNED — and every
+O-4/O-4b/O-5/O-16 result stands. But "pinned, not independent" is exactly what D-013 ground 1
+refused for the activation accumulator. **Recommendation: a follow-on brick**, not a third widening
+of 0c. **This is the third time this project has met this shape** (BUG-0b1, §2.5's site, now this).
+
+**Three corrections the tester made to this project's own documents, all folded into SPEC-0c.**
+(i) §2.3/O-8's "in-degree ≤ 2" oracle boundary was **off by one**: the seed's own energy is a
+contribution, so a seed with in-degree 2 on a cycle accumulates three terms. The boundary is stated
+on *contributions*, not in-degree. (ii) §8's stale-oracle signature — which this log endorsed —
+was **wrong in three details**: `flow` does differ, 11 mismatches occur below the 3-contribution
+line, and the byte-identical count is 15,606 not 14,397. The conclusion survives on a stronger
+criterion the tester supplied: every deviation is downstream propagation, proved because all
+out-roads of a moved source shift by **one common ratio** (25/25 and 35/35 groups, max relative move
+4.44e-16). (iii) O-6 claimed more invariance than holds — values, `hops` and the breakthrough set
+are invariant; `activation`'s key order necessarily moves. Also: §5.1 under-counted tester-owned
+`round()` sites, 9 not 8.
+
+**One further behaviour change, documented not discovered** (SPEC-0c §2.8): `math.fsum` raises
+`OverflowError` where the pre-0c engine returned `inf`, at `energy=1e308` with 12-way convergence.
+Outside N-1's parameter sweep, which is why nothing saw it.
+
+**State of the tree.** Nothing is committed — correctly, since the commit sequence was conditioned
+on PASS. `tests/test_tester_0c_adversarial.py` is **not registered in `run_tests.py`**, so its 123
+assertions are outside the canonical capture; registering it is harness work and the tester was
+blocked from it by hook. The tester's `capture_run`/`ledger_sync` run has been **reverted by
+architect-pm**: it rewrote the ledger to 21 suites / 1,545 assertions from a run that *omitted the
+new suite*, and a ledger recording an incomplete capture is precisely the staleness the ledger
+exists to prevent. `tools/ledger.json` and `docs/TEST_OUTPUT.txt` are back at their committed
+values, `ledger_check` is clean apart from the 14 held-paper C2 findings, and **the capture is
+deferred until O-12 is resolved and the suite registered.**
