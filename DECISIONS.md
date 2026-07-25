@@ -160,3 +160,21 @@ the previous engine — the same gated-overlay pattern as `broadcast=False` and
 0 failures.
 **Cost:** none now. The tester still owes N-1 through N-9 from SPEC-0b2 §6, and the default
 flip owes a full re-validation of 1c and 1d.
+
+## D-010 · 2026-07-25 · The determinism bar is raised to five CPython minor versions
+**Decided by:** Cagan
+**Supersedes:** raises the bar set in D-007
+**Context:** D-007 established that a determinism claim is scoped to the environments it was
+checked in, and set `interpreters_required` to 3.11/3.12/3.13 as the target. Python 3.11 and
+3.13 were then installed and `tools/capture_run.py` swept five.
+**Decision:** `interpreters_required` is raised to **3.10, 3.11, 3.12, 3.13, 3.14**. A capture
+that does not cover all five leaves the determinism claim scoped down to whatever it did cover,
+and `capture_run.py` refuses to write a capture when any two interpreters disagree.
+**Evidence:** capture of 2026-07-25 22:30:23 +0300 on Darwin 24.5.0 arm64 swept python3.10
+(3.10.17), python3.11 (3.11.10), python3.12 (3.12.4), python3.13 (3.13.2) and python3.14
+(3.14.4). All five produced identical per-suite counts and identical overall verdicts:
+20 suites, 1,372 assertions, 0 failures.
+**Cost:** a longer capture, and a real obligation — dropping an interpreter now requires a
+decision entry rather than silence. The upside is that the determinism claim in the paper
+strengthens from "across randomized hash seeds" to "across randomized hash seeds and five
+CPython minor versions", which is the axis BUG-0b1 proved was load-bearing.

@@ -67,11 +67,14 @@
       "3.14"
     ],
     "interpreters_required": [
+      "3.10",
       "3.11",
       "3.12",
-      "3.13"
+      "3.13",
+      "3.14"
     ],
-    "_note": "interpreters_swept is what the captured run actually covered. Until it equals interpreters_required, the determinism claim is scoped to the swept set. See BUG-0b1."
+    "_note": "interpreters_swept is what the captured run actually covered, and it must cover interpreters_required or the determinism claim is scoped down to the swept set. Raised to five CPython minor versions on 2026-07-25 after the first five-way sweep passed; capture_run refuses to capture on disagreement. See BUG-0b1 and DECISIONS D-010.",
+    "captured_platform": "Darwin 24.5.0 arm64"
   },
   "bricks": {
     "0a": {
