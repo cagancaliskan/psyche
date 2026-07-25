@@ -1,9 +1,10 @@
 # SPEC-0c — Deterministic road ordering: removing the order-dependence class at its source
 
-**Status:** DRAFT · **one call is OPEN for Cagan** (§2.3), everything else is specified
+**Status:** SPECIFIED · ready for the builder · **one scope call open** (§2.5, new)
 **Revises:** 0a (substrate store), 0b (spreading activation), 0b2 (normalization overlay)
-**Depends on:** D-011 (the verdict), D-012 (the resolutions and the fix shapes)
-**Date:** 2026-07-25
+**Depends on:** D-011 (the verdict), D-012 (the resolutions and the fix shapes),
+D-013 (§2.3 — `fsum` joins the ordering fix)
+**Date:** 2026-07-25, amended 2026-07-26 with the §2.3 decision
 **Author lane:** architect-pm
 
 ---
@@ -106,13 +107,14 @@ memory per road grows by one dict slot.
 **No consumer needs to change.** Every consumer of `roads_from`/`roads_into`/`neighbors`
 keeps working; they simply now see a defined order.
 
-### 2.3 OPEN CALL — is `math.fsum` at the convergence accumulator worth its restructure?
+### 2.3 DECIDED — `math.fsum` joins the ordering fix; both land together in 0c
 
-D-012 delegated this to architect-pm. I am recording a recommendation rather than a
-decision, because it carries a re-validation cost and because §2.3's evidence changed my
-first answer.
+**Decided by Cagan, 2026-07-26. See D-013.** The accumulator uses `math.fsum` *and* the
+store is ordered. This section records the reasoning, because the grounds matter more than
+the verdict.
 
-**The distinction that decides it.** Ordering and `fsum` do not buy the same property:
+**The distinction that made it a real question.** Ordering and `fsum` do not buy the same
+property:
 
 | | ordering alone | ordering + `fsum` |
 |---|---|---|
@@ -120,51 +122,70 @@ first answer.
 | **Order-independence** (a *different* iteration order gives the same bits) | does **not** hold | holds |
 | Guarantee rests on | an implementation detail of the store | a property of the arithmetic |
 | Tester's permutation probe as acceptance test | unusable — it would correctly still fail | usable, and strictly stronger |
-| Tester's N-1 git oracle | **preserved** (both engines iterate the same ordered store) | **broken** (values change vs the pre-0b2 engine) |
+| Float semantics across CPython versions | still `sum()`-shaped at sibling sites, so version-dependent | uniform by construction |
+| Tester's N-1 git oracle | **breaks either way** — see the correction below | **breaks** (values change vs the pre-0b2 engine) |
 
-**Three arguments for adding `fsum`.**
+**The four grounds, in the order Cagan weighted them.**
 
-1. **A reordering change is already planned, in writing.** `nous_activation.py`'s own
-   design note contemplates *"a future locality prune [that wants] 'expand only the top-K
-   most active nodes' ... within a hop layer."* Top-K within a layer **reorders
-   iteration**. So order-independence is not speculative hardening against a hypothetical
-   refactor; it is a prerequisite for a feature the module has already written down.
-2. **The value-change cost is paid once, either way.** The ordering fix *by itself* already
-   moves every convergent float, from "whatever uuid order gave" to "creation order". Every
-   brick above must be re-verified regardless. Adding `fsum` in the same brick does not add
-   a second re-validation round; deferring it to `0c-ii` would.
-   This is *not* the situation SPEC-0b2 §0.2 guarded against. There, two changes had to be
-   separated because a measurement had to be attributed to one of them. Here there is no
-   measurement to attribute — both changes have the same observable consequence ("numbers
-   move by ULPs, re-verify"), so separating them buys no diagnostic power.
-3. **Ordering alone leaves the tester asserting the defect is still present, correctly.**
-   Of the DEFECT-A asserted-negatives, only the cross-process one flips under ordering
-   alone; the two permutation-based ones keep passing, because the engine *is* still
-   order-dependent — the order is merely pinned. A fix after which the adversarial suite
-   still truthfully asserts "reordering this source's out-roads changes the answer" has
-   closed the symptom, not the class.
+1. **DECISIVE — ordering alone leaves our own adversarial suite able to assert the
+   pathology, truthfully.** Of the six asserted-negatives, only the cross-process ones flip
+   under ordering alone; the two permutation-based ones keep passing, because the engine
+   *is* still order-dependent — the order is merely pinned. **A fix after which our own
+   adversarial suite can still honestly assert the pathology is a fix at the symptom, not
+   at the cause.** That is the whole test, and ordering alone fails it.
 
-**Two arguments against.**
+2. **The repository has already lost this exact bet once.** Ordering-alone's safety rests on
+   a recorded condition being honoured later — "do not reorder iteration without adding
+   `fsum` first." `experiments/harness.py:290` recorded this very hazard, in writing, in
+   this repository, and worked around it locally; the substrate carried `PROVEN` for a month
+   anyway and the engine was never fixed. A control that depends on a future reader
+   honouring a note has been tried here, on this hazard, and it failed. Do not buy it twice.
 
-1. **It breaks the tester's strongest N-1 oracle.** Under ordering alone, the git-recovered
-   pre-0b2 engine still validates neutral byte-identity, because both engines walk the same
-   ordered store. With `fsum` it cannot, and N-1 must be re-based (see §6, O-8).
-2. **The restructure lands in the hot loop.** The accumulator is a running total *read at
-   layer boundaries* (`frozen = {node: activation[node] ...}`), and contributions to a node
-   arrive across several layers. So `fsum` requires keeping per-target contribution lists
-   and reducing at each layer boundary, plus once at the end. That is contained, and
-   arguably makes the freeze step more explicit, but it is a real change to the loop's data
-   structure and it allocates per target.
+3. **A reordering change is already planned, in writing.** `nous_activation.py`'s own design
+   note contemplates *"a future locality prune [that wants] 'expand only the top-K most
+   active nodes' ... within a hop layer."* Top-K within a layer **reorders iteration**. So
+   order-independence is not speculative hardening against a hypothetical refactor; it is a
+   prerequisite for a feature the module has already written down — the very condition
+   ground 2 says will not be honoured.
 
-**Recommendation: do both, in 0c — ordering *and* `fsum` at the accumulator.** Argument 1
-is decisive on its own: the module has already planned the change that would silently
-re-break ordering-alone. Argument 2 removes the usual reason to defer.
+4. **Float correctness here is currently a function of which interpreter runs it, and
+   `fsum` makes it uniform.** This is the mechanism behind BUG-0b1's version-dependence, and
+   it is now confirmed rather than conjectured. BUG-0b1's fix was exactly
+   `sum(members.values())` → `math.fsum(members.values())`. CPython 3.12 changed the builtin
+   `sum()` to use **Neumaier compensated summation** for floats. Reproduced on this machine
+   over `[1.0, 1e-16, 1e-16, 1e-16]`:
 
-**If Cagan prefers ordering alone**, that is a coherent position — it discharges the stated
-done-means at lower cost — and the spec then requires, as the substitute for `fsum`'s
-defense-in-depth, that O-1 (the ordering contract test) be treated as a Tier 1 invariant
-and that any future within-layer prune be blocked behind a `0c-ii` that adds `fsum` first.
-That condition must be written into the roadmap, not left as a comment.
+   | interpreter | naive left-fold | builtin `sum()` | `math.fsum()` | `sum() == fsum()` |
+   |---|---|---|---|---|
+   | 3.10.17 | `…f03f` | `…f03f` | `01…f03f` | **False** |
+   | 3.11.15 | `…f03f` | `…f03f` | `01…f03f` | **False** |
+   | 3.12.4 | `…f03f` | `01…f03f` | `01…f03f` | True |
+   | 3.13.14 | `…f03f` | `01…f03f` | `01…f03f` | True |
+   | 3.14.4 | `…f03f` | `01…f03f` | `01…f03f` | True |
+
+   So the pre-0b1 code was **accidentally correct on 3.12+** and naive on 3.10/3.11. That is
+   precisely why BUG-0b1 was *"invisible on 3.12 and flipped the winner 8 times in 30 on
+   3.11"* — a fact the bug report recorded as an unexplained interpreter difference. It is
+   explained now. `math.fsum` is exactly-rounded on every version, so it makes the semantics
+   uniform by construction rather than accidentally-correct on new interpreters.
+
+**The one real cost, accepted.** The restructure lands in the hot loop. The accumulator is a
+running total *read at layer boundaries* (`frozen = {node: activation[node] ...}`), and
+contributions to a node arrive across several layers. `fsum` therefore requires keeping
+per-target contribution lists and reducing at each layer boundary, plus once at the end.
+That is contained, it arguably makes the freeze step more explicit, but it is a real change
+to the loop's data structure and it allocates per target.
+
+**CORRECTION — the N-1 git oracle is not a differentiator, and the earlier draft was wrong
+to list it as one.** The draft claimed the git-recovered pre-0b2 engine survives under
+ordering alone, "because both engines walk the same ordered store." That is false wherever
+it matters. Ordering changes the **accumulation sequence** at in-degree ≥ 3, so the
+pre-change engine run on an *ordered* store does not reproduce the values it produced on an
+*unordered* one — and on the unordered store it had no single answer to reproduce. The git
+oracle is well-defined only on the region where the pre-change engine was deterministic in
+the first place: **in-degree ≤ 2**. Outside it, the oracle never had a stable value, with or
+without `fsum`. It therefore breaks under both options, it is not evidence for either, and
+the spec carries the boundary explicitly instead of the objection.
 
 ### 2.4 Re-validation forced by DEFECT-A's fix
 
@@ -195,6 +216,54 @@ re-opening of the meaning bar.
 keeping it (sorting is harmless and the comment is now history worth reading) but
 **correcting its comment**, which attributes the hazard to `PYTHONHASHSEED` alone — the
 finding that it also varies at a fixed seed is exactly what the seed framing missed.
+
+### 2.5 NEW FINDING — three further naive float sums survive in `src/` · **OPEN CALL**
+
+Found while verifying §2.3 ground 4. Confirming that BUG-0b1's fix was `sum` → `math.fsum`
+raised the obvious next question — *where else does this project sum floats with the
+builtin?* — and the answer is three places:
+
+| Site | What it computes | Assessment |
+|---|---|---|
+| **`src/nous_workspace.py:428`** | `strength=sum(pruned_members.values())` — the **pruned winner's** strength | **The serious one.** Its own comment says it applies *"the same 'sum of member activations' rule coalition formation uses."* BUG-0b1 changed that rule to `math.fsum` at `nous_coalitions.py:226` and `:309` and **did not change this site**. So the pruned winner's strength is computed by a *different* rule than the raw winner's, by the version-dependent one, on the 1d-i winner path — the exact path BUG-0b1's flip occurred on. BUG-0b1's own ledger note says "`math.fsum` at both sites"; there were three. |
+| **`src/nous_workspace.py:235`** | `total_strength_after()` — the bounded aggregate the no-divergence test watches converge | Lower stakes: it informs a test's judgement rather than a selection. But a convergence test whose statistic is version-dependent is a weak test. |
+| **`src/nous_store.py:161`** | `Road.valence` = `sum(charges.values()) / max(1, len(...))` | Feeds `_open_close_on_crossing`'s comparisons against `_CLOSURE_THRESHOLD` (−0.75) and `_REOPEN_THRESHOLD` (−0.30) — a **categorical** closure decision resolved on a float sum, which is the exact shape the project's float rule prohibits. Reachability is low (a sum must land within a ULP of a threshold) but the shape is wrong. |
+
+**Why this is not already covered by the rest of 0c.** Ordering closes *order*-dependence;
+after 0c these dicts iterate deterministically anyway. It does **not** close
+*version*-dependence: `sum()` and `math.fsum()` return different bits on 3.10/3.11 and the
+same bits on 3.12+, regardless of order. So these three sites make the project's floats a
+function of which interpreter runs them.
+
+**And nothing currently checks that.** `capture_run` compares per-suite *counts* across
+interpreters, not values; the determinism probes all run under a single `sys.executable`.
+A genuine cross-interpreter value discrepancy at these sites would be reported by nothing
+in the repository today. That gap is what O-16 closes.
+
+**The call.** These are three one-line changes, and 0c is *already* paying the
+re-validation for 1b, 1d-i and 2c (§2.4), so folding them in costs little beyond the edit
+itself. The alternative is coherent but has a consequence that must be stated: **O-16
+(cross-interpreter bit-identity) is unachievable while any naive float sum remains.** So
+the choice is genuinely between the two:
+
+- **(A) Fold all three into 0c.** One brick closes the class everywhere it appears; O-16
+  becomes achievable; BUG-0b1's "both sites" note is corrected to three.
+- **(B) Fold in `nous_workspace.py:428` only**, as a BUG-0b1 completion, and defer the
+  other two. Smallest correct scope, but leaves O-16 unachievable and leaves two known
+  instances of a class we are mid-way through eliminating.
+- **(C) Defer all three to a separate brick.** Keeps 0c's scope exactly as specified, at
+  the cost of shipping a determinism brick that knowingly leaves version-dependent float
+  sums in the winner path.
+
+**Recommendation: (A).** The marginal cost is three lines inside a re-validation this brick
+is already performing, and the same ground-2 argument applies — a deferred condition in
+this repository, on this hazard, has already failed once. **(C) is not recommended**: it
+would mean answering "is Phase 0 deterministic?" with "yes, except where it depends on your
+interpreter."
+
+**This is a scope widening and therefore Cagan's call, not mine.** If (A) or (B) is taken,
+`docs/BUG-0b1-coalition-strength-determinism.md` also needs its "both sites" claim
+corrected in place, the way its §5 sentence already was.
 
 ---
 
@@ -307,14 +376,24 @@ demoted or promoted to what it actually establishes:
 | Probe | Status after 0c | What it actually establishes |
 |---|---|---|
 | **Hash-seed sweep** {0,1,2,3,7,42} | **Demoted** from "the guarantee" to a cheap regression probe | Catches a *newly introduced* hash-order dependence. It never established determinism and must stop being described as though it did. |
-| **Interpreter sweep** 3.10–3.14 (D-010) | **Kept, and re-justified** | Catches *version-dependent library semantics*, which is a different failure class entirely. Concrete evidence from the 0b2 pass: CPython 3.12 changed builtin `sum()` to Neumaier compensated summation, so identical code computes different floats on 3.11 and 3.12. That is exactly what this axis is for, and it is not what the seed axis is for. |
+| **Interpreter sweep** 3.10–3.14 (D-010) | **Kept, and re-justified on confirmed evidence** | Catches *version-dependent library semantics*, a different failure class entirely. CPython 3.12 changed builtin `sum()` to Neumaier compensated summation, so identical code computes different floats on 3.11 and 3.12 — reproduced in §2.3 ground 4. **This is the mechanism behind BUG-0b1's version-dependence**, which the bug report recorded as an unexplained interpreter difference: the pre-fix `sum()` was accidentally exact on 3.12+ and naive on 3.11. That is exactly what this axis is for, and it is not what the seed axis is for. |
 | **Order-perturbation probe** (NEW) | **Promoted to the actual guarantee** | Drives the engine through a store proxy that permutes `roads_from`, and requires identical bits. This tests the property *directly* instead of sampling an axis that may or may not perturb it. The tester already built the proxy for the 0b2 pass; 0c makes it the standard. Valid as an acceptance test only under the §2.3 `fsum` recommendation — under ordering alone it is replaced by O-1. |
 | **uuid4-invariance probe** (NEW) | Added | Builds the same logical graph in N fresh processes and requires identical bits. This is the direct test of the claim in §1, and it is what DEFECT-A failed. |
 
-**The general lesson, stated for the paper's methodology section:** *a coverage axis is only
-evidence for the property it can perturb.* Sweeping an axis that does not control the
-mechanism produces confidence without evidence, which is worse than no probe, because it
-is read as a guarantee. Prefer removing a dependence to sampling it.
+### 5.3 The generalisation, for the paper's methodology section
+
+> **A coverage axis is only evidence for the property it can perturb.**
+
+Sweeping an axis that does not control the mechanism produces confidence without evidence,
+which is worse than no probe at all, because it is read as a guarantee. This project swept
+`PYTHONHASHSEED` for a month against a nondeterminism that uuid4 caused, and the sweep
+could not have found it at any seed.
+
+The corollary the two findings share: **prefer removing a dependence to sampling it.** An
+axis you have eliminated needs no coverage argument. Ordering plus `fsum` removes the
+order dependence; validation removes the non-finite dependence. What remains sampled — the
+interpreter axis — is sampled because it is genuinely a property of the environment rather
+than of the program, and §2.3 ground 4 shows it earning its keep.
 
 ---
 
@@ -342,19 +421,32 @@ The tester writes its own hostile tests; these are the properties, not the tests
   high in-degree, cycles, self-loops and closed roads, every graph yields one bit pattern
   across fresh processes.
 - **O-6** Order-perturbation invariance: permuting `roads_from` leaves output bit-identical.
-  *Required only under the §2.3 `fsum` recommendation; under ordering alone this property
-  is false by design and O-1 carries the weight instead.*
+  **Required unconditionally** under the §2.3 decision, and it is the invariant that
+  distinguishes a fix at the cause from a fix at the symptom. The tester already built the
+  permuting store proxy during the 0b2 pass; it changes role here from demonstrating the
+  defect to certifying its absence.
 - **O-7** ASSERTED-NEGATIVE, to bound the claim: two **isomorphic graphs built in different
   insertion orders** may still differ. Must be asserted as a known limitation so the §1
   guarantee is never read as isomorphism-invariance.
 
 **Overlay (0b2)**
 
-- **O-8** N-1 re-established. Neutral byte-identity still holds at `normalization_sigma=None`
-  — but the oracle must be **re-based**: under ordering alone the git-recovered pre-0b2
-  engine still serves; under `fsum` it cannot, and the property becomes *"σ=None is
-  byte-identical to the same engine with the normalization branch removed,"* which the
-  tester's independent reference implementation provides.
+- **O-8** N-1 re-established, on a **re-based oracle**. The property remains *"with
+  `normalization_sigma=None` the engine is byte-identical to the same engine with the
+  normalization branch removed"* — but the git-recovered pre-0b2 engine can no longer
+  supply it, so the tester's independent reference implementation becomes the oracle.
+
+  > **THE TRAP, and it is the one most likely to be walked into.** The reference
+  > implementation must mirror the **intended** semantics — ordered iteration *and* `fsum`
+  > accumulation — not the semantics it was written against. A reference that still models
+  > the old naive accumulator will agree with a *broken* engine and disagree with a correct
+  > one. At that point it has silently stopped being an oracle and has become **a second
+  > copy of the bug**, and N-1 will read as a failure of the fix rather than a failure of
+  > the reference. Re-basing the oracle is part of the fix, not an afterthought to it.
+
+  The git oracle retains exactly one legitimate use, bounded by §2.3's correction: as a
+  cross-check on **in-degree ≤ 2** graphs, the region where the pre-change engine had a
+  single well-defined answer. It must not be pointed at anything above that boundary.
 - **O-9** Each road is read exactly once per expansion of a node (DEFECT-B's cause,
   asserted structurally, e.g. via a recording store proxy).
 - **O-10** A source with exactly one out-road transmits with factor exactly `1.0`, **on a
@@ -370,23 +462,33 @@ The tester writes its own hostile tests; these are the properties, not the tests
 
 - **O-14** No determinism probe anywhere in `tests/` or `experiments/` compares rounded
   values. Machine-checkable, and worth making a check rather than a habit.
+- **O-15** No builtin `sum()` over float values remains in `src/`, or each survivor carries
+  a written justification. Machine-checkable. *Conditional on §2.5 being taken.*
+- **O-16** **Cross-interpreter bit-identity**, which nothing checks today: the same graph
+  produces identical bit patterns on all five interpreters, not merely identical per-suite
+  counts. Scoped honestly to **one machine** — IEEE-754 arithmetic is exactly rounded and
+  version-independent, but transcendental functions (`math.exp` in the decay path) come
+  from the platform's libm, so this is a claim about interpreters, not about platforms.
+  *Unachievable while any naive float sum remains (§2.5).*
 
-### 6.1 The three asserted-negatives, and what replaces each
+### 6.1 The six asserted-negatives, and what replaces each
 
-D-012's acceptance signal is that these go **red on a correct fix**. Precisely which ones
-flip depends on the §2.3 call, and that difference is itself diagnostic:
+D-012's acceptance signal is that these go **red on a correct fix**. Under the §2.3
+decision, **all six flip**, and that is the point: the two that would have survived
+ordering alone are exactly the ones that certify the cause rather than the symptom.
 
-| Current asserted-negative (`test_tester_0b2_adversarial.py`) | Ordering alone | Ordering + `fsum` | Replaced by |
-|---|---|---|---|
-| `test_N2_DEFECT_A_reaches_real_processes_at_library_defaults` | **goes RED** | **goes RED** | O-4 |
-| `test_N2_DEFECT_A_convergent_accumulation_is_order_dependent` | still passes | **goes RED** | O-6 |
-| `test_N2_DEFECT_A_is_inherited_from_0b_not_introduced_by_the_overlay` | still passes | **goes RED** | O-6 (and retire — "inherited" is moot once fixed) |
-| `test_N5_DEFECT_B_lone_out_road_IS_attenuated_on_a_moving_clock` | **goes RED** | **goes RED** | O-10 |
-| `test_N7_DEFECT_C_sigma_infinity_and_nan_poison_the_result` | **RED** (now raises) | **RED** | O-11, O-12 |
-| `test_N7_non_positive_sigma_silences_rather_than_going_negative` | **RED** (now raises) | **RED** | O-11 |
+| Current asserted-negative (`test_tester_0b2_adversarial.py`) | After 0c | Replaced by |
+|---|---|---|
+| `test_N2_DEFECT_A_reaches_real_processes_at_library_defaults` | **RED** | O-4 |
+| `test_N2_DEFECT_A_convergent_accumulation_is_order_dependent` | **RED** — *would have survived ordering alone* | O-6 |
+| `test_N2_DEFECT_A_is_inherited_from_0b_not_introduced_by_the_overlay` | **RED** — *would have survived ordering alone* | O-6, then retire: "inherited" is moot once fixed |
+| `test_N5_DEFECT_B_lone_out_road_IS_attenuated_on_a_moving_clock` | **RED** | O-10 |
+| `test_N7_DEFECT_C_sigma_infinity_and_nan_poison_the_result` | **RED** (now raises) | O-11, O-12 |
+| `test_N7_non_positive_sigma_silences_rather_than_going_negative` | **RED** (now raises) | O-11 |
 
-Under ordering alone, two of the six keep passing — truthfully. **That is the tell that
-the class is closed only at its symptom**, and it is the sharpest form of §2.3's argument.
+**Six red asserted-negatives is the acceptance signal for 0c.** A run in which any of them
+still passes is a run in which that defect is still present — including the two
+permutation-based ones, whose survival is precisely what §2.3 ground 1 refused to accept.
 
 Minor, tester-owned: `load_pre_change_engine()` writes its temporary oracle into `tests/`
 and removes it in a `finally`, so an *interrupted* run can leave `tests/__pre0b2_oracle.py`
@@ -437,12 +539,16 @@ true again.
 **What 0c does not touch.** The meaning bar stays open. `1e` and `1e-prime` stay NO-GO on
 structural grounds and are not re-run (§2.4). Nothing here approaches a cognitive claim.
 
-**What this spec leaves open.** Exactly one thing: **§2.3, whether `fsum` joins the ordering
-fix in 0c.** My recommendation is that it should, because the module has already planned
-the within-layer prune that would silently re-break ordering-alone, and because the
-re-validation cost is paid once either way. The alternative is coherent and cheaper, and it
-carries one condition: any future within-layer prune must be blocked behind a `0c-ii`.
+**What this spec leaves open.** One thing, and it is new rather than carried over:
+**§2.5, whether the three surviving naive float sums in `src/` are folded into 0c.**
+Recommendation (A), fold all three; the marginal cost is three lines inside a
+re-validation this brick already performs, and deferring leaves O-16 unachievable.
+§2.3 is **closed** — `fsum` joins the ordering fix (D-013).
 
-**The single next action: Cagan decides §2.3.** The builder cannot start without it — the
-answer changes the shape of the accumulator, which of the six asserted-negatives are
-expected to flip, and whether the tester's N-1 oracle survives or must be re-based.
+**The single next action: hand SPEC-0c to the builder**, with §2.5 answered. The builder
+implements ordering + `fsum` at the store and the accumulator (§2), the single-read
+materialisation (§3), and σ validation plus the non-finite guard (§4), test-first, then
+hands to the tester for O-1 … O-16. The tester's acceptance signal is unambiguous and
+inverted from the usual one: **all six asserted-negatives in
+`tests/test_tester_0b2_adversarial.py` must go red**, and the two that would have survived
+ordering alone are the ones that matter most.
