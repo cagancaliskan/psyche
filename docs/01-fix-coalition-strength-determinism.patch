@@ -1,0 +1,28 @@
+--- /tmp/nous_coalitions.py.bak	2026-07-25 15:27:16.573203789 +0000
++++ src/nous_coalitions.py	2026-07-25 15:27:16.590779885 +0000
+@@ -67,6 +67,7 @@
+ from __future__ import annotations
+ 
+ from dataclasses import dataclass, field
++import math
+ from typing import Dict, List, Set, Optional
+ 
+ from nous_store import SubstrateStore
+@@ -222,7 +223,7 @@
+ 
+         members = {n: activation[n] for n in component}
+         seq = {n: store.get_node(n).creation_seq for n in component}
+-        strength = sum(members.values())
++        strength = math.fsum(members.values())
+         bt_here = component & breakthrough_targets
+         coalitions.append(Coalition(
+             members=members,
+@@ -305,7 +306,7 @@
+         members_set = by_basin[src]
+         members = {n: field_.total[n] for n in members_set}
+         seq = {n: store.get_node(n).creation_seq for n in members_set}
+-        strength = sum(members.values())
++        strength = math.fsum(members.values())
+         bt_here = members_set & breakthrough_targets
+         coalitions.append(Coalition(
+             members=members,

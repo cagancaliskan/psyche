@@ -64,9 +64,12 @@ caught it: **adversarial/property-based testing** and **loop-closure** (driving 
 system-generated rather than hand-placed inputs). Together they exposed **six distinct structural
 bugs** in the substrate/activation layers, and the same discipline — now split across an
 independent builder and an independent adversarial tester — governed the three later bricks that
-closed the cycle. The artifact's verified totals: **618 assertions across 12 test suites, all
-passing.** The first *behavioral* cognitive claim — semantic priming through the closed loop,
-graded against human association norms — has **not** yet been run and is the open frontier.
+closed the cycle. The artifact's verified totals: **1,372 assertions across 20 test suites, all
+passing.** The first *behavioral* cognitive claim has been attempted three times and refused
+three times, each before any graded number existed and each for a structurally distinct reason
+(semantic priming: circular; the fan effect: generating mechanism absent; interoception: signal
+flat on realistic work). The meaning bar is still open, and the recurring obstacle is the
+external yardstick rather than the mechanism.
 
 ---
 
@@ -601,9 +604,9 @@ failures. The suites now include the **independent tester-authored adversarial s
 | `test_tester_1c_mutation_battery.py` | tester: 1c randomized mutation battery | 5 |
 | `test_tester_1d_i_adversarial.py` | tester: adversarial 1d-i | 107 |
 | `test_tester_1d_ii_adversarial.py` | tester: adversarial 1d-ii | 110 |
-| **Total** | **12 suites** | **618 passed, 0 failed** |
+| **Total** | **20 suites** | **1,372 passed, 0 failed** |
 
-The total is **618 assertions across 12 suites, 0 failures**, including the cross-process
+The total is **1,372 assertions across 20 suites, 0 failures**, including the cross-process
 determinism checks, randomized mutation batteries, the no-divergence / no-lock-in stability checks
 on the broadcast write, and the resolved over-swallow case now driven through the live cycle. The
 verbatim run is reproduced in Appendix A.
@@ -611,8 +614,10 @@ verbatim run is reproduced in Appendix A.
 ![Figure 12: passing assertions per suite](diagrams/rendered/test_suite_bars.png)
 
 **Figure 12: Passing assertions per suite.** Counts taken verbatim from `docs/TEST_OUTPUT.txt`.
-(This rendered figure predates the source-clustering and workspace suites and shows the earlier
-five-suite/130-total run; the current canonical total is **618 across 12 suites**, tabulated above.)
+<!-- ledger:allow-count -->
+(This rendered figure predates the source-clustering and workspace suites and shows an earlier
+five-suite run — a historical snapshot, not the current count; the current canonical total is
+**1,372 across 20 suites**, tabulated above and recorded in `tools/ledger.json`.)
 Proves *mechanism* (and the *mechanics* of the higher layers); it does **not** measure cognitive
 quality.
 
@@ -687,8 +692,8 @@ anything the cognitive layers produce is cognitively meaningful: closing the loo
 result, and the one structural meaning-style check (§7.4) returned an honest NOT YET. "The mechanism
 is correct and deterministic" and "the mechanism reproduces a cognitive phenomenon" are different
 claims; this work earns the first and explicitly does not claim the second. The first **behavioral**
-cognitive claim — semantic priming through the closed loop, graded against human association norms —
-**has not been run**; it is the open frontier (§9).
+cognitive claim has been attempted three times and refused three times, each before any graded number
+existed; the meaning bar remains open (§9).
 
 ---
 
@@ -711,9 +716,11 @@ cognitive claim — semantic priming through the closed loop, graded against hum
   step that makes sources input-derived, and the only stage still a placeholder in the cycle.
 - **Out-roads-only spread (v1):** Activation follows directed out-roads; backward spread along
   in-roads is a deliberate later addition.
-- **The experiment scaffolding (Tier 3) is not in the canonical runner:** It is self-tested and
-  pre-registered, but it has had no independent tester or validator pass; the 12-suite/618-assertion
-  canonical run does not exercise it. Its existence does not establish a cognitive result.
+- **The experiment scaffolding (Tier 3) has had no validator pass:** It is pre-registered, and its
+  *mechanism* suites (`test_harness.py`, `test_priming_instrument.py`, `test_priming_1e.py`) were
+  since brought into the canonical runner and are tester-verified (SPEC-1e §10). The data-dependent
+  *experiment-result* scripts stay out of the runner: they need the uncommitted ~53 MB SWOW file and
+  make meaning claims. Its existence does not establish a cognitive result.
 - **Determinism is "given store state," not over the abstract graph:** The proven property is that the
   output is a deterministic function of the *store's state*, where state includes the integer
   `creation_seq` assigned in build order. Two stores that are isomorphic as abstract graphs but built
@@ -732,25 +739,55 @@ source-grouping problem (resolved by source-clustering, §3.5) and the missing b
 phase (built as the workspace, §3.6, closing the cycle). The remaining — and now central — item is the
 **first behavioral cognitive claim**, and it is **still open**.
 
-The next step is to validate the *closed cycle* against a **measurable cognitive effect whose
-direction is known independently of Nous**. **Semantic priming** is the worked example: in human
-studies, recognizing a target word is faster when preceded by a related prime than an unrelated one
-[11], a result the spreading-activation account explains via pre-activation spreading to related
-concepts [10]. With the bounded broadcast (§3.6) in place, a prime can now leave a trace that biases a
-later target *through the closed loop* — the precondition such a test needs. The protocol would fix a
-directional prediction **before** running the system, grade it against **human association norms**
-(SWOW), and compare against an unrelated control — so the input is no longer chosen to make the answer
-come out right (closing the loop at the level of evaluation). **This has not yet been run**, and until
-it is, no behavioral cognitive effect is claimed.
+> **This section has been substantially revised (2026-07-25).** The earlier text proposed semantic
+> priming as the next step and described it as un-run. It was subsequently designed, pre-registered,
+> and **refused before any graded number existed** — as were two successor attempts. The record now
+> reads as follows.
 
-- **Routing:** because this is a cognitive claim, it is for an independent validator to design and run
-  with a pre-registered, direction-fixed prediction — not for the builder to assert.
-- **Reusable scaffolding (Tier 3), not a substitute:** a pre-registered fan-effect and graded-priming
-  harness on SWOW already exists under `experiments/` and is an *instrument* to reuse; it is not a
-  substitute for the result through the closed loop, and it carries no independent tester/validator
-  pass.
+### 9.1 Three attempts, three structurally distinct refusals
+
+- **Semantic priming (1e) — CIRCULAR.** The substrate encodes SWOW association strength *as* the edge
+  weight, so "related targets activate more" would have been the weight map read straight back out.
+  The design's answer was a weight-blind leverage stratum on which the trivial baseline predicts
+  exactly zero separation; on this corpus it populated at N = 7 against a pre-registered floor of 30,
+  and the all-primes fallback margin was shown unreachable by arithmetic before any data. Frozen
+  **NO-GO**. This does **not** claim priming is absent; it is a statement about measurability under
+  anti-circularity controls on this corpus.
+- **Fan effect (1e′) — MECHANISM ABSENT.** Anderson's fan effect is a shared-budget/normalization
+  phenomenon. The engine gives every out-road the source's **full** activation, with no division
+  across out-edges and no per-source budget, so the measured fan response is flat to the last digit
+  across every fan level. There is no fan-dependent signal to grade, circular or otherwise. Frozen
+  **NO-GO**.
+- **Interoception (2c) — SIGNAL FLAT.** The chosen body-state signal is a stall fraction derived from
+  the wall-clock/CPU-time pair. A realistic `think()` is CPU-bound, so the signal sits at ≈ 0, and it
+  is scale-invariant in work magnitude. Any gradable band would have to be manufactured by injecting
+  waits, which the design forbids. Recorded **NOT-YET**. The *mechanism* is tester-verified and the
+  couplability pilot cleared its pre-registered floor; what failed is the yardstick, not the loop.
+
+### 9.2 The finding this produces
+
+The substrate and the cognitive cycle are real and tester-verified. The recurring hard problem is
+**finding an external yardstick whose signal the built mechanism can both produce and be graded
+against without circularity**. Three attempts hit three different walls — circular, mechanism-absent,
+signal-flat — and each was caught *before* a graded run rather than after an uninterpretable "pass".
+
+That pattern is the anti-circularity discipline working, and it is the cost of refusing to fool
+ourselves rather than evidence of failure. It is also **scoped**: it is a finding about *this
+substrate and these three yardsticks*, and is not offered as a general claim about
+spreading-activation models or about cognition.
+
+### 9.3 What remains
+
+- **Routing is unchanged:** a cognitive claim is for an independent validator to design and run with a
+  pre-registered, direction-fixed prediction — never for the builder to assert.
+- **The scaffolding is an instrument, not a substitute** for a result through the closed loop.
 - **Calibration follows, not precedes, a result:** only once an externally-graded effect exists can
   the uncalibrated constants begin to be calibrated against it rather than guessed.
+- **The open candidate** is to invert the direction of grading: rather than building the graph *from*
+  an external norm and then grading against that same norm, learn the association structure from
+  experience and grade the *learned* structure against the norm, with a co-occurrence baseline as the
+  anti-circularity control. That requires a learning rule with temporal credit assignment, which the
+  architecture does not yet have.
 
 ---
 
@@ -835,14 +872,14 @@ test_nous_activation.py             → RESULT: 35 passed, 0 failed
 test_nous_coalitions.py             → RESULT: 19 passed, 0 failed
 test_nous_field.py                  → RESULT: 13 passed, 0 failed
 test_nous_source_clustering.py      → RESULT: 49 passed, 0 failed
-test_nous_workspace.py              → RESULT: 80 passed, 0 failed
+test_nous_workspace.py              → RESULT: 83 passed, 0 failed
 test_nous_workspace_broadcast.py    → RESULT: 63 passed, 0 failed
 test_nous_perceive.py               → RESULT: 19 passed, 0 failed
 test_tester_1c_adversarial.py       → RESULT: 73 passed, 0 failed
 test_tester_1c_mutation_battery.py  → RESULT:  5 passed, 0 failed
 test_tester_1d_i_adversarial.py     → RESULT: 107 passed, 0 failed
 test_tester_1d_ii_adversarial.py    → RESULT: 110 passed, 0 failed
-                                       OVERALL: all 12 suites passed (0 failures); 618 assertions
+                                       OVERALL: all 20 suites passed (0 failures); 1,372 assertions
 ```
 
 The complete, unabridged capture (including every individual check label and the asserted-negative
@@ -851,7 +888,7 @@ notes) is the file `docs/TEST_OUTPUT.txt` in the repository.
 ## Appendix B: Reproduction
 
 ```bash
-# all 12 suites (handles the absolute PYTHONPATH for the determinism subprocesses):
+# all 20 suites (handles the absolute PYTHONPATH for the determinism subprocesses):
 python3 run_tests.py
 
 # a single suite directly:

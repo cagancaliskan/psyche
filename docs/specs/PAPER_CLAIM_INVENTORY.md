@@ -72,6 +72,7 @@ cross-process claim — but the *number of seeds is not uniform.*** — **PROVEN
   (`tests/test_nous_activation.py`, `tests/test_nous_coalitions.py`, `tests/test_nous_field.py`,
   `tests/test_nous_perceive.py`).
 
+<!-- ledger:allow-count -->
 > **RESOLVED (human decision, 2026-06-21) — Phase 0 scope vs. roadmap "Done means" line.** The roadmap's Phase 0
 > "Done means" line (`docs/nous_roadmap.md` line 65) reads: *"130 assertions, 56 test functions, five suites, all
 > passing."* The **current** TEST_OUTPUT.txt has no "five suites / 130 assertions" Phase-0 grouping; the two
@@ -384,6 +385,7 @@ modulates cognition. The "winner-flip" is a **mechanism** causal effect, not a c
 determinism claim uses exactly **"randomized process hash seeds (5–8 per suite, in fresh interpreters)"** (see
 P0-3).
 
+<!-- ledger:allow-count -->
 **CC-8.** Phase 0's **"130 assertions / 56 functions / 5 suites"** figure is a historical snapshot and may **not**
 be presented as the current canonical count. **RESOLVED (human decision, 2026-06-21):** present-day canonical
 Phase 0 = store (45) + activation (35) = **80 assertions**; the 130/56/5 figure may appear **only** as an

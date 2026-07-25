@@ -22,8 +22,8 @@ three properties. *Determinism:* identical results across process runs, includin
 hash seeds checked in fresh subprocesses. *Integrity:* graph indices and adjacency stay mutually
 consistent across every mutation. *Purity:* reads never mutate stored state. These are claims about
 mechanism. The upper two layers (the field and the "thought") run and are deterministic, but their
-*cognitive meaningfulness is explicitly not claimed.* The full suite is **130 assertions across 56
-test functions, all passing** (per suite: 45, 35, 19, 13, 18).
+*cognitive meaningfulness is explicitly not claimed.* The full suite is **1,372 assertions across
+20 suites, all passing**, including the independent tester-authored adversarial suites.
 
 **The central methodology finding:** One failure mode recurred at every layer. A component would
 *pass on a friendly, hand-built input* and break only under adversarial testing, or once the loop

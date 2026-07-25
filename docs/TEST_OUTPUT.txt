@@ -1,18 +1,17 @@
 ======================================================================
   NOUS — CAPTURED TEST OUTPUT (verbatim)
 ======================================================================
-Generated : 2026-06-21 18:39:11 +0300
-Machine   : Darwin 24.5.0 x86_64
-Python    : Python 3.12.4
-Command   : python3 run_tests.py   (one block per suite; PYTHONPATH=src:experiments)
-Note      : Built-in harness (not pytest); each suite prints RESULT: N passed, M failed
-            and exits non-zero on any failure. Includes builder + tester-authored
-            adversarial suites (test_tester_*). State: 1c + 1d-i + 1d-ii tester-verified;
-            1e priming + fan-effect meaning-bars NO-GO; 2c interoception (BodySensor +
-            default-off decay modulation) built and tester-verified, pilot GO 85%
-            (feasibility); meaning UNVALIDATED (validator graded run pending).
+Generated : 2026-07-25 22:30:23 +0300
+Machine   : Darwin 24.5.0 arm64
+Python    : Python 3.14.4   (primary — this transcript)
+Swept     : python3.10 (3.10.17), python3.11 (3.11.10), python3.12 (3.12.4), python3.13 (3.13.2), python3.14 (3.14.4)
+Hash seeds: [0, 1, 2, 3, 7, 42]  (per-suite determinism probes, fresh interpreters)
+Command   : python3 tools/capture_run.py   (wraps run_tests.py per interpreter)
+Note      : Built-in harness (not pytest); each suite prints RESULT: N passed,
+            M failed and exits non-zero on any failure. Every interpreter above
+            produced identical per-suite counts; a disagreement refuses capture.
+            Totals: 20 suites, 1372 assertions, 0 failures.
 ======================================================================
-
 ######################################################################
 # test_nous_store.py
 ######################################################################
