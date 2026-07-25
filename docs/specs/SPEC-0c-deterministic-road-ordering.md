@@ -51,11 +51,18 @@ the claim. The new claim is unconditional and therefore has to be earned structu
 
 **"For a fixed store state" is narrower than it looks, deliberately.** Determinism here is
 over *process runs of the same construction program*, not over *isomorphic graphs built by
-different construction programs*. Two stores holding the same logical graph, built by
-different insertion sequences, may still produce different floats after 0c. That is
-inherent to floating-point accumulation over a graph, it is not a defect, and §6 requires
-it be written down as an asserted-negative so nobody reads the guarantee as more than it
-is.
+different construction programs*.
+
+**Amended 2026-07-26, on the builder's witness.** The draft said two isomorphic graphs built
+in different insertion sequences "may still produce different floats." That was written
+against ordering-alone and is **wrong for the brick as decided**: because `fsum` is exactly
+rounded, the same multiset of contributions reduces to the same value whatever order it
+arrived in, so isomorphic graphs now agree on every activation **value**, bit for bit. The
+residual is not in the values, it is in the **key order** — `activation`'s insertion order,
+and therefore `ranked()`'s order among *tied* entries, still follows construction order.
+That is the honest bound, it is narrower and more useful than the one first written, and
+O-7 asserts it in that form. The guarantee must still never be read as full
+isomorphism-invariance.
 
 ---
 
@@ -265,6 +272,36 @@ interpreter."
 `docs/BUG-0b1-coalition-strength-determinism.md` also needs its "both sites" claim
 corrected in place, the way its §5 sentence already was.
 
+### 2.6 The one neutral-path bit change that is not a convergence effect · **OPEN CALL**
+
+Found by the builder, flagged rather than silently special-cased, and verified here:
+**`math.fsum([-0.0])` returns `+0.0`.** The pre-0c engine seeded `activation = {seed: energy}`
+directly and stored the caller's negative zero verbatim; the `fsum` reducer normalises it.
+
+```
+math.fsum([-0.0])            ->  0.0    bits 0000000000000000
+-0.0                                    bits 0000000000000080
+spread_activation(s, A, energy=-0.0).activation[A]  ->  bits 0000000000000000
+```
+
+`fsum([x]) == x` bit-for-bit for every other double tested, including `+0.0`, subnormals and
+infinities — so this is a single degenerate input, not a class. Numerically `-0.0 == +0.0`
+is True, and nothing in the engine or downstream distinguishes them; **only a bit-pattern
+comparison does — which is exactly what N-1 performs.** So this is the one input at which
+"byte-identical at the neutral value" acquires a documented exception.
+
+- **(A) Accept and assert it.** The builder has already written it as an asserted-negative.
+  Cost: N-1 carries one documented exception, at an input no caller has a reason to pass.
+- **(B) Special-case the one-element reduction** to preserve the caller's value. Cost: a
+  branch in the hot loop's reducer to preserve a distinction nothing reads.
+- **(C) Validate `energy`** alongside σ. Cost: widens §4's validation beyond the defect it
+  was written for, and rejects an input that is merely odd rather than harmful.
+
+**Recommendation: (A).** The value is numerically equal, no consumer distinguishes it, and
+adding a special case to the reducer to preserve a signed zero buys nothing a test can use.
+It is Cagan's call because it is an admitted exception to a headline property, however
+narrow.
+
 ---
 
 ## 3. DEFECT-B — read each road once per expansion
@@ -425,9 +462,11 @@ The tester writes its own hostile tests; these are the properties, not the tests
   distinguishes a fix at the cause from a fix at the symptom. The tester already built the
   permuting store proxy during the 0b2 pass; it changes role here from demonstrating the
   defect to certifying its absence.
-- **O-7** ASSERTED-NEGATIVE, to bound the claim: two **isomorphic graphs built in different
-  insertion orders** may still differ. Must be asserted as a known limitation so the §1
-  guarantee is never read as isomorphism-invariance.
+- **O-7** ASSERTED-NEGATIVE, to bound the claim, **in its amended form (§1)**: two
+  isomorphic graphs built in different insertion orders agree on every activation **value**
+  bit-for-bit, but differ in `activation`'s **key order** and therefore in `ranked()`'s
+  order among tied entries. Assert both halves — the agreement *and* the divergence — so
+  the §1 guarantee is read as exactly what it is.
 
 **Overlay (0b2)**
 
@@ -490,6 +529,24 @@ ordering alone are exactly the ones that certify the cause rather than the sympt
 still passes is a run in which that defect is still present — including the two
 permutation-based ones, whose survival is precisely what §2.3 ground 1 refused to accept.
 
+**Amended 2026-07-26 — the red list is larger than six, and the spec under-enumerated it.**
+The builder's run turned **four further tests** red, none of which indicates a problem with
+the fix. The tester must expect them and rewrite them, not investigate them:
+
+| Also red | Why | Action |
+|---|---|---|
+| `test_N5_DEFECT_B_scoping_absent_from_the_pre_change_engine` | Asserts the source contains `store.get_road(` **twice**. After §3 it appears **once** — which is the fix working. | Rewrite the expected count to 1. |
+| `test_N1_byte_identity_vs_git_pre_change_engine` | The git oracle models the naive accumulator. | Restrict to in-degree ≤ 2 per §2.3's boundary, or retire. |
+| `test_N1_byte_identity_vs_independent_reference` | **The trap in O-8, firing exactly as predicted.** The reference still models the old accumulator, so it now agrees with a broken engine. Tellingly, it produces byte-identical partition numbers to the git oracle — the signature of a second copy of the same accumulator. | **Re-base onto ordered + `fsum` semantics.** This is part of the fix, not an afterthought. |
+| `test_N1_byte_identity_loop_closed_on_a_system_built_substrate` | Same stale oracle. | Same re-base. |
+
+Two notes for whoever runs this. The two DEFECT-C asserted-negatives now **raise** rather
+than fail, which **aborts the suite** and hides the 13 tests after them (N-8 ×4, N-9 ×4, R1,
+R2, S1, S2). The builder ran those directly against the unmodified file: all pass, so O-13
+holds — but the tester must confirm that independently rather than take it on report. And
+the ordering of the rewrite matters: until the two raising tests are converted, the suite
+cannot report on anything downstream of them.
+
 Minor, tester-owned: `load_pre_change_engine()` writes its temporary oracle into `tests/`
 and removes it in a `finally`, so an *interrupted* run can leave `tests/__pre0b2_oracle.py`
 behind (it did once, during the 0b2 pass). It should write to a temp directory instead.
@@ -519,7 +576,25 @@ are not, and the input is the graph the defect was found on.
 
 - O-4 produces more than one bit pattern → the fix is incomplete; there is a second
   ordering source.
-- O-8 fails → the fix changed neutral behaviour, and 0b2's default-off guarantee is broken.
+- O-8 fails → **and here the spec must be read carefully, because it was wrong once.** An
+  N-1 failure has **two** possible causes and they mean opposite things:
+  - **(i) the oracle is stale** — it still models the naive accumulator, so it agrees with a
+    broken engine and disagrees with a correct one. This is O-8's TRAP firing, it is
+    *expected* on the first run after the fix, and it is **not** a falsifier. The signature
+    is precise: mismatches occur **only** where a node accumulates three or more
+    contributions, `flow` / `hops` / `broke_through` remain byte-identical, and the new
+    `activation` equals `fsum` over that node's own distinct per-edge flows. The builder
+    measured exactly this — 14,397 of 17,017 comparisons byte-identical with **zero**
+    mismatches among the spreads that have no 3+ convergence, and a maximum gap of 2 ULP in
+    the rest. Under this signature the correct action is to **re-base the oracle**, not to
+    revert the fix.
+  - **(ii) the fix genuinely changed neutral behaviour** — the real falsifier. The signature
+    is anything the above does not cover: a mismatch at a node with fewer than three
+    contributions that is not explained by a differing *upstream* flow, or any difference in
+    `flow`, `hops` or `broke_through`.
+
+  The draft carried only (ii), which would have told the tester the fix broke neutrality
+  when it had not. Distinguishing them is mandatory before N-1 is called a failure.
 - Any brick in §2.4 changes a **categorical** outcome (a winner, a grouping, a prune
   decision) rather than only a float → that is not a re-verification, it is a behaviour
   change, and it needs its own entry and its own gate before Phase 0 is re-labelled.
