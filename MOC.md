@@ -24,7 +24,8 @@ Modules: `nous_store` · `nous_activation` · `nous_field` · `nous_coalitions` 
 
 | Brick | Spec | Pre-registration | Verdict |
 |---|---|---|---|
-| 0b2 | [[docs/specs/SPEC-0b2-conserved-activation\|conserved activation]] | — | pre-check GO, decision open |
+| 0b | [[docs/BUG-0b1-coalition-strength-determinism\|BUG-0b1 §8]] | — | **PROVEN contested — DEFECT-A, status call open (D-011)** |
+| 0b2 | [[docs/specs/SPEC-0b2-conserved-activation\|conserved activation]] | — | **mechanism FAIL — N-2, N-5; §6 is the record** |
 | 1c | [[docs/specs/SPEC-1c-source-clustering\|source clustering]] | [[docs/experiments/EXP-1c-swow-recovery\|SWOW recovery]] | NOT YET (ARI 0.228 / 0.30) |
 | 1d | [[docs/specs/SPEC-1d-workspace-broadcast\|workspace + broadcast]] | — | mechanism PASS |
 | 1e | [[docs/specs/SPEC-1e-priming\|priming]] | [[docs/experiments/EXP-1e-priming\|priming]] | **NO-GO — circular** |
@@ -50,10 +51,15 @@ Foundation: substrate biology (the most mathematically concrete doc in the set).
 
 ## The program
 
-1. **Brick 0** — BUG-0b1, the determinism fix · *done, pending commit*
-2. **Brick 1** — SPEC-0b2, conserved activation · *pre-check GO, σ/floor decision open*
-3. **Brick 2** — temporal credit assignment via tag-and-capture · *not started*
-4. **Brick 3** — learn the graph, grade it against SWOW · *not started; the first
+1. **Brick 0** — BUG-0b1, the determinism fix · *landed, `PROVEN` at its own site — but the
+   same bug class is live one layer upstream (DEFECT-A, BUG-0b1 §8)*
+2. **Brick 1** — SPEC-0b2, conserved activation · *overlay landed default-off; tester verdict
+   **FAIL** on §6 (N-2, N-5); σ/floor decision still open; the default flip additionally needs
+   plumbing through the field builder*
+3. **Brick 1.5 (new, and it comes first)** — repair the foundation: DEFECT-A and DEFECT-B,
+   both open, both awaiting Cagan's call in D-011
+4. **Brick 2** — temporal credit assignment via tag-and-capture · *not started*
+5. **Brick 3** — learn the graph, grade it against SWOW · *not started; the first
    non-circular meaning bar available*
 
 ## The three walls

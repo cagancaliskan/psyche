@@ -1,10 +1,13 @@
 # BUG-0b1 — the competition tie-break is unreachable: `Coalition.strength` leaks
 # float-summation order into the winner
 
-**Status:** FOUND · REPRODUCED · FIXED · fix verified against the full canonical suite
+**Status:** FOUND · REPRODUCED · FIXED at its site · fix verified against the full canonical suite ·
+**§5 and §7 amended 2026-07-25 after the tester found the same bug class upstream — see §8**
 **Found:** 2026-07-25, while establishing a baseline before the SPEC-0b2 engine work
 **Severity:** the cross-process determinism property of the workspace competition (Tier 2)
-does not hold. Tier 1 (`nous_store`, `nous_activation`) is **not** affected.
+does not hold. ~~Tier 1 (`nous_store`, `nous_activation`) is **not** affected.~~ **That
+sentence is retracted:** `nous_store` is not affected, but `nous_activation` carries the same
+hazard at its accumulation site (DEFECT-A, §8), and the fix here does not reach it.
 **Caught by:** the project's own existing adversarial test —
 `test_tester_1d_i_adversarial.py::test_T6b` ("multi-basin tie graph identical across 6 seeds").
 The test was correct and it fires. It had never been run on an interpreter that exposes the bug.
@@ -103,12 +106,10 @@ removes the failure mode rather than avoiding it.
 |---|---|
 | T6b probe, 40 runs, fixed `PYTHONHASHSEED=0`, CPython 3.11 | 40/40 identical |
 | T6b probe, 6 seeds × 3 runs, CPython 3.11 / 3.12 / 3.13 | 1 distinct output on each |
-| Full canonical suite, CPython 3.11 | **20 suites, 1,372 passed, 0 failed** |
-| Full canonical suite, CPython 3.12 | **20 suites, 1,372 passed, 0 failed** |
-| Full canonical suite, CPython 3.13 | **20 suites, 1,372 passed, 0 failed** |
+| Full canonical suite, CPython 3.11 / 3.12 / 3.13 | green on each; no assertion added, weakened or removed |
 
-The canonical count is unchanged. No assertion was added, weakened, or removed to make
-this pass.
+<!-- ledger:allow-count -->
+*Canonical run at the moment the fix landed, retained as a labelled snapshot: 20 suites / 1,372 assertions / 0 failures, on each of CPython 3.11, 3.12 and 3.13. The current figure is in `tools/ledger.json`, and the sweep has since widened to five CPython minor versions (D-010).*
 
 ## 5. What this does and does not mean
 
@@ -117,6 +118,16 @@ untouched; the paper's engine-determinism sentence is about the store and the sp
 `spread_activation` accumulates convergent activation as a commutative sum into a dict per
 target — the value at a node does not depend on arrival order. Only the *aggregation across
 members* in `nous_coalitions` was order-sensitive.
+
+> **RETRACTED 2026-07-25 — this paragraph was wrong, and §8 records how it was caught.** The
+> accumulation in `spread_activation` is commutative in exact arithmetic and **is not commutative in
+> floating point**. Where three or more contributions converge on one node, the value at that node
+> *does* depend on arrival order, and arrival order comes from iterating a set of uuid4 ids. The
+> tester reproduced two distinct results across 48 fresh processes at library defaults. The
+> conclusion "does not affect the Tier 1 claim" therefore does not follow from the reason given
+> here; whether the Tier 1 claim survives is an open decision (D-011), not something this document
+> may assert. What remains true is narrower: **the fix in §3 is correct at its own site**, and `0a`
+> (`nous_store`) is not implicated.
 
 **Does affect the Tier 2 mechanism claim** for the workspace competition, for the interval
 during which the suite was reported green on 3.12 while the property did not hold on 3.11.
@@ -167,3 +178,49 @@ Suggested new asserted-negative, in the tester's lane: a probe that constructs t
 coalitions whose densities differ by exactly 1 ULP and asserts that the *documented*
 tie-break policy is what decides the winner — so that if a future change reintroduces
 ULP-scale asymmetry, the test names it rather than the winner silently flipping.
+
+## 8. The limitation was not future — it was already upstream (recorded 2026-07-25)
+
+§7 named the hazard class as something a *future* scoring path could inherit. The tester's
+independent SPEC-0b2 suite (`tests/test_tester_0b2_adversarial.py`, five interpreters, six hash
+seeds) found it **already present, one layer up**, and reported it as **DEFECT-A**.
+
+**The site.** `src/nous_activation.py:287`:
+
+```python
+activation[target] = activation.get(target, 0.0) + transmitted
+```
+
+a naive sequential float add, whose term order comes from
+`roads_from() -> iter(tuple(self._out[node_id]))` — iteration over a **set of uuid4 hex strings**
+(`src/nous_store.py:444`). Same bug class as this one: an order-dependent float sum feeding a
+comparison. Determinism holds bit-exactly at in-degree ≤ 2 and breaks when **three or more**
+contributions converge on one node.
+
+**The evidence.** At library defaults, on a 5-node graph built by `traverse()` alone
+(S → M0, M1, M2 → T; traverse counts (1,2), (1,3), (1,9)), **48 fresh processes produced two
+distinct results**: `0.10145973529004966` and `0.10145973529004967`. It reproduces with the 0b2
+overlay off, so 0b2 neither caused nor fixed it.
+
+**What this does to the fix in §3.** The fix is still correct at its site: `math.fsum` makes
+`Coalition.strength` order-independent *given its inputs*. But those inputs are node activations
+produced upstream, and on in-degree ≥ 3 graphs they are themselves 1-ULP-unstable across processes.
+**An order-independent sum of order-dependent terms is order-dependent.** So the competition's
+cross-process determinism is restored only for graphs where no node has three or more incoming
+contributions — which is not a restriction the project ever stated.
+
+**Two methodological consequences, both sharper than §6's.**
+
+1. **Pinning `PYTHONHASHSEED` cannot establish determinism for this substrate.** uuid4 ids differ
+   per process, so a fixed seed does not fix set-iteration order; DEFECT-A varies at a *fixed* seed.
+   §6 proposed widening the environment axis to interpreter versions, and that was right but not
+   sufficient — the randomisation that matters here is inside the *ids*, not inside the interpreter.
+2. **The project's determinism probes cannot see a bug of this size.** Every pre-existing
+   determinism probe in `tests/` compares `round(x, 9)`. The difference here, like the one this
+   document is about, is at the last unit in the last place. A probe that rounds cannot fail on
+   1 ULP. The tester's new suite compares **bit patterns** throughout, and that change of resolution
+   is what surfaced it.
+
+**Status.** DEFECT-A belongs to brick `0b`, not to `0b1` and not to `0b2`. It contests Phase 0's
+`PROVEN` label, and that call — with its re-validation cost — is Cagan's, recorded as **D-011** in
+`DECISIONS.md`. Nothing is re-labelled here on an agent's initiative.

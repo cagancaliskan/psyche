@@ -85,6 +85,19 @@ The substrate store and the spreading-activation engine are verified for three p
 
 These are claims about **mechanism**: the code does exactly and only what it says, reproducibly.
 
+> **Open defect, stated here rather than in a footnote (2026-07-25).** The determinism bullet above
+> is **contested for the activation engine**. An independent adversarial pass found that convergent
+> accumulation is a naive sequential float add whose term order comes from iterating a set of uuid4
+> ids, so on graphs where **three or more** contributions reach the same node, fresh processes
+> disagree in the last place: at library defaults, 48 processes produced two results differing by
+> 1 ULP. It holds bit-exactly at in-degree ≤ 2, the substrate store is not affected, and the
+> project's existing probes could not have seen it because they compare `round(x, 9)`. It is the
+> same bug class as the one described under "Determinism is scoped to the interpreters it was swept
+> on" below, one layer upstream, and it is **not yet fixed**. Full record:
+> [docs/BUG-0b1-coalition-strength-determinism.md](docs/BUG-0b1-coalition-strength-determinism.md)
+> §8. Whether Tier 1 keeps the `PROVEN` label while it stands is an open decision in
+> [DECISIONS.md](DECISIONS.md) (D-011), not something quietly resolved in a README.
+
 ### Tier 2 — tester-verified mechanism (the closed cognitive cycle)
 
 Coalition formation, the multi-source field, **source-clustering**, and the **workspace**
@@ -141,11 +154,11 @@ bar remains open after three structurally distinct refusals — see "Limitations
 
 ## Running the tests
 
-Pure standard library: nothing to install (Python 3.8+; developed and captured on CPython
-3.12).
+Pure standard library: nothing to install (Python 3.8+; the current capture is swept across
+CPython 3.10, 3.11, 3.12, 3.13 and 3.14, with 3.14 as the transcript interpreter).
 
 ```bash
-# all 20 suites, with the correct PYTHONPATH handled for you:
+# all 21 suites, with the correct PYTHONPATH handled for you:
 python3 run_tests.py
 
 # or a single suite directly (absolute PYTHONPATH so the determinism subprocess
@@ -177,6 +190,7 @@ with it.
 | `test_nous_workspace_broadcast.py` | bounded broadcast + feedback (1d-ii) | **63** |
 | `test_nous_perceive.py` | perception + closed end-to-end cycle | **19** |
 | `test_nous_bodysensor.py` | body-state sensor + modulation hook (2c) | **49** |
+| `test_tester_0b2_adversarial.py` | tester: adversarial 0b2 normalization overlay | **83** |
 | `test_tester_1c_adversarial.py` | tester: adversarial 1c | **73** |
 | `test_tester_1c_mutation_battery.py` | tester: 1c randomized mutation battery | **5** |
 | `test_tester_1d_i_adversarial.py` | tester: adversarial 1d-i | **107** |
@@ -188,15 +202,23 @@ with it.
 | `test_harness.py` | experiment harness mechanism | **17** |
 | `test_priming_instrument.py` | priming instrument mechanism | **42** |
 | `test_priming_1e.py` | blind three-arm selector mechanism | **67** |
-| **Total** | **20 suites** | **1,372 passed, 0 failed** |
+| **Total** | **21 suites** | **1,455 passed, 0 failed** |
 
-That total is **1,372 assertions across 20 suites, 0 failures**, including the builder suites
+That total is **1,455 assertions across 21 suites, 0 failures**, including the builder suites
 above and the **independent tester-authored adversarial suites** (`test_tester_*`), which add
 hostile and loop-closed checks: cross-process determinism in fresh interpreters under
 `PYTHONHASHSEED ∈ {0,1,2,3,7,42}`, randomized mutation batteries interleaved with integrity
 scans, no-divergence / no-lock-in stability of the broadcast write, and the resolved
 over-swallow case now driven through the live cycle (formerly an asserted-negative limitation,
 now a real pass).
+
+**A passing count is not a verdict.** `test_tester_0b2_adversarial.py` above has 83 passing checks
+and the tester's verdict on the brick it examines is **FAIL**: seven of nine specified invariants
+hold and two do not. Three of its checks are *asserted negatives* — they pass because a defect is
+present and are designed to turn red the moment it is fixed, so that a fix has to come back through
+the same suite. The defects, their scope, and which of them the change introduced versus inherited
+are recorded in [docs/specs/SPEC-0b2-conserved-activation.md](docs/specs/SPEC-0b2-conserved-activation.md)
+§6. Read the verdict, not the count.
 
 **Determinism is scoped to the interpreters it was swept on.** A cross-process determinism
 failure lived undetected in `Coalition.strength` for a month because the suite was only ever
@@ -219,8 +241,8 @@ therefore scoped to those five versions and to `PYTHONHASHSEED ∈ {0,1,2,3,7,42
 | | Files | Lines (`wc -l`) | Non-blank, non-comment (approx.) |
 |---|---:|---:|---:|
 | Source modules (`src/`) | 8 | — | — |
-| Test suites (`tests/` + `experiments/`) | 20 | — | — |
-| **Python total** | **28** | — | — |
+| Test suites in the canonical runner (`tests/` + `experiments/`) | 21 | — | — |
+| **Python total** | **29** | — | — |
 
 Line counts are deliberately not tabulated here any more: they were hand-maintained, they
 went stale, and nothing depends on them. Run `wc -l src/*.py tests/*.py` for current figures.
@@ -236,7 +258,7 @@ nous/
 ├── README.md               ← you are here
 ├── LICENSE                 ← MIT
 ├── requirements.txt        ← standard library only (no dependencies)
-├── run_tests.py            ← runs all 20 suites with the correct absolute PYTHONPATH
+├── run_tests.py            ← runs all 21 suites with the correct absolute PYTHONPATH
 ├── src/                    ← the 8 modules
 │   ├── nous_store.py               substrate store (Layer 1): graph, IDs, decay, closure
 │   ├── nous_activation.py          deterministic spreading activation + flow

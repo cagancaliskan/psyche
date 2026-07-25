@@ -178,3 +178,90 @@ and `capture_run.py` refuses to write a capture when any two interpreters disagr
 decision entry rather than silence. The upside is that the determinism claim in the paper
 strengthens from "across randomized hash seeds" to "across randomized hash seeds and five
 CPython minor versions", which is the axis BUG-0b1 proved was load-bearing.
+
+## D-011 · 2026-07-25 · The 0b2 tester verdict is FAIL; three defects recorded, and two follow-on calls are OPEN for Cagan
+**Decided by:** tester (the verdict) · architect-pm (the record) · **the two follow-on calls below
+are NOT decided and belong to Cagan**
+**Supersedes:** — (amends the "Tier 1 is not affected" sentence in BUG-0b1 §5, retracted in place)
+**Context:** the tester wrote an independent adversarial suite against SPEC-0b2 §6 and adjudicated
+the nine invariants. This entry records the verdict as fact, and separates cleanly what was decided
+from what is still open.
+
+**The verdict (recorded, not decided).** `tests/test_tester_0b2_adversarial.py`, 83 assertions, 0
+failures, identical on CPython 3.10.17 / 3.11.15 / 3.12.4 / 3.13.14 / 3.14.4, hash seeds
+{0, 1, 2, 3, 7, 42}. **Overall: FAIL — seven of nine invariants hold; N-2 and N-5 do not; N-7 holds
+only for finite sigma.** The overlay's own core arithmetic is sound. Three defects:
+
+- **DEFECT-A (N-2) — INHERITED FROM 0b, not caused and not fixed by 0b2.** Convergent accumulation
+  (`activation[target] = activation.get(target, 0.0) + transmitted`, `src/nous_activation.py:287`)
+  is a naive sequential float add whose term order comes from iterating a set of uuid4 ids
+  (`src/nous_store.py:444`). At library defaults, on a 5-node graph built by `traverse()` alone,
+  **48 fresh processes produced two distinct results** (0.10145973529004966 / 0.10145973529004967).
+  Holds bit-exactly at in-degree <= 2; breaks at in-degree >= 3. Reproduces with the overlay off.
+- **DEFECT-B (N-5) — INTRODUCED BY 0b2.** The overlay reads each road twice per expansion, and lazy
+  decay is applied at `clock.now()` on each read, so on a moving clock — the library default — a
+  lone out-road has `competing = 1.7265900376095544e-09` instead of exactly 0 and is attenuated by
+  0.99999999827341 instead of exactly 1.0. This contradicts SPEC-0b2 section 2 row 3 and N-5 as
+  written. Invisible to every existing test, which all use `Clock(simulated=True)`.
+- **DEFECT-C (N-7) — INTRODUCED BY 0b2.** `normalization_sigma` is unvalidated: `float('inf')` — the
+  exact value section 2 calls the one that "analytically recovers the current engine" — computes
+  `inf/inf = NaN`, and NaN passes the floor guard silently because every comparison with NaN is
+  False. `sigma <= 0` misbehaves too.
+
+**Two methodological findings, worth more than the defects.** (i) Pinning `PYTHONHASHSEED` cannot
+establish determinism for this substrate: uuid4 ids differ per process, so a fixed seed does not fix
+set-iteration order, and DEFECT-A varies at a fixed seed. (ii) Every pre-existing determinism probe
+in `tests/` compares `round(x, 9)`, which structurally cannot see a 1-ULP difference — and 1 ULP is
+exactly what BUG-0b1 was. The new suite compares bit patterns throughout.
+
+**Decision taken here (architect-pm, documentation only):** the verdict, the three defects and the
+two methodological findings are recorded in `docs/specs/SPEC-0b2-conserved-activation.md` section 6
+(rewritten as a verification record), in `docs/BUG-0b1-coalition-strength-determinism.md` section 8,
+and in the roadmap's Phase 0 blocks. SPEC-0b2 section 2's property table is corrected in place: two
+of its five claimed properties are false as written. `0b2` stays `BUILT-UNVALIDATED` with its
+**mechanism bar open** — it is explicitly **not** listed as tester-verified. No status label is
+changed on any brick by this entry.
+
+**OPEN CALL 1 — does `0b` keep its `PROVEN` label while DEFECT-A stands?** Phase 0's own "done
+means" is determinism across process runs; DEFECT-A falsifies it at library defaults on in-degree
+>= 3 graphs.
+- **(A) Demote `0b` to `BUILT-UNVALIDATED` until DEFECT-A is fixed and re-verified.** Most honest
+  reading of the evidence and of rule 3. Cost: the paper's Phase 0 claim narrows while the fix is in
+  flight, and "Phase 0 is PROVEN" appears in the README, the report, the outreach material and the
+  paper.
+- **(B) Keep `PROVEN` but scope it explicitly** — "deterministic on graphs where no node has three
+  or more convergent contributions" — and carry the scope everywhere the claim is made. Cost: a
+  scoped claim nobody can state in one sentence tends to get quoted unscoped; the project has
+  already been bitten by exactly that with the interpreter axis.
+- **(C) Fix DEFECT-A first (`math.fsum` over per-target contributions, or an accumulation keyed by
+  an intrinsic integer), then re-verify and keep `PROVEN` unbroken.** Cost: it is a change to the
+  `PROVEN` engine, so it re-opens 0b's own verification and touches every downstream float; the
+  tester's asserted-negative goes red by design and must be rewritten as a positive assertion.
+- **architect-pm recommendation: (C), with (B) as the interim wording until the fix lands.** The fix
+  is small and its shape is already established by BUG-0b1 (`math.fsum`, exactly rounded, therefore
+  order-independent), and a foundation defect fixed is worth more than a foundation defect
+  documented. But it is a Phase 0 change with a real re-validation cost, so it is not an agent's
+  call.
+
+**OPEN CALL 2 — how is DEFECT-B fixed, given it is 0b2's own?**
+- **(A) Read each road once per expansion** (compute `out_total` from the same road views the
+  transmission loop uses). Removes the defect at its cause, and removes the duplicated road read
+  that section 8 item 4 already flagged as a cost. Cost: a real change to the expansion loop's
+  shape; N-1 must be re-verified because the read pattern changes.
+- **(B) Freeze the clock for the duration of one expansion.** Fixes DEFECT-B and any sibling
+  double-read defect at once. Cost: a semantic change to lazy decay that reaches far beyond 0b2 and
+  would need its own spec.
+- **(C) Weaken the spec to say the factor is 1.0 "up to elapsed-time residue".** Cheapest, and
+  wrong: it is the failure mode of changing the claim to fit the result, and BUG-0b1 established
+  that ULP-scale residue is not harmless here.
+- **architect-pm recommendation: (A).** It is local, it is the cause, and it makes section 8 item 4
+  a benefit rather than a caveat. **(C) is refused** on the standing discipline.
+
+**Evidence:** the tester's suite and its end-of-run verdict banner, reproduced verbatim in
+`docs/TEST_OUTPUT.txt`; the reproductions quoted above; SPEC-0b2 section 6.
+**Cost:** none to the canonical counts — the suite is registered and the canonical run is 21 suites
+/ 1,455 assertions / 0 failures. The real cost is that **the mechanism bar for 0b2 is open, not
+cleared**, and that the second brick of 0b2 (the activation floor, D-008) and the default flip
+(D-009) are both blocked behind these two calls. The default flip additionally now needs the
+parameter plumbed through `build_activation_field()` and `think()`, which widens its re-validation
+surface from 1c/1d to **1a, 1b, 1c and 1d**.

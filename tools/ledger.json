@@ -22,10 +22,10 @@
   },
   "tests": {
     "_GENERATED": "by tools/ledger_sync.py from docs/TEST_OUTPUT.txt — do not hand-edit",
-    "suites": 20,
-    "assertions": 1372,
+    "suites": 21,
+    "assertions": 1455,
     "failures": 0,
-    "captured_at": "2026-07-25 22:30:23 +0300",
+    "captured_at": "2026-07-25 23:24:56 +0300",
     "captured_python": "3.14.4",
     "per_suite": {
       "test_nous_store.py": 45,
@@ -44,6 +44,7 @@
       "test_tester_1e_selector_adversarial.py": 92,
       "test_tester_1e_instrument_adversarial.py": 76,
       "test_tester_1e_loopclosed.py": 58,
+      "test_tester_0b2_adversarial.py": 83,
       "test_tester_2c_adversarial.py": 350,
       "test_harness.py": 17,
       "test_priming_instrument.py": 42,
@@ -83,17 +84,18 @@
     },
     "0b": {
       "name": "spreading activation",
-      "status": "PROVEN"
+      "status": "PROVEN",
+      "note": "PROVEN is CONTESTED as of 2026-07-25 and the status call is OPEN for Cagan (D-011, open call 1). Tester DEFECT-A: convergent accumulation at nous_activation.py:287 is a naive sequential float add over set-iteration order (nous_store.py:444, a set of uuid4 ids), so at library defaults a 5-node traverse()-built graph gave two distinct results across 48 fresh processes. Holds bit-exactly at in-degree <= 2; breaks at in-degree >= 3. Same class as BUG-0b1, one layer upstream; reproduces with the 0b2 overlay off, so 0b2 neither caused nor fixed it. Not silently re-labelled: see the roadmap Phase 0 block and BUG-0b1 section 8."
     },
     "0b1": {
       "name": "coalition strength determinism fix",
       "status": "PROVEN",
-      "note": "math.fsum at both sites; 40/40 identical at fixed seed on 3.10 where it was 20/10. See BUG-0b1."
+      "note": "math.fsum at both sites; 40/40 identical at fixed seed on 3.10 where it was 20/10. See BUG-0b1. AMENDED 2026-07-25: correct at its own site, but its INPUTS are 1-ULP-unstable across processes on in-degree >= 3 graphs (DEFECT-A on 0b), so an order-independent sum of order-dependent terms is still order-dependent. BUG-0b1 section 5's 'Tier 1 is not affected' sentence is retracted in place."
     },
     "0b2": {
       "name": "conserved activation (overlay, default-off)",
       "status": "BUILT-UNVALIDATED",
-      "note": "divisive normalization shipped default-off and neutral-verified. D-008 fixes sigma=1.0 on principle; the activation floor is the second brick and is NOT started. Tester still owes N-1..N-9."
+      "note": "MECHANISM BAR OPEN — tester verdict on SPEC-0b2 section 6 is FAIL (2026-07-25, tests/test_tester_0b2_adversarial.py, 83 assertions, five interpreters, six hash seeds): 7 of 9 invariants hold; N-2 and N-5 do not; N-7 only for finite sigma. NOT tester-verified — do not list it with 1c/1d/2c. Three defects, all shipped as asserted-negatives that pass while the defect is present: DEFECT-A (N-2) inherited from 0b; DEFECT-B (N-5) introduced here — each road is read twice per expansion, so on a moving clock a lone out-road has competing=1.7e-9 instead of 0 and is attenuated, contradicting SPEC-0b2 section 2 row 3; DEFECT-C (N-7) introduced here — sigma=inf/nan yields NaN activation that passes the floor guard silently. What holds: N-1 neutral byte-identity against two oracles (frozen clock only), N-3 purity, N-4 order-independence with a non-vacuous control, N-6 monotonicity, N-8 closed roads compete, N-9 no silent silencing. The overlay is NOT plumbed past spread_activation, which bounds the blast radius and widens the default flip's re-validation surface to 1a/1b/1c/1d. D-008 fixes sigma=1.0 on principle; the activation floor is the second brick and is NOT started. See D-011 for the two open calls."
     },
     "1a": {
       "name": "multi-source field",

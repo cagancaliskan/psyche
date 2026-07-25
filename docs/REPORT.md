@@ -64,7 +64,7 @@ caught it: **adversarial/property-based testing** and **loop-closure** (driving 
 system-generated rather than hand-placed inputs). Together they exposed **six distinct structural
 bugs** in the substrate/activation layers, and the same discipline — now split across an
 independent builder and an independent adversarial tester — governed the three later bricks that
-closed the cycle. The artifact's verified totals: **1,372 assertions across 20 test suites, all
+closed the cycle. The artifact's verified totals: **1,455 assertions across 21 test suites, all
 passing.** The first *behavioral* cognitive claim has been attempted three times and refused
 three times, each before any graded number existed and each for a structurally distinct reason
 (semantic priming: circular; the fan effect: generating mechanism absent; interoception: signal
@@ -585,10 +585,14 @@ establishes reproducibility of *mechanism* only, not cognition.
 
 ### 7.2 Test suite
 
-All figures below are taken verbatim from `docs/TEST_OUTPUT.txt` (CPython 3.12.4, Darwin 24.5.0
-x86_64) and re-confirmed by `python3 run_tests.py` for this report. Every suite passes with zero
-failures. The suites now include the **independent tester-authored adversarial suites**
-(`test_tester_*`), distinct from the builder suites.
+All figures below are taken verbatim from `docs/TEST_OUTPUT.txt` — a capture produced by
+`tools/capture_run.py`, which runs the whole suite under every CPython minor version on the machine
+(3.10, 3.11, 3.12, 3.13, 3.14; the transcript is 3.14.4 on Darwin 24.5.0 arm64) and refuses to write
+a capture if any two of them disagree. Every suite passes with zero failures. The counts are
+mirrored into `tools/ledger.json`, which is the single source of truth for every number quoted in
+this report, and `tools/ledger_check.py` fails the build if a document disagrees with it. The suites
+include the **independent tester-authored adversarial suites** (`test_tester_*`), distinct from the
+builder suites.
 
 | Suite | Layer / role | Checks passed |
 |---|---|---:|
@@ -597,42 +601,58 @@ failures. The suites now include the **independent tester-authored adversarial s
 | `test_nous_coalitions.py` | coalition formation | 19 |
 | `test_nous_field.py` | multi-source field | 13 |
 | `test_nous_source_clustering.py` | source-clustering (1c) | 49 |
-| `test_nous_workspace.py` | workspace competition + pruning (1d-i) | 80 |
+| `test_nous_workspace.py` | workspace competition + pruning (1d-i) | 83 |
 | `test_nous_workspace_broadcast.py` | bounded broadcast + feedback (1d-ii) | 63 |
 | `test_nous_perceive.py` | perception + closed end-to-end cycle | 19 |
+| `test_nous_bodysensor.py` | body-state sensor + modulation hook (2c) | 49 |
+| `test_tester_0b2_adversarial.py` | tester: adversarial 0b2 normalization overlay | 83 |
 | `test_tester_1c_adversarial.py` | tester: adversarial 1c | 73 |
 | `test_tester_1c_mutation_battery.py` | tester: 1c randomized mutation battery | 5 |
 | `test_tester_1d_i_adversarial.py` | tester: adversarial 1d-i | 107 |
 | `test_tester_1d_ii_adversarial.py` | tester: adversarial 1d-ii | 110 |
-| **Total** | **20 suites** | **1,372 passed, 0 failed** |
+| `test_tester_1e_selector_adversarial.py` | tester: 1e blind selector | 92 |
+| `test_tester_1e_instrument_adversarial.py` | tester: 1e broadcast-Δ instrument | 76 |
+| `test_tester_1e_loopclosed.py` | tester: 1e loop-closure | 58 |
+| `test_tester_2c_adversarial.py` | tester: adversarial 2c interoception | 350 |
+| `test_harness.py` | experiment harness mechanism | 17 |
+| `test_priming_instrument.py` | priming instrument mechanism | 42 |
+| `test_priming_1e.py` | blind three-arm selector mechanism | 67 |
+| **Total** | **21 suites** | **1,455 passed, 0 failed** |
 
-The total is **1,372 assertions across 20 suites, 0 failures**, including the cross-process
+The total is **1,455 assertions across 21 suites, 0 failures**, including the cross-process
 determinism checks, randomized mutation batteries, the no-divergence / no-lock-in stability checks
 on the broadcast write, and the resolved over-swallow case now driven through the live cycle. The
 verbatim run is reproduced in Appendix A.
+
+**A passing count is not a verdict.** The newest suite in the table above,
+`test_tester_0b2_adversarial.py`, illustrates the distinction the whole report rests on: its 83
+checks all pass, and the tester's verdict on the brick it examines is nevertheless **FAIL** — three
+of its checks are *asserted negatives* that pass precisely because a defect is present and will turn
+red the moment it is fixed. The defects and their scope are recorded in
+`docs/specs/SPEC-0b2-conserved-activation.md` §6. Read the verdict, not the count.
 
 ![Figure 12: passing assertions per suite](diagrams/rendered/test_suite_bars.png)
 
 **Figure 12: Passing assertions per suite.** Counts taken verbatim from `docs/TEST_OUTPUT.txt`.
 <!-- ledger:allow-count -->
 (This rendered figure predates the source-clustering and workspace suites and shows an earlier
-five-suite run — a historical snapshot, not the current count; the current canonical total is
-**1,372 across 20 suites**, tabulated above and recorded in `tools/ledger.json`.)
+five-suite run — a historical snapshot, not the current count; the current canonical total is the
+one tabulated above and recorded in `tools/ledger.json`.)
 Proves *mechanism* (and the *mechanics* of the higher layers); it does **not** measure cognitive
 quality.
 
 **Code size (measured):**
 
-| | Files | Lines (`wc -l`) | Non-blank, non-comment (approx.) |
-|---|---:|---:|---:|
-| Source modules (`src/`) | 7 | 2,370 | ~1,720 |
-| Test suites (`tests/`) | 12 | 7,303 | ~5,591 |
-| **Python total** | **19** | **9,673** | **~7,311** |
+| | Files |
+|---|---:|
+| Source modules (`src/`) | 8 |
+| Test suites in the canonical runner (`tests/` + `experiments/`) | 21 |
+| **Python total** | **29** |
 
-Per module (`wc -l`): `nous_store.py` 548, `nous_workspace.py` 533, `nous_coalitions.py` 324,
-`nous_activation.py` 281, `nous_source_clustering.py` 275, `nous_perceive.py` 248,
-`nous_field.py` 161. (`wc -l` is exact; the non-blank/non-comment column is an approximate
-`grep`-based count, not a precise tokenizer pass.)
+Line counts are deliberately no longer tabulated here. They were hand-maintained, they went stale
+between drafts, and nothing in the argument depends on them; run `wc -l src/*.py tests/*.py` for
+current figures. Assertion counts, which *are* load-bearing, live in `tools/ledger.json` and are
+checked against every document by `tools/ledger_check.py`.
 
 ### 7.3 The over-swallow limitation — resolved at the mechanism level (with a residual asserted-negative)
 
@@ -867,19 +887,28 @@ The following is the captured run from `docs/TEST_OUTPUT.txt` (per-suite result 
 of the totals in §7.2).
 
 ```
-test_nous_store.py                  → RESULT: 45 passed, 0 failed
-test_nous_activation.py             → RESULT: 35 passed, 0 failed
-test_nous_coalitions.py             → RESULT: 19 passed, 0 failed
-test_nous_field.py                  → RESULT: 13 passed, 0 failed
-test_nous_source_clustering.py      → RESULT: 49 passed, 0 failed
-test_nous_workspace.py              → RESULT: 83 passed, 0 failed
-test_nous_workspace_broadcast.py    → RESULT: 63 passed, 0 failed
-test_nous_perceive.py               → RESULT: 19 passed, 0 failed
-test_tester_1c_adversarial.py       → RESULT: 73 passed, 0 failed
-test_tester_1c_mutation_battery.py  → RESULT:  5 passed, 0 failed
-test_tester_1d_i_adversarial.py     → RESULT: 107 passed, 0 failed
-test_tester_1d_ii_adversarial.py    → RESULT: 110 passed, 0 failed
-                                       OVERALL: all 20 suites passed (0 failures); 1,372 assertions
+test_nous_store.py                      → RESULT:  45 passed, 0 failed
+test_nous_activation.py                 → RESULT:  35 passed, 0 failed
+test_nous_coalitions.py                 → RESULT:  19 passed, 0 failed
+test_nous_field.py                      → RESULT:  13 passed, 0 failed
+test_nous_source_clustering.py          → RESULT:  49 passed, 0 failed
+test_nous_workspace.py                  → RESULT:  83 passed, 0 failed
+test_nous_workspace_broadcast.py        → RESULT:  63 passed, 0 failed
+test_nous_perceive.py                   → RESULT:  19 passed, 0 failed
+test_nous_bodysensor.py                 → RESULT:  49 passed, 0 failed
+test_tester_0b2_adversarial.py          → RESULT:  83 passed, 0 failed   (verdict: FAIL — see §7.2)
+test_tester_1c_adversarial.py           → RESULT:  73 passed, 0 failed
+test_tester_1c_mutation_battery.py      → RESULT:   5 passed, 0 failed
+test_tester_1d_i_adversarial.py         → RESULT: 107 passed, 0 failed
+test_tester_1d_ii_adversarial.py        → RESULT: 110 passed, 0 failed
+test_tester_1e_selector_adversarial.py  → RESULT:  92 passed, 0 failed
+test_tester_1e_instrument_adversarial.py→ RESULT:  76 passed, 0 failed
+test_tester_1e_loopclosed.py            → RESULT:  58 passed, 0 failed
+test_tester_2c_adversarial.py           → RESULT: 350 passed, 0 failed
+test_harness.py                         → RESULT:  17 passed, 0 failed
+test_priming_instrument.py              → RESULT:  42 passed, 0 failed
+test_priming_1e.py                      → RESULT:  67 passed, 0 failed
+                                           OVERALL: all 21 suites passed (0 failures); 1,455 assertions
 ```
 
 The complete, unabridged capture (including every individual check label and the asserted-negative
@@ -888,14 +917,19 @@ notes) is the file `docs/TEST_OUTPUT.txt` in the repository.
 ## Appendix B: Reproduction
 
 ```bash
-# all 20 suites (handles the absolute PYTHONPATH for the determinism subprocesses):
+# all 21 suites (handles the absolute PYTHONPATH for the determinism subprocesses):
 python3 run_tests.py
+
+# the canonical capture: the same suite under every CPython on the machine, refusing
+# to write a capture if any two interpreters disagree
+python3 tools/capture_run.py
 
 # a single suite directly:
 PYTHONPATH="$PWD/src" python3 tests/test_nous_store.py
 ```
 
-Pure standard library; no dependencies (developed and captured on CPython 3.12.4). The suites use a
+Pure standard library; no dependencies (developed on CPython 3.12.4; the current capture is swept
+across CPython 3.10, 3.11, 3.12, 3.13 and 3.14, with 3.14.4 as the transcript). The suites use a
 built-in harness and must be run as scripts, not under pytest (§4).
 
 ## Appendix C: Figure index and sources

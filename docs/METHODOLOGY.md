@@ -41,6 +41,15 @@ one.
   `0,1,3,7,42`), `test_determinism_adversarial_across_hash_seeds` (coalitions, 8 seeds),
   `test_field_determinism_adversarial_across_hash_seeds` (field, 8 seeds),
   `test_slice_determinism_across_hash_seeds` (slice, 6 seeds).
+  > **Amended 2026-07-25 — two limits of this practice, both found by adversarial testing of it.**
+  > (i) **Sweeping hash seeds is not sufficient here.** uuid4 ids differ per *process*, so pinning
+  > `PYTHONHASHSEED` does not pin set-iteration order; a real defect (DEFECT-A, BUG-0b1 §8) varies
+  > at a *fixed* seed. Fresh processes are what catches it, and the seed sweep is a weaker
+  > guarantee than it reads as. (ii) **Comparing `round(x, 9)` cannot see the bug this project
+  > actually has.** Every pre-existing determinism probe rounds; both real determinism defects found
+  > so far were 1 ULP, at the 16th significant figure. A probe's *resolution* is part of its
+  > coverage. The tester's 0b2 suite compares bit patterns throughout, and that is the change that
+  > surfaced DEFECT-A.
 - **Adversarial inputs, not friendly ones:** The clustering and field acceptance tests use a
   two-dense-communities-joined-by-a-thin-bridge graph built specifically to defeat distance-based
   segmentation (`test_acceptance_multisource_recovers_communities`,
@@ -201,6 +210,12 @@ The honest boundary that falls out of this:
 
 > **Proven:** the substrate store and the spreading-activation engine are **deterministic**,
 > **integrity-preserving**, and **pure** (verified, including across process hash seeds).
+> **Amended 2026-07-25:** the determinism half of that sentence is **contested for the activation
+> engine**. Convergent accumulation is an order-dependent float sum, so on graphs where three or
+> more contributions reach one node, fresh processes disagree in the last place at library
+> defaults (DEFECT-A, `docs/BUG-0b1-coalition-strength-determinism.md` §8). The store is not
+> affected. Whether the engine keeps the `PROVEN` label is an open decision (D-011) and is
+> deliberately not settled inside a methodology document.
 >
 > **Tester-verified mechanism:** the field, coalitions, source-clustering, and workspace layers
 > make the cognitive cycle **close end-to-end** and are independently, adversarially verified for
