@@ -1,16 +1,16 @@
 ======================================================================
   NOUS — CAPTURED TEST OUTPUT (verbatim)
 ======================================================================
-Generated : 2026-07-25 22:30:23 +0300
+Generated : 2026-07-25 23:24:56 +0300
 Machine   : Darwin 24.5.0 arm64
 Python    : Python 3.14.4   (primary — this transcript)
-Swept     : python3.10 (3.10.17), python3.11 (3.11.10), python3.12 (3.12.4), python3.13 (3.13.2), python3.14 (3.14.4)
+Swept     : python3.10 (3.10.17), python3.11 (3.11.15), python3.12 (3.12.4), python3.13 (3.13.14), python3.14 (3.14.4)
 Hash seeds: [0, 1, 2, 3, 7, 42]  (per-suite determinism probes, fresh interpreters)
 Command   : python3 tools/capture_run.py   (wraps run_tests.py per interpreter)
 Note      : Built-in harness (not pytest); each suite prints RESULT: N passed,
             M failed and exits non-zero on any failure. Every interpreter above
             produced identical per-suite counts; a disagreement refuses capture.
-            Totals: 20 suites, 1372 assertions, 0 failures.
+            Totals: 21 suites, 1455 assertions, 0 failures.
 ======================================================================
 ######################################################################
 # test_nous_store.py
@@ -738,6 +738,133 @@ RESULT: 58 passed, 0 failed
 ============================================================
 
 ######################################################################
+# test_tester_0b2_adversarial.py
+######################################################################
+======================================================================
+  TESTER — SPEC-0b2 divisive normalization overlay, adversarial verification
+  Independent suite. src/ is untouched. Mechanism only, no meaning claim.
+======================================================================
+
+N-1 neutral byte-identity vs the ACTUAL pre-change engine (recovered from git)
+  (17017 comparisons against the real pre-change engine, 0 mismatches)
+
+N-1 neutral byte-identity vs an INDEPENDENT reimplementation of the algorithm
+  (15554 comparisons against an independent implementation, 0 mismatches)
+
+N-1 the DEFAULT argument is the neutral value (not merely an explicit None)
+
+N-1 LOOP-CLOSED: identity on a substrate the system's own pipeline built
+
+N-2 determinism: bit-exact across 6 hash seeds x every CPython on this machine
+  interpreters swept: python3.10, python3.11, python3.12, python3.13, python3.14
+
+N-2 DEFECT-A: convergent accumulation depends on out-road iteration order
+    0d7ceee443f9b93f  = 0.10145973529004966   from 4 of 6 orders
+    0e7ceee443f9b93f  = 0.10145973529004967   from 2 of 6 orders
+
+N-2 DEFECT-A scoping: present at sigma=None, so the overlay did not cause it
+  NOTE: The defect is present with the overlay OFF, so 0b2 did not introduce it and 0b2 does not fix it. Which particular graphs expose it differs between the two (the normalized values are different floats), but the class is identical.
+
+N-2 DEFECT-A reachability: fresh REAL processes disagree, no proxy involved
+    0d7ceee443f9b93f  = 0.10145973529004966   (30 of 48 runs)
+    0e7ceee443f9b93f  = 0.10145973529004967   (18 of 48 runs)
+  NOTE: DEFECT-A varies even at a FIXED PYTHONHASHSEED: uuid4 ids differ per process, so pinning the hash seed does not pin set-iteration order. Seed-pinning alone cannot establish determinism for this substrate.
+
+N-3 purity: the substrate is byte-identical after normalized spreads
+
+N-3 purity: the engine never calls a mutating store method (structural)
+
+N-3 purity: _persist_decay is never entered (last_touched is the witness)
+
+N-3 purity: repeated identical calls return identical bits
+
+N-4 sensitivity: a naive fold over these strengths IS order-dependent (else N-4 is vacuous)
+    fixture: 5 out-roads worn (1, 2, 3, 4, 5) times
+    naive left-fold: 2 distinct totals over 120 orders; math.fsum: 1
+    predicted transmitted values under a naive S_out: 2 distinct
+
+N-4 S_out order-independence: shuffle the out-roads, require identical bits
+
+N-4 S_out order-independence on random high-degree fans (property-based)
+
+N-4 S_out equals math.fsum of the out-road strengths, to the bit
+
+N-5 limiting case: every source has one out-road -> identical at every sigma
+
+N-5 lone out-road: factor exactly 1.0 (frozen clock)
+
+N-5 DEFECT-B: on a clock that advances, a LONE out-road is attenuated
+    read #1 (out_total) strength = 0.37442215
+    read #2 (transmit)  strength = 0.37442214827340997
+    competing = 1.7265900376095544e-09   (SPEC-0b2 requires exactly 0.0)
+    applied factor = 0.99999999827341  (SPEC-0b2 requires exactly 1.0)
+  NOTE: DEFECT-B is invisible to every existing test because they all use Clock(simulated=True), where dt <= 0 makes lazy decay a no-op. The LIBRARY DEFAULT, SubstrateStore() with Clock(simulated=False), is affected.
+
+N-5 DEFECT-B scoping: the pre-change engine read each road once
+
+N-6 transmitted activation is strictly decreasing in competing conductance
+
+N-6 transmitted activation is strictly increasing in sigma
+
+N-6 monotonicity, property-based over random adversarial graphs
+
+N-7 the gap to the unnormalized engine shrinks monotonically as sigma grows
+
+N-7 at a large finite sigma the result is byte-identical to sigma=None
+
+N-7 DEFECT-C: sigma is unvalidated — inf and nan produce NaN activation
+  NOTE: SPEC-0b2 §2 describes sigma -> infinity as the value that 'analytically recovers the current engine'. A caller who takes that literally and passes float('inf') gets NaN, not the current engine. Large finite sigma does work (see above).
+
+N-7 sigma <= 0 is unvalidated too — characterizing what actually happens
+
+N-8 a closed road still counts as competing conductance
+
+N-8 a closed road that transmits NOTHING still competes (the sharpest case)
+
+N-8 a closed road that breaks through is normalized like any other road
+
+N-8 observability wart: broke_through may list a road absent from flow
+
+N-9 a source whose out-degree drives every target under the floor goes observably empty
+
+N-9 the same graph is NOT silent unnormalized — the horizon change is visible
+
+N-9 the horizon closes monotonically as out-degree grows
+    (out_degree, reached): [(1, 1), (2, 2), (4, 4), (8, 8), (16, 16), (32, 0), (64, 0), (128, 0), (200, 0)]
+  NOTE: the horizon does not taper, it CLIFFS: every target survives up to out-degree 16 and none survives from 32 onward (sigma=1.0, floor=0.02). All roads here are equal-strength, so they cross the floor together. SPEC-0b2 §5 predicts degree-dependent censoring on SWOW's ~114 mean out-degree; this is that effect, and it is a step, not a gradient.
+
+N-9 silencing raises nothing and leaves the substrate intact
+
+R1 adversarial battery with normalization on: integrity, finiteness, sanity
+
+R2 edge cases: missing seed, isolated node, self-loop-only, empty graph
+
+S1 structural: the overlay is not plumbed past spread_activation
+  NOTE: This is consistent with default-off, and it bounds the blast radius of DEFECT-B and DEFECT-C to direct spread_activation callers. It also means the §5 default flip is not a one-line change: it needs plumbing through the field builder, which is a re-validation surface for 1a/1b/1c/1d.
+
+S2 structural: the parameter is keyword-only and defaults to None
+
+======================================================================
+  RESULT: 83 passed, 0 failed
+======================================================================
+  TESTER VERDICT ON SPEC-0b2 §6:  FAIL  (2 of 9 invariants do not hold)
+======================================================================
+    N-1 HOLDS   N-3 HOLDS   N-4 HOLDS   N-6 HOLDS   N-8 HOLDS   N-9 HOLDS
+    N-2 FAILS   DEFECT-A  convergent accumulation is order-dependent
+                          (nous_activation.py:287, plain + over a set order)
+                          INHERITED FROM 0b — reproduces at sigma=None.
+    N-5 FAILS   DEFECT-B  a LONE out-road is attenuated on a moving clock
+                          (out_total and road.strength are read at different
+                          clock instants, so competing != 0)
+                          INTRODUCED BY 0b2.
+    N-7 PARTLY  DEFECT-C  sigma=inf/nan yields NaN activation, unvalidated
+                          INTRODUCED BY 0b2.
+  The passing count above is not the verdict: the three defects are recorded
+  as asserted-negatives, which PASS while the defect is present. Fixing any of
+  them will turn its test red on purpose, forcing re-verification here.
+======================================================================
+
+######################################################################
 # test_tester_2c_adversarial.py
 ######################################################################
 ======================================================================
@@ -883,5 +1010,5 @@ RESULT: 42 passed, 0 failed
 RESULT: 67 passed, 0 failed
 
 ======================================================================
-  OVERALL: all 20 suites passed (0 failures)
+  OVERALL: all 21 suites passed (0 failures)
 ======================================================================

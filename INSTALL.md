@@ -73,7 +73,8 @@ git add -A && git commit -m "chore: install the psyche toolkit — ledger, skill
 ## Verify it took
 
 Start Claude Code in the repo. You should see the ledger block injected at session start —
-20 suites, 1372 assertions, the brick table, and the ledger_check status. Then:
+the suite and assertion totals, the brick table, and the ledger_check status — all read from
+`tools/ledger.json`, never typed here. Then:
 
 ```
 /psyche-orient
