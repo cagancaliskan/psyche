@@ -1,0 +1,254 @@
+{
+  "_README": [
+    "THE LEDGER — the single source of truth for every fact this project quotes.",
+    "",
+    "Rule: prose cites the ledger; the ledger never cites prose. If a number, a status",
+    "label, or a constant appears in a Markdown file, it must agree with this file, and",
+    "tools/ledger_check.py enforces that. This exists because the project has already",
+    "shipped four different assertion counts across five documents.",
+    "",
+    "Fields marked GENERATED are derived from docs/TEST_OUTPUT.txt by tools/ledger_sync.py.",
+    "Never hand-edit them; re-run the sync after capturing a test run.",
+    "Everything else is hand-maintained and should change only via a DECISIONS.md entry."
+  ],
+  "schema_version": 1,
+  "project": {
+    "paper_name": "Psyche",
+    "codebase_name": "Nous",
+    "author": "Cagan Caliskan",
+    "orcid": "0009-0000-2993-1421",
+    "doi": "10.5281/zenodo.20474613",
+    "repo": "github.com/cagancaliskan/nous"
+  },
+  "tests": {
+    "_GENERATED": "by tools/ledger_sync.py from docs/TEST_OUTPUT.txt — do not hand-edit",
+    "suites": 20,
+    "assertions": 1372,
+    "failures": 0,
+    "captured_at": "2026-07-25 22:30:23 +0300",
+    "captured_python": "3.14.4",
+    "per_suite": {
+      "test_nous_store.py": 45,
+      "test_nous_activation.py": 35,
+      "test_nous_coalitions.py": 19,
+      "test_nous_field.py": 13,
+      "test_nous_source_clustering.py": 49,
+      "test_nous_workspace.py": 83,
+      "test_nous_workspace_broadcast.py": 63,
+      "test_nous_perceive.py": 19,
+      "test_nous_bodysensor.py": 49,
+      "test_tester_1c_adversarial.py": 73,
+      "test_tester_1c_mutation_battery.py": 5,
+      "test_tester_1d_i_adversarial.py": 107,
+      "test_tester_1d_ii_adversarial.py": 110,
+      "test_tester_1e_selector_adversarial.py": 92,
+      "test_tester_1e_instrument_adversarial.py": 76,
+      "test_tester_1e_loopclosed.py": 58,
+      "test_tester_2c_adversarial.py": 350,
+      "test_harness.py": 17,
+      "test_priming_instrument.py": 42,
+      "test_priming_1e.py": 67
+    }
+  },
+  "determinism": {
+    "hash_seeds": [
+      0,
+      1,
+      2,
+      3,
+      7,
+      42
+    ],
+    "interpreters_swept": [
+      "3.10",
+      "3.11",
+      "3.12",
+      "3.13",
+      "3.14"
+    ],
+    "interpreters_required": [
+      "3.11",
+      "3.12",
+      "3.13"
+    ],
+    "_note": "interpreters_swept is what the captured run actually covered. Until it equals interpreters_required, the determinism claim is scoped to the swept set. See BUG-0b1."
+  },
+  "bricks": {
+    "0a": {
+      "name": "substrate store",
+      "status": "PROVEN"
+    },
+    "0b": {
+      "name": "spreading activation",
+      "status": "PROVEN"
+    },
+    "0b1": {
+      "name": "coalition strength determinism fix",
+      "status": "PROVEN",
+      "note": "math.fsum at both sites; 40/40 identical at fixed seed on 3.10 where it was 20/10. See BUG-0b1."
+    },
+    "0b2": {
+      "name": "conserved activation (overlay, default-off)",
+      "status": "BUILT-UNVALIDATED",
+      "note": "divisive normalization shipped default-off and neutral-verified. D-008 fixes sigma=1.0 on principle; the activation floor is the second brick and is NOT started. Tester still owes N-1..N-9."
+    },
+    "1a": {
+      "name": "multi-source field",
+      "status": "BUILT-UNVALIDATED"
+    },
+    "1b": {
+      "name": "coalition formation",
+      "status": "BUILT-UNVALIDATED"
+    },
+    "1c": {
+      "name": "source clustering",
+      "status": "BUILT-UNVALIDATED"
+    },
+    "1d-i": {
+      "name": "competition + pruning",
+      "status": "BUILT-UNVALIDATED"
+    },
+    "1d-ii": {
+      "name": "bounded broadcast",
+      "status": "BUILT-UNVALIDATED"
+    },
+    "1e": {
+      "name": "semantic priming",
+      "status": "NO-GO"
+    },
+    "1e-prime": {
+      "name": "fan effect",
+      "status": "NO-GO"
+    },
+    "2c": {
+      "name": "interoception",
+      "status": "BUILT-UNVALIDATED",
+      "note": "mechanism tester-PASS; timing-pair meaning yardstick NOT-YET"
+    },
+    "2a": {
+      "name": "memory hierarchy",
+      "status": "DESIGNED"
+    },
+    "2b": {
+      "name": "sleep / consolidation",
+      "status": "DESIGNED"
+    },
+    "2d": {
+      "name": "emotional regulation",
+      "status": "DESIGNED"
+    },
+    "2e": {
+      "name": "motivation architecture",
+      "status": "DESIGNED"
+    },
+    "3a": {
+      "name": "abstraction engine",
+      "status": "DESIGNED"
+    },
+    "3b": {
+      "name": "self model",
+      "status": "DESIGNED"
+    },
+    "3c": {
+      "name": "grounded language",
+      "status": "DESIGNED"
+    }
+  },
+  "valid_statuses": [
+    "PROVEN",
+    "BUILT-UNVALIDATED",
+    "DESIGNED",
+    "HORIZON",
+    "NO-GO",
+    "NOT-YET",
+    "FIXED-UNCOMMITTED",
+    "PRE-CHECK-GO-DECISION-OPEN"
+  ],
+  "results": {
+    "1c_ari_mean": 0.228,
+    "1c_ari_bar": 0.3,
+    "1c_lift": 0.223,
+    "1c_lift_bar": 0.15,
+    "1c_sign_test": "170/200",
+    "1c_p": "6.2e-25",
+    "1e_n_s0": 7,
+    "1e_n_s0_bar": 30,
+    "1e_n_s_plus": 296,
+    "1e_r_w": 0.97,
+    "1e_arm_n": 300,
+    "2c_pilot_flip_rate": 0.85,
+    "2c_pilot_flips": "34/40",
+    "2c_pilot_floor": 0.3,
+    "2c_friction_band_realistic": [
+      0.79,
+      0.93
+    ],
+    "fan_flat_value": 0.2433743975,
+    "swow_edges": 1388741,
+    "swow_nodes": 133763,
+    "swow_cues": 12217
+  },
+  "uncalibrated_constants": {
+    "DEFAULT_FLOOR": 0.02,
+    "DEFAULT_DECAY_PER_HOP": 0.65,
+    "DEFAULT_SEED_ENERGY": 1.0,
+    "DEFAULT_HOP_BUDGET": 6,
+    "DEFAULT_PROXIMITY_FRACTION": 0.35,
+    "DEFAULT_MIN_SIZE_GUARD": 3,
+    "MODULATION_SPAN": 0.6,
+    "broadcast_gain": "inherited from strengthen() default; not tuned",
+    "normalization_sigma": "1.0 — fixed on principle per D-008, not fitted; default is None (off)"
+  },
+  "forbidden_claim_terms": [
+    "is conscious",
+    "is sentient",
+    "is a mind",
+    "is an AGI",
+    "achieves AGI",
+    "is aware",
+    "genuinely understands",
+    "truly understands",
+    "validated cognitive model",
+    "proves cognition",
+    "reproduces cognition",
+    "the system feels",
+    "it feels",
+    "subjective experience",
+    "phenomenal"
+  ],
+  "claim_quarantine_paths": [
+    "docs/design/",
+    "docs/specs/PAPER_CLAIM_INVENTORY.md",
+    "docs/specs/SPEC-2c-interoception.md",
+    "docs/experiments/EXP-2c-interoception.md",
+    "DECISIONS.md",
+    "tools/ledger.json",
+    "tools/ledger_check.py"
+  ],
+  "count_quarantine_paths": [
+    "docs/experiments/",
+    "docs/specs/PAPER_CLAIM_INVENTORY.md",
+    "WORKING-NOTES.md"
+  ],
+  "meaning_bar": {
+    "status": "OPEN",
+    "attempts": [
+      {
+        "id": "1e",
+        "wall": "circular",
+        "date": "2026-06-21"
+      },
+      {
+        "id": "1e-prime",
+        "wall": "mechanism-absent",
+        "date": "2026-06-21"
+      },
+      {
+        "id": "2c",
+        "wall": "signal-flat",
+        "date": "2026-06-21"
+      }
+    ],
+    "next_candidate": "brick 3 — learn the graph from an external corpus, grade the LEARNED structure against SWOW, with a co-occurrence/PMI baseline as the anti-circularity gate"
+  }
+}
