@@ -206,7 +206,11 @@ competition before the `creation_seq` tie-break could run. It was invisible on 3
 flipped the winner 10 times in 30 on 3.10, at a *fixed* hash seed. Fixed with `math.fsum`;
 see [docs/BUG-0b1-coalition-strength-determinism.md](docs/BUG-0b1-coalition-strength-determinism.md).
 Captures are now produced by `tools/capture_run.py`, which sweeps every CPython on the
-machine and refuses to capture if they disagree.
+machine and refuses to capture if they disagree. **The current capture was swept across five
+CPython minor versions — 3.10, 3.11, 3.12, 3.13 and 3.14 — on macOS (Darwin arm64), all
+producing identical per-suite counts and identical verdicts.** The determinism claim is
+therefore scoped to those five versions and to `PYTHONHASHSEED ∈ {0,1,2,3,7,42}`, and
+`tools/ledger.json` records that scope so it cannot silently narrow.
 
 ---
 

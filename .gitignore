@@ -29,3 +29,5 @@ experiments/data/*.tsv
 # its build log are not tracked.
 experiments/results/exp1c_external_partition.tsv
 experiments/results/exp1c_partition_build.txt
+.claude/settings.local.json
+.obsidian/
