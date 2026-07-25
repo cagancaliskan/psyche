@@ -498,6 +498,41 @@ demoted or promoted to what it actually establishes:
 | **Order-perturbation probe** (NEW) | **Promoted to the actual guarantee** | Drives the engine through a store proxy that permutes `roads_from`, and requires identical bits. This tests the property *directly* instead of sampling an axis that may or may not perturb it. The tester already built the proxy for the 0b2 pass; 0c makes it the standard. Valid as an acceptance test only under the §2.3 `fsum` recommendation — under ordering alone it is replaced by O-1. |
 | **uuid4-invariance probe** (NEW) | Added | Builds the same logical graph in N fresh processes and requires identical bits. This is the direct test of the claim in §1, and it is what DEFECT-A failed. |
 
+### 5.4 A count that depends on the environment is not a fact about the code
+
+Found by the builder during the §2.5 pass, and verified here. `tests/test_tester_0b2_adversarial.py`
+reports **83** assertions in the repository and **81** in a checkout without `.git` — a
+`git archive` extract, a release tarball, a Docker `COPY`, the Zenodo artifact:
+
+```
+git archive HEAD | tar -x -C /tmp/nogit   # no .git present
+  NOTE: git unavailable — oracle 1 skipped; oracle 2 (independent reference) still runs
+  NOTE: git unavailable — pre-change read-count comparison skipped
+```
+
+Reason for the pragma below: this section exists *because* the figure disagrees with the
+ledger. "Correcting" it to the ledger's number would delete the finding it documents.
+
+<!-- ledger:allow-count -->
+That run ends `RESULT: 81 passed, 0 failed`, against the **83** the ledger records for the same suite on the same code.
+
+The cause is benign and the consequence is not. Two tests degrade gracefully when the
+git-recovered oracle is unavailable — which is correct behaviour — but they degrade by
+emitting **fewer checks**, so the total moves. `tools/ledger_check.py` C1 treats per-suite
+counts as fixed facts and runs in CI, so it would report a stale ledger for a reason that
+has nothing to do with the code.
+
+**The principle, which is the same one this whole brick is about, one level up: a number
+the project publishes must be a property of the code, not of the environment that ran it.**
+The project already refuses to let a determinism claim depend on an interpreter; it should
+equally refuse to let its headline assertion count depend on whether version-control
+metadata happens to be present. O-17 requires the count be made invariant — the graceful
+degradation stays, but the *number of checks* must not move: record git-availability as an
+observation, and keep the check count constant.
+
+This is tester-owned work in a tester-owned file, and it lands naturally in the same pass
+that re-bases the oracle (O-8), since both concern the same two tests.
+
 ### 5.3 The generalisation, for the paper's methodology section
 
 > **A coverage axis is only evidence for the property it can perturb.**
@@ -597,6 +632,11 @@ The tester writes its own hostile tests; these are the properties, not the tests
   from the platform's libm, so this is a claim about interpreters, not about platforms.
   Achievable once §2.5 lands, and **unachievable before it** — which is why §2.5 is in
   this brick and not a later one.
+- **O-17** **The assertion count is a property of the code, not the environment** (§5.4).
+  `tests/test_tester_0b2_adversarial.py` must report the same total in the repository and
+  in a `git archive` extract with no `.git`. Graceful degradation stays; the *check count*
+  must not move. Machine-checkable, and it protects `ledger_check` C1 from failing on a
+  release tarball for a reason unrelated to the code.
 
 ### 6.1 The six asserted-negatives, and what replaces each
 
