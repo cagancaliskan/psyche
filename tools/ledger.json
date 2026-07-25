@@ -74,18 +74,19 @@
       "3.13",
       "3.14"
     ],
-    "_note": "interpreters_swept is what the captured run actually covered, and it must cover interpreters_required or the determinism claim is scoped down to the swept set. Raised to five CPython minor versions on 2026-07-25 after the first five-way sweep passed; capture_run refuses to capture on disagreement. See BUG-0b1 and DECISIONS D-010.",
+    "_note": "interpreters_swept must cover interpreters_required or the claim is scoped down to what was swept. RAISED to five versions on 2026-07-25 (D-010). SEPARATELY, D-012 records that seed-sweeping ALONE cannot establish determinism for this substrate: iteration order derives from uuid4 values, which differ per process regardless of PYTHONHASHSEED. Determinism must be established by REMOVING order dependence, not by sweeping an axis that does not control it.",
     "captured_platform": "Darwin 24.5.0 arm64"
   },
   "bricks": {
     "0a": {
       "name": "substrate store",
-      "status": "PROVEN"
+      "status": "BUILT-UNVALIDATED",
+      "note": "DEMOTED 2026-07-25 (D-012). Integrity and purity unaffected. Determinism leg of Phase 0's done-means falsified by DEFECT-A: roads_from() yields from an unordered set of uuid4 ids, which is the enabling condition. Returns to PROVEN on fix + re-verification."
     },
     "0b": {
       "name": "spreading activation",
-      "status": "PROVEN",
-      "note": "PROVEN is CONTESTED as of 2026-07-25 and the status call is OPEN for Cagan (D-011, open call 1). Tester DEFECT-A: convergent accumulation at nous_activation.py:287 is a naive sequential float add over set-iteration order (nous_store.py:444, a set of uuid4 ids), so at library defaults a 5-node traverse()-built graph gave two distinct results across 48 fresh processes. Holds bit-exactly at in-degree <= 2; breaks at in-degree >= 3. Same class as BUG-0b1, one layer upstream; reproduces with the 0b2 overlay off, so 0b2 neither caused nor fixed it. Not silently re-labelled: see the roadmap Phase 0 block and BUG-0b1 section 8."
+      "status": "BUILT-UNVALIDATED",
+      "note": "DEMOTED 2026-07-25 (D-012). DEFECT-A: convergent accumulation is a naive sequential float add over uuid4-ordered terms; 48 fresh processes gave two results at library defaults on a 5-node graph. Returns to PROVEN on fix + re-verification."
     },
     "0b1": {
       "name": "coalition strength determinism fix",
@@ -95,7 +96,7 @@
     "0b2": {
       "name": "conserved activation (overlay, default-off)",
       "status": "BUILT-UNVALIDATED",
-      "note": "MECHANISM BAR OPEN — tester verdict on SPEC-0b2 section 6 is FAIL (2026-07-25, tests/test_tester_0b2_adversarial.py, 83 assertions, five interpreters, six hash seeds): 7 of 9 invariants hold; N-2 and N-5 do not; N-7 only for finite sigma. NOT tester-verified — do not list it with 1c/1d/2c. Three defects, all shipped as asserted-negatives that pass while the defect is present: DEFECT-A (N-2) inherited from 0b; DEFECT-B (N-5) introduced here — each road is read twice per expansion, so on a moving clock a lone out-road has competing=1.7e-9 instead of 0 and is attenuated, contradicting SPEC-0b2 section 2 row 3; DEFECT-C (N-7) introduced here — sigma=inf/nan yields NaN activation that passes the floor guard silently. What holds: N-1 neutral byte-identity against two oracles (frozen clock only), N-3 purity, N-4 order-independence with a non-vacuous control, N-6 monotonicity, N-8 closed roads compete, N-9 no silent silencing. The overlay is NOT plumbed past spread_activation, which bounds the blast radius and widens the default flip's re-validation surface to 1a/1b/1c/1d. D-008 fixes sigma=1.0 on principle; the activation floor is the second brick and is NOT started. See D-011 for the two open calls."
+      "note": "overlay landed default-off; tester verdict FAIL — 7 of 9 invariants hold. DEFECT-B (N-5) and DEFECT-C (N-7) are the overlay's own and are OPEN. See D-011, D-012."
     },
     "1a": {
       "name": "multi-source field",
@@ -202,7 +203,7 @@
     "DEFAULT_MIN_SIZE_GUARD": 3,
     "MODULATION_SPAN": 0.6,
     "broadcast_gain": "inherited from strengthen() default; not tuned",
-    "normalization_sigma": "1.0 — fixed on principle per D-008, not fitted; default is None (off)"
+    "normalization_sigma": "1.0 — fixed on principle per D-008, not fitted; default None (off). UNVALIDATED: non-finite and non-positive values are not rejected (DEFECT-C)."
   },
   "forbidden_claim_terms": [
     "is conscious",
@@ -234,7 +235,8 @@
   "count_quarantine_paths": [
     "docs/experiments/",
     "docs/specs/PAPER_CLAIM_INVENTORY.md",
-    "CLAUDE-CODE-PROMPTS.md"
+    "CLAUDE-CODE-PROMPTS.md",
+    "docs/report/"
   ],
   "meaning_bar": {
     "status": "OPEN",
@@ -256,5 +258,11 @@
       }
     ],
     "next_candidate": "brick 3 — learn the graph from an external corpus, grade the LEARNED structure against SWOW, with a co-occurrence/PMI baseline as the anti-circularity gate"
+  },
+  "_count_quarantine_reasons": {
+    "docs/experiments/": "frozen pre-registrations — a pre-registration edited after the fact is not one",
+    "docs/specs/PAPER_CLAIM_INVENTORY.md": "the document whose job is to adjudicate historical figures",
+    "CLAUDE-CODE-PROMPTS.md": "operator prompts quoting figures as illustration",
+    "docs/report/": "PUBLISHED under DOI 10.5281/zenodo.20474613 on 2026-05-31. Its 130/56/5 figures are correct for what was published and are immutable by definition. Never 'corrected'. (D-012)"
   }
 }
