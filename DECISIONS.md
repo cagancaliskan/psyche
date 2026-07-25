@@ -265,3 +265,107 @@ cleared**, and that the second brick of 0b2 (the activation floor, D-008) and th
 (D-009) are both blocked behind these two calls. The default flip additionally now needs the
 parameter plumbed through `build_activation_field()` and `think()`, which widens its re-validation
 surface from 1c/1d to **1a, 1b, 1c and 1d**.
+
+## D-012 · 2026-07-25 · Phase 0 loses PROVEN; the 0b2 defects are routed; the paper is held
+**Decided by:** Cagan
+**Supersedes:** resolves the two calls left open in D-011
+**Context:** the 0b2 tester pass returned FAIL with three defects, one of which (DEFECT-A)
+falsifies Phase 0's own done-means at library defaults.
+
+### Call 1 — does 0b keep PROVEN? **No. Phase 0 loses PROVEN. Both 0a and 0b drop to
+`BUILT-UNVALIDATED`.**
+
+Phase 0's done-means is a single joint claim: *"determinism (identical output across separate
+process runs under randomized hash seeds), integrity (graph indices stay mutually consistent
+through every mutation), purity (reads never mutate state)."* DEFECT-A shows identical output
+does **not** hold across separate process runs, at library defaults, on a five-node graph built
+with nothing but `traverse()`. That is not an edge case; it is the most ordinary possible input.
+The claim as written is false, so the label comes off. Rule 1 does not have an exception for
+labels we are attached to.
+
+**0a is demoted too, and that is deliberate.** The defect site is in `nous_activation`, but the
+enabling condition is `nous_store`'s `_out` being an unordered set of uuid4 ids, exposed through
+`roads_from()`. Keeping 0a at PROVEN would rest on the fact that its own suite happened not to
+check the thing that broke — which is precisely the "passes on a friendly input" failure this
+project exists to prevent. Integrity and purity are unaffected and remain verified; only the
+determinism leg failed, and the ledger note says so.
+
+**This is recoverable and the route back is specified.** Fix, re-verify, and Phase 0 returns to
+PROVEN *stronger* than it was, because the probes will by then be able to see the failure class
+that hid here.
+
+### Call 2 — how is DEFECT-B fixed? **The tester's read is adopted.**
+
+Read each road **once per expansion**: materialise the `(road_id, road)` pairs for the expanding
+node a single time, compute `out_total` from that list, and iterate that same list. The bug is
+that two `get_road` calls apply lazy decay at two different `clock.now()` instants, so `out_total`
+and `road.strength` come from different moments and `competing` becomes an elapsed-time residue
+rather than exactly 0. Reading once makes the arithmetic internally consistent by construction,
+and it also removes the duplicated-read cost SPEC-0b2 §8 item 4 already flagged — the fix is
+strictly better on both axes.
+
+**DEFECT-C is fixed at the same time.** `normalization_sigma` is validated at the boundary:
+reject non-finite and non-positive values with a clear error. SPEC-0b2 §2's prose is corrected —
+"σ → ∞ recovers the current engine" is true analytically in the limit and catastrophic at the
+literal value `float('inf')`, which yields NaN and passes the floor guard silently because every
+NaN comparison is False. **The neutral value is `None`, not infinity, and the spec must say so.**
+The NaN-passes-the-floor hazard is more general than σ and gets its own guard.
+
+### DEFECT-A's fix — architect-pm to spec, this is the recommended shape
+
+**Fix at the store, not at each consumer.** Make `_out` and `_in` insertion-ordered (an
+insertion-ordered mapping used as an ordered set) so `roads_from()` yields in road-creation order
+deterministically and at no cost. Insertion order is creation order is program order, which is
+identical across processes.
+
+This kills the whole class at its source rather than patching one accumulation site, and it uses
+the stable ordering integer the project already relies on everywhere else. Ordering alone is
+*sufficient*: a fixed traversal order gives a fixed sum. `math.fsum` at the accumulator is
+optional hardening against a future refactor changing iteration order, and it costs a restructure
+(contributions collected per target, summed at each layer boundary) because the running total is
+read at layer boundaries. Architect-pm decides whether that hardening is worth it.
+
+This is a **Tier 1 change** and it forces re-validation of everything above. That cost is real,
+unavoidable, and correct.
+
+### The methodological findings, which matter more than the defects
+
+1. **Every existing determinism probe compares `round(x, 9)`, which structurally cannot see a
+   1-ULP difference — and 1 ULP is exactly what BUG-0b1 was.** Every determinism probe in the
+   repository must compare full bit patterns. The probes that "caught" BUG-0b1 did not catch it by
+   seeing the number; they caught it because the ULP happened to flip a categorical winner. Any
+   ULP difference that does not flip an outcome has been invisible this whole time.
+
+2. **Seed-pinning cannot establish determinism for this substrate.** Iteration order derives from
+   uuid4 values, which differ per process regardless of `PYTHONHASHSEED`. DEFECT-A varies at a
+   *fixed* seed. So the axis the project has been sweeping does not control the source of the
+   nondeterminism. **Determinism must be established by REMOVING order dependence, not by sweeping
+   an axis that does not control it.** The five-interpreter sweep (D-010) stays valuable, but it
+   is not the guarantee it was being read as.
+
+Finding 2 is a correction to the paper's methodology section, and it is a **strengthening**: the
+paper is about a discipline that catches overclaiming, and the discipline has now falsified the
+paper's own headline Tier-1 claim, by its own gates, at a coverage axis the paper itself named.
+Reported honestly, that is a far better paper than one in which everything passed.
+
+### Call 3 — routing outside both lanes
+
+- **`docs/paper/paper.tex` and `docs/paper/ieee/paper_ieee.tex`: HELD. The paper must not be
+  submitted.** Its Tier-1 determinism claim is presently false. Fixing the counts is clerical and
+  can happen at any time; the substantive revisions — the determinism claim, its scope, and the
+  two methodological findings above — are a paper brick with its own gate. `ledger_check` C2 stays
+  red on the paper until that lands, and that red is correct signal, not noise: it says the paper
+  is stale and must not ship. **Do not enable the pre-commit hook until the paper brick lands.**
+- **`docs/report/nous_report.tex`: QUARANTINED, permanently.** It is the source of the artifact
+  published under DOI 10.5281/zenodo.20474613 on 2026-05-31. Its 130/56/5 figures are correct for
+  what was published, and a published record is immutable by definition. It is never "corrected";
+  it is cited as the version it is. Added to `count_quarantine_paths` with that reason recorded.
+- **`SUMMARY.docx`** is regenerated from the corrected `SUMMARY.md` via
+  `docs/outreach/build_summary_docx.py`, after the paper brick, not before.
+- **`ledger_check` now scans `.tex`.** It did not until today, which is why the paper drifted
+  through two total changes unnoticed — the one document where a stale count actually gets
+  published was the one document the checker never read. That gap was mine.
+
+**Cost:** Phase 0 is unlabelled until the fix re-verifies. The paper is frozen. Every determinism
+probe in `tests/` needs rewriting to compare bit patterns. This is the most expensive entry in
+this log, and every item in it was bought by one tester pass that was allowed to say FAIL.

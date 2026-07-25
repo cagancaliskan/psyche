@@ -155,6 +155,28 @@ def run(tmp: Path) -> None:
     check(len(LC.check_prose_vs_ledger(r, LC.load_ledger(r))) == 1,
           "non-quarantined doc still checked")
 
+    section("C2 checks the paper, not only Markdown")
+    r = make_repo(tmp, files={"docs/paper/paper.tex":
+                              "a suite of 618 assertions across 12 suites\n"})
+    f = LC.check_prose_vs_ledger(r, LC.load_ledger(r))
+    check(len(f) >= 1 and f[0].path.endswith(".tex"), "LaTeX scanned")
+
+    section("C2 reads LaTeX's thin-space comma as the same number")
+    led2 = json.loads(json.dumps(BASE_LEDGER))
+    led2["tests"]["assertions"] = 1372
+    led2["tests"]["per_suite"] = {"test_a.py": 1372}
+    led2["tests"]["suites"] = 1
+    cap2 = CAPTURE.replace("RESULT: 10 passed, 0 failed", "RESULT: 1372 passed, 0 failed")
+    cap2 = cap2.split("# test_b.py")[0]
+    r = make_repo(tmp, ledger=led2, capture=cap2,
+                  files={"docs/paper/p.tex": "1{,}372 assertions in 1 suite\n"})
+    check(LC.check_prose_vs_ledger(r, LC.load_ledger(r)) == [], "1{,}372 parsed as 1372")
+
+    section("C2 honours a LaTeX-comment pragma")
+    r = make_repo(tmp, files={"docs/paper/p.tex":
+                              "% ledger:allow-count\n618 assertions (historical)\n"})
+    check(LC.check_prose_vs_ledger(r, LC.load_ledger(r)) == [], "LaTeX pragma honoured")
+
     section("C2 handles thousands separators")
     led = json.loads(json.dumps(BASE_LEDGER))
     led["tests"]["assertions"] = 1372

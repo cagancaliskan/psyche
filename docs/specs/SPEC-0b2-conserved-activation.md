@@ -3,8 +3,9 @@
 **Status:** brick 1 (the overlay) **BUILT, default-off** · **TESTER VERDICT ON §6: FAIL** — seven
 of nine invariants hold, **N-2 and N-5 do not**, N-7 holds only for finite sigma · brick 2 (the
 activation floor) **NOT STARTED** · the §5 default-flip decision remains **open**
-**Revises:** 0b (spreading-activation engine, Tier 1 `PROVEN` — and see §6.0, which contests that
-label)
+**Revises:** 0b, the spreading-activation engine — was `PROVEN`, now `BUILT-UNVALIDATED`.
+Demoted on 2026-07-25 by D-012: §6.0's DEFECT-A falsifies the determinism leg of Phase 0's
+done-means at library defaults.
 **Depends on:** BUG-0b1 landed first (the summation-order fix). Non-negotiable — see §0.2.
 **Date:** 2026-07-25 · verification record added 2026-07-25 after the tester's adjudication
 **Author lane:** architect-pm (§6 records the tester's verdict; the tester wrote the suite, this

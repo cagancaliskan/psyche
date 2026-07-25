@@ -151,17 +151,32 @@ def parse_capture(root: Path) -> Optional[Dict[str, object]]:
 
 
 def walk_markdown(root: Path) -> Iterable[Path]:
-    for p in sorted(root.rglob("*.md")):
-        rel = p.relative_to(root).as_posix()
-        if any(rel == d or rel.startswith(d.rstrip("/") + "/") for d in SKIP_DIRS):
-            continue
-        if any(part in SKIP_DIRS for part in p.relative_to(root).parts):
-            continue
-        yield p
+    """Prose files whose quoted facts are checked: Markdown and LaTeX.
+
+    LaTeX matters more than Markdown here, not less: the paper is the one document where a
+    stale count is actually published. It went unchecked until 2026-07-25, during which the
+    canonical total moved twice underneath it."""
+    for pattern in ("*.md", "*.tex"):
+        for p in sorted(root.rglob(pattern)):
+            rel = p.relative_to(root).as_posix()
+            if any(rel == d or rel.startswith(d.rstrip("/") + "/") for d in SKIP_DIRS):
+                continue
+            if any(part in SKIP_DIRS for part in p.relative_to(root).parts):
+                continue
+            yield p
+
+
+def normalise(line: str) -> str:
+    """LaTeX writes a thin-space thousands separator as 1{,}372. Same number, and it must
+    be checked the same way."""
+    return line.replace("{,}", ",")
 
 
 def has_pragma(lines: List[str], idx: int, pragma: str) -> bool:
-    """True if the pragma is on this line or the line immediately above."""
+    """True if the pragma is on this line or the line immediately above.
+
+    Written `<!-- ledger:allow-count -->` in Markdown and `% ledger:allow-count` in LaTeX;
+    the bare token is what is matched, so both spellings work."""
     if pragma in lines[idx]:
         return True
     if idx > 0 and pragma in lines[idx - 1]:
@@ -242,9 +257,10 @@ def check_prose_vs_ledger(root: Path, ledger: dict) -> List[Finding]:
         if any(rel.startswith(q) or rel == q.rstrip("/") for q in quarantine):
             continue
         lines = text.splitlines()
-        for i, line in enumerate(lines):
+        for i, raw in enumerate(lines):
             if has_pragma(lines, i, ALLOW_COUNT):
                 continue
+            line = normalise(raw)
             for m in COUNT_RE.finditer(line):
                 value, unit = _num(m.group(1)), m.group(2).lower()
                 if unit.startswith("suite"):
