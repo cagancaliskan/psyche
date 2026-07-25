@@ -58,6 +58,13 @@ SUITES = [
     "test_tester_1e_selector_adversarial.py",
     "test_tester_1e_instrument_adversarial.py",
     "test_tester_1e_loopclosed.py",
+    # 0b2 conserved activation — TESTER-authored adversarial verification of SPEC-0b2 §6
+    # (N-1..N-9). Data-free (synthetic adversarial topologies only) and makes no meaning
+    # claim. It spawns its own hash-seed x interpreter determinism probes, and it recovers
+    # the pre-change engine from git to prove neutral byte-identity against the real
+    # thing rather than against a transcription. Three defects are recorded here as
+    # asserted-negatives — they PASS while the defect is present, and go red on a fix.
+    "test_tester_0b2_adversarial.py",
     # 2c interoception — TESTER-authored adversarial verification + pilot fairness audit.
     # Self-bootstraps src/ and experiments/ onto sys.path; DATA-FREE on the mechanism side
     # (synthetic adversarial topologies) and reads the ALREADY-FROZEN pilot trace artifact
