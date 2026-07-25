@@ -287,12 +287,27 @@ def read_targets(
     activation = {t: result.activation.get(t, 0.0) for t in targets}
 
     # outgoing_total = sum of activation transmitted on the cue's own out-roads.
-    # DETERMINISM: store.roads_from yields road IDs in set-iteration order over uuids,
-    # which depends on PYTHONHASHSEED — and float addition is NOT associative, so summing
-    # in that order could differ in the last ULP across processes. We therefore collect
-    # the per-road flow values and sum them in SORTED-VALUE order, which is independent of
-    # the road IDs. The multiset of flow values is identical across builds (equal edge
-    # strengths on a simulated clock), so this sum is byte-identical across hash seeds.
+    #
+    # DETERMINISM. This comment named the wrong cause for a month and the error was
+    # load-bearing, so it is corrected here rather than deleted (D-014, SPEC-0c §2.4).
+    #
+    #   WRONG, as originally written: "roads_from yields road IDs in set-iteration order
+    #   over uuids, WHICH DEPENDS ON PYTHONHASHSEED."
+    #
+    #   RIGHT: the order depended on the uuid4 values themselves, which are freshly random
+    #   in every process. Pinning PYTHONHASHSEED therefore never controlled it — the
+    #   nondeterminism reproduces at a FIXED seed. That misattribution is why the project
+    #   swept a hash-seed axis for a month against a defect no seed could perturb, and why
+    #   this file's local workaround was never promoted into the engine: the hazard looked
+    #   like it belonged to an environment variable rather than to the substrate.
+    #
+    # The hazard itself was real and is stated correctly below: float addition is not
+    # associative, so summing in an unstable order can differ in the last ULP across
+    # processes. Brick 0c fixes it at the source — store adjacency is now insertion-ordered
+    # and the engine's accumulator uses math.fsum — which makes the sort below unnecessary.
+    # It is kept because it is harmless and because removing experiment code is not that
+    # brick's business. The multiset of flow values is identical across builds (equal edge
+    # strengths on a simulated clock), so this sum is byte-identical regardless.
     flows = [result.flow.get(road_id, 0.0) for road_id in store.roads_from(cue)]
     flows.sort()
     outgoing_total = sum(flows)

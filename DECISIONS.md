@@ -439,3 +439,84 @@ open call** raised while verifying ground 4: three naive `sum()` calls over floa
 BUG-0b1's "both sites" missed — there were three), `nous_workspace.py:235`, and
 `nous_store.py:161` (`Road.valence`, feeding a categorical closure decision). Recommendation is to
 fold all three into 0c; O-16 (cross-interpreter bit-identity) is unachievable while any remain.
+
+## D-014 · 2026-07-26 · All three naive float sums convert; BUG-0b1's report is corrected; the -0.0 exception is accepted
+**Decided by:** Cagan
+**Supersedes:** resolves SPEC-0c §2.5, §2.6 and the `experiments/harness.py` routing question
+**Context:** verifying D-013's ground 4 raised the question of where else this project sums floats
+with the builtin. Three sites survived in `src/`. One of them turned out not to be a hardening
+opportunity but a **live instance of the defect BUG-0b1 was reported to have closed**.
+
+### §2.5 — all three sites convert to `math.fsum`. This is not hardening.
+
+`src/nous_workspace.py:426` builds the **pruned winner** with `strength=sum(pruned_members.values())`.
+Reproduced on the **post-0c working tree** — store already ordered, activation accumulator already
+using `fsum` — at a **fixed** `PYTHONHASHSEED=0`, 30 fresh processes:
+
+```
+python3.10   2 distinct strengths   6x 4.14276559350793   24x 4.142765593507931
+python3.14   1 distinct strength   30x 4.14276559350793
+winner membership: 1 distinct on both — identity is stable
+```
+
+Three things this establishes. **(i) The store-ordering fix cannot reach it:** `Coalition.members`
+inherits order from `by_basin[src]`, a `Dict[str, Set[str]]` of uuid4 NodeIDs built in
+`nous_coalitions.py:297` — a set some *other* module constructs. Fixing a class at one owner does
+not fix it at another owner. **(ii) The 3.10-vs-3.14 split is the Neumaier fingerprint** from D-013
+ground 4: invisible on the newer interpreter, reproducible on the older one — BUG-0b1's exact
+signature, recurring at the site BUG-0b1 missed. **(iii) Winner identity is stable today, which is
+exactly how BUG-0b1 hid** until a graph arrived where it flipped one, 8 times in 30.
+`Coalition.strength` is what `_competition_key` compares, so this is the competition path.
+
+Sites 1 and 2 convert on D-013 ground 4's reasoning rather than on a reproduction:
+`nous_workspace.py:235` is `total_strength_after()`, which **by its own docstring** is "the bounded
+aggregate the no-divergence test watches converge across cycles" — a version-dependent number
+feeding an assertion; `nous_store.py:168` is `Road.valence`, feeding a categorical closure decision
+against −0.75 / −0.30.
+
+### Two consequences recorded, both larger than the fix
+
+**(a) BUG-0b1's report is wrong and is corrected in place, dated.** It states the fix was
+"`src/nous_coalitions.py`, two sites." There are **three** `Coalition(` construction sites in
+`src/`; the third, in `nous_workspace.py`, was never converted. The bug was reported as closed while
+an instance of it remained on the same path. Corrected in `docs/BUG-0b1-*.md` §2 (an inline
+correction block) and §9 (a new postscript that also explains, for the first time, why the bug was
+invisible on 3.12 — the Neumaier change). The diagnosis, mechanism and applied fix were all correct;
+what was false was the **claim of completeness**. **Whether `0b1` keeps `PROVEN` given that is an
+OPEN CALL for Cagan** — the ledger note records the contest and nothing is re-labelled here.
+
+**(b) SPEC-0c §1's falsifier did not cover this, and that is a spec defect, not just a code defect.**
+The original reproduction exercises only the activation accumulator, so the brick whose entire
+purpose is closing the order-dependence class would have shipped with a live instance of that class
+still in it. **Had §1 covered the competition path, 0c would have caught this itself.** §1 now
+carries a second reproduction case, through `think()`, and **O-4b** asserts it — one bit pattern for
+`r.thought.strength` across fresh processes on **every** interpreter, with winner membership
+asserted alongside so a future flip is attributable. The lesson is §5.3's, one level up: a probe is
+only evidence for the path it exercises.
+
+### §2.6 — the `-0.0` exception is accepted and asserted, with its phrasing fixed
+
+`math.fsum([-0.0])` returns `+0.0`, so `energy=-0.0` is the one input at which neutral byte-identity
+acquires a documented exception. Accepted: no special-casing of the reducer, and **no boundary
+validation for `energy`** — no caller passes a negative and that would be scope creep into §4, which
+exists for σ. **But the assertion must state OUR semantics** — *"activation energy has no signed
+zero: −0.0 normalises to +0.0, by design"* — and **not** *"we match `math.fsum`"*. The second
+phrasing turns a CPython implementation detail into our specification, and would break the test if
+the stdlib moved, for a reason unrelated to intent. A test should fail when the intent is violated.
+
+### Routing — `experiments/harness.py:290` splits into comment and code
+
+The **comment** documents the very hazard 0c fixes and named the **wrong cause**: it attributed the
+nondeterminism to `PYTHONHASHSEED`, when it varies at a *fixed* seed because uuid4 values differ per
+process. That misattribution is why a hash-seed axis was swept for a month against a defect no seed
+could perturb, and why the local workaround was never promoted into the engine — the hazard looked
+like it belonged to an environment variable rather than to the substrate. Corrected **in the
+architect-pm lane as part of 0c**, in place, showing the wrong text and the right one. The **code** —
+the local sort-before-summing workaround — is **untouched and stays validator territory**; it
+becomes unnecessary after 0c but removing experiment code is not this brick's business.
+
+**Cost:** three one-line conversions inside a re-validation 0c already performs, plus one new
+invariant (O-4b) and one new reproduction case. O-15 and O-16 become unconditional. The
+`nous_workspace.py:426` conversion changes `Coalition.strength` values by ULPs on the competition
+path, so 1b, 1d-i and 1d-ii re-verification — already required by §2.4 — now has a specific place to
+look.

@@ -1,9 +1,9 @@
 # SPEC-0c — Deterministic road ordering: removing the order-dependence class at its source
 
-**Status:** SPECIFIED · ready for the builder · **one scope call open** (§2.5, new)
+**Status:** SPECIFIED · ready for the builder · **no open calls** (§2.5 and §2.6 decided)
 **Revises:** 0a (substrate store), 0b (spreading activation), 0b2 (normalization overlay)
 **Depends on:** D-011 (the verdict), D-012 (the resolutions and the fix shapes),
-D-013 (§2.3 — `fsum` joins the ordering fix)
+D-013 (§2.3 — `fsum` joins the ordering fix), D-014 (§2.5, §2.6 and the routing split)
 **Date:** 2026-07-25, amended 2026-07-26 with the §2.3 decision
 **Author lane:** architect-pm
 
@@ -52,6 +52,42 @@ the claim. The new claim is unconditional and therefore has to be earned structu
 **"For a fixed store state" is narrower than it looks, deliberately.** Determinism here is
 over *process runs of the same construction program*, not over *isomorphic graphs built by
 different construction programs*.
+
+### 1.1 The two reproduction cases the claim is tested against
+
+The claim covers **every** float path, not the one that happened to be found first. The
+spec originally carried only case 1, and §2.5.2(b) records why that was a defect in the
+spec rather than merely in the code.
+
+**Case 1 — the activation accumulator (DEFECT-A as originally found).** Five nodes, built
+with `traverse()` alone, at library defaults: `S → M0,M1,M2 → T` at traverse counts
+`(1,2)`, `(1,3)`, `(1,9)`. Before 0c this gave `0.10145973529004966` and
+`0.10145973529004967` across fresh processes. It must now give one bit pattern.
+
+**Case 2 — the competition path (§2.5.1).** This one is not reachable from case 1: it runs
+through `think()`, and its order comes from a set of uuid4 NodeIDs in the coalition layer,
+which the store-ordering fix does not touch.
+
+```python
+from nous_store import SubstrateStore, Clock, NodeType
+from nous_perceive import think
+import itertools
+s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
+add = lambda c: s.add_node(c, NodeType.CONCEPT)
+warm = [add(x) for x in ("coffee","kitchen","morning","mug","toast")]
+cold = [add(x) for x in ("work","code","deadline")]
+def w(a,b,n):
+    for _ in range(n): s.traverse(a,b)
+for a,b in itertools.permutations(warm,2): w(a,b,7)
+for a,b in itertools.permutations(cold,2): w(a,b,9)
+w(warm[0], cold[0], 8)
+r = think(s, "coffee kitchen morning mug toast")
+print(repr(r.thought.strength))   # must be ONE bit pattern across processes
+```
+
+On the post-0c tree this still gives **two** values on python3.10 at a fixed hash seed and
+**one** on python3.14 — the Neumaier split. It must give one bit pattern on **every**
+interpreter, which is what makes it a test of the fix rather than of the interpreter.
 
 **Amended 2026-07-26, on the builder's witness.** The draft said two isomorphic graphs built
 in different insertion sequences "may still produce different floats." That was written
@@ -219,12 +255,22 @@ flip a categorical winner 8 times in 30, so "moves by ULPs" is not "moves harmle
 outstanding. The cost is six suites re-verified with bit-exact probes; it is not a
 re-opening of the meaning bar.
 
-**`experiments/harness.py`'s local workaround** becomes unnecessary after 0c. Recommend
-keeping it (sorting is harmless and the comment is now history worth reading) but
-**correcting its comment**, which attributes the hazard to `PYTHONHASHSEED` alone — the
-finding that it also varies at a fixed seed is exactly what the seed framing missed.
+**`experiments/harness.py:290` — split the comment from the code, and they route differently
+(D-014).** The **comment** is documentation of the very hazard 0c fixes, and it still names
+the wrong cause: it attributes the nondeterminism to `PYTHONHASHSEED`, when the finding is
+that it varies at a *fixed* seed because uuid4 values differ per process. A wrong causal
+explanation of a fixed defect is worse than none — the next reader inherits the error the
+project just paid to discover. It is corrected **in the architect-pm lane, as part of 0c**.
+The **code** — the local sort-before-summing workaround — is untouched and stays
+**validator territory**; it becomes unnecessary after 0c but it is harmless, and removing
+experiment code is not this brick's business.
 
-### 2.5 NEW FINDING — three further naive float sums survive in `src/` · **OPEN CALL**
+### 2.5 DECIDED — all three surviving naive float sums convert to `math.fsum`
+
+**Decided by Cagan, 2026-07-26. See D-014.** And the framing matters: **this is not
+hardening.** Site 3 is a **live instance of the defect BUG-0b1 was supposed to close**, it
+reproduces on the post-0c working tree, and BUG-0b1's own report is wrong about how many
+sites there were.
 
 Found while verifying §2.3 ground 4. Confirming that BUG-0b1's fix was `sum` → `math.fsum`
 raised the obvious next question — *where else does this project sum floats with the
@@ -232,7 +278,7 @@ builtin?* — and the answer is three places:
 
 | Site | What it computes | Assessment |
 |---|---|---|
-| **`src/nous_workspace.py:428`** | `strength=sum(pruned_members.values())` — the **pruned winner's** strength | **The serious one.** Its own comment says it applies *"the same 'sum of member activations' rule coalition formation uses."* BUG-0b1 changed that rule to `math.fsum` at `nous_coalitions.py:226` and `:309` and **did not change this site**. So the pruned winner's strength is computed by a *different* rule than the raw winner's, by the version-dependent one, on the 1d-i winner path — the exact path BUG-0b1's flip occurred on. BUG-0b1's own ledger note says "`math.fsum` at both sites"; there were three. |
+| **`src/nous_workspace.py:428`** | `strength=sum(pruned_members.values())` — the **pruned winner's** strength | **A LIVE DEFECT, reproduced — see §2.5.1.** Its own comment says it applies *"the same 'sum of member activations' rule coalition formation uses."* BUG-0b1 changed that rule to `math.fsum` at `nous_coalitions.py:228` and `:311` and **did not change this site**. There are **three** `Coalition(` construction sites in `src/`, not two. So the pruned winner's strength is computed by a *different* rule than the raw winner's, by the version-dependent one, on the 1d-i winner path — the exact path BUG-0b1's flip occurred on. |
 | **`src/nous_workspace.py:235`** | `total_strength_after()` — the bounded aggregate the no-divergence test watches converge | Lower stakes: it informs a test's judgement rather than a selection. But a convergence test whose statistic is version-dependent is a weak test. |
 | **`src/nous_store.py:161`** | `Road.valence` = `sum(charges.values()) / max(1, len(...))` | Feeds `_open_close_on_crossing`'s comparisons against `_CLOSURE_THRESHOLD` (−0.75) and `_REOPEN_THRESHOLD` (−0.30) — a **categorical** closure decision resolved on a float sum, which is the exact shape the project's float rule prohibits. Reachability is low (a sum must land within a ULP of a threshold) but the shape is wrong. |
 
@@ -247,30 +293,61 @@ interpreters, not values; the determinism probes all run under a single `sys.exe
 A genuine cross-interpreter value discrepancy at these sites would be reported by nothing
 in the repository today. That gap is what O-16 closes.
 
-**The call.** These are three one-line changes, and 0c is *already* paying the
-re-validation for 1b, 1d-i and 2c (§2.4), so folding them in costs little beyond the edit
-itself. The alternative is coherent but has a consequence that must be stated: **O-16
-(cross-interpreter bit-identity) is unachievable while any naive float sum remains.** So
-the choice is genuinely between the two:
+#### 2.5.1 Site 3 is a live defect, and here is the reproduction
 
-- **(A) Fold all three into 0c.** One brick closes the class everywhere it appears; O-16
-  becomes achievable; BUG-0b1's "both sites" note is corrected to three.
-- **(B) Fold in `nous_workspace.py:428` only**, as a BUG-0b1 completion, and defer the
-  other two. Smallest correct scope, but leaves O-16 unachievable and leaves two known
-  instances of a class we are mid-way through eliminating.
-- **(C) Defer all three to a separate brick.** Keeps 0c's scope exactly as specified, at
-  the cost of shipping a determinism brick that knowingly leaves version-dependent float
-  sums in the winner path.
+Run against the **post-0c working tree** — that is, with the store ordered and the
+activation accumulator already using `math.fsum`. The §2 fix does not reach it.
 
-**Recommendation: (A).** The marginal cost is three lines inside a re-validation this brick
-is already performing, and the same ground-2 argument applies — a deferred condition in
-this repository, on this hazard, has already failed once. **(C) is not recommended**: it
-would mean answering "is Phase 0 deterministic?" with "yes, except where it depends on your
-interpreter."
+```
+30 fresh processes, PYTHONHASHSEED=0 (a FIXED seed), the think() graph in §1 case 2:
 
-**This is a scope widening and therefore Cagan's call, not mine.** If (A) or (B) is taken,
-`docs/BUG-0b1-coalition-strength-determinism.md` also needs its "both sites" claim
-corrected in place, the way its §5 sentence already was.
+  python3.10   2 distinct strengths   6x 4.14276559350793   24x 4.142765593507931
+  python3.14   1 distinct strength   30x 4.14276559350793
+  winner membership: 1 distinct on both — identity is stable
+```
+
+**Three things this shows, and each is load-bearing.**
+
+1. **The store-ordering fix cannot reach it.** `Coalition.members` inherits its order from
+   `by_basin[src]`, which is `Dict[str, Set[str]]` in `nous_coalitions.py:297` — a **set of
+   uuid4 NodeIDs** built in the coalition layer, not an adjacency index the store owns.
+   Ordering `_out`/`_in` fixes the store's iteration; it does nothing for a set some other
+   module constructs. **Fixing a class at one owner does not fix it at another owner.**
+2. **The 3.10-versus-3.14 split is the Neumaier fingerprint.** It is invisible on 3.14 for
+   exactly the reason §2.3 ground 4 documents: 3.12+'s builtin `sum()` is compensated, so
+   the naive site behaves like `fsum` there. This is BUG-0b1's signature — *invisible on
+   the newer interpreter, reproducible on the older one* — recurring at the site BUG-0b1
+   missed. §2.3 ground 4 predicted this class; here it is, found.
+3. **Winner identity is stable today, which is exactly how BUG-0b1 hid.** `Coalition.strength`
+   is what `_competition_key` compares, so this is squarely the competition path. It is not
+   flipping a winner *on this graph, today*. BUG-0b1 did not flip one either until a graph
+   arrived where it did — 8 times in 30.
+
+**Decision: all three sites convert.** Sites 1 and 2 convert on §2.3 ground 4's reasoning
+rather than on a reproduction — site 2 is `total_strength_after()`, which **by its own
+docstring** is "the bounded aggregate the no-divergence test watches converge across
+cycles," i.e. a version-dependent number feeding an assertion; site 1 is `Road.valence`,
+feeding a categorical closure decision. A determinism brick that knowingly left
+version-dependent float sums on the winner path would be answering "is Phase 0
+deterministic?" with "yes, except where it depends on your interpreter."
+
+#### 2.5.2 Two consequences that outlive the fix
+
+**(a) BUG-0b1's report is wrong, and is corrected in place.**
+`docs/BUG-0b1-coalition-strength-determinism.md` states the fix was *"`src/nous_coalitions.py`,
+two sites (lines 225 and 308)"*. There was a **third** `Coalition` construction site, in
+`nous_workspace.py`, and it was missed. The bug was reported as closed while an instance of
+it remained on the same path. This is corrected in the document, **dated**, as a
+claim-accuracy fix — the same treatment its §5 "Tier 1 is not affected" sentence already
+received. The ledger's `0b1` note is corrected with it.
+
+**(b) §1's falsifier did not cover this, and that is a spec defect, not just a code defect.**
+The original §1 reproduction exercises **only the activation accumulator**. It cannot see
+the competition path, so a brick whose entire purpose is closing the order-dependence class
+would have shipped with a live instance of that class still in it. **Had §1 covered the
+competition path, 0c would have caught this itself.** §1 now carries a second reproduction
+case and O-4b asserts it. The general lesson is the same one §5.3 states: a probe is only
+evidence for the path it exercises.
 
 ### 2.6 The one neutral-path bit change that is not a convergence effect · **OPEN CALL**
 
@@ -290,17 +367,21 @@ is True, and nothing in the engine or downstream distinguishes them; **only a bi
 comparison does — which is exactly what N-1 performs.** So this is the one input at which
 "byte-identical at the neutral value" acquires a documented exception.
 
-- **(A) Accept and assert it.** The builder has already written it as an asserted-negative.
-  Cost: N-1 carries one documented exception, at an input no caller has a reason to pass.
-- **(B) Special-case the one-element reduction** to preserve the caller's value. Cost: a
-  branch in the hot loop's reducer to preserve a distinction nothing reads.
-- **(C) Validate `energy`** alongside σ. Cost: widens §4's validation beyond the defect it
-  was written for, and rejects an input that is merely odd rather than harmful.
+**DECIDED by Cagan, 2026-07-26 (D-014): accept the exception and assert it.** No
+special-casing of the reducer, and **no boundary validation for `energy`** — no caller
+passes a negative and adding one would be scope creep into §4, which exists for σ.
 
-**Recommendation: (A).** The value is numerically equal, no consumer distinguishes it, and
-adding a special case to the reducer to preserve a signed zero buys nothing a test can use.
-It is Cagan's call because it is an admitted exception to a headline property, however
-narrow.
+**But the assertion must be phrased as OUR semantics, not as agreement with the stdlib.**
+The test states:
+
+> *Activation energy has no signed zero: `-0.0` normalises to `+0.0`, by design.*
+
+and **not** *"we match `math.fsum`'s treatment of `-0.0`."* The second phrasing makes a
+CPython implementation detail into our specification: if the stdlib ever changed, the test
+would break for a reason that has nothing to do with what this project intends. A test
+should fail when the intent is violated, not when an unrelated dependency moves. The
+builder wrote the assertion; this is a change to its wording and its rationale, not to its
+subject.
 
 ---
 
@@ -454,6 +535,12 @@ The tester writes its own hostile tests; these are the properties, not the tests
 - **O-4** The DEFECT-A reproduction — 5-node, `traverse()`-only, library defaults,
   in-degree 3 — yields **one** bit pattern across ≥ 48 fresh processes × 6 hash seeds × all
   5 interpreters. This is the direct replacement for the retired asserted-negative.
+- **O-4b** **Competition-path determinism** (§1 case 2, §2.5.1). `think()` on the eight-node
+  two-domain graph yields **one** bit pattern for `r.thought.strength` across fresh
+  processes, on **every** interpreter — 3.10 and 3.11 especially, since 3.12+'s compensated
+  `sum()` masks the defect. Numbered out of sequence because it was added after the rest:
+  it is the second reproduction case of O-4's own claim, not a new claim. Assert winner
+  *membership* alongside strength, so a future flip is attributable.
 - **O-5** Generalised: over a battery of randomly generated adversarial graphs including
   high in-degree, cycles, self-loops and closed roads, every graph yields one bit pattern
   across fresh processes.
@@ -502,13 +589,14 @@ The tester writes its own hostile tests; these are the properties, not the tests
 - **O-14** No determinism probe anywhere in `tests/` or `experiments/` compares rounded
   values. Machine-checkable, and worth making a check rather than a habit.
 - **O-15** No builtin `sum()` over float values remains in `src/`, or each survivor carries
-  a written justification. Machine-checkable. *Conditional on §2.5 being taken.*
+  a written justification. Machine-checkable. **Unconditional — §2.5 is decided.**
 - **O-16** **Cross-interpreter bit-identity**, which nothing checks today: the same graph
   produces identical bit patterns on all five interpreters, not merely identical per-suite
   counts. Scoped honestly to **one machine** — IEEE-754 arithmetic is exactly rounded and
   version-independent, but transcendental functions (`math.exp` in the decay path) come
   from the platform's libm, so this is a claim about interpreters, not about platforms.
-  *Unachievable while any naive float sum remains (§2.5).*
+  Achievable once §2.5 lands, and **unachievable before it** — which is why §2.5 is in
+  this brick and not a later one.
 
 ### 6.1 The six asserted-negatives, and what replaces each
 
@@ -557,7 +645,8 @@ behind (it did once, during the 0b2 pass). It should write to a temp directory i
 
 **0c is done when:**
 
-1. O-1 … O-14 hold, verified by the tester in its own lane, on all five interpreters.
+1. O-1 … O-16 **plus O-4b** hold, verified by the tester in its own lane, on all five
+   interpreters. O-15 and O-16 are now unconditional: §2.5 is decided.
 2. The canonical suite is green and captured, with every determinism probe comparing bit
    patterns (§5.1).
 3. The six asserted-negatives above have been retired and replaced per §6.1, with the

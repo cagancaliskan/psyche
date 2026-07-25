@@ -41,7 +41,23 @@ the failure mode the project already hardened against.
 
 ## 2. Root cause
 
-`src/nous_coalitions.py`, two sites (lines 225 and 308):
+> **CORRECTION, 2026-07-26 (D-014) — this section said "two sites" and it was wrong.**
+> There are **three** `Coalition(` construction sites in `src/`, not two:
+> `nous_coalitions.py:228`, `nous_coalitions.py:311`, and **`nous_workspace.py:426`**, which
+> builds the *pruned* winner with `strength=sum(pruned_members.values())`. That third site
+> was never converted, so this bug was reported as closed while a live instance of it
+> remained **on the same competition path**. It is reproduced in SPEC-0c §2.5.1: on the
+> post-0c working tree, at a **fixed** `PYTHONHASHSEED=0`, 30 fresh processes give two
+> distinct strengths on python3.10 (6 / 24) and one on python3.14 — the same
+> invisible-on-the-newer-interpreter signature this report describes below, for the same
+> reason, now explained (see §9). Winner *identity* is stable on that graph, which is
+> exactly how the original instance hid too. The site is converted in brick 0c.
+> Nothing else in this report is affected: the diagnosis, the mechanism and the fix applied
+> at the two `nous_coalitions.py` sites were correct as far as they went. What was wrong was
+> the claim of completeness.
+
+`src/nous_coalitions.py`, two sites (lines 225 and 308) — **and see the correction above; a
+third site in `nous_workspace.py` was missed**:
 
 ```python
 strength = sum(members.values())
@@ -224,3 +240,40 @@ contributions — which is not a restriction the project ever stated.
 **Status.** DEFECT-A belongs to brick `0b`, not to `0b1` and not to `0b2`. It contests Phase 0's
 `PROVEN` label, and that call — with its re-validation cost — is Cagan's, recorded as **D-011** in
 `DECISIONS.md`. Nothing is re-labelled here on an agent's initiative.
+
+---
+
+## 9. Postscript, 2026-07-26 — why this bug was invisible on 3.12, and where an instance survived
+
+Two things were unexplained when this report was written. Both are now settled, and each is
+recorded here because a bug report that leaves its own key fact unexplained invites the next
+reader to guess.
+
+**(a) The interpreter split has a cause, and it is not mysterious.** This report records the
+failure as reproducing on CPython 3.11 and being invisible on 3.12 without saying why.
+The reason: **CPython 3.12 changed the builtin `sum()` to Neumaier compensated summation for
+floats.** Reproduced across all five interpreters on the project machine, over
+`[1.0, 1e-16, 1e-16, 1e-16]`: `sum() == math.fsum()` is **False** on 3.10.17 and 3.11.15 and
+**True** on 3.12.4, 3.13.14 and 3.14.4. Since the fix here was exactly `sum(...)` →
+`math.fsum(...)`, the pre-fix code was **accidentally correct on 3.12+ and naive on 3.11**.
+That is the whole of the version-dependence. It also means any surviving naive float `sum()`
+in this project is a value that depends on which interpreter runs it — which is the general
+form of the defect, and why SPEC-0c §2.5 converts every one of them.
+
+**(b) An instance survived on the same path, for four weeks.** See the correction in §2:
+`nous_workspace.py` builds the pruned winner's strength with a naive `sum()`, and this
+report's completeness claim missed it. The instructive part is *how* it survived: the
+`Coalition.members` order it inherits comes from `by_basin[src]` — a `Set[str]` of uuid4
+NodeIDs built in `nous_coalitions.py`, not from the store's adjacency index. So brick 0c's
+store-ordering fix does not reach it. **Fixing a class at one owner does not fix it at
+another owner**, and a report that says "two sites" without a mechanical check that there
+were only two is an assertion, not a finding. SPEC-0c §2.5.2 records the corresponding
+lesson for the spec: 0c's own falsifier exercised only the activation accumulator, so the
+brick whose purpose is closing this class would have shipped with a live instance of it.
+
+**Status, updated.** DEFECT-A belongs to brick `0b`. Cagan resolved the label question in
+**D-012**: Phase 0's `PROVEN` label is withdrawn, and both `0a` and `0b` now carry
+`BUILT · UNVALIDATED` — restored only after the repair brick is built and re-verified.
+The third-site correction and the conversion of the remaining naive sums are **D-014**,
+folded into that same repair brick, which is specified in
+`docs/specs/SPEC-0c-deterministic-road-ordering.md`.
