@@ -502,12 +502,27 @@ DOCUMENTED_GAPS = [
      "    for r in rows:\n        c.update(r)\n    return c\n"),
 ]
 
-UNDOCUMENTED_GAPS = [
+# CONVERTED 2026-07-26 (D-021 re-verification). These three shapes were asserted here as
+# UNDETECTED gaps. The builder closed all three, so the negatives were converted into
+# positive assertions of the capability gained — NOT deleted. A deleted negative leaves no
+# trace that the limit ever existed; a converted one is a record of a capability gained, and
+# it goes red again if the capability regresses.
+CLOSED_GAPS = [
     ("SUBTRACTIVE running local `acc -= v`",
-     "def f(xs):\n    acc = 0.0\n    for x in xs:\n        acc -= x\n    return acc\n"),
+     "def f(xs):\n    acc = 0.0\n    for x in xs:\n        acc -= x\n    return acc\n",
+     ["aug-sub"]),
     ("SUBTRACTIVE fold into a dict",
      "def f(items):\n    o = {}\n    for k, v in items:\n        o[k] = o.get(k, 0.0) - v\n"
-     "    return o\n"),
+     "    return o\n",
+     ["self-sub"]),
+    ("EVERY STATEMENT inside a match case",
+     "def f(xs, mode):\n    a = 0.0\n    for x in xs:\n        match mode:\n"
+     "            case 1:\n                a += x\n            case _:\n"
+     "                a = a + x\n    return a\n",
+     ["aug-add", "self-add"]),
+]
+
+UNDOCUMENTED_GAPS = [
     ("walrus in an if test",
      "def f(xs):\n    a = 0.0\n    for x in xs:\n        if (a := a + x) > 1.0:\n"
      "            break\n    return a\n"),
@@ -517,10 +532,6 @@ UNDOCUMENTED_GAPS = [
     ("tuple target `a, b = a + x, b + y`",
      "def f(xs):\n    a = 0.0\n    b = 0.0\n    for x in xs:\n"
      "        a, b = a + x, b + x * x\n    return a, b\n"),
-    ("EVERY STATEMENT inside a match case",
-     "def f(xs, mode):\n    a = 0.0\n    for x in xs:\n        match mode:\n"
-     "            case 1:\n                a += x\n            case _:\n"
-     "                a = a + x\n    return a\n"),
     ("itertools.accumulate",
      "import itertools\ndef f(xs):\n    return list(itertools.accumulate(xs))[-1]\n"),
     ("operator.add(acc, v) called in a loop",
@@ -542,24 +553,58 @@ def test_F3_GAP_ASSERTED_NEGATIVES_shapes_the_detector_cannot_see():
     note("each of the five is named in ledger_check's own SCOPE comment, so a reader is "
          "warned before trusting the gate")
 
-    section("F-3  ASSERTED NEGATIVE: ten UNDOCUMENTED gaps — DEFECT 0d-2")
-    # These PASS while the gap is present. IF ONE GOES RED: the shape is now detected;
-    # delete its row and, if it was the last, retire DEFECT 0d-2.
+    section("F-3  CONVERTED: three gaps CLOSED — the capability is asserted positively")
+    # Each of these was an asserted-negative saying "the scanner cannot see X". The builder
+    # closed all three. Verified INDEPENDENTLY below with inputs of this suite's own
+    # construction, then converted — the assertion now says "the scanner sees X", so a
+    # regression turns it red rather than passing silently.
+    for label, src, expect in CLOSED_GAPS:
+        got = sorted(s.kind for s in LC.scan_source(src, "src/probe.py"))
+        check(got == sorted(expect),
+              f"CLOSED, capability asserted: {label} -> {got} (was: invisible)")
+    # inputs the OLD scanner provably could not see, written here and not borrowed
+    check([s.kind for s in LC.scan_source(
+        "class K:\n    def m(self, v):\n        self.total -= v\n", "src/p.py")] == ["aug-sub"],
+        "subtraction is seen through an ATTRIBUTE target too, not just a local")
+    check([s.kind for s in LC.scan_source(
+        "def f(d, k, v):\n    p = d.get(k, 0.0)\n    d[k] = p - v\n", "src/p.py")] == ["self-sub"],
+        "and through the one-hop temporary, so the laundering path covers Sub as well as Add")
+    check([s.kind for s in LC.scan_source(
+        "def f(c, xs):\n    match c:\n        case [1, 2]:\n            match xs:\n"
+        "                case _:\n                    a = 0.0\n                    a += 1.0\n",
+        "src/p.py")] == ["aug-add"],
+        "a NESTED match reaches two levels deep — stronger than the single-level fixture "
+        "the builder used, and the level where a shallow patch would have stopped")
+    check(LC.scan_source("def f(v, x):\n    x = v - x\n    return x\n", "src/p.py") == [],
+          "and the asymmetry is deliberate: `x = v - x` REFLECTS rather than accumulates, "
+          "so subtraction counts only with the accumulator on the LEFT")
+    note("DEFECT 0d-2 is RESOLVED for these three. The remaining shapes are no longer "
+         "undocumented either — they are L2-L10 in ledger_check's scope block, each with a "
+         "falsifier — so 0d-2 as originally written (undetected AND undocumented) no "
+         "longer describes anything.")
+
+    section("F-3  ASSERTED NEGATIVE: the remaining gaps, now DOCUMENTED as L2-L10")
+    doc_scope = (TOOLS / "ledger_check.py").read_text(encoding="utf-8").split("SRC_REL = Path")[0]
     for label, src in UNDOCUMENTED_GAPS:
         got = LC.scan_source(src, "src/probe.py")
-        check(got == [], f"undetected and undocumented: {label} (got {[s.kind for s in got]})")
-    finding("0d-2", "ten order-sensitive shapes are undetected AND appear in no "
-                    "limitation list. CONTRIBUTING.md's definition of done requires a known "
-                    "limitation to be an explicit asserted-negative test, not an absence.")
+        check(got == [], f"still undetected, and now documented: {label}")
+    check(all(f"L{i}" in doc_scope for i in range(1, 11)),
+          "and L1-L10 are each named in the scope block with a falsifier — so a reader is "
+          "warned before trusting the gate, which is what makes these limitations rather "
+          "than silences")
 
-    section("F-3  the scope statement 'ADDITIVE reduction only' is contradicted by `-=`")
+    section("F-3  CONVERTED: the scope comment no longer promises coverage it lacks")
     doc = (TOOLS / "ledger_check.py").read_text(encoding="utf-8")
-    check("ADDITIVE reduction only" in doc,
-          "the scanner's scope comment does say 'ADDITIVE reduction only'")
-    check(LC.scan_source("def f(xs):\n    a = 0.0\n    for x in xs:\n        a -= x\n"
-                         "    return a\n", "src/p.py") == [],
-          "yet a subtractive fold, which IS an additive reduction over negated terms, "
-          "is invisible")
+    check("ADDITIVE reduction only" not in doc,
+          "the false promise 'ADDITIVE reduction only' is GONE from the scope comment — it "
+          "told a reader that `-=` was covered when it was not, which is the same "
+          "true-looking-sentence defect that failed this brick's registry")
+    check("ADD and SUB only" in doc,
+          "and the replacement states what is actually covered")
+    check([s.kind for s in LC.scan_source(
+        "def f(xs):\n    a = 0.0\n    for x in xs:\n        a -= x\n    return a\n",
+        "src/p.py")] == ["aug-sub"],
+        "and the subtractive fold the old comment mis-promised is now genuinely seen")
     # and it is order-sensitive by exactly the same mechanism, measured not asserted
     rng = random.Random(5)
     hit = None
@@ -578,25 +623,29 @@ def test_F3_GAP_ASSERTED_NEGATIVES_shapes_the_detector_cannot_see():
           "a subtractive fold takes >1 bit pattern over a permuted multiset")
     if hit:
         print(f"    witness: {hit[0]} -> {len(hit[1])} bit patterns {hit[1]}")
-    finding("0d-2", "the phrase 'ADDITIVE reduction only', contrasted against "
-                    "multiplicative chains, tells a reader that `-=` is covered. It is not.")
+    note("DEFECT 0d-2's wording half is RESOLVED: the phrase that mis-promised coverage "
+         "is gone and the capability behind it exists.")
 
     section("F-3  the `match` gap is a TRAVERSAL blind spot, not a shape gap")
     m = ("def f(xs, mode):\n    a = 0.0\n    o = {}\n    match mode:\n"
          "        case 1:\n            a += xs[0]\n"
          "            o['k'] = o.get('k', 0.0) + xs[1]\n"
          "        case _:\n            a = a + xs[2]\n    return a, o\n")
-    check(LC.scan_source(m, "src/p.py") == [],
-          "three statement-level accumulations inside one match are ALL invisible")
+    check(sorted(s.kind for s in LC.scan_source(m, "src/p.py"))
+          == ["aug-add", "self-add", "self-add"],
+          "CONVERTED: all three statement-level accumulations inside one match are now "
+          "SEEN (they were all invisible). The root cause was a NAME, not a decision — "
+          "ast.Match keeps its bodies under `cases`, and the walker recursed only into "
+          "body/orelse/finalbody/handlers")
     m2 = ("def f(xs, mode):\n    match mode:\n        case 1:\n"
           "            return sum(xs)\n        case _:\n            return 0.0\n")
     check(len(LC.scan_source(m2, "src/p.py")) == 1,
           "a CALL inside a match case is still seen (via the expression scan), which is "
           "why the hole is easy to miss: the file is not silent, only its statements are")
-    finding("0d-2", "ast.Match exposes its bodies under `cases`, and the walker only "
-                    "recurses into body/orelse/finalbody/handlers. Every statement in "
-                    "every match case in src/ is unscanned. src/ contains no match today; "
-                    "Phase 2 is when that stops being true.")
+    note("DEFECT 0d-2's traversal half is RESOLVED. Verified independently: nested match "
+         "two levels deep, guarded mapping patterns, and a subtractive fold inside a case "
+         "are all reached. This mattered on a deadline — 2f is written next and the gate "
+         "now stands before that traffic rather than after it.")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -753,8 +802,17 @@ def test_F6_every_entry_is_structurally_well_formed():
     check(bounded | confirmed == set(naive),
           f"every naive entry either states a falsifier or records the site as already "
           f"confirmed; neither={sorted(set(naive) - bounded - confirmed)}")
-    check(len(bounded) == 5 and len(confirmed) == 1,
-          f"five bounds and one confirmed defect (got {len(bounded)}/{len(confirmed)})")
+    check(len(bounded) == 5 and len(confirmed) == 2,
+          f"CONVERTED: five entries state a falsifier and TWO are recorded as confirmed "
+          f"order-dependent (got {len(bounded)}/{len(confirmed)}). It was 5/1 — merged_flow "
+          f"moved from 'symptom unreproduced' to CONFIRMED when its own falsifier was run "
+          f"and fired (DEFECT 0d-1)")
+    unfalsified = sorted(set(naive) - bounded)
+    check(unfalsified == ["src/nous_field.py:build_activation_field.total"],
+          f"and exactly one entry still names NO falsifier: {unfalsified}. It is the "
+          f"already-CONFIRMED site, so there is nothing left to disprove — but the "
+          f"asymmetry is recorded rather than assumed, because five of six naming one is "
+          f"a convention a reader will generalise")
     note("this is the strongest property a machine can check about a reason. That the "
          "bound is STATED is checkable; that it is TRUE is F-6, and is measured below — "
          "where one of the five bounds turns out to be false.")
@@ -767,10 +825,23 @@ def test_F6_DEFECT_the_merged_flow_reason_is_FALSE():
     from nous_activation import spread_activation
 
     reg = real_registry()["src/nous_field.py:build_activation_field.merged_flow"]
-    check("SYMPTOM UNREPRODUCED" in reg["reason"],
-          "the entry does claim the symptom is unreproduced")
-    check("permutation probe over source order that moves any merged_flow value"
-          in reg["reason"], "and it names that probe as its falsifier")
+    # The phrase still appears — as a QUOTED RETRACTION, which is the project's idiom for
+    # a corrected record ("a spec quietly amended teaches nothing"). So the assertion has to
+    # separate ASSERTING the claim from QUOTING it. Checking for the phrase's absence was my
+    # own imprecision on the first pass; a corrected record would have failed it.
+    up = reg["reason"].upper()
+    i = up.find("SYMPTOM UNREPRODUCED")
+    check(i != -1 and "PREVIOUSLY READ" in up[:i] and "THAT WAS FALSE" in up[i:i + 120],
+          "CONVERTED: the phrase 'symptom unreproduced' survives ONLY as a quoted "
+          "retraction — preceded by 'previously read' and followed by 'That was FALSE' — "
+          "so the entry records its own correction rather than asserting the false claim")
+    check("CONFIRMED ORDER-DEPENDENT" in reg["reason"].upper(),
+          "and the entry now records the verdict its own falsifier produced when run")
+    check("STRUCTURALLY INCAPABLE" in reg["reason"].upper(),
+          "and it records WHY the clearing probe cleared — four sources converging on one "
+          "node makes every value single-term at hop 1, so that probe could not have "
+          "exhibited the symptom at all. Recording the probe's incapacity, not just the "
+          "corrected verdict, is what stops the same probe being trusted again")
 
     def star(depth2: bool):
         st = SubstrateStore(clock=Clock(simulated=True, start=9000.0))
@@ -851,11 +922,6 @@ def test_F6_DEFECT_the_merged_flow_reason_is_FALSE():
         if max(len(v) for v in seen.values()) > 1:
             hits += 1
     check(hits == 40, f"the falsifier fires on {hits}/40 random convergent graphs")
-    finding("0d-1", "the registry (and SPEC-0d §3.3) record merged_flow as "
-                    "'symptom unreproduced'. Measured: 40/40 graphs, and a six-node "
-                    "witness. The correct verdict is the same as :total — CONFIRMED "
-                    "ORDER-DEPENDENT, order-pinned. IF THIS TEST GOES RED: the entry has "
-                    "been corrected; delete this block and retire DEFECT 0d-1.")
     note("scope of the consequence: ActivationField.flow has NO reader anywhere in src/ "
          "today, so the moving bits reach no decision. That is a bound worth writing "
          "into the entry — it is not a reason to call the symptom unreproduced.")
@@ -1036,12 +1102,6 @@ def test_F6_measure_the_other_five_naive_reasons():
     callers = subprocess.run(["grep", "-rn", r"\.advance(", str(SRC)],
                              capture_output=True, text=True).stdout.strip()
     check(callers == "", "and src/ contains no caller of advance() at all")
-    finding("0d-3", "the clause 'there is no term SET that could be permuted ... no "
-                    "alternative order a correct program could produce' is false as "
-                    "stated: permuting a 4-element dt multiset moves `_t` by 1 ULP on "
-                    "the first try. What actually protects the site is that time order "
-                    "is semantically fixed, which is a different and weaker argument. "
-                    "IF THIS GOES RED: the wording was corrected; retire FINDING 0d-3.")
 
     section("F-6  entry 5/6 road.strength — 'exactly one term per crossing' is TRUE")
     tree = ast.parse((SRC / "nous_store.py").read_text(encoding="utf-8"))
@@ -1222,52 +1282,141 @@ def test_purity_the_check_writes_nothing():
     check(snap() == before, "the scratch machinery wrote nothing into the repository")
 
 
+def test_F6_FINDING_0d5_the_absence_bound_underreports_on_dynamic_access():
+    """FINDING 0d-5. The bound_on_absence docstring says it is 'DELIBERATELY BIASED TOWARD
+    OVER-REPORTING' and that it flags EVERY matching read. It does not: dynamic access is
+    invisible to it. The bias is the right one to choose and the bounds are TRUE today —
+    but the promise is wider than the mechanism, and a gate that promises over-reporting
+    while under-reporting is worse than one that promises nothing, because the promise is
+    what a reader substitutes for checking.
+
+    This is the same defect class that failed this brick twice already: a true-looking
+    sentence someone relies on. It does NOT block the brick — the realistic path (a direct
+    `field_.flow` read, which is what 2f would write) is caught, verified.
+
+    IF THIS GOES RED: either the mechanism was widened or the docstring was narrowed to
+    match. Check which, then retire this."""
+    section("F-6  FINDING 0d-5 — the absence bound under-reports on dynamic access")
+    import tempfile, shutil
+    from pathlib import Path as _P
+    CASES = [
+        ("getattr by string",   "def f(x):\n    return getattr(x, 'flow')\n",
+         "attribute_read", "ActivationField.flow"),
+        ("__dict__ subscript",  "def f(x):\n    return x.__dict__['flow']\n",
+         "attribute_read", "ActivationField.flow"),
+        ("aliased then called", "def f(c):\n    g = c.advance\n    g(1.0)\n",
+         "call", "advance"),
+        ("getattr then called", "def f(c):\n    getattr(c, 'advance')(1.0)\n",
+         "call", "advance"),
+    ]
+    for label, src, kind, sym in CASES:
+        d = _P(tempfile.mkdtemp()); (d / "src").mkdir()
+        (d / "src" / "m.py").write_text(src)
+        try:
+            check(LC._absence_occurrences(d, kind, sym) == [],
+                  f"UNDER-REPORTED: {label} evades the bound the docstring promises to catch")
+        finally:
+            shutil.rmtree(d, ignore_errors=True)
+    # ...and the path that actually matters IS caught, which is why this does not block
+    d = _P(tempfile.mkdtemp()); (d / "src").mkdir()
+    (d / "src" / "m.py").write_text("def f(field_):\n    return sorted(field_.flow.items())\n")
+    try:
+        check(len(LC._absence_occurrences(d, "attribute_read", "ActivationField.flow")) == 1,
+              "the REALISTIC path — a direct attribute read, which is what brick 2f would "
+              "write — is caught, so the bound protects the case it exists for")
+    finally:
+        shutil.rmtree(d, ignore_errors=True)
+    finding("0d-5", "bound_on_absence's docstring promises to flag EVERY matching read and "
+                    "under-reports on getattr, __dict__ and aliased calls. Narrow the "
+                    "wording or widen the mechanism; the bounds are true today and the "
+                    "realistic path is covered, so this does not block the brick.")
+
+
+def test_F8_L3_and_L7_interact_and_2f_is_where_it_lands():
+    """L3 (tuple targets) is singled out because it is a plausible thing for 2f to write —
+    updating a trace and a counter together is idiomatic. Measured here, with the exact
+    line 2f would plausibly contain, because the burden has been placed on a reader of
+    SPEC-2f and that burden is only fair if the limitation is precise."""
+    section("F-8  L3 is load-bearing for 2f, and it compounds with L7")
+    idiomatic = ("def f(trace, counts, rid, e):\n"
+                 "    trace[rid], counts[rid] = trace[rid] + e, counts[rid] + 1\n")
+    check(LC.scan_source(idiomatic, "src/p.py") == [],
+          "the idiomatic 2f line — update a trace and a counter in one tuple assignment — "
+          "produces ZERO findings. This is L3, and it is the shape 2f is most likely to "
+          "write")
+    split = ("def f(trace, counts, rid, e):\n"
+             "    trace[rid] = trace[rid] + e\n"
+             "    counts[rid] = counts[rid] + 1\n")
+    got = LC.scan_source(split, "src/p.py")
+    check(len(got) == 1 and got[0].kind == "self-add",
+          f"split across two lines, the FLOAT accumulation is caught ({len(got)} finding) — "
+          f"so L3 is a real hole and not a property of the computation")
+    check(all(s.symbol != "counts" for s in got),
+          "and the integer counter is correctly exempt (L7), which means a 2f author who "
+          "writes the tuple form loses the float site to L3 while the int site was never "
+          "in scope — the two limitations COMPOUND on exactly the line 2f would write")
+    note("Recorded for SPEC-2f: write the trace update on its own line, or the gate that "
+         "exists to catch 2f's accumulations will not see the one accumulation 2f adds.")
+
+
 def test_robustness_unreadable_and_unparseable_modules():
-    section("ROBUSTNESS  a module that does not parse is a finding, never a silence")
-    r = scratch(files={"src/nous_tp_broken.py": "def f(:\n    pass\n"})
-    f = c6(r)
-    check(any("could not parse" in x.message for x in f), "a SyntaxError is reported")
-    check(gate_exit(r) == 1, "and the build goes red")
+    """CONVERTED 2026-07-26. Every assertion here previously documented a BROKEN contract:
+    unparseable source produced a finding (exit 1, 'the repo is inconsistent'), a non-UTF-8
+    module escaped as an uncaught UnicodeDecodeError, and a NUL byte diverged BY
+    INTERPRETER. All three are fixed. The assertions are converted rather than deleted, so
+    a regression turns them red instead of passing silently.
 
-    section("ROBUSTNESS  FINDING 0d-4 — a non-UTF-8 module crashes the tool")
-    r = scratch()
-    (r / "src" / "nous_tp_latin1.py").write_bytes(b"x = 1\n# caf\xe9 \xff\xfe\n")
-    out = subprocess.run([sys.executable, str(TOOLS / "ledger_check.py"),
-                          "--root", str(r), "--only", "C6"],
-                         capture_output=True, text=True)
-    check("UnicodeDecodeError" in out.stderr,
-          "an uncaught UnicodeDecodeError escapes instead of a C6 finding")
-    check(out.returncode == 1,
-          f"and the exit code is 1, not the documented 2 for 'the tool itself could "
-          f"not run' (got {out.returncode})")
-    finding("0d-4", "scan_float_accumulations catches SyntaxError but not "
-                    "UnicodeDecodeError; a non-UTF-8 file under src/ produces a "
-                    "traceback and exit 1. It fails LOUD, which is the safe direction, "
-                    "but it violates the tool's own exit-code contract.")
+    The distinction the fix rests on, and the reason it matters: a FINDING means the census
+    ran and the repository is inconsistent. `CensusUnreadable` means the census did NOT run.
+    Exit 0 on source the gate could not read is the worst outcome this tool has — it is
+    indistinguishable from clean — and exit 1 is nearly as bad, because it asserts a scan
+    that never happened."""
+    section("ROBUSTNESS  CONVERTED: unreadable source is exit 2, never 0, never a finding")
+    for label, payload in (
+        ("unparseable",  {"files": {"src/nous_tp_broken.py": "def f(:\n    pass\n"}}),
+        ("non-UTF-8",    {"raw": ("src/nous_tp_latin1.py", b"x = 1\n# caf\xe9 \xff\xfe\n")}),
+        ("NUL byte",     {"raw": ("src/nous_tp_nul.py", b'x = 1\ny = "a\x00b"\n')}),
+    ):
+        r = scratch(files=payload.get("files"))
+        if "raw" in payload:
+            rel, blob = payload["raw"]
+            (r / rel).write_bytes(blob)
+        raised = None
+        try:
+            c6(r)
+        except LC.CensusUnreadable as e:
+            raised = e
+        check(raised is not None,
+              f"{label}: raises CensusUnreadable — the census refuses to certify a module "
+              f"it never read, rather than returning a census that looks complete")
+        check(gate_exit(r) == 2,
+              f"{label}: exits 2 ('the tool could not run'), NOT 0 and NOT 1")
 
-    section("ROBUSTNESS  FINDING 0d-4 — a NUL byte diverges BY INTERPRETER")
+    section("ROBUSTNESS  CONVERTED: the NUL byte no longer diverges by interpreter")
     r = scratch()
     (r / "src" / "nous_tp_nul.py").write_bytes(b'x = 1\ny = "a\x00b"\n')
     seen = {}
     for name in ("python3.10", "python3.11", "python3.12", "python3.13", "python3.14"):
-        p = shutil.which(name)
-        if not p:
+        exe = shutil.which(name)
+        if not exe:
             continue
-        o = subprocess.run([p, str(TOOLS / "ledger_check.py"), "--root", str(r),
-                            "--only", "C6"], capture_output=True, text=True)
-        seen[name] = "traceback" if "Traceback" in o.stderr else "finding"
-        print(f"    {name}: {seen[name]}")
-    if "python3.10" in seen and len(seen) > 1:
-        check(seen["python3.10"] == "traceback",
-              "3.10 raises ValueError for a NUL byte, which the handler does not catch")
-        check(any(v == "finding" for k, v in seen.items() if k != "python3.10"),
-              "3.11+ raise SyntaxError and report a proper C6 finding")
-        finding("0d-4", "the same src/ input yields a rendered C6 finding on 3.11-3.14 "
-                        "and an uncaught ValueError on 3.10. CONTRIBUTING.md rule 7: a "
-                        "property that holds on one interpreter and fails on another "
-                        "was never a property of the program.")
-    else:
-        note("3.10 unavailable; the NUL-byte interpreter divergence was not exercised")
+        o = subprocess.run([exe, str(TOOLS / "ledger_check.py"), "--root", str(r),
+                            "--only", "C6", "--quiet"], capture_output=True, text=True)
+        seen[name] = o.returncode
+        print(f"    {name}: exit {o.returncode}")
+    check(len(seen) >= 5, f"swept {len(seen)} interpreters (need 5)")
+    check(set(seen.values()) == {2},
+          f"one exit code on every interpreter: {sorted(set(seen.values()))}. It was a "
+          f"rendered finding on 3.11-3.14 and an uncaught ValueError on 3.10 — CONTRIBUTING.md "
+          f"rule 7, a property that holds on one interpreter and fails on another was "
+          f"never a property of the program. Both arms now exist so the CONTRACT is "
+          f"identical rather than an artefact of which interpreter you ran")
+    check("Traceback" not in subprocess.run(
+        [sys.executable, str(TOOLS / "ledger_check.py"), "--root", str(r), "--only", "C6"],
+        capture_output=True, text=True).stderr,
+        "and it is a diagnosed refusal, not a traceback")
+    note("FINDING 0d-4 is RESOLVED on both halves — the exit-code contract and the "
+         "interpreter divergence.")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -1292,6 +1441,8 @@ def main():
         test_F8_ASSERTED_NEGATIVE_the_gate_covers_src_only,
         test_determinism_across_interpreters_and_hash_seeds,
         test_purity_the_check_writes_nothing,
+        test_F6_FINDING_0d5_the_absence_bound_underreports_on_dynamic_access,
+        test_F8_L3_and_L7_interact_and_2f_is_where_it_lands,
         test_robustness_unreadable_and_unparseable_modules,
     ]:
         t()
@@ -1303,24 +1454,29 @@ def main():
         for m in _fail_msgs:
             print("   -", m)
     print("=" * 78)
-    print("  TESTER VERDICT ON SPEC-0d §4 — FAIL")
+    print("  TESTER VERDICT ON SPEC-0d §4 — PASS  (re-verification, 2026-07-26)")
     print("=" * 78)
-    print("    F-1  HOLDS       demonstrated on three PRE-FIX git trees; every site the")
-    print("                     project found by hand is reported on the tree it lived in")
+    print("    F-1  HOLDS       RE-RUN after the builder touched the traversal: all three")
+    print("                     historical bugs still caught on the pre-fix trees they")
+    print("                     lived in. This is the only evidence the detector works.")
     print("    F-2  HOLDS       zero unregistered; registry and census in bijection")
-    print("    F-3  HOLDS       all three SPEC shapes + nine of the tester's own, each")
-    print("                     turning a fresh-process exit code from 0 to 1")
+    print("    F-3  HOLDS       three gaps CLOSED and CONVERTED to positive assertions;")
+    print("                     the remaining nine are documented L2-L10 with falsifiers,")
+    print("                     and each is a REAL hole (an equivalent form IS detected)")
     print("    F-4  HOLDS       no false positive on any integer tally in src/")
-    print("    F-5  HOLDS       eight rot shapes caught; reason-TRUTH is out of reach,")
-    print("                     asserted as such")
-    print("    F-6  DOES NOT HOLD  DEFECT 0d-1: the merged_flow entry's own falsifier")
-    print("                     fires on a six-node graph and on 40/40 random graphs.")
-    print("                     FINDING 0d-3: the Clock.advance reason overstates.")
-    print("    F-7  HOLDS       both nous_field sites still naive; effect still reaches")
-    print("                     Coalition.strength; src/ has zero diff")
-    print("    F-8  HOLDS as written; DEFECT 0d-2: ten order-sensitive shapes are")
-    print("                     undetected and in no limitation list, and the scanner's")
-    print("                     own 'ADDITIVE reduction only' is contradicted by `-=`")
+    print("    F-5  HOLDS       rot shapes caught; reason-TRUTH is out of machine reach")
+    print("    F-6  HOLDS       all SIX reasons survived their OWN falsifiers, run rather")
+    print("                     than admired. DEFECT 0d-1 and FINDING 0d-3 are corrected,")
+    print("                     and the corrections were checked against the code, not")
+    print("                     against the architect's search.")
+    print("    F-7  HOLDS       both nous_field sites still naive; src/ has zero diff")
+    print("    F-8  HOLDS       DEFECT 0d-2 and FINDING 0d-4 both RESOLVED")
+    print("=" * 78)
+    print("  ONE NEW FINDING, 0d-5, and it does not block: the bound_on_absence docstring")
+    print("  promises OVER-reporting, and it under-reports on dynamic access —")
+    print("  getattr(x,'flow'), x.__dict__['flow'], and an aliased call are all missed.")
+    print("  The bounds themselves are TRUE today and enforced on the realistic path.")
+    print("=" * 78)
     print("=" * 78)
     if _findings:
         print("  FINDINGS (asserted negatives — they PASS while the defect is present)")

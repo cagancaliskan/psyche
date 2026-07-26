@@ -106,9 +106,14 @@
       "note": "Tester PASS 18/18. Restores Phase 0. Does NOT close the order-dependent-aggregate class — see 0d."
     },
     "0d": {
-      "name": "order-dependent-aggregate detector + registry",
+      "name": "float-accumulation detector + registry (a TOOL, not a substrate brick)",
+      "status": "PROVEN",
+      "note": "SPEC-0d. Tester PASS on re-verification 2026-07-26 (D-022), 289 assertions on five interpreters x six hash seeds. STATUS RATIONALE, because the two axes do not fit a tool cleanly and forcing the fit would be the dishonest option: BUILT-UNVALIDATED means 'mechanism built, meaning not yet graded', and for a gate there is NO meaning claim that will ever be graded — the label would imply a pending validation that can never arrive. PROVEN means the substrate bar: determinism (one census digest across 5 interpreters x 6 seeds), purity (ledger byte-identical after repeated runs), integrity (no analogue — a scanner holds no indices). Its FUNCTIONAL claim is verified the only way a refusal can be: F-1 retro-catch on three pre-fix git trees catches all three historical bugs on the tree each lived in, and F-3 injection makes the build go red on three distinct planted shapes. So PROVEN — but PROVEN WITHIN A STATED SCOPE, and the scope is ten documented limitations L1-L10, each with a falsifier and an asserted negative. One of them, L3 (tuple-target accumulation), is KNOWN to miss the shape brick 2f will most plausibly write; that is not a hidden weakness but a scheduled one, owned by 2f as its STEP ZERO. The meaning axis is VACUOUS for this brick and that vacuity is recorded here rather than papered over with a status that implies otherwise."
+    },
+    "0e": {
+      "name": "abort-hides-tests: a raising test is invisible to the failure list",
       "status": "DESIGNED",
-      "note": "Detector first, not a fifth patch. Three prior encounters of this shape were all found by looking, never by a sweep."
+      "note": "DEFECT, second occurrence, registered as its own brick by D-022 and SCHEDULED BEFORE THE PAPER CAPTURE. A test that RAISES rather than fails does not appear in the suite's failure list and aborts every test after it, so 'N passed, 0 failed' can be true of the report and false of the repository. Seen twice: the 0b2 suite's DEFECT-C negatives hid 13 downstream tests, and the 0d suite's robustness block hid its own tail — BOTH found only because someone ran the file directly. Twice is a pattern. It is NOT 0d's problem: it affects every suite that uses the built-in harness, and the project's headline assertion count — the number the paper cites — rides on it. Fix shape (not decided): the harness must catch an exception from a test function, record it as a FAILURE, and continue to the next test. MUST land before the capture the paper cites."
     },
     "1a": {
       "name": "multi-source field",
@@ -287,7 +292,8 @@
     "is worse than no check.",
     "",
     "This registry does NOT record that a site is safe, and 0d fixed nothing. Two entries",
-    "record a site that is order-dependent today and left that way on purpose."
+    "record a site that is order-dependent today and left that way on purpose.",
+    "bound_on_absence (D-021): when an entry's REASON rests on something NOT existing, list it here and C6 enforces it — the entry fails the build the moment the symbol appears in src/. Biased toward OVER-REPORTING on purpose: an attribute read cannot be resolved to a type without inference, so every matching read is flagged and a human dismisses the ones that are a different type, IN WRITING, in 'dismissed'. A false positive costs one sentence; a false negative is a silently false registry reason — the failure that made 0d FAIL."
   ],
   "float_accumulations": {
     "src/nous_activation.py:spread_activation.flow": {
@@ -316,15 +322,37 @@
     },
     "src/nous_field.py:build_activation_field.merged_flow": {
       "verdict": "registered",
-      "reason": "CONFIRMED ORDER-DEPENDENT, order-pinned. CORRECTED 2026-07-26 (D-021): this entry previously read 'shape present, symptom unreproduced'. That was FALSE. The clearing probe — four sources converging on one node — was STRUCTURALLY INCAPABLE of exhibiting the symptom: at hop 1 each road is traversed by exactly one source's spread, so every merged_flow value is single-term there. A shared road DOWNSTREAM of the convergence is multi-term, and then it moves: measured 2 distinct bit patterns over 4! source orders on a 4-sources -> hub -> tail store (0.4325968097408329 vs 0.43259680974083287), and on 40 of 40 randomly generated convergent stores. BOUND (verified, and this is what the entry actually rests on): ActivationField.flow has NO READER in src/. form_coalitions_from_field reads only field_.total, field_.broke_through and field_.dominant; the .flow read in form_coalitions is ActivationResult.flow from a single spread, and form_coalitions has no caller in src/. So the moving bits reach no decision today. FALSIFIER: any consumer that starts reading ActivationField.flow kills this bound."
+      "reason": "CONFIRMED ORDER-DEPENDENT, order-pinned. CORRECTED 2026-07-26 (D-021): this entry previously read 'shape present, symptom unreproduced'. That was FALSE. The clearing probe — four sources converging on one node — was STRUCTURALLY INCAPABLE of exhibiting the symptom: at hop 1 each road is traversed by exactly one source's spread, so every merged_flow value is single-term there. A shared road DOWNSTREAM of the convergence is multi-term, and then it moves: measured 2 distinct bit patterns over 4! source orders on a 4-sources -> hub -> tail store (0.4325968097408329 vs 0.43259680974083287), and on 40 of 40 randomly generated convergent stores. BOUND (verified, and this is what the entry actually rests on): ActivationField.flow has NO READER in src/. form_coalitions_from_field reads only field_.total, field_.broke_through and field_.dominant; the .flow read in form_coalitions is ActivationResult.flow from a single spread, and form_coalitions has no caller in src/. So the moving bits reach no decision today. FALSIFIER: any consumer that starts reading ActivationField.flow kills this bound.",
+      "bound_on_absence": [
+        {
+          "kind": "attribute_read",
+          "symbol": "ActivationField.flow",
+          "dismissed": [
+            "src/nous_field.py:123 — res.flow is the per-source ActivationResult.flow being READ to build merged_flow; not a read of the merged field this bound is about.",
+            "src/nous_coalitions.py:178 — result.flow is ActivationResult.flow from a single spread inside form_coalitions, a different object; and form_coalitions has no caller in src/ (see the call bound below)."
+          ]
+        },
+        {
+          "kind": "call",
+          "symbol": "form_coalitions",
+          "dismissed": []
+        }
+      ]
     },
     "src/nous_field.py:build_activation_field.total": {
       "verdict": "registered",
-      "reason": "CONFIRMED ORDER-DEPENDENT and deliberately left naive (SPEC-0d §3.2). field.total takes two distinct bit patterns over the 3! source-order permutations and the difference reaches Coalition.strength. It is order-PINNED — source order is program order — so it is reproducible across processes and interpreters and falsifies nothing brick 0c claims; what is absent is the weaker property, order-INDEPENDENCE. 0d fixes nothing here on purpose: the gate is the deliverable, and a brick that also cleared the backlog would let the empty backlog be read as the deliverable. A later brick that converts this site re-verifies at this entry."
+      "reason": "CONFIRMED ORDER-DEPENDENT and deliberately left naive (SPEC-0d §3.2). field.total takes two distinct bit patterns over the 3! source-order permutations and the difference reaches Coalition.strength. It is order-PINNED — source order is program order — so it is reproducible across processes and interpreters and falsifies nothing brick 0c claims; what is absent is the weaker property, order-INDEPENDENCE. 0d fixes nothing here on purpose: the gate is the deliverable, and a brick that also cleared the backlog would let the empty backlog be read as the deliverable. A later brick that converts this site re-verifies at this entry. FALSIFIER, added 2026-07-26 (D-022) — five of six entries named one and this did not, and five-of-six is a convention a reader generalises: the 'order-PINNED' half rests on `sources` arriving in program order, and it does NOT rest on build_activation_field, which merely dedups preserving the order it is given. The live caller passes list(clustering.group_seeds.keys()), and group_seeds is built in creation_seq order by cluster_sources. So the pinning rests on THAT ordering. It is falsified by: any caller deriving `sources` from an unordered container (a set, or the keys of a uuid-keyed map built without an explicit order), or any change to cluster_sources that stops ordering group_seeds by creation_seq."
     },
     "src/nous_store.py:Clock.advance._t": {
       "verdict": "registered",
-      "reason": "CORRECTED 2026-07-26 (D-021): this entry previously claimed 'there is no term SET that could be permuted — no alternative order a correct program could produce'. The second clause is FALSE and it was the half a reader relies on: permuting a multiset of dt values DOES move _t — measured 2.402012593713817 vs 2.4020125937138173 over 4! orders on the first multiset tried. What is TRUE and mechanical: exactly one AugAssign to _t per advance() call, so a single call is two-operand, and src/ contains NO CALLER of advance() at all (it is simulated-clock test scaffolding). What actually protects the site is that time order is SEMANTICALLY FIXED — a real but weaker argument than the one first written, and it is stated here as the weaker one. FALSIFIER: a src/ caller of advance(), or any path that applies elapsed deltas in a caller-chosen order."
+      "reason": "CORRECTED 2026-07-26 (D-021): this entry previously claimed 'there is no term SET that could be permuted — no alternative order a correct program could produce'. The second clause is FALSE and it was the half a reader relies on: permuting a multiset of dt values DOES move _t — measured 2.402012593713817 vs 2.4020125937138173 over 4! orders on the first multiset tried. What is TRUE and mechanical: exactly one AugAssign to _t per advance() call, so a single call is two-operand, and src/ contains NO CALLER of advance() at all (it is simulated-clock test scaffolding). What actually protects the site is that time order is SEMANTICALLY FIXED — a real but weaker argument than the one first written, and it is stated here as the weaker one. FALSIFIER: a src/ caller of advance(), or any path that applies elapsed deltas in a caller-chosen order.",
+      "bound_on_absence": [
+        {
+          "kind": "call",
+          "symbol": "advance",
+          "dismissed": []
+        }
+      ]
     },
     "src/nous_store.py:Road.valence.<return>": {
       "verdict": "fsum",

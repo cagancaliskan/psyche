@@ -1078,3 +1078,93 @@ certify its own correction.**
 **Still open and unanswered:** whether `tools/test_ledger.py` (the gate's own 139 assertions)
 joins the canonical count, extends C5 to scan `tools/`, or stays out. It changes what the
 headline figure means, so it is Cagan's.
+
+## D-022 · 2026-07-26 · 0d PASSES and the FOUNDATION ARC CLOSES; three standing rules recorded
+**Decided by:** tester (the verdict) · Cagan (the dispositions and the stop) · architect-pm (the record)
+**Supersedes:** D-021's FAIL verdict on 0d, which is preserved as the record it was
+
+**The verdict (recorded, not decided). PASS.** All eight invariants hold. 289 assertions, 0 failures,
+on five CPython minors × six hash seeds. Canonical suite green at 24 suites.
+
+**F-6 was re-verified the only way it can be: by hand, adversarially, every reason.** All six
+falsifiers were **run** rather than admired — several had never been executed. All six survive. The
+tester also attacked each probe's *capability* rather than only its claim, which is what caught 0d-1
+the first time, and confirmed independently that the discredited probe yields one bit pattern where
+the correct shape yields two.
+
+### The dispositions
+
+**FINDING 0d-5 — routed to the builder, wording only.** `bound_on_absence` promises to flag every
+matching read and under-reports on dynamic access. Narrow the promise; do **not** widen the
+machinery. It must state actionably what *is* covered and carry an exit instruction.
+
+**`field.total` now names a falsifier**, with its provenance corrected: the pinning rests on
+`cluster_sources` ordering `group_seeds` by `creation_seq`, not on `build_activation_field`.
+"This entry has no falsifier, and here is why" would have been acceptable; silence was not.
+
+**L3 is brick 2f's STEP ZERO, not a 0d task**, and it is written into SPEC-2f §0.5 as mandatory:
+*teach the gate to see tuple-target accumulation, then build the thing that would have hidden in
+it.* The tester showed the idiomatic 2f line produces **zero** findings. A passive sentence in a
+spec would have been incoherent one section after this same cycle replaced a recorded intention
+with a machine check. Ownership sits with the brick that needs the coverage, and **2f's first act
+becomes a demonstration that extending the gate is a normal cost of building on it.** L7 stays out:
+an integer counter is not a float accumulation — out of scope, not a hole.
+
+**Brick `0e` registered — abort-hides-tests, scheduled BEFORE the paper capture.** A test that
+*raises* rather than fails is absent from the failure list and aborts everything after it, so
+"0 failures" can be true of the report and false of the repository. Seen **twice**, both times found
+only because someone ran the file directly. It is not 0d's problem — it affects every suite — and
+the project's headline number rides on it.
+
+**`0d` moves to `PROVEN`, within a stated scope**, and the two axes do **not** fit a tool cleanly.
+`BUILT-UNVALIDATED` would imply a meaning validation that can never arrive, because a gate makes no
+claim an external yardstick will grade. The substrate bar is met — determinism, purity; integrity
+has no analogue for a scanner — and the functional claim is verified the only way a refusal can be:
+retro-catch on three pre-fix trees, and injection turning the build red. The scope is L1–L10, one of
+which is knowingly scheduled as 2f's step zero. The vacuity of the meaning axis is recorded rather
+than papered over.
+
+### Three standing rules, recorded as obligations rather than observations
+
+**1. THE THIRD APHORISM — "A site can have the shape, have the symptom, and still clear a probe a
+competent person designed to find it." Therefore reproduction cannot be the gate; only enumeration
+can.** Bought at the highest price of the three: the impossible-branch defect occurred **inside the
+brick built to stop that class** and was written into that brick's spec as its headline argument.
+Nobody was careless — the probe was aimed at the right site and reported truthfully. The failure was
+treating a negative observation as evidence of absence. Operational form: **a clearing probe must be
+shown capable of failing before its silence counts as evidence.** In `docs/METHODOLOGY.md` beside
+the other two, and marked for the paper.
+
+**2. ON A FAIL, COMMIT THE EVIDENCE AND THE CORRECTIONS; NEVER THE STATUS.** Cagan's original
+instruction said commit nothing on a FAIL, and records here that it was wrong: leaving 1,335 lines
+of adversarial tests uncommitted would have discarded the pass's entire product to protect a label
+that was not going to change anyway. The status is what a FAIL withholds. The evidence is what a
+FAIL produces.
+
+**3. C6 VERIFIES THAT A REASON EXISTS, NEVER THAT IT IS TRUE — AND THIS GAP DOES NOT CLOSE.** It
+checks presence, a length floor, and that the verdict matches the AST. Truth is out of machine
+reach. **A registry's reasons therefore require a human adversary on EVERY pass, not once**, and
+each pass must *run* the falsifiers rather than read them. This is a standing obligation on every
+future tester pass that touches the registry, not a note about one brick. The evidence that it binds:
+the builder's own F-6 tests were the mechanical floor plus one substring match, and could not
+structurally have caught either false reason.
+
+### Routed to the builder, as one bundle, NOT in this commit
+
+Cagan's Option B on the `tools/test_ledger.py` question, plus 0d-5: **(a)** extend C5 to scan
+`tools/` so the gate's own suite cannot sit unregistered; **(b)** register it in a **separate
+bucket** — its assertions do **not** join the headline total; **(c)** **rename the headline figure
+so it says what it counts.** Once C5 sees `tools/`, the repository contains more assertions than the
+headline reports, and an unlabelled figure in a paper that cites it becomes a false claim — the
+exact failure C2 exists to prevent, arriving through a **field name** instead of through prose.
+Carry two **named** figures and make the paper cite the substrate one **by name**. *Closing a
+silence must not open a claim.* Verified before routing: renaming `tests.*` breaks `ledger_sync.py`
+and C1/C2, so the schema change and the code change must land together — which is why this is the
+builder's bundle and not a ledger edit here. **(d)** the 0d-5 docstring narrowing.
+
+### The stop
+
+**The foundation arc ends here, by decision.** Not because nothing is left to improve — `0c-ii` is
+specified and unbuilt, `0e` is registered, L3 is scheduled, the paper is held — but because
+something always will be, and that is precisely why a stop has to be a **decision rather than a
+discovery**. Next is `2f`, beginning with its step zero.

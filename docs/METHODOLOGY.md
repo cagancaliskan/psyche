@@ -320,7 +320,7 @@ an externally-graded behavioral effect, run through the now-closed loop.
 
 ---
 
-## Two rules the substrate-repair sequence paid for
+## Three rules the substrate-repair sequence paid for
 
 Both were bought with defects that shipped, sat undetected, and were then found by accident.
 They are stated here as rules because in each case the project already *had* a probe for the
@@ -357,3 +357,31 @@ reports.
 *(Both rules are enforced in practice rather than remembered: bit-exact comparison replaces
 `round(x, 9)` in every determinism probe, and `ledger_check` C5/C6 fail the build on the
 classes that were previously caught by looking.)*
+
+### 3. A site can have the shape, have the symptom, and still clear a probe a competent person designed to find it
+
+> **Therefore reproduction cannot be the gate. Only enumeration can.**
+
+This is the generalisation of the most expensive defect in the sequence, and it was bought at
+the highest price of the three: **it occurred inside the brick built to stop that very class,
+and it was written into that brick's spec as its headline argument.**
+
+The registry entry for `nous_field.py`'s merged-flow accumulator read *"shape present, symptom
+unreproduced"* — a site that looked dangerous, probed, and cleared. The probe put four sources
+onto **one node**. At the first hop each road is traversed by exactly one source's spread, so
+every value there is **single-term**, and a single-term sum cannot vary by reordering. The
+probe was **structurally incapable** of exhibiting the symptom it was run to find. Move the
+shared road one hop downstream and the site moves — two distinct bit patterns over the source
+orders, on 40 of 40 randomly generated graphs.
+
+Nobody was careless. The probe was designed by someone who understood the defect, aimed at the
+right site, and reported truthfully what it saw. **That is what makes the lesson general**: the
+failure was not in the observation but in treating a negative observation as evidence of
+absence.
+
+The operational form, and the reason this project's float gate is a *census* rather than a
+hunt: **a clearing probe must be shown capable of failing before its silence counts as
+evidence.** Ask of any probe that found nothing — *could this have produced the symptom at
+all?* If the answer is no, the result is not a clean bill; it is no measurement.
+
+*Marked for the paper's methodology section, alongside the other two.*

@@ -1,6 +1,7 @@
 # SPEC-0d — A detector and a registry for float accumulation
 
-**Status:** DESIGNED · ready for the builder
+**Status:** **PROVEN, within a stated scope** · tester PASS on re-verification 2026-07-26
+(D-022) · L3 is scheduled as brick 2f's STEP ZERO, not as a 0d task
 **Revises:** nothing. Adds a gate. **Fixes nothing — deliberately.**
 **Depends on:** D-015 (this site is 0d, not a third widening of 0c), D-016, SPEC-0c
 **Date:** 2026-07-26
@@ -298,3 +299,38 @@ gate installed after the traffic has passed is a fifth manual hunt wearing a det
 
 **Single next action:** hand to the builder. Detector and registry only. If the builder
 finds itself editing `nous_field.py`, it has left the spec.
+
+---
+
+## 8. Dispositions from the re-verification (D-022)
+
+**FINDING 0d-5 — narrow the wording, never widen the machinery.** `bound_on_absence`'s
+docstring promises it flags *every* matching read; it under-reports on `getattr(x, 'flow')`,
+`x.__dict__['flow']`, an aliased call, and `getattr(c, 'advance')()`. The bounds themselves
+are true today and the realistic path is covered, so this blocks nothing — **but a promise
+wider than its machinery is the same true-looking sentence that has now bitten this brick
+three times, and the third occurrence of a pattern is where it stops being bad luck.**
+
+Routed to the builder as a docstring change. It must **not** merely delete the
+over-reporting claim; it must state **actionably** what *is* covered — direct attribute
+access and direct calls — say plainly that dynamic access is not seen, and carry an exit
+instruction. The machinery is not widened: over-reporting on the *type-ambiguity* axis
+remains the right bias, and this is about describing it correctly.
+
+**`field.total` now names a falsifier.** Five of six entries named one and this did not, and
+five-of-six is a convention a reader generalises. Its "order-pinned" half rests on `sources`
+arriving in program order — which comes from `cluster_sources` ordering `group_seeds` by
+`creation_seq`, **not** from `build_activation_field`, which only dedups preserving what it
+is given. Recorded in the entry with that provenance, because a falsifier that names the
+wrong mechanism is worse than none.
+
+**L3 is brick 2f's STEP ZERO, not a 0d task.** See SPEC-2f §0.5. 0d's scope closed by
+decision; ownership sits with the brick that needs the coverage, and 2f's first act becomes a
+demonstration that extending the gate is a normal cost of building on it.
+
+**What "PROVEN" means for this brick**, since the two axes do not fit a tool cleanly: the
+meaning axis is **vacuous** — a gate makes no claim an external yardstick will ever grade —
+so `BUILT-UNVALIDATED` would imply a validation that can never arrive. The substrate bar is
+met (determinism, purity; integrity has no analogue for a scanner) and the functional claim
+is verified the only way a refusal can be: the retro-catch on three pre-fix trees, and
+injection turning the build red. **PROVEN within a stated scope**, and the scope is L1–L10.

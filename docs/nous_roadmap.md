@@ -61,7 +61,23 @@ Each step carries a status tag:
                  SCALE-INVARIANCE — independent of 0c-ii's FINITENESS question). Superseded:
                  7 of 9 invariants hold; N-2 (inherited DEFECT-A) and N-5 (DEFECT-B) do not;
                  N-7 partial (DEFECT-C: sigma=inf -> NaN). Default flip NOT started.
-              0d float-accumulation detector  ·designed (SPEC-0d, D-015) — a DETECTOR, not a
+  ══ THE FOUNDATION ARC IS CLOSED (D-022, 2026-07-26). ◄── YOU ARE HERE ══
+     Four repair bricks and a gate: 0b1, 0b2, 0c, 0d. Phase 0 is PROVEN again and its
+     determinism is now STRUCTURAL rather than sampled. NEXT IS 2f, beginning with its
+     STEP ZERO — teach the gate to see tuple-target accumulation, then build the thing
+     that would have hidden in it. The arc ends by DECISION, not because nothing is left
+     down here (0c-ii specified, 0e registered, L3 scheduled, the paper held) but because
+     something always will be, which is exactly why a stop must be decided rather than
+     discovered.
+              0e abort-hides-tests  ·designed — a RAISING test is absent from the failure
+                 list and aborts everything after it, so "0 failures" can be true of the
+                 report and false of the repository. Seen TWICE, both times found only by
+                 running the file directly. MUST land before the capture the paper cites.
+              0d float-accumulation detector  ·PROVEN within a stated scope (SPEC-0d, D-022)
+                 tester PASS; retro-catch on three pre-fix trees catches all three historical
+                 bugs on the tree each lived in. Scope = L1-L10; L3 is 2f's step zero.
+                 The meaning axis is VACUOUS for a tool and that is recorded, not papered over.
+              0d (original framing) — a DETECTOR, not a
                  patch: ledger_check C6 enumerates every float accumulation in src/ and fails
                  the build on a new naive one; THEN fixes nous_field.py:131 and :124. Both are
                  order-PINNED, so 0d is hardening, NOT a determinism repair, and it does not

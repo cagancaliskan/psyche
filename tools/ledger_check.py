@@ -505,16 +505,52 @@ def check_runner_completeness(root: Path, ledger: dict) -> List[Finding]:
 # ADJUDICATED ONCE, in tools/ledger.json, with a reason. `math.fsum` sites are checked
 # mechanically (the verdict must match the AST); everything else needs a human sentence.
 #
-# SCOPE, stated so the gate is never read as a whole-repository guarantee:
+# SCOPE, stated so the gate is never read as a whole-repository guarantee.
+#
+# A limitation here is a promise about what this tool does NOT do. It has to be exactly
+# true, because a reader relies on it: the previous version of this block said "ADDITIVE
+# reduction only", which a reader correctly took to include subtraction — and subtraction
+# was not detected. `x -= v` is `x += (-v)` and is exactly as order-sensitive. That was a
+# true-LOOKING sentence covering a real hole, which is the same defect class that failed
+# this brick's own registry (D-021). Subtraction is now DETECTED; the wording below is the
+# corrected promise.
+#
 #   * src/ ONLY. experiments/, tests/ and tools/ are NOT scanned.
-#   * ADDITIVE reduction only. A multiplicative chain (`x *= k` in a loop) is equally
-#     order-sensitive and is NOT detected.
-#   * An accumulation laundered across statements THROUGH A TEMPORARY is detected only
-#     one hop (`prior = d.get(k, 0.0)` then `d[k] = f(prior + v)`); two hops is not.
-#   * math.sumprod, numpy-style reductions and Counter.update are not detected.
-# These are limitations, not silences: they are asserted as negatives in
-# tools/test_ledger.py so that "the detector is clean" never quietly means "the detector
-# did not look."
+#   * ADD and SUB only (`+`, `+=`, `-`, `-=`). Every other operator is out:
+#       L1  multiplicative and division chains — `x *= k`, `x /= k` in a loop are equally
+#           order-sensitive.            FALSIFIER: a `*=` fold in src/ that moves under permutation.
+#   * The remaining shapes, each a KNOWN hole with a falsifier, each asserted as a negative
+#     in tools/test_ledger.py so "the detector is clean" can never quietly mean "the
+#     detector did not look":
+#       L2  walrus — `if (acc := acc + v):`             FALSIFIER: a walrus fold in src/.
+#       L3  tuple / starred targets — `a, b = a + x, b + y`.   FALSIFIER: a tuple fold in src/.
+#       L4  itertools.accumulate.                        FALSIFIER: an accumulate() over floats.
+#       L5  `operator.add(acc, v)` called as a FUNCTION in a loop (the reduce ARGUMENT form
+#           is detected; the direct-call form is not).   FALSIFIER: operator.add in a src/ loop.
+#       L6  reduce with the DUNDER spelling `operator.__add__` (the plain spelling is
+#           detected).                                   FALSIFIER: reduce(operator.__add__, xs).
+#       L7  a FLOAT accumulator whose addend is an int literal — `weight += 1` is exempted
+#           by the structural integer rule, which cannot see the accumulator's type.
+#                                                        FALSIFIER: a float `x += 1` fold in src/.
+#       L8  interprocedural laundering — `out[k] = _helper(prior, v)`. One hop through a
+#           TEMPORARY is detected; a hop through a FUNCTION is not.
+#                                                        FALSIFIER: a helper-based fold in src/.
+#       L9  math.sumprod and numpy-style reductions.     FALSIFIER: math.sumprod in src/.
+#       L10 Counter.update / dict-merge accumulation.    FALSIFIER: Counter.update over floats.
+#     None of L1-L10 is implemented in this cycle by decision, not by oversight: whether any
+#     is worth detecting is a scoping call, and a gate that never ships because it is still
+#     being perfected is a gate that never guarded anything.
+
+class CensusUnreadable(Exception):
+    """src/ contains a module the census could not read.
+
+    This is deliberately NOT a Finding. A Finding means "the repository is inconsistent"
+    and exits 1; this means "the tool could not run" and exits 2, which is the documented
+    contract at the top of this file. The distinction is the whole point: **exit 0 on
+    source C6 could not read is the worst outcome this tool has, because it is
+    indistinguishable from clean.** Exiting 1 is nearly as bad — it says the census ran and
+    found a problem, when in fact the census did not run."""
+
 
 SRC_REL = Path("src")
 ACCUM_KEY = "float_accumulations"
@@ -661,10 +697,11 @@ def _reads_accumulator(e, container: Optional[str], aliases: Dict[str, str]) -> 
 
 def _statement_accumulation(st, aliases: Dict[str, str]) -> Optional[Tuple[str, str]]:
     """(kind, symbol) if this statement accumulates into its own target, else None."""
-    if isinstance(st, ast.AugAssign) and isinstance(st.op, ast.Add):
+    if isinstance(st, ast.AugAssign) and isinstance(st.op, (ast.Add, ast.Sub)):
         if _container(st.target) is None or _looks_integer(st.value):
             return None
-        return ("aug-add", _symbol_of(st.target))
+        kind = "aug-add" if isinstance(st.op, ast.Add) else "aug-sub"
+        return (kind, _symbol_of(st.target))
 
     if isinstance(st, ast.Assign):
         targets = list(st.targets)
@@ -680,16 +717,25 @@ def _statement_accumulation(st, aliases: Dict[str, str]) -> Optional[Tuple[str, 
         if container is None:
             continue
         for sub in ast.walk(st.value):
-            if not (isinstance(sub, ast.BinOp) and isinstance(sub.op, ast.Add)):
+            if not (isinstance(sub, ast.BinOp) and isinstance(sub.op, (ast.Add, ast.Sub))):
                 continue
             left = _reads_accumulator(sub.left, container, aliases)
             right = _reads_accumulator(sub.right, container, aliases)
             if not (left or right):
                 continue
-            addend = sub.right if left else sub.left
+            if isinstance(sub.op, ast.Sub):
+                # `x = x - v` accumulates; `x = v - x` REFLECTS (x alternates sign) and is
+                # not the same shape, so subtraction only counts when the accumulator is on
+                # the LEFT. Addition is commutative and counts on either side.
+                if not left:
+                    continue
+                addend = sub.right
+            else:
+                addend = sub.right if left else sub.left
             if _looks_integer(addend):
                 continue
-            return ("self-add", _symbol_of(tgt))
+            kind = "self-add" if isinstance(sub.op, ast.Add) else "self-sub"
+            return (kind, _symbol_of(tgt))
     return None
 
 
@@ -716,11 +762,22 @@ def _record_alias(st, aliases: Dict[str, str]) -> None:
         aliases.pop(name, None)
 
 
+# Fields that hold NESTED STATEMENTS. The expression scan must not descend into them
+# (it would attribute a site to the wrong scope) and `walk` must descend into every one of
+# them (or a statement there is invisible). `cases` is here because ast.Match keeps its
+# bodies under match_case.body rather than under a field named `body` — which is exactly
+# how match statements were being skipped: not by a decision, by a name.
+_STMT_FIELDS = ("body", "orelse", "finalbody", "handlers", "cases")
+
+
 def _non_stmt_children(node) -> Iterable[ast.AST]:
     """Every child that is not a nested statement list — so an expression scan can never
-    wander into a nested function body and attribute a site to the wrong scope."""
+    wander into a nested function body and attribute a site to the wrong scope.
+
+    For ast.Match the `cases` field is skipped wholesale here and handled in `walk`, which
+    scans each case's pattern and guard as expressions and walks its body as statements."""
     for name, val in ast.iter_fields(node):
-        if name in ("body", "orelse", "finalbody", "handlers"):
+        if name in _STMT_FIELDS:
             continue
         for it in (val if isinstance(val, list) else [val]):
             if isinstance(it, ast.AST) and not isinstance(it, ast.stmt):
@@ -777,6 +834,15 @@ def scan_source(text: str, relpath: str) -> List[Accumulation]:
                 for child in _non_stmt_children(h):
                     scan_calls(child, scope, "<except>")
                 walk(h.body, scope, aliases)
+            # ast.Match (3.10+). Its bodies hang off match_case, not off a `body` field, so
+            # the loop above cannot reach them. A traversal that silently skips a syntax
+            # construct is the same failure as a parser that reads unreadable source as
+            # clean — and this tool already treats that one as exit 2. src/ has no `match`
+            # today; brick 2f is written next and may introduce one.
+            for case in getattr(st, "cases", []) or []:
+                for child in _non_stmt_children(case):
+                    scan_calls(child, scope, "<case>")
+                walk(case.body, scope, aliases)
 
     walk(tree.body, [], {})
 
@@ -804,12 +870,102 @@ def scan_float_accumulations(root: Path) -> Tuple[List[Accumulation], List[Findi
             continue
         rel = p.relative_to(root).as_posix()
         try:
-            sites.extend(scan_source(p.read_text(encoding="utf-8"), rel))
+            text = p.read_text(encoding="utf-8")
+        except (UnicodeDecodeError, OSError) as e:
+            raise CensusUnreadable(f"{rel}: cannot read the file ({type(e).__name__}). "
+                                   f"The census cannot certify a module it cannot read.") from e
+        try:
+            sites.extend(scan_source(text, rel))
         except SyntaxError as e:
-            problems.append(Finding("C6", rel, e.lineno or 0,
-                                    f"could not parse for the float-accumulation census: {e.msg}",
-                                    "the census cannot certify a file it cannot parse"))
+            raise CensusUnreadable(f"{rel}:{e.lineno or 0}: cannot parse ({e.msg}). "
+                                   f"The census cannot certify a module it cannot parse.") from e
+        except ValueError as e:
+            # NUL bytes and other malformed input. ast.parse raises ValueError on 3.10 where
+            # later versions raise SyntaxError — so this arm is what makes the contract
+            # identical on every interpreter rather than an artefact of the one you ran.
+            raise CensusUnreadable(f"{rel}: cannot parse ({type(e).__name__}: {e}). "
+                                   f"The census cannot certify a module it cannot parse.") from e
     return sites, problems
+
+
+ABSENCE_KEY = "bound_on_absence"
+ABSENCE_KINDS = ("attribute_read", "call")
+
+
+def _absence_occurrences(root: Path, kind: str, symbol: str) -> List[Tuple[str, int]]:
+    """Every place in src/ where `symbol` appears, for a registry reason that rests on it
+    NOT appearing.
+
+    DELIBERATELY BIASED TOWARD OVER-REPORTING, and the bias is the design.
+    An attribute read cannot be resolved to a type without inference, so a bound on
+    `ActivationField.flow` is enforced by flagging EVERY `.flow` read in src/ and making a
+    human dismiss the ones that are a different type. That is the correct trade:
+
+        a false positive costs one recorded sentence in the ledger;
+        a false negative is a silently FALSE claim in the registry —
+        which is precisely the failure that made this brick FAIL (D-021).
+
+    Choosing the other bias is choosing the way we already lost once. If this ever reports
+    so many occurrences that people dismiss them without reading, narrow the SYMBOL, never
+    the check.
+    """
+    leaf = symbol.rsplit(".", 1)[-1]
+    hits: List[Tuple[str, int]] = []
+    src = root / SRC_REL
+    if not src.is_dir():
+        return hits
+    for f in sorted(src.rglob("*.py")):
+        if any(part in SKIP_DIRS for part in f.relative_to(root).parts):
+            continue
+        rel = f.relative_to(root).as_posix()
+        try:
+            tree = ast.parse(f.read_text(encoding="utf-8"))
+        except (SyntaxError, ValueError, UnicodeDecodeError, OSError) as e:
+            raise CensusUnreadable(f"{rel}: cannot read/parse while verifying an "
+                                   f"absence bound ({type(e).__name__}).") from e
+        for node in ast.walk(tree):
+            if kind == "attribute_read":
+                if isinstance(node, ast.Attribute) and node.attr == leaf \
+                        and isinstance(getattr(node, "ctx", None), ast.Load):
+                    hits.append((rel, node.lineno))
+            elif kind == "call":
+                if isinstance(node, ast.Call):
+                    if (_dotted(node.func) or "").rsplit(".", 1)[-1] == leaf:
+                        hits.append((rel, node.lineno))
+    return hits
+
+
+def _check_absence_bounds(root: Path, key: str, entry: dict) -> List[Finding]:
+    """A reason that rests on an ABSENCE is the most fragile claim a registry can hold,
+    because nothing enforces it. This makes the machine enforce it."""
+    out: List[Finding] = []
+    spec = entry.get(ABSENCE_KEY)
+    if spec is None:
+        return out
+    if not isinstance(spec, list):
+        return [Finding("C6", LEDGER_REL.as_posix(), 0,
+                        f"{key}: {ABSENCE_KEY!r} must be a list of "
+                        f"{{kind, symbol, dismissed?}} objects")]
+    for item in spec:
+        if not isinstance(item, dict) or item.get("kind") not in ABSENCE_KINDS \
+                or not item.get("symbol"):
+            out.append(Finding("C6", LEDGER_REL.as_posix(), 0,
+                               f"{key}: each {ABSENCE_KEY} item needs a 'symbol' and a "
+                               f"'kind' in {list(ABSENCE_KINDS)}"))
+            continue
+        kind, symbol = item["kind"], item["symbol"]
+        dismissed = {str(d).split(" ", 1)[0] for d in (item.get("dismissed") or [])}
+        for rel, line in _absence_occurrences(root, kind, symbol):
+            if f"{rel}:{line}" in dismissed:
+                continue
+            out.append(Finding(
+                "C6", rel, line,
+                f"{key}: this entry's reason RESTS ON THE ABSENCE of {symbol} "
+                f"({kind}), and {symbol} now appears here — the reason is now FALSE",
+                f"re-adjudicate {key}: either its bound no longer holds and the entry "
+                f"needs a new argument, or this occurrence is a different symbol and "
+                f"belongs in its 'dismissed' list with the reason it does not count"))
+    return out
 
 
 def check_float_accumulation(root: Path, ledger: dict) -> List[Finding]:
@@ -866,6 +1022,7 @@ def check_float_accumulation(root: Path, ledger: dict) -> List[Finding]:
                 f"{s.key}: the reason is {len(reason)} characters; a registry entry "
                 f"without a reason is an approval, not an adjudication",
                 "state why this site cannot break, so a later reader can check it"))
+        out.extend(_check_absence_bounds(root, s.key, entry))
 
     for key in sorted(set(registry) - seen):
         out.append(Finding(
@@ -904,7 +1061,11 @@ def main(argv: Optional[List[str]] = None) -> int:
     ledger = load_ledger(root)
 
     if args.list_accumulations:
-        sites, problems = scan_float_accumulations(root)
+        try:
+            sites, problems = scan_float_accumulations(root)
+        except CensusUnreadable as e:
+            print(f"ledger_check: the census could not run — {e}", file=sys.stderr)
+            return 2
         registry = ledger.get(ACCUM_KEY) or {}
         for s in sites:
             entry = registry.get(s.key) or {}
@@ -924,7 +1085,12 @@ def main(argv: Optional[List[str]] = None) -> int:
             print(f"ledger_check: unknown check {cid!r}", file=sys.stderr)
             return 2
         label, fn = CHECKS[cid]
-        got = fn(root, ledger)
+        try:
+            got = fn(root, ledger)
+        except CensusUnreadable as e:
+            # NOT a finding, and never exit 0 or 1: "the tool could not run" is exit 2.
+            print(f"ledger_check: the census could not run — {e}", file=sys.stderr)
+            return 2
         findings.extend(got)
         if not args.quiet:
             mark = "FAIL" if got else "ok  "
