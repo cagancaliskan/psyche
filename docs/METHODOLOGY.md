@@ -317,3 +317,43 @@ inputs. They establish **no cognitive claim**: the winner is a selected informat
 the broadcast is a bounded conduction bias. The line the original six findings drew is unchanged —
 mechanism is verified, meaning is not — and the next step is exactly what the method recommends:
 an externally-graded behavioral effect, run through the now-closed loop.
+
+---
+
+## Two rules the substrate-repair sequence paid for
+
+Both were bought with defects that shipped, sat undetected, and were then found by accident.
+They are stated here as rules because in each case the project already *had* a probe for the
+property and the probe could not see it.
+
+### 1. A coverage axis is only evidence for the property it can perturb
+
+This project swept `PYTHONHASHSEED` for a month against a nondeterminism that **uuid4**
+caused. Iteration order derived from uuid values, which are freshly random in every process,
+so the defect varied at a *fixed* seed and no seed could have found it. The axis being swept
+did not control the mechanism, and sweeping it produced confidence without evidence — which
+is worse than no probe, because a swept axis is read as a guarantee.
+
+The interpreter axis survives this test and the seed axis does not, for a concrete reason:
+CPython 3.12 changed the builtin `sum()` to Neumaier compensated summation, so identical code
+computes different floats on 3.11 and 3.12. That is a property of the environment, and the
+interpreter sweep can perturb it. Determinism, by contrast, is now established by **removing**
+the order dependence rather than by sampling an axis that never controlled it.
+
+**Corollary: prefer removing a dependence to sampling it.** An axis you have eliminated needs
+no coverage argument.
+
+### 2. A boundary located by sampling is the last sample, not the boundary
+
+The activation-silencing cliff under normalization was recorded three times, by three
+different measurements, as three different numbers: **16**, then **24**, then — by exhaustive
+search — **31**. None of the three was a wrong *observation*. Each was the largest value that
+measurement happened to test, mistaken for the edge.
+
+A sampled boundary reports the resolution of the sample. If a spec states an edge, the edge
+must be found by search or by proof, and a probe that samples must say so in the number it
+reports.
+
+*(Both rules are enforced in practice rather than remembered: bit-exact comparison replaces
+`round(x, 9)` in every determinism probe, and `ledger_check` C5/C6 fail the build on the
+classes that were previously caught by looking.)*
