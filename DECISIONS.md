@@ -1005,3 +1005,76 @@ in tester files?*
 **0d lands before 2f.** As the report puts it: a gate installed after the traffic has passed is
 a fifth manual hunt wearing a detector's name. 2f is the first brick built after the detector
 exists, which makes it the test of whether 0d does its only job.
+
+## D-021 · 2026-07-26 · 0d tester verdict is FAIL on F-6 — and the false claim was mine
+**Decided by:** tester (the verdict) · architect-pm (the record and the corrections)
+**Amends:** SPEC-0d §3.3, which asserted something false as the brick's headline argument
+
+**The verdict (recorded, not decided). FAIL on F-6.** Seven of eight invariants hold. The
+detector itself is sound: F-3 verified with the tester's own injections plus mine (three spec
+shapes, nine more of the tester's, a brand-new module, a stale registry entry, exit 1 with
+injections and 0 clean), F-4 clean with a structural rather than name-based integer exemption,
+and F-1 demonstrated **loop-closed on the project's own git history** — `src/` extracted at three
+pre-fix commits shows **all three manual hunts would have been caught on the day the code was
+written**. That is the strongest single piece of evidence 0d could have produced, and nobody
+writing the scanner chose what is in those commits.
+
+**DEFECT 0d-1, and it is mine.** The registry entry for `nous_field.py:124` read *"shape present,
+symptom unreproduced"*, and **SPEC-0d §3.3 presented that pair as "the entire case for a
+detector."** The tester ran the entry's own falsifier and it fires: 2 distinct bit patterns over
+4! source orders, on 40 of 40 randomly generated convergent stores. Verified independently
+(0.4325968097408329 vs 0.43259680974083287).
+
+**The root cause is the lesson.** The clearing probe used four sources converging on **one node**.
+At hop 1 each road is traversed by exactly one source's spread, so every `merged_flow` value is
+**single-term** — and a single-term sum cannot vary by reordering. **The probe was structurally
+incapable of exhibiting the symptom it was run to look for.** A shared road must sit *downstream*
+of the convergence to accumulate terms from several spreads. That is the six-bug checklist's
+"structurally-impossible branch" occurring **inside the brick built to stop that class**, written
+into the spec as its headline argument.
+
+**The corrected argument is stronger than the false one.** The original was *"a site can have the
+shape and lack the symptom, so shapes must be enumerated."* The truth is: **a site can have the
+shape, have the symptom, and still clear a probe a competent person designed to find it.**
+Reproduction cannot be the gate. Only enumeration can. §3.3 is corrected in place, showing the
+wrong text and the right one, because a spec quietly amended teaches nothing.
+
+**FINDING 0d-3, also mine to fix.** `Clock.advance._t`'s reason claimed *"no term SET that could
+be permuted."* False, and it was the half a reader relies on — permuting a dt multiset moves `_t`
+(2.402012593713817 vs 2.4020125937138173, first multiset tried). The mechanical half is true
+(one `AugAssign` per call; **no caller of `advance()` in `src/` at all**). Corrected to the real
+and weaker argument: time order is *semantically* fixed. Both entries now carry falsifiers.
+
+**Both corrected reasons rest on bounds I verified rather than inherited.** `ActivationField.flow`
+has **no reader in `src/`**: `form_coalitions_from_field` reads only `field_.total`,
+`field_.broke_through` and `field_.dominant`; the `.flow` read inside `form_coalitions` is
+`ActivationResult.flow` from a single spread, and `form_coalitions` has **no caller in `src/`**.
+A false bound is worse than no registry, because it is an argument someone will trust — which is
+exactly what just happened.
+
+**Routed to the builder, not fixed here.** **0d-2:** ten undetected shapes with no limitation
+entry, including `-=` (the scanner's own comment says "additive only", so a reader concludes `-=`
+is covered — it is not), walrus, tuple targets, `itertools.accumulate`, `operator.add` in a loop,
+and a **traversal blind spot**: statements inside a `match` case are never walked, because the
+walker recurses into `body/orelse/finalbody/handlers` and `ast.Match` uses `cases`. `src/` has no
+`match` today; **Phase 2 is when that stops being true.** **0d-4:** a NUL-byte module raises an
+uncaught `ValueError` on 3.10 only, and a non-UTF-8 module raises `UnicodeDecodeError` and exits
+**1** where the documented contract for "the tool could not run" is **2**. Both fail loud, which
+is the safe direction.
+
+**F-6 is the invariant a machine cannot check, and that is now demonstrated rather than argued.**
+C6 verifies a reason **exists**, is ≥24 characters, and that the verdict matches the AST. It
+cannot verify a reason is **true**. The builder's F-6 tests were the mechanical floor plus one
+substring match, and **structurally could not have caught 0d-1**. "C6 green + suite green" said
+nothing about whether the registry was true — which is precisely what failed. The division of
+labour is correct; the lesson is that a registry's *reasons* need a human adversary every time,
+not once.
+
+**Not closed out.** No capture taken — the verdict is FAIL. `tests/test_tester_0d_adversarial.py`
+(270 assertions) is registered in `run_tests.py`; C5 and C6 are green; C2 holds at 16, all in the
+held paper. **The tester must re-verify F-6 against the corrected reasons — architect-pm cannot
+certify its own correction.**
+
+**Still open and unanswered:** whether `tools/test_ledger.py` (the gate's own 139 assertions)
+joins the canonical count, extends C5 to scan `tools/`, or stays out. It changes what the
+headline figure means, so it is Cagan's.
