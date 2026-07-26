@@ -1,8 +1,8 @@
-# SPEC-0d — A detector for naive float accumulation, then the sites it finds
+# SPEC-0d — A detector and a registry for float accumulation
 
 **Status:** DESIGNED · ready for the builder
-**Revises:** nothing. Adds a structural check, then fixes what it reports.
-**Depends on:** D-015 (call 2 — this site is 0d, not a third widening of 0c), SPEC-0c
+**Revises:** nothing. Adds a gate. **Fixes nothing — deliberately.**
+**Depends on:** D-015 (this site is 0d, not a third widening of 0c), D-016, SPEC-0c
 **Date:** 2026-07-26
 **Author lane:** architect-pm
 
@@ -10,13 +10,14 @@
 
 ## 0. Framing
 
-### 0.1 The one thing that makes this brick different
+### 0.1 The deliverable is a detector and a registry. It is not a patch.
 
-**The deliverable is a detector, not a patch.** The two known `nous_field.py` sites are
-fixed *by* this brick, but they are not the point of it — they are its first output, and
-its acceptance test.
+0d ships **two things and no third**: a structural check that enumerates every float
+accumulation in `src/`, and a registry in `tools/ledger.json` that each one must appear in
+with a reason. **The known sites are registered, not converted.**
 
-The reason is a record this project can now read off its own history:
+That is a deliberate reversal of the obvious move, and the reason is the only thing in this
+spec worth remembering:
 
 | # | Site | How it was found |
 |---|---|---|
@@ -24,35 +25,47 @@ The reason is a record this project can now read off its own history:
 | 2 | `nous_workspace.py:426` | SPEC-0c §2.5 — someone asked "where else?" *after* the first fix |
 | 3 | `nous_field.py:131` | SPEC-0c §2.7 — the tester was asked "was that sweep exhaustive?" |
 
-**Three encounters, three times found by looking. Never once by a sweep.** Each time the
-project fixed the instance and moved on; each time an instance survived. Twice the surviving
-instance was in a file the previous fix's author had open. A fourth manual hunt has no
-better prior than the first three, and the cost of being wrong is now known: BUG-0b1 was
-reported closed for four weeks while a live instance sat on the same path.
+**Three encounters, three times found by a person looking. Never once by a sweep.** Each
+time the project fixed the instance and moved on; each time an instance survived. Twice the
+survivor sat in a file the previous fix's author had open.
 
-So 0d inverts the order. **Build the thing that enumerates, then fix what it enumerates.**
+A fourth manual hunt has no better prior than the first three. **So 0d builds the sweep, and
+fixes nothing** — because a brick that both builds the gate and clears the backlog behind it
+tempts everyone to read the empty backlog as the deliverable. The deliverable is the gate.
 
-### 0.2 What this brick is not
+### 0.2 Why not fix the two known sites here
 
-No cognitive claim. `0d` is a brick about floats and about a lint. It does not touch the
-meaning bar.
+Because the value of this brick is that **the gate goes red on anything new** — including
+what Phase 2 will introduce — so the remaining hardening **forces itself** instead of
+relying on someone remembering to do it.
 
-It is also **not a determinism repair**. The known sites are *order-pinned*: their iteration
-order is program order, so they are reproducible across processes. Nothing in 0d restores a
-falsified determinism claim, and 0d must not be described as though it did. What it closes
-is the gap between "pinned" and "independent" — the same gap D-013 ground 1 refused to leave
-open at the activation accumulator.
+This repository has twice proved that a recorded intention does not hold here:
+`experiments/harness.py:290` documented the naive-sum hazard in writing while the substrate
+carried `PROVEN` for a month; BUG-0b1's report claimed "two sites" and a third survived four
+weeks on the same competition path. **A note is not a control. A failing build is.**
+
+If 0d also fixed `nous_field`, the next naive accumulation would still arrive unannounced
+and the brick after it would be a fifth manual hunt. Registering the known sites and leaving
+them is what converts "we should look again sometime" into "the build stops."
+
+### 0.3 What this brick is not
+
+No cognitive claim. It is also **not a determinism repair**: both known sites are
+*order-pinned* — their iteration order is program order, so they are reproducible across
+processes and falsify nothing 0c asserts. 0d must never be described as restoring a
+determinism property. It closes the gap between *pinned* and *independent*, and it closes it
+by making the gap **visible**, not by eliminating it.
 
 ---
 
 ## 1. The claim 0d must make true
 
 > Every float accumulation in `src/` is either exactly rounded (`math.fsum`) or **registered
-> in the ledger with a stated reason**, and a newly-introduced naive accumulation fails the
-> canonical suite.
+> in `tools/ledger.json` with a stated reason**, and an unregistered naive accumulation
+> **fails the canonical suite**.
 
-The second clause is the one that matters. A fix is a fact about today; a detector is a fact
-about every commit after it.
+The second clause is the whole brick. A fix is a fact about today; a gate is a fact about
+every commit after it.
 
 ---
 
@@ -60,144 +73,207 @@ about every commit after it.
 
 ### 2.1 What it must find
 
-An accumulation is any construct that reduces two or more floats into one, where the
-reduction order is not fixed by the *values*. In this codebase that is three shapes:
+Any construct reducing two or more floats into one where the reduction order is not fixed by
+the values. In this codebase, three shapes:
 
 ```python
-total[k] = total.get(k, 0.0) + v      # the += -into-a-dict shape (DEFECT-A, §2.7)
+total[k] = total.get(k, 0.0) + v      # the +=-into-a-dict shape (both nous_field sites)
 acc += v                              # a running local
 sum(iterable_of_floats)               # the builtin (BUG-0b1, SPEC-0c §2.5)
 ```
 
-The builtin-`sum` shape is already at zero in `src/` after 0c, and the detector must keep
-it there — that is the regression half of its job.
+The builtin-`sum` shape is at **zero** in `src/` after 0c. Keeping it at zero is the
+regression half of the detector's job.
 
 ### 2.2 What it must not do
 
-**It must not flag integer accumulation, and it must not require `fsum` where `fsum` is
-wrong.** `math.fsum` on integers returns a float and would silently change types;
-`creation_seq` counters, `access_count`, and any `len`-like tally must be left alone. The
-detector therefore reports *candidates* and requires each to be **adjudicated once**, not
-mechanically rewritten.
+**It must not flag integer accumulation, and must not demand `fsum` where `fsum` is wrong.**
+`math.fsum` over integers returns a float and would silently change types: `creation_seq`,
+`access_count`, `traversal_count` and any `len`-like tally are out of scope. The detector
+reports **candidates for adjudication**, and each is adjudicated **once**.
 
-### 2.3 The registry, and why the exemption list lives in the ledger
+### 2.3 The registry, and why it lives in the ledger
 
-Every candidate is either converted or entered in `tools/ledger.json` under a new
-`float_accumulation_exemptions` key, with the site and a one-line reason. Putting the
-exemption list in the ledger rather than in a code comment is deliberate: the ledger is
-already the file this project treats as the single source of truth, it is already checked in
-CI by `ledger_check.py`, and an exemption that must be written down where the counts live is
-an exemption someone will read. A `# noqa`-style comment at the site would be invisible at
-exactly the moment it matters.
+A new top-level key in `tools/ledger.json`:
+
+```
+"float_accumulations": {
+  "<path>:<symbol>": { "verdict": "fsum" | "registered", "reason": "<one line>" }
+}
+```
+
+It lives in the ledger and not in a code comment for one reason: **the ledger is already the
+file this project treats as the single source of truth, and it is already checked in CI.** A
+`# noqa`-style comment at the site is invisible at exactly the moment it matters — when
+someone is deciding whether a new accumulation is like the old ones.
 
 ### 2.4 Where the check lives
 
-`tools/ledger_check.py`, as a new check **C6**, alongside C5's runner-completeness. It runs
-in CI, it is stdlib-only, and it fails the build. It is a *structural* check over source
-text, not a runtime test — the same category as C4's forbidden-claim scan, and it should
-reuse that machinery.
+`tools/ledger_check.py`, as check **C6**, beside C5. Stdlib-only, structural over source
+text (the same category as C4's forbidden-claim scan, and it should reuse that machinery),
+and it **fails the build**.
 
 ---
 
-## 3. The sites the detector must find on its first run
+## 3. The registry's opening entries
 
-Both are in `src/nous_field.py`, and the pair is instructive because **only one of them
-reproduced**.
+### 3.1 The model entry — and registry entries should aspire to this form
 
-**Site A — `nous_field.py:131`, confirmed.**
+**`src/nous_activation.py` — the `flow` accumulator.**
+
+```python
+flow[rid] = flow.get(rid, 0.0) + transmitted
+```
+
+Naive, and **deliberately not converted.** It is registered with a **bound**: under
+hop-layered single expansion a road's source expands exactly once, so a road transmits
+exactly once and **the add's second operand cannot exist**. The tester measured it — 574
+spreads across 60 hostile graphs (cycles, self-loops, fans), no road read twice in any
+spread — and the `+` is structurally single-term.
+
+**A bound is stronger than a conversion, and this is the point of the registry.** A
+conversion says *"this site can no longer break."* A bound says *"here is why this site
+cannot break"* — which survives refactoring as an argument a future reader can check and
+falsify, rather than as a call they must not accidentally undo. Converting this site to
+`fsum` would have hidden the reasoning behind an idiom.
+
+Registry entries should aspire to this form: a reason that explains, not a reason that
+asserts. "Registered because it is single-term, proven over N adversarial graphs" is an
+entry that does work. "Registered because it is fine" is an entry that trains people to skim.
+
+### 3.2 `src/nous_field.py:131` — confirmed order-dependent, registered not fixed
+
 ```python
 total[node] = total.get(node, 0.0) + act
 ```
-Reproduced: `field.total[m1]` takes **two distinct bit patterns over the source-order
-permutations**, and the difference reaches `Coalition.strength`.
 
-**Site B — `nous_field.py:124`, `merged_flow`, not reproduced.**
+Confirmed: `field.total` takes **two distinct bit patterns over the source-order
+permutations**, and the difference reaches `Coalition.strength`. **Order-PINNED** — source
+order is program order — so it is **not** a determinism defect and no 0c result depends on
+it. Registered with exactly that reason and left in place.
+
+### 3.3 `src/nous_field.py:124` — identical shape, symptom absent, and this is the argument
+
 ```python
 merged_flow[rid] = merged_flow.get(rid, 0.0) + fv
 ```
-**Identical shape. A four-way-convergence probe produced no variation.**
 
-**Site B is the whole argument for this brick.** It has the same defect shape as site A,
-in the same file, four lines away — and a targeted probe said it was fine. That is the
-friendly-input trap in its purest form: an input chosen by someone who already believed the
-site was safe, returning the answer they expected. Had 0d been a reproduction hunt, site B
-would have been marked clean and left in place, exactly as `nous_workspace.py:426` was left
-in place by BUG-0b1.
+**Same shape as §3.2, four lines away. A four-way-convergence probe produced no variation.**
 
-**Therefore: site B is converted on the strength of its shape, not on a reproduction.** This
-is the one place in this project where "we could not make it fail" is explicitly *not*
-accepted as evidence of correctness — because the same sentence has now been wrong three
-times about this same shape.
+**Shape present, symptom absent — this pair is the entire case for a detector.** Had 0d been
+a fourth reproduction hunt, §3.3 would have been marked clean and left unregistered, exactly
+as `nous_workspace.py:426` was left in place by a report that had found the other two. The
+detector does not care whether a probe happened to make a site vary; it cares that the shape
+is there and unadjudicated.
+
+It is registered as **shape-present, symptom-unreproduced**, which is a different and more
+honest verdict than "safe" — and unlike a memory, it is written where the next person will
+be forced to read it.
 
 ---
 
 ## 4. Invariants (the tester's lane)
 
-**The detector**
+**The detector — and F-3 is the one that matters**
 
-- **F-1** The detector reports both `nous_field.py` sites on the pre-fix tree. A detector
-  that does not find the known instances is not a detector. This must be demonstrated
-  against the pre-fix source, not asserted.
-- **F-2** After the fix, the detector reports zero unregistered candidates in `src/`.
-- **F-3** **Sensitivity, and this is the acceptance test:** introducing a *new* naive
-  accumulation into `src/` makes the canonical suite fail. Demonstrated by injecting one
-  into a scratch copy — never by editing `src/` to prove the point.
-- **F-4** The detector does not flag integer accumulation (`creation_seq`, `access_count`,
-  `traversal_count`) and does not flag the exempted entries.
-- **F-5** Every exemption in `float_accumulation_exemptions` names a real site and carries a
-  reason; a stale exemption naming a site that no longer exists is itself a finding.
+- **F-1** The detector reports all four known accumulation sites (§3.1–3.3 plus any
+  `fsum` sites) when run against `src/`. A detector that does not find the known instances
+  is not a detector; demonstrate this, do not assert it.
+- **F-2** With the registry populated, the detector reports **zero unregistered** candidates.
+- **F-3** **ACCEPTANCE TEST — injection.** Introducing a *new*, unregistered naive
+  accumulation into a **scratch copy** of `src/` makes the canonical suite go **red**.
 
-**The two conversions**
+  > **A detector that passes because it found nothing is indistinguishable from a detector
+  > that is broken.** "It passes" is not evidence that it works, and must not be accepted as
+  > such. The only evidence is a deliberately planted defect that it catches. Inject into a
+  > scratch copy — never edit `src/` to prove the point.
 
-- **F-6** `field.total` is order-independent: permuting the source list yields bit-identical
-  totals. This is the property, and it is stronger than the reproduction that motivated it.
-- **F-7** `merged_flow` likewise — asserted **structurally**, since §3 records that no probe
-  made it vary. The test asserts `fsum` semantics, not the absence of a witness.
-- **F-8** Cross-process and cross-interpreter bit-identity of `build_activation_field` over
-  adversarial multi-source graphs, on all five interpreters × six hash seeds.
-- **F-9** No categorical outcome changes anywhere: same winners, groupings, prunes. A float
-  moving is expected; an outcome flipping is a finding and stops the brick.
+  Inject at least three shapes: `+=` into a dict, a running local, and a builtin `sum` over
+  floats. A detector that catches one shape and misses two is worse than none, because it
+  will be trusted.
+- **F-4** No false positives on integer accumulation (`creation_seq`, `access_count`,
+  `traversal_count`).
+- **F-5** A **stale registry entry** — one naming a site that no longer exists, or whose
+  verdict no longer matches the source — is itself a finding. A registry that can rot
+  silently is a note again.
+
+**The registry's honesty**
+
+- **F-6** Every entry names a real site and carries a reason that is checkable rather than
+  decorative. The `flow` bound (§3.1) is the reference standard.
+- **F-7** ASSERTED-NEGATIVE: `nous_field.py:131` **is still order-dependent** after 0d, and
+  a test asserts it. 0d fixes nothing, and the record must not drift into implying it did.
+  This test goes red when a later brick converts the site — which is the correct signal, and
+  that brick re-verifies here.
 
 **Scope honesty**
 
-- **F-10** ASSERTED-NEGATIVE: 0d closes the sites the detector finds **in `src/`**. It does
-  not scan `experiments/`, and it makes no claim about paths outside the canonical modules.
-  State the boundary so nobody reads the detector as a whole-repository guarantee.
+- **F-8** ASSERTED-NEGATIVE: the detector scans `src/` only. It makes no claim about
+  `experiments/`, `tests/` or `tools/`. State the boundary so the gate is never read as a
+  whole-repository guarantee.
 
 ---
 
 ## 5. Done means
 
-1. F-1 … F-10 hold, tester-verified, on all five interpreters.
-2. The detector runs in `ledger_check.py` as C6 and fails the build on a new naive
-   accumulation — demonstrated by injection, per F-3.
-3. `src/` contains zero unregistered float accumulations.
-4. The delivery report states which values moved and confirms no categorical outcome did.
+1. F-1 … F-8 hold, tester-verified, on all five interpreters.
+2. C6 runs in `ledger_check.py` and fails the build on an unregistered naive accumulation,
+   **demonstrated by injection of three distinct shapes** (F-3).
+3. `src/` contains zero *unregistered* float accumulations — and **the two `nous_field`
+   sites are still naive**, registered rather than converted.
+4. The delivery report states plainly that 0d fixed nothing and explains why that is the
+   deliverable.
 
-**External and unfakeable:** F-3. A detector that cannot be shown to catch a defect
-deliberately introduced is a decoration, and this project has just spent two bricks learning
-what decorative checks cost.
+**External and unfakeable:** F-3. Everything else in this brick can be satisfied by a check
+that always returns "clean."
 
 ## 6. What would falsify success
 
-- F-3 fails → the detector does not detect, and 0d has delivered two point fixes wearing a
-  detector's name.
-- F-9 fails → the conversions changed behaviour rather than stabilising it; that is a
-  finding, not something to absorb.
+- F-3 fails on any injected shape → the detector does not detect, and 0d has shipped a
+  ritual.
 - The detector reports a large number of candidates that are all legitimately exempt → the
-  shape is too coarse to be useful, and it should be narrowed before it trains people to
-  approve exemptions without reading them. **An exemption list nobody reads is worse than no
-  check**, because it converts a real signal into a ritual.
+  shape is too coarse, and it should be narrowed **before** it trains people to approve
+  entries without reading them. **A registry nobody reads is worse than no check**, because
+  it converts a signal into a formality.
+- Anyone "closes" 0d by converting the `nous_field` sites and finding the detector then has
+  nothing to report → that is §0.2's failure mode, and it means the gate was never tested
+  against the thing it exists to catch.
 
-## 7. Roadmap impact
+## 7. Re-validation cost, and the two floor questions it does *not* touch
 
-0d does not block Phase 0's re-labelling: 0a and 0b turn on 0c's determinism claim, and
-§2.7's site is order-pinned and therefore not part of that claim. 0d can land after Phase 0
-returns to `PROVEN`, and it should — it is a hardening brick, not a repair.
+**Re-validation cost: none.** 0d changes no production behaviour — it adds a check and a
+ledger key. No brick is invalidated, and no capture value moves except the assertion count.
+This is the cheapest brick in the log, which is precisely why it should not be bundled with
+fixes that are not cheap.
 
-It does bear on the default-flip and the floor brick, both of which run more activation
-through `nous_field`.
+**It also does not touch either floor question, and those two are independent of each other**
+(see §7.1). 0d is about float *accumulation*; the floor is a *threshold*. No part of 0d
+changes `DEFAULT_FLOOR`, its finiteness, or its semantics.
 
-**Single next action:** hand to the builder, detector first. The two conversions must not
-land before the detector that justifies them, or the brick becomes a third point fix and the
-record above gains a fourth row.
+### 7.1 The two floor questions are independent — do not conflate them
+
+They touch the same constant and are otherwise unrelated. Stated here, in SPEC-0b2 §5 and
+in SPEC-0c, because the same constant appearing in two open questions is exactly how two
+questions become one muddle:
+
+| | **0c-ii — FINITENESS** | **D-008 — SCALE-INVARIANCE** |
+|---|---|---|
+| The question | May `floor` be non-finite? | Should `floor` be absolute or relative? |
+| The defect | `floor=NaN` **silently** disables the locality guard — 3 nodes reached vs 6, no error, identical to `floor=-inf` | An absolute floor is not scale-invariant under conservation, so it becomes degree-dependent censoring |
+| Class | Boundary hygiene. O-12's and DEFECT-C's class. | Constant semantics. |
+| What it blocks | Nothing. | **The 0b2 default flip.** |
+| Fixing it does what to the other | **Nothing.** | **Nothing.** |
+
+Validating `floor` for finiteness leaves it just as absolute as it was. Making it relative
+leaves it just as non-finite-able as it was. **Neither fix advances the other**, and a
+delivery that claims otherwise is claiming a brick it did not build.
+
+## 8. Roadmap impact
+
+0d blocks nothing and is blocked by nothing. It should land **before** Phase 2 rather than
+after, for one reason: Phase 2 will introduce new accumulation sites, and the entire value
+of the gate is that it is standing **before** the code that would otherwise slip past it. A
+gate installed after the traffic has passed is a fifth manual hunt wearing a detector's name.
+
+**Single next action:** hand to the builder. Detector and registry only. If the builder
+finds itself editing `nous_field.py`, it has left the spec.
