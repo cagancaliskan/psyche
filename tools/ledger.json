@@ -385,6 +385,10 @@
     "src/nous_workspace.py:select_winner.strength": {
       "verdict": "fsum",
       "reason": "SPEC-0c §2.5 site 1 — the THIRD Coalition construction site, which BUG-0b1's report claimed did not exist. For a month the pruned winner's strength, the value _competition_key compares, was computed by the naive rule on the very path BUG-0b1's flip occurred on. Members inherit their order from a set of uuid4 NodeIDs, which the store's ordering contract does not reach, so this had to be fixed at the arithmetic."
+    },
+    "src/nous_credit.py:EpisodicTrace.eligible.<return>": {
+      "verdict": "fsum",
+      "reason": "Brick 2f-i. Per-road eligibility summed over that road's occurrences inside the window. A road traversed on several cycles contributes one term per occurrence, and the term set has NO intrinsic order — trace insertion order is an artefact of which cycle recorded first, not a property of the quantity being computed. Exactly rounded, so the eligibility a road receives is a function of the occurrence MULTISET alone. This is the site C6 flagged on the FIRST write of 2f's float arithmetic, before any test ran (SPEC-2f §7.1)."
     }
   },
   "meaning_bar": {

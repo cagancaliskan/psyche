@@ -68,8 +68,18 @@ from nous_field import build_activation_field, ActivationField
 from nous_activation import DEFAULT_DECAY_PER_HOP
 from nous_coalitions import form_coalitions_from_field, Coalition
 from nous_source_clustering import cluster_sources, SourceClustering
-from nous_workspace import select_winner, WorkspaceResult, broadcast as _broadcast, Broadcast
+from nous_workspace import (
+    select_winner, WorkspaceResult, broadcast as _broadcast, Broadcast,
+    # The winner's internal roads — the same set 1d-ii treats as "what the thought was
+    # made of". 2f's trace records these, so the trace is filled by the pipeline rather
+    # than by a caller-chosen list. Imported here rather than reached for through
+    # ActivationField.flow deliberately: that field has no reader in src/, a registry
+    # bound rests on the absence (SPEC-2f §7.2), and a credit consumer is exactly the
+    # thing most likely to end it. This route needs no such read.
+    _internal_road_ids as _winner_road_ids,
+)
 from nous_bodysensor import BodySensor, modulated_decay_per_hop
+from nous_credit import EpisodicTrace
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -183,6 +193,7 @@ def think(
     broadcast: bool = False,
     decay_per_hop: float = DEFAULT_DECAY_PER_HOP,
     body_sensor: Optional[BodySensor] = None,
+    credit_trace: Optional[EpisodicTrace] = None,
 ) -> ThoughtResult:
     """The end-to-end pass: perceive an utterance, build the field from the perceived
     sources, form coalitions, and select ONE winner via the workspace (1d-i).
@@ -255,6 +266,12 @@ def think(
         # body_sensor is NOT read on this path — a body-state read only makes sense for a
         # cycle that actually spreads activation. body_friction stays None. (Reading the
         # sensor here would burn a replay sample for a no-op and is avoided deliberately.)
+        # A cycle in which nothing was perceived still ELAPSED, and 2f measures
+        # eligibility in cycles — so the trace advances with an empty road list rather
+        # than not advancing at all. Skipping it would make an unperceived cycle
+        # invisible to the decay and silently shorten the window.
+        if credit_trace is not None:
+            credit_trace.record([])
         return ThoughtResult(
             perception=perception, clustering=None, field_=None,
             coalitions=[], workspace=None, thought=None,
@@ -298,6 +315,18 @@ def think(
     # above this line is a pure read; this is the one and only mutation think() performs,
     # and only on the broadcast=True path. With broadcast=False nothing below runs and the
     # store is left byte-identical (the existing purity guarantee).
+    # 2f-i credit hook (DEFAULT-OFF). With credit_trace=None nothing below the guard
+    # runs and think() is byte-identical to the pre-2f engine. With a trace supplied,
+    # the winner's internal roads — the same set 1d-ii writes to — are appended to the
+    # CALLER'S trace object. This mutates the trace and NOTHING in the store: recording
+    # is pure with respect to the substrate, and nous_credit.assign_credit remains the
+    # only path that writes. Recorded BEFORE the broadcast write so the trace reflects
+    # the cycle's read-state; strengthen() neither creates nor removes roads, so the id
+    # set is identical either way.
+    if credit_trace is not None:
+        credit_trace.record(_winner_road_ids(store, thought) if thought is not None
+                            else [])
+
     broadcast_record: Optional[Broadcast] = None
     if broadcast:
         broadcast_record = _broadcast(store, thought)
