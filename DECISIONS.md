@@ -751,3 +751,100 @@ completeness claim was false (D-014); whether `decay_per_hop` should be finitene
 third boundary (SPEC-0c §4, low urgency — the guard catches it loudly, and silence was the failure
 mode that mattered); and a stray untracked `_c5.tar.gz` at the repository root, which is not an
 agent's to delete.
+
+## D-016 · 2026-07-25 · Phase 0 returns to PROVEN; floor joins the validated boundaries; the tester stops running capture_run
+**Decided by:** Cagan
+**Supersedes:** restores what D-012 removed; corrects D-015's triage of the third boundary
+
+### Phase 0 returns to PROVEN. 0a, 0b and 0c are all PROVEN.
+
+All three conditions I set are met: O-12 closed in code, the 0c suite registered (C5 green),
+and a complete five-interpreter capture taken. Independently confirmed: Phase 0's own modules
+carry no naive float aggregation. What remains in `nous_store` is integer counters and the
+clock's sequential `_t += dt`; `valence` is converted; `nous_activation`'s accumulator is
+list-plus-fsum.
+
+**This PROVEN is better than the one it replaces.** The old label rested on sweeping
+`PYTHONHASHSEED`, an axis that could not perturb the property it was cited for. The new one
+rests on there being no order dependence left to perturb, confirmed across five CPython minor
+versions. The difference is the whole of what 0b1, 0c and D-012 bought.
+
+**`nous_activation`'s flow accumulator stays naive and is PROVED structurally single-term**
+rather than converted. That is the correct treatment and the better one: a bound is stronger
+than a conversion, because it says why the site cannot break rather than making it not matter.
+It goes into 0d's registry as the model entry.
+
+### 0b1 keeps PROVEN, and the reason matters.
+
+Its completeness claim was false — a third `Coalition` construction site was missed. Its
+*property* claim was true and remains true: the tie-break is reachable at the sites it fixed.
+**Labels track properties, not report quality.** The enumeration error is corrected in place
+and dated, and 0d's detector is the systemic answer to the class of mistake. Demoting a brick
+whose verified property is intact, in order to punish a documentation omission, would inflate
+the appearance of rigour rather than serve it — and this project's labels have to mean one
+thing only.
+
+### The third boundary is `floor`, not `decay_per_hop`. New brick 0c-ii.
+
+The triage principle in the 0c report is right — **silence is the discriminator, not
+parameter-hood** — but it selected the wrong parameter. Measured:
+
+```
+floor=0.02 (default)   reached 3: A=1, B=0.243, C=0.0592
+floor=nan              reached 6: A=1, B=0.243, C=0.0592, D=0.0144, E=0.00351, F=0.000854
+floor=-inf             reached 6: (identical to floor=nan)
+```
+
+`floor=NaN` **silently disables the locality guard**, with no error and behaviour identical to
+`-inf`. It changes which nodes are reached, therefore coalition membership, therefore
+`Coalition.strength`, therefore the competition. That is DEFECT-C's failure mode exactly: a NaN
+passing a comparison unremarked.
+
+`decay_per_hop` is confirmed **not** to need validation — it refuses loudly with
+`ValueError: non-finite transmitted activation`. Recorded as a decision, not an omission, so
+the asymmetry between validated and unvalidated parameters is legible rather than inferred.
+
+**0c-ii, not a third widening of 0c.** One parameter, one invariant, its own small pass. It is
+a boundary-validation item and belongs with O-12's class, not with 0d's accumulation class;
+folding it into 0d would blur two different diseases.
+
+### The process gap: the tester must not run capture_run or ledger_sync.
+
+Neither option offered is the right one. Tolerating C2 findings during a hand-off puts a hole
+in the gate; making reconciliation precede the commit leaves verified work uncommitted and
+blurs who committed what.
+
+**The actual fix is that the tester should never have been running those tools.**
+`capture_run` writes the ledger, and the ledger is a claim-bearing artifact — moving the
+canonical count is not the tester's to do, for exactly the reason `run_tests.py` is
+hook-blocked from it. Remove capture and sync from the tester's close-out; they belong to
+architect-pm. Then the totals do not move at the tester's commit, C2 stays green, and the gate
+passes without being weakened.
+
+This also retro-explains the earlier incident in which the tester produced a capture that
+omitted an unregistered suite. It was not a mistake inside a correct workflow; it was a tool in
+the wrong hands.
+
+### Endorsed without change
+
+**SPEC-0b2 §6's "83 assertions" stays as written.** *A verification record edited after the
+fact to reflect a later state is not a record.* That principle is now binding and belongs in
+the pre-registration discipline alongside "no threshold moves after a number is seen."
+
+### Flagged, decision deferred, before the paper ships
+
+**Nine assertions across the new suites hard-fail on any machine without five interpreters.**
+An independent run in a one-interpreter environment gives 22 suites, 1,718 passed, 9 failed —
+and 1,718 + 9 = 1,727, so the canonical total is right and the nine are entirely
+environment-gated. The consequence is that the canonical suite is unrunnable on CI, by a
+collaborator, or from a fresh clone of an MIT-licensed repository that invites scrutiny.
+
+It also conflates two things this project separates everywhere else: **"the property failed"
+and "this machine cannot test the property."** A reviewer on one interpreter should read
+*18 of 18 invariants verified; 3 environment-gated checks skipped; sweep incomplete* — which is
+honest and useful — not a red suite, which is neither. Recommend converting these to
+skip-with-recorded-reason. Not decided; must be before submission.
+
+The check asserting that *the interpreters which can expose the defect were actually swept* is
+the best single assertion in this repository and must survive the conversion. It encodes "a
+coverage axis is only evidence for the property it can perturb" as executable.
