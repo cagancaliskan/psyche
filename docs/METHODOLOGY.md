@@ -320,9 +320,9 @@ an externally-graded behavioral effect, run through the now-closed loop.
 
 ---
 
-## Three rules the substrate-repair sequence paid for
+## Four rules the substrate-repair sequence paid for
 
-Both were bought with defects that shipped, sat undetected, and were then found by accident.
+Each was bought with a defect that shipped, sat undetected, and was then found by accident.
 They are stated here as rules because in each case the project already *had* a probe for the
 property and the probe could not see it.
 
@@ -385,3 +385,44 @@ evidence.** Ask of any probe that found nothing — *could this have produced th
 all?* If the answer is no, the result is not a clean bill; it is no measurement.
 
 *Marked for the paper's methodology section, alongside the other two.*
+
+### 4. An assertion must be shown capable of failing against the code it was written against
+
+Rule 3 says a *probe* must be able to fail. This is its enforced form, and it is stronger
+for one reason: **it runs.**
+
+Rule 3 was carried as a habit for three bricks, and a habit does not survive a green suite.
+The failure it was supposed to prevent then occurred in the file whose whole purpose is to
+prevent it. Verifying SPEC-2f step zero, the tester audited every assertion it had written
+for the brick against the tool **as it stood before the fix** — and <!-- ledger:allow-count
+reason: "2 of 12" is the audit ratio for ONE brick's assertions (twelve claims examined
+two-sidedly, two found dead), not a suite count and not the captured total. C2 correctly
+cannot tell these apart; the number must not be updated to the ledger total. -->**2 of 12
+passed on both sides**. One of the two asserted that `scan_source` returns `[]` for a
+declined fold and `[]`
+for an empty file: perfectly true, and true before the fix as well, because the fix
+deliberately left that signature alone and added a separate entry point. It named a defect it
+could no longer perturb. The second was found by the same audit and had never had the power
+it claimed: it was written to prove two code paths were mutually exclusive, and its input
+produced one finding either way.
+
+Neither assertion was wrong. Both were **evidence for nothing**, which is harder to notice,
+because a passing assertion reads as verification and a green suite reads as a result.
+
+**The rule, and it is mechanical:** a suite that verifies a fix loads the pre-fix revision —
+`git show <rev>:<path>` — and requires each of its claims to **fail** there and pass on
+current. A claim that survives the old code is reported as dead rather than counted. This now
+runs as a test (`test_the_repointed_assertions_can_actually_fail`), so the next dead assertion
+turns the suite red instead of padding the count.
+
+Two corollaries worth stating, because both were paid for here:
+
+- **Convert, never delete.** An asserted-negative that goes red because the defect was fixed
+  becomes a positive assertion of the capability gained. A deleted negative leaves no trace
+  that the limit ever existed; a converted one goes red again on regression.
+- **A dead assertion is kept and labelled, not removed.** The `scan_source` one is retained
+  in the suite as the standing example, with its status recorded. Deleting it would destroy
+  the only evidence that the failure mode is real.
+
+*Marked for the paper's methodology section. It is the operational form of rule 3 and the
+first of the four that is enforced by execution rather than by review.*

@@ -56,7 +56,22 @@ is *for* — and the answer the corpus keeps deferring is this.
 
 ---
 
-## 0.5 STEP ZERO — mandatory, before any credit-assignment code is written
+## 0.5 STEP ZERO — **COMPLETE 2026-07-26 (D-026)**
+
+> **STATUS: DONE.** Builder `044008c`, tester PASS `9c26356`. L3 is closed: the gate sees
+> tuple-target accumulation, and the tuple spelling and the split spelling now report the
+> same sites — verified as an equivalence over 84 generated accumulation pairs, against
+> which the pre-fix tool disagrees on all 84.
+>
+> **STRUCK, and this notice replaces it:** an earlier revision of this section carried the
+> instruction *"write the trace update on its own line, or the gate will not see the one
+> accumulation 2f adds."* **That constraint is obsolete and must not be cited.** It was
+> true only while L3 was open. 2f may write the idiomatic tuple form. A stale constraint
+> quoted as current is the same failure class as a stale count, and it is recorded here as
+> struck rather than silently deleted so that anyone who remembers it finds its retraction.
+>
+> **Credit assignment has NOT started.** Step zero being complete unblocks §1 onward; it is
+> not partial delivery of it.
 
 **Teach the gate to see tuple-target accumulation, then build the thing that would have
 hidden in it.**
@@ -84,14 +99,28 @@ same cycle rejected exactly that pattern for the absence bounds — a recorded i
 nothing enforces — and replaced it with a machine check. Accepting a passive note here,
 one section after that decision, would be incoherent.
 
-**Step zero, concretely:**
-1. Extend the detector to report tuple-target accumulation (`a, b = a + x, b + y`), with the
-   integer element still exempt on the existing structural rule.
-2. Prove it by injection, per SPEC-0d F-3: a planted tuple-target fold turns the build red.
-3. Retire L3 from `ledger_check.py`'s scope block and convert its asserted-negative in
-   `tests/test_tester_0d_adversarial.py` to a positive assertion — **converted, not deleted**,
-   per the standing rule.
-4. **Only then** write credit-assignment code.
+**Step zero, concretely — all four done:**
+1. ~~Extend the detector to report tuple-target accumulation~~ **DONE.** Elementwise pairing
+   on plain names, subscripts and the `[a, b] = ...` list form; the integer element stays
+   exempt on the existing structural rule (L7 untouched).
+2. ~~Prove it by injection, per SPEC-0d F-3~~ **DONE**, and the retro-catch is unchanged:
+   10/12/12 per commit, all four MUST-CATCH sites still found.
+3. ~~Retire L3 and convert its asserted-negative~~ **DONE, converted not deleted.**
+4. **Only then** write credit-assignment code — **this is now the next action.**
+
+**What closing L3 cost, reported as three rather than as one net win.** The limitation count
+went **10 → 13**: pairing is positional, so it is sound only for literal sequences of equal
+length, and the three cases where it is not are now **L11** (starred element), **L12**
+(nested target) and **L13** (non-literal right-hand side). Each carries a falsifier and an
+asserted negative. An arity mismatch is refused too, but is recorded as a *runtime error*,
+not a limitation — the distinction is deliberate and is asserted.
+
+**And the refusals are now visible**, which was a tester FAIL before it was a fix. The line
+held: *anything the scanner knowingly declines is recorded; anything it never matched stays
+a documented limitation.* L1's multiplicative shape never matches, so it reports nothing;
+L11–L13 are decisions taken with full sight of a sequence assignment, so they surface in
+`--list-accumulations` with file, line and rule. A refusal is **not** a finding and never
+fails the build; exit 2 still means only "the tool could not run at all".
 
 **L7 is deliberately NOT part of this.** An integer counter is not a float accumulation;
 that is out of scope, not a hole, and widening the rule to cover it would produce exactly
