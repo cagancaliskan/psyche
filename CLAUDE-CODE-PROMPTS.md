@@ -785,7 +785,7 @@ language what remains.
 
 ---
 
-## CC-9 · Fix the yardstick before the code ▶ LIVE
+## CC-9 · Fix the yardstick before the code ✔ DONE (AOL-1…AOL-5 frozen)
 
 The foundation arc is closed. Before any credit-assignment code is written, Cagan's five autonomy
 criteria go into the specs as **pre-registered acceptance criteria**. This is the first time in
@@ -895,6 +895,154 @@ tools/ledger.json if any status or note changes, run python3 tools/ledger_check.
 with exactly the 16 held paper findings, append to DECISIONS.md, and commit.
 
 Close with one line: where this leaves us, and what the single next action is.
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
+
+## CC-10 · Land the yardstick, and register a confirmed hole in C4 ▶ LIVE
+
+`docs/CONSCIOUSNESS-YARDSTICK.md` is written and untracked in the working tree. It is the
+assessment behind the "0 of 14, 1 partial" figure that had been cited for two days with no
+provenance anywhere in the repo — architect-pm's catch, and correct.
+
+**And probing it turned up a confirmed defect in C4.** Measured, not suspected:
+
+| injected sentence | C4 findings |
+|---|---|
+| `Nous is conscious.` | 1 |
+| `Nous is a mind.` | 1 |
+| **`Nous is a conscious mind.`** | **0** |
+| **`Nous is clearly conscious.`** | **0** |
+| **`Nous is, in every sense, a mind.`** | **0** |
+
+The terms match as literal substrings, so **any interpolated word evades the gate** — and the
+evading forms are exactly the sentences a person writes when overclaiming. C4 guards rule 1, the
+project's most important rule, and it has been weaker evidence than assumed for its whole life.
+
+```
+/psyche-orient
+
+Work in the ARCHITECT-PM lane. Two items, both small, both about provenance. Do not begin 2f.
+
+ITEM 1 — land docs/CONSCIOUSNESS-YARDSTICK.md
+It is untracked in the working tree. It is the assessment behind "0 of 14, 1 partial", which was
+cited in project records for two days with nothing in this repository backing it — C1/C2's
+failure class arriving through ABSENCE rather than drift, and worse than drift because nothing
+can catch it. Read it before integrating; it carries its own notes for the gates.
+
+- Add it to claim_quarantine_paths WITH THE REASON RECORDED, not merely listed. The reason: this
+  is the one document whose subject IS the claim, and whose entire content is the argument for
+  why the project must never make it. A quarantine granted for convenience is how a
+  forbidden-claim gate rots — so if you would not write the reason down, do not grant it.
+  Check first whether it is even needed: C4 currently passes on the file unquarantined.
+- Do the same for count_quarantine_paths if C2 reaches for the external figures in §2 (256
+  participants, 655 electrodes) or the 0/14 score. Reason recorded, not reworded away.
+- The document states that the published TiCS version could not be reached at verification time,
+  so the list is verified against the arXiv preprint ONLY, with a falsifier. Preserve that
+  scoping exactly. Do not upgrade it to "verified" without someone actually reading the
+  published version.
+- Record the standing rule: the 0/14 figure is cited BY REFERENCE to this file, nowhere else,
+  ever — roadmap, ledger, paper, or conversation.
+
+ITEM 2 — register brick 0f, a CONFIRMED defect in C4
+Measured by perturbation, not suspected. C4's forbidden terms match as literal substrings, so any
+interpolated word evades them:
+
+    "Nous is conscious."               -> 1 finding
+    "Nous is a mind."                  -> 1 finding
+    "Nous is a conscious mind."        -> 0 findings   <-- evades
+    "Nous is clearly conscious."       -> 0 findings   <-- evades
+    "Nous is, in every sense, a mind." -> 0 findings   <-- evades
+
+The evading forms are precisely the sentences someone writes when overclaiming. C4 guards
+CLAUDE.md rule 1 — the rule this project's whole credibility rests on — and every "C4 passes" in
+the record has therefore covered less than it appeared to.
+
+Register it as brick 0f with that table, DESIGNED, and SCHEDULE IT BEFORE THE PAPER CAPTURE
+alongside 0e. Do NOT fix it now; it is not 2f's problem and it must not delay 2f.
+
+Record the connection explicitly in DECISIONS.md, because it is the project's own rule turning on
+the project's own gate: **"a coverage axis is only evidence for the property it can perturb."**
+C4 was never perturbed until now. It was found because a clean pass on a document saturated with
+the forbidden vocabulary looked too easy — which is the third aphorism working as intended: the
+silence of a probe counts as evidence only once the probe is shown capable of failing.
+
+Then commit. ledger_check should exit 1 with exactly the 16 held paper findings.
+```
+
+---
+
+## CC-11 · 2f step zero — teach the gate the shape ▶ QUEUED (run after CC-10)
+
+SPEC-2f §0.5. The gate must see tuple-target accumulation **before** the code that would hide in
+it is written. This is the whole reason 0d closed without fixing L3: ownership sits with the brick
+that needs the coverage.
+
+```
+/psyche-orient
+
+Work in the BUILDER lane. This is SPEC-2f STEP ZERO. You are NOT writing credit assignment yet —
+you are extending the gate so that it can see the shape you are about to write. Do not start the
+credit-assignment mechanism in this pass; if you find yourself designing an eligibility trace,
+stop, you have gone past the boundary.
+
+WHY THIS IS FIRST
+The tester demonstrated that the idiomatic line 2f will write —
+
+    trace[rid], counts[rid] = trace[rid] + e, counts[rid] + 1
+
+produces ZERO findings from C6. The float accumulation is invisible because it sits in a
+tuple-target assignment (limitation L3); split across two lines it is caught. So the gate built to
+catch this project's signature defect is blind at exactly the point of use. 0d closed without
+fixing it BY DECISION — ownership belongs to the brick that needs the coverage, and extending the
+gate is a normal cost of building, not an interruption to it.
+
+WHAT TO IMPLEMENT
+Detect additive float accumulation in tuple-target assignments: for `t1, t2, ... = v1, v2, ...`,
+pair each target with its corresponding value and apply the SAME self-referential test C6 already
+uses for the single-target form — the target appearing in its own value expression under Add (or
+Sub, on the left operand only, per the existing asymmetry). Cover both the plain-name form and the
+subscript form, since the subscript form is the one 2f will actually write.
+
+Enumerate what you do NOT cover and add each as a limitation with a falsifier and an asserted
+negative, exactly as the existing nine are done. At minimum decide and state: starred targets
+(`a, *b = ...`), nested tuple targets (`(a, (b, c)) = ...`), mismatched arity, a single value that
+is not a tuple literal (`a, b = f()` — the pairing is not statically knowable, so say so), and
+list-target syntax (`[a, b] = ...`).
+
+Leave L7 out. An integer counter is not a float accumulation; that is out of scope, not a hole.
+
+THE L3 ENTRY IS CONVERTED, NEVER DELETED
+Same rule that governed the tester's nine: an entry deleted leaves no trace that the limit ever
+existed; an entry converted is a record of a capability gained. L3 moves from "the scanner cannot
+see tuple-target accumulation" to "the scanner sees it", with the positive case asserted and the
+newly-carved limitations taking its place beside it.
+
+ADJUDICATE WHAT SURFACES
+Any new site this exposes in src/ gets adjudicated — fsum, or registered with a reason that names
+a falsifier. Do not silently absorb one. If nothing surfaces, say so; that is a fine result and it
+is the expected one.
+
+REGRESSION — THIS IS THE PART THAT MATTERS MOST
+You are touching the traversal of the only gate this project has. Re-run the retro-catch: extract
+src/ at the three pre-fix commits and confirm C6 still catches all three historical bugs. If it
+does not, stop immediately and hand back — that is the one finding permitted to reopen scope.
+
+CONTEXT YOU SHOULD HAVE
+0d is PROVEN, and that means "the gate does what it says", NOT "the gate catches everything".
+Nine documented holes remain and you are closing one of them. The class is ENUMERATED, not closed.
+See SPEC-2f §0.25.
+
+RUN
+Full suite on every interpreter available, plus tools/test_ledger.py. Read totals from the runner
+output; never estimate. Report the interpreters swept. ledger_check exits 1 with exactly 16 [C2]
+findings, all under docs/paper/ — any 17th, or any finding outside docs/paper/, is yours.
+
+SELF-AUDIT
+All seven items, including the seventh: does a builder-side assertion exist for what you wrote, or
+does all evidence for it live in tester files?
 
 Open your report with the plain-language summary for Cagan.
 ```

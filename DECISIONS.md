@@ -1252,3 +1252,95 @@ graded one, and that is said plainly instead of inventing a benchmark.
 condition moves after a bearing number is seen. Amendment is permitted **only before** any such
 number exists, only via a DECISIONS entry, and **never toward an easier result**; an amendment after
 a number exists becomes a **new** criterion with a new id while the original stands with its result.
+
+## D-024 · 2026-07-26 · The yardstick document lands; C4 is a confirmed defect and becomes brick 0f
+**Decided by:** Cagan (both items) · architect-pm (the two quarantine calls and their reasons)
+
+### Item 1 — `docs/CONSCIOUSNESS-YARDSTICK.md` is tracked, and the two quarantines resolve DIFFERENTLY
+
+The assessment behind "0 of 14, 1 partial" was cited in project records for two days with **nothing
+in this repository backing it** — C1/C2's failure class arriving through **absence** rather than
+drift, and worse than drift because no check can catch a figure that is simply not written down.
+It is now tracked.
+
+**C4 quarantine: GRANTED, on SUBJECT MATTER, with the reason recorded in the ledger.** This is the
+one document whose subject *is* the claim and whose entire content is the argument for why the
+project must never make it — the same class as `PAPER_CLAIM_INVENTORY.md`.
+
+**It was explicitly NOT granted on the strength of C4 currently passing on the file.** That silence
+is uninformative, for a reason discovered in Item 2: C4 matches by literal substring and is weaker
+than a clean pass makes it look. The file does contain `is conscious` and `validated cognitive
+model`; both are negated, and C4's negation logic correctly skips them *today*. When 0f widens the
+matcher C4 will see more of this file, and without the quarantine someone would "fix" the one
+document whose job is to make the argument. **Re-checking this file is an explicit 0f acceptance
+item.**
+
+**C2 quarantine: REFUSED, and the refusal is the more interesting half.** C2's regex requires a
+number followed by `assertions|suites|checks passed|passed`. Verified by running `COUNT_RE` against
+each figure: `256 participants`, `655 electrodes`, `0 of 14`, `1 partial` are **structurally out of
+reach**. Granting a quarantine against a gate that cannot fire is exactly the convenience-grant
+this project treats as how a gate rots. **The distinction is the point: C4's quarantine is a
+property of the SUBJECT; C2's would have been a property of a RUN.**
+
+**Scoping preserved exactly, not upgraded.** The assessment is verified against **arXiv:2308.08708
+Table 1 ONLY**. The published TiCS version could not be reached at verification time, and the
+document carries its own falsifier — *a copy of the published version showing an added, removed or
+reworded indicator*. It must **not** be described as "verified" until someone reads the published
+version.
+
+**STANDING RULE: the 0/14 figure is cited BY REFERENCE to that file and nowhere else — ever.** Not
+in the ledger, the roadmap, the paper, or conversation. The ledger's `2e` note, which asserted two
+days ago that the figure was "recorded nowhere", is corrected in place rather than left as a stale
+claim of my own making.
+
+**A finding raised in passing, and not silently fixed:** `claim_quarantine_paths` had **eight
+entries and no reasons field**, while `count_quarantine_paths` has had one all along — so the
+*more* important gate is the one whose exemptions were unexplained. A `_claim_quarantine_reasons`
+field now exists and carries the new entry. The other eight are **flagged, not retro-filled**:
+writing reasons after the fact for exemptions granted by someone else manufactures provenance
+rather than recording it. Each should gain its reason the next time it is touched.
+
+### Item 2 — brick `0f`: C4 evades on any interpolated word. CONFIRMED, not suspected.
+
+Reproduced independently rather than taken on report:
+
+```
+"Nous is conscious."                -> 1 finding
+"Nous is a mind."                   -> 1 finding
+"Nous is a conscious mind."         -> 0 findings   EVADES
+"Nous is clearly conscious."        -> 0 findings   EVADES
+"Nous is, in every sense, a mind."  -> 0 findings   EVADES
+"Nous is undeniably sentient."      -> 0 findings   EVADES   (not in the reported table)
+"This is an AGI."                   -> 1 finding
+"This is, by any measure, an AGI."  -> 0 findings   EVADES   (not in the reported table)
+```
+
+Two evading forms beyond the ones reported. Mechanism: `forbidden_claim_terms` are matched with
+`str.find()` as **literal substrings**, so any word interpolated between the copula and the noun
+breaks the match.
+
+**The evading forms are precisely the sentences someone writes when overclaiming** — an unhedged
+assertion attracts an intensifier, and "clearly", "undeniably", "in every sense" are what
+enthusiasm sounds like. C4 guards CLAUDE.md **rule 1**, the rule this project's entire credibility
+rests on, so **every "C4 passes" in the record has covered less than it appeared to.** That is not
+a reason to distrust the existing record — no forbidden claim has been found by any other means
+either — but it is a reason the record's *strength* was overstated.
+
+Registered as **`0f`, DESIGNED, scheduled BEFORE the paper capture alongside `0e`.** Not fixed now:
+it is not 2f's problem and must not delay 2f. The fix is a brick rather than an edit because the
+matcher must be widened **without breaking the negation-cue logic** that keeps this project's
+disclaimer-dense documents from being flagged — and those two requirements pull against each other.
+
+### Why this was found, and it is the project's own rule turning on the project's own gate
+
+> **"A coverage axis is only evidence for the property it can perturb."**
+
+**C4 had never been perturbed.** It was found because a clean pass on a document *saturated* with
+the forbidden vocabulary looked too easy — which is the third aphorism working exactly as intended:
+**the silence of a probe counts as evidence only once the probe is shown capable of failing.**
+
+Three gates have now been perturbed and two were found wanting on first contact: the determinism
+probes could not see 1 ULP, and C4 cannot see an adverb. The one that survived, C6, survived
+*because* it was built with an injection test as its acceptance criterion. That is the argument for
+making adversarial self-test the default for every gate this project ships, not a special measure
+for the ones that look suspicious.

@@ -72,10 +72,21 @@ Each step carries a status tag:
               the criterion is NOT RUNNABLE — this is 1e's circularity in new clothes)
        AOL-4  on environment change, goals turn over while SKILLS are retained
        AOL-5  generating a goal COSTS something — scarcity is what makes 1-4 unfakeable
+     GATE DEFECTS SCHEDULED BEFORE THE PAPER CAPTURE: 0e (a raising test is invisible to the
+     failure list) and 0f (C4 matches forbidden terms as literal substrings, so "Nous is a
+     conscious mind" evades a gate that catches "Nous is conscious"). Both were found by
+     PERTURBING a gate that had never been perturbed — a coverage axis is only evidence for
+     the property it can perturb.
      WHAT THIS BUCKET DOES NOT MEASURE: it says nothing about experience or awareness, and
      it is NOT a consciousness test — a system could satisfy all five and possess nothing
      any such theory points at. It measures what the system DOES, never what it is.
-     Butlin et al.'s indicator properties remain the ORTHOGONAL ARCHITECTURAL axis; the two
+     Butlin et al.'s indicator properties remain the ORTHOGONAL ARCHITECTURAL axis, assessed
+     in docs/CONSCIOUSNESS-YARDSTICK.md (0 of 14, 1 partial). STANDING RULE (D-024): that
+     figure is cited BY REFERENCE to that file and NOWHERE else — not here, not in the
+     ledger, not in the paper, not in conversation. Its scope is fixed: verified against the
+     arXiv preprint's Table 1 ONLY, because the published TiCS version could not be reached
+     at verification time. It carries its own falsifier and must not be called "verified"
+     until someone reads the published version. The two axes
      are COMPLEMENTARY and neither supersedes the other. Progress on one is never progress
      on the other.
      STATUS: all five are MECHANISM ABSENT — a DATE, not a rejection, unlike the three
