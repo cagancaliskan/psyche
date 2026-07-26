@@ -274,7 +274,23 @@ SIGNALS by a *budget* mechanic — depletes with intense plasticity, replenishes
 during rest, integrated slowly. **Loop order pinned:** arousal flows in from
 SIGNALS/EMOTION and the integrated budget flows out to MEMORY/EMOTION; to avoid
 same-cycle circularity, **actors read the budget published on the *previous* cycle.**
-A one-cycle lag, biologically honest since neuromodulation is slow.
+
+> **JUSTIFICATION CORRECTED 2026-07-26 (D-020), permanently.** This line originally read
+> *"A one-cycle lag, biologically honest since neuromodulation is slow."* That is a
+> **resemblance argument**, and this project does not accept those as load-bearing. The
+> structural reason is stronger and is now the recorded one:
+>
+> **Without the lag, `P_PRP` at cycle `t` is a function of arousal at `t`, which capture then
+> changes — a same-cycle loop whose *evaluation order* would decide the answer.** Four bricks
+> of substrate repair (0b1, 0b2, 0c, 0d) established that an answer decided by evaluation
+> order is not an answer. The lag makes the budget an **input** to the cycle rather than a
+> simultaneous equation with it, which is what makes the cycle deterministic and replayable
+> at all.
+>
+> Recorded **before NEUROMODULATION is built**, deliberately: a design implemented for a
+> resemblance reason is a design someone later removes when the resemblance stops feeling
+> compelling. The structural reason survives that. The biological correspondence remains
+> true and remains *inspiration* — it is simply not the reason the lag is there.
 
 ### The cognitive cycle (Global Workspace — one system, two phases)
 

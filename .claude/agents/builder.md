@@ -38,7 +38,7 @@ emotion, or a mind); keep the core dependency-free; never present designed-as-bu
    ```
    Confirm the totals against `tools/ledger.json`. If they shifted unexpectedly, stop and
    investigate before continuing.
-5. **Self-audit against the six-bug checklist** — the real bugs this project has been bitten
+5. **Self-audit against the seven-bug checklist** — the real bugs this project has been bitten
    by. Check every one, every time:
    - **Purity:** does any "read" mutate stored state? Snapshot before and after.
    - **Convergence double-counting:** where paths or activations converge, is anything
@@ -49,6 +49,15 @@ emotion, or a mind); keep the core dependency-free; never present designed-as-bu
      Can a branch never fire? Prove the structure can do what it claims.
    - **Circular tests:** does any test encode the answer into its own input?
    - **Integrity:** after a battery of mutations, are all graph indices mutually consistent?
+   - **Builder-side evidence:** *does a builder-side assertion exist for the arithmetic you
+     just wrote, or does all evidence for it live in tester files?* Added 2026-07-26 (D-020)
+     on a measured instance: the 0b2 normalization overlay shipped with its whole arithmetic
+     — `S_out = fsum`, `competing = S_out − s`, the closed-road competition decision, the
+     horizon change — asserted **only** in tester-owned suites. That is a **claim-accuracy**
+     problem before it is a risk one: this project's paper states that the builder implements
+     test-first, and for that mechanism it was not true. Tester coverage does not discharge
+     it — the two lanes are evidence *because* they are independent, so one standing in for
+     the other destroys exactly what the separation buys.
 6. **Deliver only when** the whole suite passes on every interpreter *and* the checklist is
    clean.
 

@@ -162,7 +162,12 @@
     "2f": {
       "name": "temporal credit assignment",
       "status": "DESIGNED",
-      "note": "SPEC-2f. Gives an owner to the problem Layer 0 explicitly deferred and never assigned ('Temporal credit assignment has no owner yet; it must not vanish') — the Layer 2/3 documents it was deferred to were never written. PREMISE CORRECTION on record: the integer traverse_count ladder (5/20/100) NEVER SHIPPED; nous_store already derives quality_of() as a VIEW over continuous Road.strength via float ceilings 0.20/0.50/0.80, and traversal_count is written but read by nothing in src/. So omega already exists in the right shape and 2f adds a time dimension rather than replacing a model — which makes Design C (episodic trace OUTSIDE the store, credit applied through the existing PROVEN strengthen()) cost approximately nothing against Tier 1. THREE OPEN CALLS for Cagan: which design (3.4, rec C as 2f-i with full tag/capture held as 2f-ii), the vestigial traversal_count (2.3, rec leave+document), and where P_PRP lives (4.3, rec caller-supplied scalar with NEUROMODULATION as later publisher). 0d is a PREREQUISITE, not parallel: 2f adds float accumulations and is the first real test of the detector. MECHANISM bar only — no cognitive claim."
+      "note": "SPEC-2f. All three calls CLOSED by D-020. DESIGN C: episodic trace outside the store, eligibility computed from timestamps, credit applied through the existing PROVEN strengthen(). Chosen not for cheapness but because (i) the biological-fidelity counter-argument asks the project to pay Tier-1 re-validation for a claim CLAUDE.md rule 1 forbids asserting, and (ii) computing from timestamps rather than storing is nous_store's OWN existing move with lazy decay — so C is idiomatic, not expedient. P_PRP is a CALLER-SUPPLIED SCALAR (holdable fixed, which is required to separate 2f's effect from arousal's and which no published-state design permits); NEUROMODULATION becomes its publisher later. traversal_count stays, is documented at the declaration as written-never-read and NOT the plasticity signal, and is ASSERTED DEAD — it already caused a real documentation error by misleading the commissioning of this very brick. 0d SHIPS FIRST and is a prerequisite: 2f is the first brick built after the detector exists, which makes it the test of whether 0d does its only job. MECHANISM bar only — no cognitive claim."
+    },
+    "2f-ii": {
+      "name": "synaptic tag and capture (behavioural tagging)",
+      "status": "DESIGNED",
+      "note": "SPEC-2f §3.1, deferred by D-020 and NOT foreclosed. Full tag/capture: tau as a field on Road, global P_PRP, capture sweep. It is the only design that delivers BEHAVIOURAL TAGGING — a weak trace preserved because an unrelated strong event flooded the system in the same window. TRIGGER, named so it cannot drift: build this when a BEHAVIOURAL need arrives, never because a stored timestamp would be tidier. Cost is a new mutable float on Road in Tier 1 plus a global sweep, i.e. a full 0a re-verification."
     },
     "3a": {
       "name": "abstraction engine",
@@ -177,9 +182,9 @@
       "status": "DESIGNED"
     },
     "0c-ii": {
-      "name": "boundary finiteness completion (floor)",
+      "name": "boundary hygiene",
       "status": "DESIGNED",
-      "note": "floor=NaN SILENTLY disables the locality guard (3 nodes reached vs 6, no error, identical to floor=-inf), changing coalition membership and the competition. Same class as O-12 and DEFECT-C. decay_per_hop is deliberately NOT validated: it refuses loudly, and silence is the discriminator. D-016."
+      "note": "SPEC-0c-ii. RE-SCOPED 2026-07-26 (D-020) from 'the floor thing' to the CLASS: a boundary silently accepting a value it should refuse, so the caller gets a well-formed wrong result instead of a right error. Two items. (1) floor=NaN SILENTLY disables the locality guard (3 nodes reached vs 6, no error, identical to floor=-inf), changing coalition membership and the competition. (2) spread_activation accepts a RoadID as seed — store.exists() is True for roads — and at hop_budget=0 returns a well-formed result seeded on a road; at the default budget it raises NotFound from INSIDE the expansion, so the SILENT window is hop_budget=0 specifically. Verified identical on the pre-overlay engine: pre-existing, 0a/0b's, not any overlay's. decay_per_hop is deliberately NOT validated — it refuses LOUDLY via the backstop guard, and silence-not-wrongness is the scoping rule for this brick. Blocks nothing. Does NOT unblock the 0b2 default flip: that is D-008 (the floor's SCALE-INVARIANCE), an independent question about the constant's semantics."
     }
   },
   "valid_statuses": [

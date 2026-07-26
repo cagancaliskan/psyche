@@ -902,3 +902,106 @@ builder pass eventually.
 
 **Also swept, worth recording:** the machine now carries CPython **3.14.5** alongside 3.14.4; both
 were exercised. The ledger records whatever `python3.14` resolves to at capture time.
+
+## D-020 · 2026-07-25 · 2f takes design C; traversal_count stays and is asserted dead; P_PRP is caller-supplied
+**Decided by:** Cagan
+**Supersedes:** corrects the premise I gave when commissioning 2f
+
+### The premise I gave was wrong, and I verified the correction before accepting it.
+
+I framed 2f as reconciling two plasticity models with "the integer ladder having shipped." It
+did not ship. Verified in code: `quality_of` reads `road.strength`, a float, against
+DIRT/GRAVEL/ROAD ceilings; `traversal_count` has exactly three occurrences in `src/` —
+declaration, increment, copy — and is read by nothing.
+
+So ω already exists: continuous, bounded, lazily decayed. **2f does not have to replace a
+plasticity model. It has to add a time dimension to one that is already the right shape.** The
+question I posed — ladder as derived view, or removed — was answered in code, in favour of the
+view, before the spec existed.
+
+### §3.4 — design C. The counter-argument asks us to pay for a claim we are forbidden to make.
+
+C: episodic trace outside the store, eligibility computed from timestamps, credit applied
+through the existing `strengthen()`. Zero Tier-1 re-validation. Full tag/capture held as 2f-ii.
+
+The honest counter in the spec is that if the biological claim is the point, C is scaffolding
+that will be replaced. **The biological claim cannot be the point.** CLAUDE.md rule 1: biological
+*inspiration* may be described; biological *fidelity* may not be asserted. Paying Tier-1
+re-validation now to buy fidelity buys a claim this project is constitutionally barred from
+making. 2f's deliverable is a mechanism — temporal credit assignment — and C delivers it.
+
+Second ground, which makes C idiomatic rather than expedient: **computing from timestamps
+instead of storing is the substrate's own existing move.** `nous_store` already does exactly
+this with lazy decay. C is consistent with the design philosophy, not a shortcut away from it.
+
+And the instinct behind it is correct and worth recording: *Phase 0 was restored four commits
+ago by four bricks of repair; I am not spending it on a timestamp.*
+
+**2f-ii stays registered, and its trigger is named:** it is paid for when a *behavioural* need
+arrives (behavioural tagging), never because a timestamp would be tidier. Deferred, not
+foreclosed.
+
+### §2.3 — `traversal_count` stays, is documented, AND is asserted dead. Neither option as offered.
+
+Leave-and-document is nearly right — removing it is a Tier-1 change to freshly-restored code
+for a cosmetic gain. But there is measured harm, not hypothetical: **that vestigial field
+already caused a documentation error today.** I framed this entire brick around a shipped
+integer ladder because `traversal_count` exists and looks exactly like Module 01's ladder. It
+misled the person commissioning the work, one turn ago.
+
+So: leave it, document at the declaration that it is written-never-read and is **not** the
+plasticity signal, and add an **asserted-negative that it remains unread in `src/`**. If anyone
+starts reading it, the test goes red and forces a decision. That converts "document it" into
+"enforce it", which is this project's idiom, at the cost of one comment and one test with no
+Tier-1 change.
+
+### §4.3 — P_PRP is a caller-supplied scalar. And the justification correction is the best thing in the report.
+
+Adopted, on three grounds: it does not block 2f on NEUROMODULATION, which is unbuilt; a
+caller-supplied scalar can be **held fixed**, which is required to separate 2f's effect from
+arousal's and which no published-state design permits; and it defers the publisher without
+foreclosing it.
+
+Layer 0 justified the one-cycle lag as *"biologically honest since neuromodulation is slow."*
+That is a resemblance argument and this project does not accept those. The structural reason is
+stronger and is now the recorded one: **without the lag, P_PRP at cycle t is a function of
+arousal at t, which capture then changes — a same-cycle loop whose evaluation order would decide
+the answer.** Four bricks of repair have established that an answer decided by evaluation order
+is not an answer.
+
+**Record the corrected justification now, before NEUROMODULATION is built.** A design
+implemented for a resemblance reason is a design someone later removes when the resemblance
+stops feeling compelling. The structural reason survives that.
+
+### The two routed observations
+
+**RoadID-as-seed → folded into 0c-ii.** Confirmed: `store.exists(road_id)` is True, and
+`spread_activation(store, road_id, hop_budget=0)` returns a well-formed result seeded on a road;
+at the default budget it raises `NotFound`, so the silent window is `hop_budget=0` specifically.
+
+0c-ii now carries two items and both are *a boundary silently accepting something it should
+not*. That is not scope creep — it is the brick finding its actual subject. **Re-scope 0c-ii as
+boundary hygiene**, not as "the floor thing", and state the two-floor-questions distinction
+inside it as before.
+
+**The missing builder-side assertion is mine.** I wrote that overlay in the builder lane and
+asserted only the neutral case plus a fan probe, so all evidence for its arithmetic lives in
+tester-owned files. The practical risk is low — the tester's suite is in the canonical runner —
+but it is a **claim-accuracy** problem: the paper says the builder implements test-first, and for
+this mechanism that is not true. The builder adds arithmetic assertions to
+`tests/test_nous_activation.py`, and the builder's self-audit gains a seventh item: *does a
+builder-side assertion exist for the arithmetic you just wrote, or does all evidence for it live
+in tester files?*
+
+### Two aphorisms, both bought with real defects, both for the paper
+
+- **"A coverage axis is only evidence for the property it can perturb."** (0c)
+- **"A boundary located by sampling is the last sample, not the boundary."** (the silencing
+  cliff: 16, then 24, then binary-searched to 32 — three measurements, three answers, none wrong
+  as observations, each reporting the largest value it happened to sample.)
+
+### Order
+
+**0d lands before 2f.** As the report puts it: a gate installed after the traffic has passed is
+a fifth manual hunt wearing a detector's name. 2f is the first brick built after the detector
+exists, which makes it the test of whether 0d does its only job.

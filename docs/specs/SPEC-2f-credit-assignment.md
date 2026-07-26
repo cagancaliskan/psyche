@@ -1,6 +1,7 @@
 # SPEC-2f — Temporal credit assignment: giving the unowned problem an owner
 
-**Status:** DESIGNED · **three decisions open for Cagan** (§3.4, §2.3, §4.3)
+**Status:** DESIGNED · **all three decisions closed by D-020** (§3.4 → C, §2.3 → assert dead,
+§4.3 → caller-supplied scalar) · **blocked on 0d, which ships first**
 **Revises:** nothing yet. §3 costs three ways of not revising much.
 **Depends on:** 0a `PROVEN` (the store), 0d (the accumulation registry, §6)
 **Date:** 2026-07-26
@@ -94,7 +95,7 @@ outcome at `t+k` to a road touched at `t`.
 That makes this brick far cheaper than the framing implied — and the cheapness is the reason
 §3 can offer an option that touches Tier 1 not at all.
 
-### 2.3 OPEN — what to do with the vestigial `traversal_count`
+### 2.3 DECIDED (D-020) — leave it, document it, and **assert it dead**
 
 It is dead weight: written, never read, and it invites exactly the confusion that produced
 the premise above.
@@ -105,10 +106,22 @@ the premise above.
   integrity and determinism, plus every `dataclasses.replace` / view-construction site.
 - **(C) Give it a job** — make it the tag's traversal counter.
 
-**Recommendation: (A) now.** Phase 0 was restored four commits ago at real cost; spending a
-Tier-1 re-verification on a cosmetic is not a good trade. If a Tier-1 brick opens for another
-reason, bundle (B) into it. **(C) is not recommended** — overloading a field whose meaning
-is already misread is how the premise error happened.
+**DECIDED: none of the three as offered — (A) plus enforcement.** Leave it, document it at
+the declaration, **and add an asserted-negative that it remains unread in `src/`.**
+
+**The rationale is measured harm, not tidiness.** This vestigial field **already caused a
+documentation error** — it is why this brick was commissioned on a false premise one turn
+ago (§2.1). `traversal_count` exists and looks exactly like Module 01's ladder, so it misled
+the person commissioning the work. That is not a hypothetical cost; it is a cost already
+paid.
+
+Removing it is still a Tier-1 change to freshly-restored code for a cosmetic gain, so it
+stays. But **"document it" becomes "enforce it"**, which is this project's idiom — at the
+price of one comment and one test, and no Tier-1 change. If anyone starts reading it, the
+test goes red and forces a decision rather than a discovery.
+
+**Routed to the builder** (`src/` comment + `tests/test_nous_*.py` assertion); not
+architect-pm's to write.
 
 ---
 
@@ -174,7 +187,7 @@ biological analogue of a synaptic tag; it is a replay buffer with a decay kernel
 distinction must be stated in the module docstring**, because "eligibility trace" invites the
 reader to think a synapse is holding it, and here nothing is.
 
-### 3.4 OPEN — which design, and the recommendation
+### 3.4 DECIDED (D-020) — Design C, and the reason is not that it is cheaper
 
 **Recommendation: C, as brick `2f-i`, with A held as `2f-ii` and built only if behavioural
 tagging earns its own justification.**
@@ -189,10 +202,25 @@ expensive to fake, not the reverse. **Third, the corpus's own sequencing argumen
 biology document's distinctive contribution is behavioural tagging, and that deserves its own
 brick with its own falsifier rather than arriving as a side effect of scaffolding.
 
-**Against the recommendation, honestly:** if behavioural tagging is the point — if the goal
-is the *biological* claim rather than the credit-assignment mechanism — then C is scaffolding
-that will be replaced, and A is where the project is going anyway. That is a real argument
-and it is Cagan's to weigh. What C guarantees is that the going will be tested.
+**The counter-argument was answered, not overruled.** The honest objection was: if
+behavioural tagging is the point — if the goal is the *biological* claim — then C is
+scaffolding that will be replaced. D-020 answers it directly:
+
+> **The biological claim cannot be the point.** CLAUDE.md rule 1 permits describing
+> biological *inspiration* and forbids asserting biological *fidelity*. **Paying a Tier-1
+> re-validation now to buy fidelity buys a claim this project is constitutionally barred
+> from making.** 2f's deliverable is a mechanism, and C delivers the mechanism.
+
+**And C is idiomatic, not expedient — this is the second ground and the more durable one.**
+Computing eligibility from a timestamp instead of storing it is **the substrate's own
+existing move**: `nous_store` already does exactly this with lazy decay, which is why
+`get_road` returns a computed view rather than a persisted value. C follows the design
+philosophy already in the code. It is not a shortcut away from it.
+
+**`2f-ii` stays registered, and its trigger is named so it cannot drift:** full tag and
+capture is built when a **behavioural need** arrives — behavioural tagging, a weak trace
+preserved by an unrelated strong event — and **never because a stored timestamp would be
+tidier**. Deferred, not foreclosed, and the difference is written down.
 
 ---
 
@@ -224,7 +252,7 @@ makes the whole thing deterministic and replayable at all.
 So: **the placement is right, the lag is right, and the reason should be restated in
 structural terms** when NEUROMODULATION is specified.
 
-### 4.3 OPEN — but 2f must not block on it
+### 4.3 DECIDED (D-020) — caller-supplied scalar; 2f does not block on NEUROMODULATION
 
 NEUROMODULATION **does not exist as code**. If 2f depends on it, 2f cannot start.
 
@@ -233,11 +261,17 @@ NEUROMODULATION **does not exist as code**. If 2f depends on it, 2f cannot start
 - **(B) 2f builds a minimal NEUROMODULATION publisher** as part of this brick.
 - **(C) 2f defers until NEUROMODULATION is specified.**
 
-**Recommendation: (A).** It gives NEUROMODULATION a real interface to satisfy — which is what
-"its first real job" should mean — without inventing the system on 2f's schedule. It also
-keeps the budget injectable, which is what makes the §7 control conditions constructible: a
-test can hold `P_PRP` fixed, which no published-state design permits. **(B) is scope creep
-across a system boundary; (C) blocks a buildable brick on an unwritten one.**
+**DECIDED: (A).** Three grounds, per D-020: it does not block 2f on an unbuilt system; a
+caller-supplied scalar **can be held fixed**, which is required to separate 2f's effect from
+arousal's and which no published-state design permits; and it defers the publisher without
+foreclosing it. NEUROMODULATION gets a real interface to satisfy, which is what "its first
+real job" should mean.
+
+**And the justification correction is recorded now, before NEUROMODULATION exists** — see
+§4.2. `docs/design/nous_plan_layer0_topology.md` has been amended in place. The reason for
+recording it early is itself the point: **a design implemented for a resemblance reason is a
+design someone later removes when the resemblance stops feeling compelling.** The structural
+reason survives that; "neuromodulation is slow in brains" does not.
 
 ---
 
