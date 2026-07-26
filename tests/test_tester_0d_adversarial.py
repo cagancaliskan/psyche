@@ -74,6 +74,7 @@ from __future__ import annotations
 import ast
 import copy
 import hashlib
+import importlib.util
 import itertools
 import json
 import math
@@ -619,64 +620,89 @@ def test_F3_GAP_ASSERTED_NEGATIVES_shapes_the_detector_cannot_see():
     k1 = keys("def f(x, y):\n    a = b = c = d = 0.0\n    a, b = c, d = x + a, y + b\n")
     check(len(k1) == 2 and len(set(k1)) == 2,
           f"the builder's own case holds: distinct chained targets report 2 unique keys {k1}")
+    # CONVERTED 2026-07-26. This assertion was written to prove the single-target and
+    # sequence paths are EXCLUSIVE, and the two-sided audit below shows it never could:
+    # `a = a, = (a + x,)` reports 1 on the pre-fix tool AND on the current one, because only
+    # one emission ever occurs regardless of the dedup. It was evidence for nothing. Kept —
+    # the shape is still worth pinning — but the exclusivity claim is now made by an input
+    # that can actually distinguish, immediately below.
     check(len(keys("def f(x):\n    a = 0.0\n    a = a, = (a + x,)\n")) == 1,
-          "a name appearing as BOTH a single target and a sequence element is reported once "
-          "— the two paths are exclusive, as asserted")
-    note("both of the above hold. The next two do NOT, and are FINDINGS — recorded as "
-         "asserted-negatives so they go red when fixed.")
-    finding("2f-0-1", "the double-count guard holds only for chained targets with DISTINCT "
-                      "names. `a, b = a, b = x + a, y + b` reports 4 findings at 2 distinct "
-                      "keys; `d[k], d[k] = d[k] + x, d[k] + y` reports 2 at 1. The census "
-                      "dedup turns the surplus into a phantom `#2` registry entry. Not "
-                      "reachable in src/ today (14 sites, 14 unique keys).")
-    finding("2f-0-2", "the four refusal paths (starred, nested, non-literal RHS, arity "
-                      "mismatch) are REAL code paths — instrumenting _paired_elements shows "
-                      "it is entered and declines — but scan_source returns [] for a refused "
-                      "fold and [] for an empty file, so a caller cannot distinguish 'I "
-                      "declined to look' from 'there is nothing here'. Unlike L1-L10, these "
-                      "are decisions the scanner takes KNOWINGLY and records nowhere.")
+          "a name appearing as BOTH a single target and a sequence element is reported once")
 
-    # ---- FINDING 2f-0-1: the double-count guard is incomplete -------------------------
-    # The builder's assertion is true of its fixture and false in general. When the SAME
-    # name appears in two chained sequence targets, each target is paired against the same
-    # value tuple, so the one accumulation is reported twice at the SAME (line, col).
+    # ---- CONVERTED: FINDING 2f-0-1 is FIXED --------------------------------------------
+    # These two were asserted-negatives holding the defect in place. The builder deduped the
+    # fold, so they flip. Converted, never deleted: a deleted negative leaves no trace that
+    # the defect existed, a converted one goes red again if the guard regresses.
     dup = keys("def f(x, y):\n    a = b = 0.0\n    a, b = a, b = x + a, y + b\n")
-    check(len(dup) == 4 and len(set(dup)) == 2,
-          f"ASSERTED-NEGATIVE (FINDING 2f-0-1): a repeated name across chained sequence "
-          f"targets is DOUBLE-COUNTED — 4 findings, 2 distinct keys {sorted(set(k[3] for k in dup))}. "
-          f"The builder asserted no duplicate keys; that holds only when the chained "
-          f"targets name different variables, which its fixture did")
+    check(len(dup) == 2 and len(set(dup)) == 2,
+          f"CONVERTED (was 4 findings at 2 keys): a REPEATED name across chained sequence "
+          f"targets is folded ONCE — {len(dup)} findings, {len(set(dup))} distinct keys "
+          f"{sorted(k[3] for k in dup)}")
     dup2 = keys("def f(d, k, x, y):\n    d[k], d[k] = d[k] + x, d[k] + y\n")
-    check(len(dup2) == 2 and len(set(dup2)) == 1,
-          f"same shape via a repeated SUBSCRIPT in one target list: {len(dup2)} findings, "
-          f"{len(set(dup2))} distinct key. In the census these become `...d` and `...d#2`, "
-          f"so the cost is a PHANTOM REGISTRY ENTRY — a site somebody must adjudicate that "
-          f"does not independently exist")
-    live_keys = [s.key for s in LC.scan_float_accumulations(ROOT)[0]]
-    check(len(live_keys) == len(set(live_keys)),
-          f"NOT reachable in src/ today: the live census has {len(live_keys)} sites and "
-          f"{len(set(live_keys))} distinct keys, so 2f-0-1 is a latent defect in the guard, "
-          f"not a live corruption of the registry. It becomes live the day 2f writes the "
-          f"shape — which is the exact reason step zero existed")
+    check(len(dup2) == 1,
+          f"CONVERTED (was 2 findings at 1 key): a repeated SUBSCRIPT inside one target list "
+          f"is one site ({len(dup2)}) — the same write spelled twice is one adjudication")
+    check(not any("#" in s.key for s in LC.scan_source(
+        "def f(x, y):\n    a = b = 0.0\n    a, b = a, b = x + a, y + b\n", "src/p.py")),
+        "THE DAMAGE, asserted directly rather than via the count: no `#2` phantom key "
+        "reaches the census, so no invented site can acquire a reason")
 
-    # ---- FINDING 2f-0-2: the four refusals are invisible from outside -----------------
-    # Instrumented directly: _paired_elements IS entered for each of these and DOES decline,
-    # so the refusals are real code paths. But scan_source returns [] for a refused fold and
-    # [] for a file containing nothing — and the caller cannot tell which happened.
-    refused = ["def f(x, r):\n    a = b = 0.0\n    a, *b = x + a, r\n",          # L11 starred
-               "def f(x, y):\n    a = b = c = 0.0\n    (a, b), c = (a + x, b + y), c + x\n",
-               "def f(x):\n    a = b = 0.0\n    a, b = pair(a + x, b + x)\n",    # L13 non-literal
-               "def f(x):\n    a = b = 0.0\n    a, b = (a + x,)\n"]              # arity mismatch
-    for src in refused:
-        check(LC.scan_source(src, "src/p.py") == [], "refusal path yields no finding")
-    check(LC.scan_source("def f():\n    pass\n", "src/p.py") == [],
-          "ASSERTED-NEGATIVE (FINDING 2f-0-2): a file with NO accumulation yields exactly "
-          "what all four refusals yield — the empty list. The scanner reaches a sequence "
-          "assignment, examines it, declines it, and records that decision NOWHERE. This is "
-          "the one class of limitation where the scanner HAS the information to speak: L1's "
-          "multiplicative shape never matches, but L11-L13 are decisions taken with full "
-          "knowledge. Silence that means 'I could not look' is being rendered identically "
-          "to silence that means 'there is nothing here' — the exit-code defect's shape")
+    section("F-3  the dedup key is STRUCTURAL — the property, tested generatively")
+    # The builder deduped on (kind, ast.dump(target)) rather than (kind, symbol). The count
+    # is not the claim; the EQUIVALENCE is: symbol-level dedup would make the tuple spelling
+    # report fewer sites than the same computation split across two statements, which undoes
+    # the one property closing L3 established. Generated rather than hand-picked, because a
+    # hand-picked pair is exactly how the builder's own guard came to hold only for the
+    # shape its author had in mind.
+    FORMS = ["a", "b", "d[i]", "d[j]", "s.t", "m[k1]", "m[k2]"]
+    HEAD = "def f(a, b, d, i, j, s, m, k1, k2, x, y):\n"
+    disagreed, pairs = [], 0
+    for t1, t2 in itertools.combinations(FORMS, 2):
+        for o1, o2 in itertools.product("+-", repeat=2):
+            tup = HEAD + f"    {t1}, {t2} = {t1} {o1} x, {t2} {o2} y\n"
+            spl = HEAD + f"    {t1} = {t1} {o1} x\n    {t2} = {t2} {o2} y\n"
+            pairs += 1
+            if len(LC.scan_source(tup, "src/p.py")) != len(LC.scan_source(spl, "src/p.py")):
+                disagreed.append((t1, t2, o1, o2))
+    check(disagreed == [],
+          f"over {pairs} GENERATED accumulation pairs, the tuple spelling and the split "
+          f"spelling report the same number of sites in every case "
+          f"({len(disagreed)} disagreements). This is the property; the count is not")
+    check(len(LC.scan_source(
+        "def f(d, i, j, x, y):\n    d[i], d[j] = d[i] + x, d[j] + y\n", "src/p.py")) == 2,
+        "and DISTINCT subscripts of one container stay TWO sites — symbol-level dedup would "
+        "have collapsed them, which is the coverage loss the structural key avoids")
+    check(len(LC.scan_source(
+        "def f(d, k, x, y):\n    d[k], d[k] = d[k] + x, d[k] + y\n", "src/p.py")) == 1,
+        "while the IDENTICAL subscript collapses to one — the two cases differ only in the "
+        "key expression, so nothing but the target's structure can be deciding it")
+
+    # ---- RE-POINTED: FINDING 2f-0-2 is FIXED -------------------------------------------
+    # THE ASSERTION THAT HAD GONE DEAD. It asserted on scan_source, and the builder kept
+    # that signature deliberately — widening it would have silently changed what every
+    # existing `== []` means in both suites — so it passed before the fix AND after it. It
+    # named a defect it could no longer perturb. Re-pointed at what now carries the refusal.
+    refused = [("def f(x, r):\n    a = b = 0.0\n    a, *b = x + a, r\n", "L11"),
+               ("def f(x, y):\n    a = b = c = 0.0\n"
+                "    (a, b), c = (a + x, b + y), c + x\n", "L12"),
+               ("def f(x):\n    a = b = 0.0\n    a, b = pair(a + x, b + x)\n", "L13"),
+               ("def f(x):\n    a = b = 0.0\n    a, b = (a + x,)\n", "arity")]
+    for src, rule in refused:
+        check(LC.scan_source(src, "src/p.py") == [],
+              f"a refusal still yields no SITE — it is not a finding: {rule}")
+        check([r.rule for r in LC.scan_source_refusals(src, "src/p.py")] == [rule],
+              f"RE-POINTED: the decline is RECORDED and NAMES ITS RULE — {rule}")
+    check(LC.scan_source_refusals("def f():\n    pass\n", "src/p.py") == [],
+          "and a file containing NOTHING records no refusal — so `[]` from the refusal scan "
+          "means 'nothing here' and can no longer mean 'I could not look'. That distinction "
+          "is the whole of 2f-0-2, and this is the assertion that can perturb it")
+    check(LC.scan_source_refusals("def f():\n    a = g()\n", "src/p.py") == [],
+          "a plain `a = g()` is NOT a decline but the ordinary single-target path — recording "
+          "it would make every assignment a refusal and destroy the signal in one commit")
+    check(LC.scan_source_refusals(
+        "def f(xs):\n    a = 1.0\n    for x in xs:\n        a = a * x\n", "src/p.py") == [],
+        "and L1's multiplicative shape records NOTHING: never matched, so nothing to declare. "
+        "THE LINE — knowingly declined is recorded, never matched stays a limitation")
 
     note("DEFECT 0d-2 is RESOLVED for these three. The remaining shapes are no longer "
          "undocumented either — they are L2-L13 in ledger_check's scope block, each with a "
@@ -1521,6 +1547,175 @@ def test_F8_L3_and_L7_interact_and_2f_is_where_it_lands():
          "reason and get cited as a live constraint.")
 
 
+def _load_prefix_tool():
+    """The tool as it stood at 656c38a — the commit BEFORE 2f-0-1 and 2f-0-2 were fixed.
+
+    Loaded under its own module name so it coexists with the current one in this process."""
+    d = Path(tempfile.mkdtemp(prefix="prefix-tool-"))
+    src = subprocess.run(["git", "show", "656c38a:tools/ledger_check.py"],
+                         cwd=str(ROOT), capture_output=True, text=True)
+    if src.returncode != 0:
+        return None, d
+    (d / "old_lc.py").write_text(src.stdout, encoding="utf-8")
+    spec = importlib.util.spec_from_file_location("old_lc_2f", d / "old_lc.py")
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules["old_lc_2f"] = mod          # dataclass() needs the module resolvable
+    spec.loader.exec_module(mod)
+    return mod, d
+
+
+def test_the_repointed_assertions_can_actually_fail():
+    """THE DISCIPLINE, MACHINE-VERIFIED. An assertion that passes on the pre-fix tool AND on
+    the current one is evidence for nothing — it names a defect it cannot perturb. This
+    project has now met that shape three times, and the third time it was in this file.
+
+    So the anti-dead-assertion rule stops being a habit and becomes a test: each claim below
+    is run against BOTH tools and is required to FAIL on the old one. A claim that survives
+    the pre-fix code is reported here rather than counted as verification."""
+    section("2f  every re-pointed assertion FAILS against the pre-fix tool (656c38a)")
+    OLD, tmp = _load_prefix_tool()
+    if OLD is None:
+        note("the pre-fix commit is unreachable from this checkout; two-sided proof skipped")
+        return
+    try:
+        STAR = "def f(x, r):\n    a = b = 0.0\n    a, *b = x + a, r\n"
+        EMPTY = "def f():\n    pass\n"
+        DUP = "def f(x, y):\n    a = b = 0.0\n    a, b = a, b = x + a, y + b\n"
+        DUPS = "def f(d, k, x, y):\n    d[k], d[k] = d[k] + x, d[k] + y\n"
+
+        def sites(LC, s):
+            return [(x.line, x.col, x.kind, x.symbol) for x in LC.scan_source(s, "src/p.py")]
+
+        def refusal_distinguishes(LC):
+            if not hasattr(LC, "scan_source_refusals"):
+                return False
+            return ([r.rule for r in LC.scan_source_refusals(STAR, "src/p.py")] == ["L11"]
+                    and LC.scan_source_refusals(EMPTY, "src/p.py") == [])
+
+        def dedup_repeated(LC):
+            k = sites(LC, DUP)
+            return len(k) == 2 and len(set(k)) == 2
+
+        def dedup_subscript(LC):
+            return len(sites(LC, DUPS)) == 1
+
+        def equivalence(LC):
+            HEAD = "def f(a, b, d, i, j, s, m, k1, k2, x, y):\n"
+            for t1, t2 in itertools.combinations(["a", "d[i]", "d[j]", "m[k1]"], 2):
+                tup = HEAD + f"    {t1}, {t2} = {t1} + x, {t2} + y\n"
+                spl = HEAD + f"    {t1} = {t1} + x\n    {t2} = {t2} + y\n"
+                if len(LC.scan_source(tup, "src/p.py")) != len(LC.scan_source(spl, "src/p.py")):
+                    return False
+            return True
+
+        for label, fn in (("2f-0-2 refusal distinguishes decline from empty",
+                           refusal_distinguishes),
+                          ("2f-0-1 repeated names fold once", dedup_repeated),
+                          ("2f-0-1 repeated subscript folds once", dedup_subscript),
+                          ("dedup equivalence: tuple spelling == split spelling",
+                           equivalence)):
+            try:
+                on_old = bool(fn(OLD))
+            except Exception:
+                on_old = False
+            check(not on_old and bool(fn(LC)),
+                  f"LIVE — fails on 656c38a, passes now: {label}")
+
+        # The one that was DEAD, kept visible rather than quietly replaced. It is the reason
+        # this whole test exists, and the record of it should not be a comment alone.
+        def old_form(LC):
+            return (LC.scan_source(STAR, "src/p.py") == []
+                    and LC.scan_source(EMPTY, "src/p.py") == [])
+        check(old_form(OLD) and old_form(LC),
+              "RECORDED: the ORIGINAL 2f-0-2 assertion — `scan_source` returns [] for both a "
+              "declined fold and an empty file — passes on BOTH tools, which is exactly why "
+              "it was evidence for nothing. It is true, and it is not verification. Kept as "
+              "the standing example of a coverage axis that cannot perturb its property")
+        note("a second dead assertion was found by the same audit and is marked CONVERTED "
+             "at its site: `a = a, = (a + x,)` reports 1 on both tools, so it never tested "
+             "the path-exclusivity it claimed to. 2 of 12 for this brick; both now named.")
+    finally:
+        sys.modules.pop("old_lc_2f", None)
+        shutil.rmtree(tmp, ignore_errors=True)
+
+
+def test_the_listing_is_a_consumed_interface():
+    """A gate's stdout is an API the moment anything parses it. This one has three
+    programmatic consumers with DIFFERENT sensitivities, and until this pass nobody had
+    listed them — which is how the builder's first fix came within one commit of feeding two
+    phantom keys into the very census it was protecting."""
+    section("2f  --list-accumulations is a CONSUMED interface, attacked as one")
+    out = subprocess.run([sys.executable, str(TOOLS / "ledger_check.py"),
+                          "--root", str(ROOT), "--list-accumulations"],
+                         capture_output=True, text=True).stdout
+    lines = out.splitlines()
+    keys = [ln.split()[-1] for ln in lines if ln.startswith("src/")]
+    census = {s.key for s in LC.scan_float_accumulations(ROOT)[0]}
+    check(set(keys) == census and len(keys) == len(census),
+          f"CONSUMER 1 (this suite's loop-closed feed-back): every `src/`-prefixed line is a "
+          f"census key and nothing else is — {len(keys)} parsed, {len(census)} in the census")
+    check(not any("REFUSED" in k or "refusal" in k for k in keys),
+          "no refusal text is captured as a key. The builder's FIRST version printed refusal "
+          "lines beginning with the path and this parser would have taken two phantom keys "
+          "from them — the fix for invisible refusals one step from the defect it was fixing")
+    refusal_lines = [ln for ln in lines if ln.startswith("REFUSED")]
+    check(refusal_lines and all(not ln.startswith("src/") for ln in refusal_lines),
+          f"refusals occupy a SEPARATE namespace ({len(refusal_lines)} lines), so the two "
+          f"kinds of row cannot be confused by a prefix match")
+    check(all(not ln.startswith("src/") for ln in lines if "site(s) in" in ln),
+          "and the summary line does not enter the key namespace either, though it contains "
+          "the string `src/` — a consumer matching on containment rather than prefix WOULD "
+          "capture it, which is the sharpest remaining edge on this interface")
+    # CONSUMER 2 is the determinism digest, which hashes every byte of this stdout; CONSUMER
+    # 3 is the purity check, which ignores content entirely. Their sensitivities differ, and
+    # that difference is the substance of the routed design question below.
+    check(sum(1 for ln in lines if "refusal(s)" in ln) == 1
+          and f"{len(refusal_lines)} refusal(s)" in out,
+          f"the summary reports the refusal count once and it agrees with the rows printed "
+          f"({len(refusal_lines)}) — a count disagreeing with its list is worse than none")
+    note("FUTURE-PROOFING, measured not assumed: adding a refusal RULE changes CONSUMER 2's "
+         "digest and nothing else; adding a refusal ROW changes CONSUMER 2 and the summary "
+         "count. Neither can reach CONSUMER 1 while refusals stay out of the `src/` prefix. "
+         "That invariant is now asserted above rather than left as a convention.")
+
+
+def test_refusal_machinery_end_to_end():
+    section("2f  the refusal machinery: reachability, attribution, and exit neutrality")
+    for rule, src in (("L11", "def f(x, r):\n    a = b = 0.0\n    a, *b = x + a, r\n"),
+                      ("L12", "def f(x, y):\n    a = b = c = 0.0\n"
+                              "    (a, b), c = (a + x, b + y), c + x\n"),
+                      ("L13", "def f(x):\n    a = b = 0.0\n    a, b = g(a + x)\n"),
+                      ("arity", "def f(x):\n    a = b = 0.0\n    a, b = (a + x,)\n")):
+        got = [r.rule for r in LC.scan_source_refusals(src, "src/p.py")]
+        check(got == [rule], f"rule {rule} is REACHABLE and self-identifying (got {got})")
+    nested = ("class K:\n    def m(self, x):\n        match x:\n            case 1:\n"
+              "                a, b = g(x)\n            case _:\n"
+              "                (p, q), r = h(x), 0.0\n")
+    deep = LC.scan_source_refusals(nested, "src/p.py")
+    check(sorted(r.rule for r in deep) == ["L12", "L13"]
+          and all(r.scope == "K.m" for r in deep),
+          f"refusals are found inside class > method > match case and attributed to the "
+          f"enclosing scope: {[(r.rule, r.scope) for r in deep]}. The fold and the refusal "
+          f"share ONE traversal, so neither can reach a construct the other misses")
+    # The two in src/ today, confirmed by an INDEPENDENT walk rather than by the tool.
+    tree = ast.parse((SRC / "nous_store.py").read_text(encoding="utf-8"))
+    mine = sorted({n.lineno for n in ast.walk(tree)
+                   if isinstance(n, (ast.Assign, ast.AnnAssign))
+                   for t in (n.targets if isinstance(n, ast.Assign) else [n.target])
+                   if isinstance(t, (ast.Tuple, ast.List))
+                   and not isinstance(n.value, (ast.Tuple, ast.List))})
+    theirs = sorted(r.line for r in LC.scan_float_refusals(ROOT)
+                    if r.path.endswith("nous_store.py"))
+    check(mine == theirs,
+          f"the two L13 sites in src/ agree with an INDEPENDENT AST walk written here: "
+          f"{mine} vs {theirs} — both are `new_strength, new_charges = _compute_decay(...)`, "
+          f"a two-float tuple return, which is precisely where a hidden fold could live")
+    check(len(theirs) == 2, f"and there are exactly two of them (got {len(theirs)})")
+    note("worth naming: the two refusals in src/ are not noise. `_compute_decay` returns two "
+         "floats that are unpacked, so L13 is declining at the one place in the substrate "
+         "where a tuple-returning float computation actually occurs.")
+
+
 def test_robustness_unreadable_and_unparseable_modules():
     """CONVERTED 2026-07-26. Every assertion here previously documented a BROKEN contract:
     unparseable source produced a finding (exit 1, 'the repo is inconsistent'), a non-UTF-8
@@ -1605,6 +1800,9 @@ def main():
         test_purity_the_check_writes_nothing,
         test_F6_FINDING_0d5_the_absence_bound_underreports_on_dynamic_access,
         test_F8_L3_and_L7_interact_and_2f_is_where_it_lands,
+        test_the_repointed_assertions_can_actually_fail,
+        test_the_listing_is_a_consumed_interface,
+        test_refusal_machinery_end_to_end,
         test_robustness_unreadable_and_unparseable_modules,
     ]:
         t()
@@ -1616,13 +1814,17 @@ def main():
         for m in _fail_msgs:
             print("   -", m)
     print("=" * 78)
-    print("  TESTER VERDICT ON SPEC-2f STEP ZERO — FAIL  (2026-07-26)")
-    print("  (SPEC-0d §4 itself still HOLDS in full; the FAIL is on step zero's own bar)")
+    print("  TESTER VERDICT ON SPEC-2f STEP ZERO — PASS  (2026-07-26, re-verification)")
+    print("  Both findings fixed in 044008c and verified against the PRE-FIX tool,")
+    print("  not merely against the current one. SPEC-0d §4 continues to hold in full.")
     print("=" * 78)
-    print("    F-1  HOLDS       RE-RUN after the builder touched the traversal: all three")
-    print("                     historical bugs still caught on the pre-fix trees they")
-    print("                     lived in, at identical per-commit counts 10/12/12, and the")
-    print("                     census digest is unchanged on all five interpreters.")
+    print("    F-1  HOLDS       RE-RUN after the builder touched the fold a second time:")
+    print("                     all three historical bugs still caught on the pre-fix trees")
+    print("                     they lived in, per-commit counts identical at 10/12/12.")
+    print("                     The LISTING digest moved (25ff712c -> a2f7ed1d) because two")
+    print("                     REFUSED rows and a summary suffix were added to stdout; the")
+    print("                     census rows are byte-identical at b11fd55a on both sides,")
+    print("                     re-derived here from git rather than taken from the builder.")
     print("    F-2  HOLDS       zero unregistered; registry and census in bijection")
     print("    F-3  HOLDS       FOUR gaps now CLOSED and CONVERTED — L3 joins the three")
     print("                     from last cycle. Limitations went 10 -> 13: closing L3 cost")
@@ -1636,12 +1838,20 @@ def main():
     print("    F-8  HOLDS       CONVERTED: the tuple and split spellings now report the")
     print("                     SAME sites, which is what L3 being load-bearing meant.")
     print("=" * 78)
-    print("  WHY FAIL, on one criterion only: the four refusal paths do not refuse VISIBLY.")
-    print("  L3 detection is sound under inputs of this suite's own construction, and the")
-    print("  retro-catch is untouched. But 2f-0-2 stands — a declined fold and an empty file")
-    print("  are the same [] to a caller — and 2f-0-1 shows the double-count guard holds")
-    print("  only for chained targets with distinct names. Neither is reachable in src/")
-    print("  today; both become reachable the day 2f writes the shape step zero was for.")
+    print("  2f-0-1 CONVERTED  the fold deduplicates on the target's STRUCTURE, so repeated")
+    print("                    names fold once while d[i], d[j] stay two. Verified as an")
+    print("                    EQUIVALENCE over 84 generated pairs — the tuple spelling and")
+    print("                    the split spelling agree in every case — not as a count.")
+    print("  2f-0-2 RE-POINTED the old assertion named scan_source and passed on BOTH tools:")
+    print("                    it could not perturb its own property. Re-pointed at the")
+    print("                    refusal record and the listing, and PROVED live by failing")
+    print("                    against 656c38a. 2 of 12 assertions for this brick were dead;")
+    print("                    both are named, neither is deleted.")
+    print("=" * 78)
+    print("  ROUTED TO ARCHITECT, not fixed here: the census digest and the LISTING digest")
+    print("  are one value, so a report-format change moves an invariant that the census")
+    print("  itself never moved. Two passes have now spent real effort proving a digest")
+    print("  change benign. Recommend separating them.")
     print("=" * 78)
     print("=" * 78)
     if _findings:
