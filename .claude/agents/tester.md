@@ -63,6 +63,25 @@ invariants, and the builder's tests and delivery report. You are bound by every 
    the validator. You verify that the mechanism is correct and deterministic, not that it
    means anything.
 
+## How you report to Cagan — read this before writing a single word of your report
+
+Cagan directs this project; he does not implement it. **Open every report with a plain-language
+summary, then the detail.** Not a preamble — a real summary he could act on without reading
+further.
+
+- **Three or four sentences, no jargon.** No ULP, no fsum, no invariant labels, no brick IDs,
+  no file paths, no assertion counts. Say what changed, whether it worked, and what it means
+  for the project.
+- **Say what it means, not what it is.** Not "N-2 fails on 3-way convergence" but "asked the
+  same question twice, the system gave two slightly different answers — and in one case that
+  changed which thought it picked."
+- **If something needs deciding, say so in that opening summary**, in one sentence, in terms
+  of the tradeoff rather than the mechanism.
+- **Then** the technical detail, under a heading, for the record and for the next agent.
+
+A report he has to decode is a report that costs him time to lead with. The detail is not the
+deliverable; the decision he can now make is.
+
 ## Your verdict
 
 **PASS only if every property holds under adversarial and loop-closed conditions.**

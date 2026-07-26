@@ -40,6 +40,49 @@ is *for* — and the answer the corpus keeps deferring is this.
 
 ---
 
+## 0.5 STEP ZERO — mandatory, before any credit-assignment code is written
+
+**Teach the gate to see tuple-target accumulation, then build the thing that would have
+hidden in it.**
+
+The 0d tester measured the line this brick is most likely to write:
+
+```python
+trace[rid], counts[rid] = trace[rid] + e, counts[rid] + 1
+```
+
+**Zero findings.** The float accumulation is lost to 0d's L3 (tuple targets are not
+detected); the integer counter was never in scope and is correctly out of it. Split across
+two lines, the float site is caught. So **the gate built to catch 2f's accumulations misses
+the one accumulation 2f adds** — and it misses it on the most idiomatic way to write it.
+
+**Why this is 2f's task and not 0d's.** 0d's deliverable was the gate, and its scope closed
+by decision (D-022). Ownership sits with the brick that needs the coverage. That placement
+is the point rather than a convenience: **2f's first act becomes a demonstration that
+extending the gate is a normal cost of building on it.** A gate that no brick is ever
+required to extend is a gate that silently narrows every time the code grows past it, and
+this project has already watched that happen three times with the same defect class.
+
+**A passive sentence in a spec would not be enough**, and saying so is not rhetoric: this
+same cycle rejected exactly that pattern for the absence bounds — a recorded intention that
+nothing enforces — and replaced it with a machine check. Accepting a passive note here,
+one section after that decision, would be incoherent.
+
+**Step zero, concretely:**
+1. Extend the detector to report tuple-target accumulation (`a, b = a + x, b + y`), with the
+   integer element still exempt on the existing structural rule.
+2. Prove it by injection, per SPEC-0d F-3: a planted tuple-target fold turns the build red.
+3. Retire L3 from `ledger_check.py`'s scope block and convert its asserted-negative in
+   `tests/test_tester_0d_adversarial.py` to a positive assertion — **converted, not deleted**,
+   per the standing rule.
+4. **Only then** write credit-assignment code.
+
+**L7 is deliberately NOT part of this.** An integer counter is not a float accumulation;
+that is out of scope, not a hole, and widening the rule to cover it would produce exactly
+the false-positive noise SPEC-0d §6 names as the way a registry stops being read.
+
+---
+
 ## 1. The hole, and its exact shape
 
 `docs/design/nous_plan_layer0_topology.md` lines 64–68, in the Layer 0 topology's own words:
@@ -372,6 +415,41 @@ it corresponds to what a brain does. It establishes that an outcome at `t+k` mov
 at `t` in a bounded, decaying, reproducible way. **That is the whole claim.**
 
 ---
+
+### 7.1 SECONDARY acceptance criterion — 2f is the test of whether 0d works
+
+2f is **the first brick built after the detector exists**, which makes it the only real
+evidence about whether 0d does its one job. So the delivery must answer, explicitly and in
+writing:
+
+> **Did the gate catch what a manual hunt would have missed — or did it stay green while a
+> new naive accumulation shipped?**
+
+Both answers are informative and both must be reported. A green gate that missed something a
+human then found by looking is 0d's failure, and it must be recorded as such rather than
+absorbed as a 2f detail. This criterion is secondary to §7's mechanism bar: 2f can pass its
+own done-means and still return a negative verdict on 0d, and if so, that verdict is the more
+important half of the delivery.
+
+### 7.2 PRECONDITIONS the 2f builder re-checks BY HAND before delivering
+
+Two registry entries rest on an **absence**, and **2f is the most likely brick in the
+project to end either one**:
+
+- `ActivationField.flow` has no reader in `src/` — 2f reads the field, and reading `.flow` is
+  a natural thing for a credit-assignment consumer to do.
+- `advance()` has no caller in `src/` — 2f deals in cycles and elapsed time.
+
+C6's `bound_on_absence` enforces both mechanically and will fail the build if either symbol
+appears. **The builder re-checks both by hand anyway, and says so in the delivery report.**
+That is belt and braces on purpose: the machine check is **one cycle old**, it has never been
+fired in anger by real work, and the 0d tester found that it **under-reports on dynamic
+access** — `getattr(x, 'flow')`, `x.__dict__['flow']` and aliased calls all evade it
+(FINDING 0d-5). If 2f reaches the field by any of those routes, the machine check will stay
+silent and the hand check is the only thing standing.
+
+If either absence ends, that is **not a failure** — it is the registry working. The entry is
+re-adjudicated with a new argument, and the fact that 2f was the trigger is recorded.
 
 ## 8. Invariants for the tester
 

@@ -636,6 +636,155 @@ def run(tmp: Path) -> None:
     r = make_src_repo(tmp, appended=INJECT_INTERPROCEDURAL)
     check(c6(r) == [], "the census does no interprocedural analysis")
 
+    # ── D-021 FIX 4: the remaining eight holes, each ASSERTED so that "the detector
+    # is clean" can never quietly mean "the detector did not look". None is implemented
+    # in this cycle BY DECISION: whether any is worth detecting is a scoping call, and a
+    # gate that never ships because it is still being perfected guarded nothing. Each
+    # carries the falsifier from ledger_check.py's scope block.
+    section("C6/F-8 ASSERTED NEGATIVES: the eight known holes, L2-L10")
+    for label, src in (
+        ("L2 walrus",
+         "def f(xs):\n    a = 0.0\n    for x in xs:\n        if (a := a + x) > 1.0:\n"
+         "            pass\n    return a\n"),
+        ("L3 tuple targets",
+         "def f(xs):\n    a = b = 0.0\n    for x, y in xs:\n        a, b = a + x, b + y\n"
+         "    return a, b\n"),
+        ("L4 itertools.accumulate",
+         "import itertools\ndef f(xs):\n    return list(itertools.accumulate(xs))\n"),
+        ("L5 operator.add called directly in a loop",
+         "import operator\ndef f(xs):\n    a = 0.0\n    for x in xs:\n"
+         "        a = operator.add(a, x)\n    return a\n"),
+        ("L6 reduce with the __add__ dunder spelling",
+         "import functools, operator\ndef f(xs):\n"
+         "    return functools.reduce(operator.__add__, xs, 0.0)\n"),
+        ("L7 float accumulator with an int-literal addend",
+         "def f(n):\n    weight = 0.0\n    for _ in range(n):\n        weight += 1\n"
+         "    return weight\n"),
+        ("L9 math.sumprod",
+         "import math\ndef f(xs, ys):\n    return math.sumprod(xs, ys)\n"),
+        ("L10 Counter.update",
+         "import collections\ndef f(xs):\n    c = collections.Counter()\n"
+         "    for x in xs:\n        c.update({'k': x})\n    return c\n"),
+    ):
+        found = LC.scan_source(src, "src/p.py")
+        check(found == [],
+              f"{label} is NOT detected — a documented hole with a falsifier, asserted here "
+              f"so the gate's silence about it is deliberate rather than accidental")
+    # and the one that IS now detected, so this block cannot rot into covering everything
+    check([s.kind for s in LC.scan_source(
+        "def f(xs):\n    a = 0.0\n    for x in xs:\n        a -= x\n    return a\n",
+        "src/p.py")] == ["aug-sub"],
+        "L-subtraction is NOT in this list because D-021 FIX 1 closed it — the block "
+        "asserts holes, and a hole that has been filled must leave it")
+
+    # ── D-021 FIX 1: subtraction is DETECTED, and the reflection form is not ────
+    section("C6 subtraction is an additive fold and IS detected (D-021 FIX 1)")
+    check([s.kind for s in LC.scan_source(
+        "def f(xs):\n    a = 0.0\n    for x in xs:\n        a -= x\n    return a\n",
+        "src/p.py")] == ["aug-sub"],
+        "`a -= x` is `a += (-x)` and is exactly as order-sensitive — detected as aug-sub")
+    check([s.kind for s in LC.scan_source(
+        "def f(d, k, v):\n    d[k] = d.get(k, 0.0) - v\n", "src/p.py")] == ["self-sub"],
+        "the self-referential subtraction form is detected too")
+    check(LC.scan_source(
+        "def f(v, x):\n    x = v - x\n    return x\n", "src/p.py") == [],
+        "`x = v - x` REFLECTS rather than accumulates — deliberately not counted, and this "
+        "is the asymmetry that makes subtraction left-operand-only")
+    check(LC.scan_source(
+        "def f(xs):\n    n = 0\n    for x in xs:\n        n -= 1\n    return n\n",
+        "src/p.py") == [],
+        "an integer tally that subtracts is still exempt — the structural rule holds for Sub")
+
+    # ── D-021 FIX 2: match cases are walked ────────────────────────────────────
+    section("C6 statements inside a `match` case are walked (D-021 FIX 2)")
+    MATCH_SRC = (
+        "def f(cmd, d, k, v):\n"
+        "    match cmd:\n"
+        "        case 'add':\n"
+        "            d[k] = d.get(k, 0.0) + v\n"
+        "        case _:\n"
+        "            acc = 0.0\n"
+        "            for x in v:\n"
+        "                acc += x\n"
+        "            return acc\n"
+    )
+    kinds = sorted(s.kind for s in LC.scan_source(MATCH_SRC, "src/p.py"))
+    check(kinds == ["aug-add", "self-add"],
+          "both accumulations inside match cases are found; before D-021 the walker never "
+          "descended into match_case.body and BOTH were invisible")
+    check(all(s.scope == "f" for s in LC.scan_source(MATCH_SRC, "src/p.py")),
+          "and they are attributed to the enclosing function, not to a phantom scope")
+    check([s.kind for s in LC.scan_source(
+        "def f(x, xs):\n    match x:\n        case int():\n            return sum(xs)\n",
+        "src/p.py")] == ["builtin-sum"],
+        "a reducer CALL inside a match case is found (it always was, via the expression "
+        "scan — which is exactly why the statement hole was easy to miss)")
+
+    section("C6 every other statement-bearing construct is walked (D-021 FIX 2 audit)")
+    for label, body in (
+        ("with",        "    with open('x') as fh:\n        a += 1.0\n"),
+        ("try",         "    try:\n        a += 1.0\n    except ValueError:\n        pass\n"),
+        ("except",      "    try:\n        pass\n    except ValueError:\n        a += 1.0\n"),
+        ("try/else",    "    try:\n        pass\n    except ValueError:\n        pass\n    else:\n        a += 1.0\n"),
+        ("finally",     "    try:\n        pass\n    finally:\n        a += 1.0\n"),
+        ("for/else",    "    for _ in xs:\n        pass\n    else:\n        a += 1.0\n"),
+        ("while",       "    while xs:\n        a += 1.0\n"),
+        ("if/elif",     "    if xs:\n        pass\n    elif xs:\n        a += 1.0\n"),
+        ("nested def",  "    def g():\n        b = 0.0\n        b += 1.0\n        return b\n"),
+        ("nested class","    class K:\n        def m(self):\n            c = 0.0\n            c += 1.0\n"),
+    ):
+        src = f"def f(xs):\n    a = 0.0\n{body}    return a\n"
+        check(len(LC.scan_source(src, "src/p.py")) >= 1,
+              f"an accumulation inside `{label}` is reached by the walker")
+    ASYNC = ("async def f(xs):\n    a = 0.0\n    async with xs as h:\n        a += 1.0\n"
+             "    async for x in xs:\n        a += 2.0\n    return a\n")
+    check(len(LC.scan_source(ASYNC, "src/p.py")) == 2,
+          "async with / async for bodies are walked (async def is handled with def)")
+
+    # ── D-021 FIX 3: unreadable source is exit 2, never a finding, never clean ──
+    section("C6 unreadable source is 'the tool could not run' (exit 2), never clean")
+    for label, blob in (("NUL byte", b"x = 1\n\x00bad\n"),
+                        ("non-UTF-8", b'x = "\xff\xfe"\n'),
+                        ("unparseable", b"def f(:\n")):
+        r = make_src_repo(tmp)
+        (r / "src" / "nous_bad.py").write_bytes(blob)
+        raised = None
+        try:
+            LC.scan_float_accumulations(r)
+        except LC.CensusUnreadable as e:
+            raised = e
+        check(raised is not None,
+              f"{label}: raises CensusUnreadable rather than returning a clean census")
+        check(LC.main(["--root", str(r), "--only", "C6", "--quiet"]) == 2,
+              f"{label}: exits 2 — NOT 0 (indistinguishable from clean) and NOT 1 (a finding)")
+
+    # ── D-021 ADDITION: absence bounds are machine-verified ────────────────────
+    section("C6 a reason resting on an ABSENCE is enforced, not trusted")
+    r = make_src_repo(tmp)
+    led = json.loads((r / "tools" / "ledger.json").read_text())
+    key = next(iter(led["float_accumulations"]))
+    led["float_accumulations"][key]["bound_on_absence"] = [
+        {"kind": "call", "symbol": "_absent_helper"}]
+    (r / "tools" / "ledger.json").write_text(json.dumps(led, indent=2))
+    check(not any("RESTS ON THE ABSENCE" in f.message for f in c6(r)),
+          "a bound on a symbol that is genuinely absent is silent")
+    (r / "src" / "nous_new.py").write_text("def g():\n    return _absent_helper(1)\n")
+    fs = [f for f in c6(r) if "RESTS ON THE ABSENCE" in f.message]
+    check(len(fs) == 1 and "the reason is now FALSE" in fs[0].message,
+          "the moment the symbol appears, the entry's reason is declared FALSE — the "
+          "registry stops being able to hold a silently-stale absence claim")
+    led["float_accumulations"][key]["bound_on_absence"][0]["dismissed"] = ["src/nous_new.py:2"]
+    (r / "tools" / "ledger.json").write_text(json.dumps(led, indent=2))
+    check(not any("RESTS ON THE ABSENCE" in f.message for f in c6(r)),
+          "and a human can dismiss an occurrence only by RECORDING it, in writing")
+    check(len(LC._absence_occurrences(REPO, "attribute_read", "ActivationField.flow")) == 2,
+          "the real registry's .flow bound over-reports 2 occurrences by design — both "
+          "ActivationResult.flow — and both are dismissed in writing (bias: a false "
+          "positive costs a sentence, a false negative is a silently false reason)")
+    check(LC._absence_occurrences(REPO, "call", "form_coalitions") == []
+          and LC._absence_occurrences(REPO, "call", "advance") == [],
+          "and the two bounds the registry actually rests on hold today")
+
     # ── the census's own mechanical properties ───────────────────────────────
     section("C6 the census is deterministic and pure")
     again = {s.key: (s.kind, s.line) for s in LC.scan_float_accumulations(REPO)[0]}
@@ -663,8 +812,20 @@ def run(tmp: Path) -> None:
 
     section("C6 a src/ module that does not parse is reported, never skipped")
     r = make_src_repo(tmp, extra={"src/nous_broken.py": "def f(:\n    pass\n"})
-    f = c6(r)
-    check(any("could not parse" in x.message for x in f), "unparseable module reported")
+    # CONTRACT CHANGED BY D-021 FIX 3. This previously expected a C6 FINDING, i.e. exit 1:
+    # "the census ran and the repository is inconsistent". That was wrong — the census did
+    # not run. An unparseable module is "the tool could not run", which is exit 2, and the
+    # distinction matters because exit 1 quietly asserts that the scan happened.
+    raised = None
+    try:
+        c6(r)
+    except LC.CensusUnreadable as e:
+        raised = e
+    check(raised is not None and "cannot parse" in str(raised),
+          "an unparseable module raises CensusUnreadable rather than being reported as a "
+          "finding — the census cannot certify a module it never read")
+    check(LC.main(["--root", str(r), "--only", "C6", "--quiet"]) == 2,
+          "and the process exits 2, never 0 (indistinguishable from clean) and never 1")
 
     # ── every branch the check owns must be reachable, and shown to be ───────
     section("C6 no statement is visited twice, however deeply it is nested")
