@@ -237,6 +237,21 @@ out-conductance is itself derived from SWOW — the coupling is reduced, **not**
 
 This is the reason this spec is a GO on mechanism and not a GO overall.
 
+> **The floor now appears in TWO open questions, and they are independent. Do not conflate
+> them.** This section is the **scale-invariance** question (D-008): under conservation an
+> *absolute* floor is not scale-invariant, so it becomes degree-dependent censoring. It is a
+> question about the constant's **semantics**, and it is what **blocks the 0b2 default flip**.
+>
+> Brick **0c-ii** is the **finiteness** question, and it is a different thing entirely:
+> `floor=NaN` **silently** disables the locality guard — 3 nodes reached instead of 6, no
+> error, behaviourally identical to `floor=-inf`. That is boundary hygiene, O-12's and
+> DEFECT-C's class, and it blocks nothing.
+>
+> **Fixing one does not touch the other.** Validating `floor` for finiteness leaves it just
+> as absolute as it was; making it relative leaves it just as non-finite-able as it was.
+> Neither advances the other, and a delivery claiming otherwise is claiming a brick it did
+> not build. Same table in SPEC-0d §7.1 and SPEC-0c.
+
 `floor = DEFAULT_FLOOR = 0.02`. Under normalization, activation magnitudes shrink with
 source out-degree, so an **absolute** floor becomes degree-dependent censoring:
 

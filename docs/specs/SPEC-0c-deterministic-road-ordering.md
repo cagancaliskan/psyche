@@ -545,6 +545,19 @@ unreachable **within the documented parameter domain**.
 > urgency precisely because the guard catches it loudly rather than silently, which is the
 > failure mode that mattered. Flagged for Cagan; not decided by an agent.
 
+> **`floor` is the third boundary, and it is brick 0c-ii — but note there are TWO floor
+> questions and they are independent.** 0c-ii is the **finiteness** one: `floor=NaN`
+> **silently** disables the locality guard (3 nodes reached instead of 6, no error,
+> behaviourally identical to `floor=-inf`), which is exactly O-12's and DEFECT-C's class —
+> a bad value accepted in silence. D-008, in SPEC-0b2 §5, is the **scale-invariance** one:
+> whether an absolute floor is coherent under conservation. That one blocks the 0b2 default
+> flip; this one blocks nothing. **Fixing either does nothing for the other.** Full table in
+> SPEC-0d §7.1.
+>
+> `decay_per_hop` is deliberately *not* on this list: it refuses **loudly** via the guard
+> above, and loud-versus-silent is the discriminator that decides what needs a boundary
+> check (D-016).
+
 It stays as a **backstop** — it protects against a future term that can manufacture a
 non-finite value from finite inputs, which is exactly the class part 2 was written for. Two
 things follow, and both are requirements:
