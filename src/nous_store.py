@@ -13,7 +13,14 @@ Design decisions, settled in Layer 1 planning and realized here:
                 never reissue an old ID and resolve a stale reference to the wrong
                 object — a stale ID resolves to NotFound, never to corruption.
   ORDER         Formation order is data, not identity: an explicit `creation_seq`
-                integer, separate from the ID.
+                integer, separate from the ID. The adjacency indices honour it: `_out`
+                and `_in` are INSERTION-ORDERED MAPPINGS used as ordered sets, so
+                `roads_from()` and `roads_into()` yield in road-creation order — the
+                same in every process. They were sets of uuid4 hex strings, whose
+                iteration order is freshly random per process; a consumer that summed
+                floats in that order therefore had no single answer (see 0c). The store
+                owns the ordering contract, so the store is where it is stated once,
+                rather than worked around per consumer.
   ONE ROAD/PAIR A simple graph: at most one road per (source, target). A road has
                 an emotional life (structured, possibly multi-valued charge); the
                 same path carrying two feelings is ONE road, not two. A
@@ -158,7 +165,15 @@ class Road:
     def valence(self) -> float:
         if not self.charges:
             return 0.0
-        return _clamp(sum(self.charges.values()) / max(1, len(self.charges)), -1.0, 1.0)
+        # math.fsum, not sum(): this aggregate is compared against _CLOSURE_THRESHOLD and
+        # _REOPEN_THRESHOLD, so a CATEGORICAL decision (is this road closed?) is resolved
+        # on it. The project's float rule forbids deciding a category on an
+        # independently-accumulated float — a naive fold makes the answer a function of
+        # the order the feelings were recorded in and of which CPython runs it (3.12+
+        # compensates builtin sum(); 3.10/3.11 do not). fsum is exactly rounded, so the
+        # valence is a function of the charge MULTISET alone. SPEC-0c §2.5 site 3.
+        return _clamp(math.fsum(self.charges.values()) / max(1, len(self.charges)),
+                      -1.0, 1.0)
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -245,9 +260,14 @@ class SubstrateStore:
         self._nodes: Dict[NodeID, Node] = {}
         self._roads: Dict[RoadID, Road] = {}
 
-        # indices (all keyed by stable ID, never by position)
-        self._out: Dict[NodeID, Set[RoadID]] = {}
-        self._in: Dict[NodeID, Set[RoadID]] = {}
+        # indices (all keyed by stable ID, never by position).
+        # _out/_in are INSERTION-ORDERED MAPPINGS USED AS ORDERED SETS (the value is
+        # always None). See the ORDER note in the module docstring: this is what makes
+        # roads_from()/roads_into() yield in road-creation order rather than in the
+        # iteration order of a set of uuid4 hex strings, which is freshly random in
+        # every process.
+        self._out: Dict[NodeID, Dict[RoadID, None]] = {}
+        self._in: Dict[NodeID, Dict[RoadID, None]] = {}
         self._pair: Dict[Tuple[NodeID, NodeID], RoadID] = {}  # dedup: one road/pair
 
         # designations & guards (all sets of IDs)
@@ -273,8 +293,8 @@ class SubstrateStore:
             creation_seq=next(self._seq),
             formation_time=now, last_accessed=now,
         )
-        self._out[nid] = set()
-        self._in[nid] = set()
+        self._out[nid] = {}
+        self._in[nid] = {}
         if self.debug:
             self._assert_node_indices(nid)
         return nid
@@ -287,8 +307,8 @@ class SubstrateStore:
             raise NotFound(f"node {node_id}")
         if node_id in self._pinned:
             raise IntegrityError(f"refusing to remove pinned node {node_id}")
-        # remove all incident roads (copy: we mutate the sets as we go)
-        for rid in list(self._out.get(node_id, set())) + list(self._in.get(node_id, set())):
+        # remove all incident roads (copy: we mutate the indices as we go)
+        for rid in list(self._out.get(node_id, {})) + list(self._in.get(node_id, {})):
             if rid in self._roads:
                 self.remove_road(rid)
         self._out.pop(node_id, None)
@@ -316,8 +336,11 @@ class SubstrateStore:
             creation_seq=next(self._seq),
             formation_time=now, last_touched=now,
         )
-        self._out[source_id].add(rid)
-        self._in[target_id].add(rid)
+        # ordered-set insert: a NEW road always appends, so iteration is creation order.
+        # (The dedup check above returns early for an existing pair, so a re-get never
+        # re-inserts and therefore never reorders.)
+        self._out[source_id][rid] = None
+        self._in[target_id][rid] = None
         self._pair[(source_id, target_id)] = rid
         if self.debug:
             self._assert_road_indices(rid)
@@ -327,8 +350,8 @@ class SubstrateStore:
         road = self._roads.get(road_id)
         if road is None:
             raise NotFound(f"road {road_id}")
-        self._out.get(road.source_id, set()).discard(road_id)
-        self._in.get(road.target_id, set()).discard(road_id)
+        self._out.get(road.source_id, {}).pop(road_id, None)
+        self._in.get(road.target_id, {}).pop(road_id, None)
         self._pair.pop((road.source_id, road.target_id), None)
         self._roads.pop(road_id, None)
 
@@ -439,18 +462,28 @@ class SubstrateStore:
     # ── READ: structure ───────────────────────────────────────────────────────
 
     def roads_from(self, node_id: NodeID) -> Iterator[RoadID]:
+        """Out-roads of `node_id`, in ROAD-CREATION ORDER.
+
+        The ordering is part of the contract, not an accident of the container: the
+        index is an insertion-ordered mapping, insertion order is creation order, and
+        creation order is program order, so the sequence is identical in every process.
+        The intrinsic integer behind it is `creation_seq` — the same stable ordering
+        integer the rest of the project resolves ties on.
+        """
         if node_id not in self._nodes:
             raise NotFound(f"node {node_id}")
-        return iter(tuple(self._out.get(node_id, set())))
+        return iter(tuple(self._out.get(node_id, {})))
 
     def roads_into(self, node_id: NodeID) -> Iterator[RoadID]:
+        """In-roads of `node_id`, in ROAD-CREATION ORDER (see `roads_from`)."""
         if node_id not in self._nodes:
             raise NotFound(f"node {node_id}")
-        return iter(tuple(self._in.get(node_id, set())))
+        return iter(tuple(self._in.get(node_id, {})))
 
     def neighbors(self, node_id: NodeID) -> Iterator[NodeID]:
+        """Out-neighbours, in the order of the roads that reach them (see `roads_from`)."""
         return iter(tuple(self._roads[r].target_id
-                          for r in self._out.get(node_id, set())))
+                          for r in self._out.get(node_id, {})))
 
     def find_road(self, source_id: NodeID, target_id: NodeID) -> Optional[RoadID]:
         return self._pair.get((source_id, target_id))
@@ -501,9 +534,9 @@ class SubstrateStore:
 
     def _assert_road_indices(self, road_id: RoadID) -> None:
         road = self._roads[road_id]
-        if road_id not in self._out.get(road.source_id, set()):
+        if road_id not in self._out.get(road.source_id, {}):
             raise IntegrityError(f"road {road_id} missing from out-index of source")
-        if road_id not in self._in.get(road.target_id, set()):
+        if road_id not in self._in.get(road.target_id, {}):
             raise IntegrityError(f"road {road_id} missing from in-index of target")
         if self._pair.get((road.source_id, road.target_id)) != road_id:
             raise IntegrityError(f"road {road_id} missing from pair-index")

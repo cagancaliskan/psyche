@@ -178,7 +178,10 @@ def test_clustered_sources_no_longer_strand_after_1c():
 def test_slice_determinism_across_hash_seeds():
     section("ADVERSARIAL determinism: end-to-end result identical across hash seeds")
     import subprocess, sys, os, textwrap
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     probe = textwrap.dedent('''
+        import struct
+        def _b(x): return struct.pack("<d", x).hex()
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
@@ -194,7 +197,7 @@ def test_slice_determinism_across_hash_seeds():
         out = []
         for c in r.coalitions:
             out.append((tuple(sorted(s.get_node(m).content for m in c.members)),
-                        round(c.strength, 9),
+                        _b(c.strength),
                         s.get_node(c.representative()).content))
         print(repr((out, s.get_node(r.thought.representative()).content if r.thought else None)))
     ''')

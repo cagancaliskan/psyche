@@ -431,7 +431,11 @@ def test_winner_flip_actually_occurs_on_independent_graph():
 def test_winner_trace_byte_identical_across_6_seeds_independent_driver():
     section("B1 §(D-1)/(D-5): the loop's winner-vs-friction trace is byte-identical across 6 "
             "PYTHONHASHSEED values in fresh interpreters (independently authored driver)")
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 4) — the friction scalar that indexes
+    # this trace is itself a float, and rounding the index would let two different
+    # frictions collide into one row and hide a divergence rather than report it.
     driver = textwrap.dedent('''
+        import struct
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_perceive import think
         from nous_bodysensor import BodySensor, TelemetrySample
@@ -456,7 +460,7 @@ def test_winner_trace_byte_identical_across_6_seeds_independent_driver():
             s=build()
             r=think(s,"alpha gamma",body_sensor=sensor_for(f))
             win=tuple(sorted(s.get_node(m).content for m in r.thought.members)) if r.thought else None
-            out.append((round(f,4), win))
+            out.append((struct.pack("<d", f).hex(), win))
         print(repr(out))
     ''')
     outs = _det_probe(driver)

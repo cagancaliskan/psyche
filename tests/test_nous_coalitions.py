@@ -214,7 +214,11 @@ def test_determinism_adversarial_across_hash_seeds():
     # full coalition structure — partition, strengths, ordering, representatives — is
     # byte-identical. This is the test that catches the whole family proactively.
     import subprocess, sys, os, textwrap
+    # SPEC-0c §5.1: the payload serialises BIT PATTERNS, never round(x, 9) — a rounded
+    # determinism probe is structurally blind to the 1-ULP class BUG-0b1 was.
     probe = textwrap.dedent('''
+        import struct
+        def _b(x): return struct.pack("<d", x).hex()
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_activation import ActivationResult
         from nous_coalitions import form_coalitions
@@ -242,7 +246,7 @@ def test_determinism_adversarial_across_hash_seeds():
         for c in cs:
             members_by_content = tuple(sorted(s.get_node(m).content for m in c.members))
             rep_content = s.get_node(c.representative()).content
-            out.append((members_by_content, round(c.strength, 9), rep_content, c.intrusive))
+            out.append((members_by_content, _b(c.strength), rep_content, c.intrusive))
         print(repr(out))
     ''')
     outputs = []

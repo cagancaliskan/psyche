@@ -278,7 +278,10 @@ def test_determinism_across_hash_seeds():
     # — group membership (by stable content), representatives, group order, and group_seeds
     # — is byte-identical. Serialized by STABLE keys (content + creation_seq), never uuids.
     import subprocess, sys, os, textwrap
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     probe = textwrap.dedent('''
+        import struct
+        def _b(x): return struct.pack("<d", x).hex()
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_perceive import perceive
         from nous_source_clustering import cluster_sources
@@ -297,7 +300,7 @@ def test_determinism_across_hash_seeds():
         for g in clustering.groups:
             members_by_content = tuple(sorted(s.get_node(m).content for m in g.members))
             rep_content = s.get_node(g.representative).content
-            seed = round(clustering.group_seeds[g.representative], 9)
+            seed = _b(clustering.group_seeds[g.representative])
             out.append((members_by_content, rep_content, seed))
         print(repr(out))
     ''')

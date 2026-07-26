@@ -553,7 +553,9 @@ def test_T6_determinism_winner_pruned_ranked_6_seeds():
     # Equal traversal counts everywhere -> equal strengths -> equal densities -> the sort
     # MUST fall back to size then creation_seq. If any uuid/iteration order leaked, ranked
     # order would differ across seeds.
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     driver = textwrap.dedent('''
+        import struct
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
@@ -570,7 +572,7 @@ def test_T6_determinism_winner_pruned_ranked_6_seeds():
         pruned = tuple(sorted(s.get_node(m).content for m in r.workspace.pruned_members))
         ranked = tuple(
             (tuple(sorted(s.get_node(m).content for m in c.members)),
-             round(c.strength, 9), c.size())
+             struct.pack("<d", c.strength).hex(), c.size())
             for c in r.workspace.ranked
         )
         raw = tuple(sorted(s.get_node(m).content for m in r.workspace.raw_winner.members)) if r.workspace.raw_winner else None
@@ -590,7 +592,12 @@ def test_T6b_determinism_multi_basin_ties_6_seeds():
     section("T6b cross-process determinism on a MULTI-BASIN tie graph: two equal-sized, "
             "equal-strength unlinked domains -> a genuine density+size+strength tie broken "
             "only by creation_seq; identical winner/ranked across 6 seeds")
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9). THIS probe is the one that caught
+    # BUG-0b1, and it caught it only because the 1-ULP leak happened to flip a categorical
+    # winner — round(x, 9) could never have seen the ULP itself. Serialising the strength
+    # exactly is what makes the next such leak visible before it flips anything.
     driver = textwrap.dedent('''
+        import struct
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
@@ -605,7 +612,8 @@ def test_T6b_determinism_multi_basin_ties_6_seeds():
         r = think(s, "alfa bravo charlie delta echo foxtrot")
         winner = tuple(sorted(s.get_node(m).content for m in r.thought.members)) if r.thought else None
         ranked = tuple(
-            (tuple(sorted(s.get_node(m).content for m in c.members)), round(c.strength,9), c.size())
+            (tuple(sorted(s.get_node(m).content for m in c.members)),
+             struct.pack("<d", c.strength).hex(), c.size())
             for c in r.workspace.ranked
         )
         print(repr((winner, ranked)))

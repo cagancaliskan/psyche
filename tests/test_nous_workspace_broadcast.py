@@ -529,7 +529,10 @@ def _det_probe(driver):
 def test_determinism_store_state_after_n_broadcast_cycles_across_6_seeds():
     section("§6.4 cross-process determinism: the WHOLE store state after N broadcast cycles "
             "is byte-identical across 6 hash seeds (fresh interpreters); ties everywhere")
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     driver = textwrap.dedent('''
+        import struct
+        def _b(x): return struct.pack("<d", x).hex()
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
@@ -548,7 +551,7 @@ def test_determinism_store_state_after_n_broadcast_cycles_across_6_seeds():
             bc = tuple(sorted(
                 (s.get_node(s.get_road(rid).source_id).content,
                  s.get_node(s.get_road(rid).target_id).content,
-                 round(s.get_road(rid, apply_decay=False).strength, 9))
+                 _b(s.get_road(rid, apply_decay=False).strength))
                 for rid in r.broadcast_.road_ids
             ))
             traces.append(bc)
@@ -557,7 +560,7 @@ def test_determinism_store_state_after_n_broadcast_cycles_across_6_seeds():
         for rid in s.all_road_ids():
             rd = s.get_road(rid, apply_decay=False)
             rows.append((s.get_node(rd.source_id).content, s.get_node(rd.target_id).content,
-                         rd.creation_seq, round(rd.strength, 9), rd.traversal_count, rd.closed))
+                         rd.creation_seq, _b(rd.strength), rd.traversal_count, rd.closed))
         rows.sort()
         print(repr((tuple(traces), tuple(rows))))
     ''')

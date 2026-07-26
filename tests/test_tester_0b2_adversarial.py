@@ -9,55 +9,73 @@ zero coverage and every property below is verified here for the first time.
 
 Mechanism only. Nothing here grades a cognitive claim; see the validator's lane for that.
 
-WHAT IS VERIFIED, and the verdict each property returned
---------------------------------------------------------
-  N-1  neutral byte-identity .................... HOLDS  (two independent oracles)
+RE-ADJUDICATED 2026-07-26 AFTER BRICK 0c. READ THIS BEFORE READING THE TESTS.
+-----------------------------------------------------------------------------
+The 0b2 pass returned FAIL with three defects, and recorded each as an ASSERTED-NEGATIVE:
+a test that PASSES while the defect is present and goes RED the moment it is fixed. 0c
+fixed all three. So ten tests in this file went red on a CORRECT fix, and the acceptance
+signal for 0c was inverted — red here was the pass condition, not a regression.
+
+Every one of the ten has been converted from "the defect is present" into the positive
+property it certifies. Nothing was deleted without a replacement, and each replacement
+carries a docstring naming the negative it retires, so the history is not lost:
+
+  test_N2_O6_convergent_accumulation_is_order_INDEPENDENT ......... was DEFECT-A (perm)
+  test_N2_O6_order_independence_holds_with_the_overlay_ON_as_well . was DEFECT-A (scoping)
+  test_N2_O4_the_DEFECT_A_reproduction_is_ONE_bit_pattern_... ..... was DEFECT-A (processes)
+  test_N5_O10_lone_out_road_factor_is_exactly_one_ON_A_MOVING_CLOCK was DEFECT-B
+  test_N5_O9_the_expansion_loop_reads_each_road_exactly_once ....... was DEFECT-B (scoping)
+  test_N7_O11_non_finite_sigma_is_refused_at_the_boundary .......... was DEFECT-C (inf/nan)
+  test_N7_O11_non_positive_sigma_is_refused_rather_than_silently_... was DEFECT-C (sigma<=0)
+  test_N1_byte_identity_vs_git_pre_change_engine ................... bounded to in-degree<=2
+  test_N1_byte_identity_vs_independent_reference ................... oracle RE-BASED
+  test_N1_byte_identity_loop_closed_on_a_system_built_substrate .... oracle RE-BASED
+
+The two DEFECT-C negatives had begun to RAISE rather than fail, which aborted the run and
+hid the 13 tests after them. They were converted first, for that reason.
+
+THE ORACLE TRAP (SPEC-0c O-8), which is the intellectually load-bearing part of the
+re-adjudication. N-1's two oracles both modelled the OLD naive accumulator, so after the
+fix they agreed with a broken engine and disagreed with a correct one. A stale oracle is
+not an oracle; it is a second copy of the bug. Both are dealt with, differently:
+
+  Oracle 1 (the git-recovered pre-0b2 engine) is BOUNDED, not re-based — it cannot be
+  re-based, it is a historical artifact. It is now pointed only at graphs with in-degree
+  <= 2, the region where the pre-change engine had a single well-defined answer at all
+  (SPEC-0c §2.3's correction). The bound is asserted against the fixtures, and so is the
+  fact that the fixtures actually REACH in-degree 2 rather than avoiding the boundary.
+
+  Oracle 2 (the independent reference) is RE-BASED onto the intended post-0c semantics —
+  ordered iteration AND math.fsum accumulation — derived clause by clause from SPEC-0c's
+  prose, with each clause cited, and deliberately NOT transcribed from src/. A reference
+  copied from the module under test is a mirror, not an oracle, and would make N-1
+  vacuous. test_N1_the_rebase_is_real_and_the_oracle_is_not_a_mirror asserts both halves:
+  that the re-base actually changed the oracle, and that it changed it in exactly the way
+  SPEC-0c §8(i) predicts.
+
+WHAT IS VERIFIED, and the verdict each property now returns
+------------------------------------------------------------
+  N-1  neutral byte-identity .................... HOLDS  (re-based + bounded oracles)
        Scope, stated with the claim: byte-identity is established under a FROZEN clock
        (Clock(simulated=True)). On a clock that advances, any two runs differ through
        0a's lazy decay alone — a property of the store, not of this overlay — so
        bit-exact comparison is only meaningful with the clock held still.
-  N-2  determinism, hash seeds x interpreters ... FAILS  — DEFECT-A (inherited from 0b)
-       Swept: PYTHONHASHSEED in {0,1,2,3,7,42} x every CPython found (3.10-3.14 here),
-       in fresh processes. HOLDS bit-exactly on graphs with in-degree <= 2; FAILS from
-       in-degree 3 up. A determinism claim is scoped to the environments it was checked
-       in, and to the topologies it was checked on.
+  N-2  determinism, hash seeds x interpreters ... HOLDS  (was DEFECT-A)
+       And the GUARANTEE changed shape, which matters more than the verdict: it is no
+       longer a sampled axis. Seed-pinning never controlled the order (uuid4 values differ
+       per process, so DEFECT-A varied at a FIXED seed); after 0c there is no order left
+       for any axis to perturb. See SPEC-0c §5.2.
   N-3  purity ................................... HOLDS
   N-4  order-independence of S_out .............. HOLDS  (math.fsum, proven sensitive)
-  N-5  limiting case: lone out-road ............. FAILS  — DEFECT-B (introduced by 0b2)
+  N-5  limiting case: lone out-road ............. HOLDS  (was DEFECT-B)
   N-6  monotonicity ............................. HOLDS
-  N-7  sigma -> infinity convergence ............ HOLDS for finite sigma; DEFECT-C at inf
+  N-7  sigma validation and convergence ......... HOLDS  (was DEFECT-C)
   N-8  closed roads compete ..................... HOLDS
   N-9  no silent silencing ...................... HOLDS
 
-THE THREE DEFECTS, asserted here as explicit asserted-negatives rather than hidden
-(CLAUDE.md, "Definition of done"). Each of these tests PASSES while the defect is present
-and FAILS the moment it is fixed, which is deliberate: a fix must come back through this
-file and re-verify the property it restores.
-
-  DEFECT-A  Convergent accumulation is order-dependent.  `activation[target] =
-            activation.get(target, 0.0) + transmitted` (nous_activation.py:287) is a plain
-            sequential float add, performed in an order that comes from
-            `roads_from` -> `iter(tuple(self._out[node_id]))` (nous_store.py:444), i.e.
-            iteration over a SET of uuid4 hex strings. Float addition is not associative,
-            so a node reached by >=3 convergent contributions accumulates a
-            run-dependent sum. Same bug class as BUG-0b1, one layer upstream of the
-            coalition-strength site that BUG-0b1 fixed with math.fsum.
-            NOT caused by the overlay: it reproduces identically at sigma=None.
-
-  DEFECT-B  A source with exactly ONE out-road is attenuated. The overlay reads each road
-            TWICE per expansion (once for `out_total`, once in the transmission loop) and
-            `get_road` applies lazy decay as of `clock.now()` at each call. On any clock
-            that advances -- which is the library default, `Clock(simulated=False)` -- the
-            two reads return different strengths, so
-            `competing = out_total - road.strength` is a positive elapsed-time residue
-            instead of exactly 0.0. SPEC-0b2 §2 (property table row 3) and N-5 both state
-            this factor is EXACTLY 1.0 at every sigma. It is not.
-            Invisible to every existing test because they all use a frozen simulated clock.
-
-  DEFECT-C  `normalization_sigma` is unvalidated. sigma=inf -- the exact value SPEC-0b2 §2
-            describes as "analytically recovers the current engine" -- yields inf/inf =
-            NaN, and NaN passes the `transmitted < floor` guard (every comparison with NaN
-            is False), so NaN propagates into the result instead of raising.
+The SPEC-0c invariants O-1 .. O-17 are adjudicated in tests/test_tester_0c_adversarial.py.
+This file carries O-4 (in-suite leg), O-6, O-8, O-9, O-10, O-11, O-12 and O-17, because
+those are the ones that land on the retired negatives.
 
 Run directly:
     PYTHONPATH=<repo>/src python3 tests/test_tester_0b2_adversarial.py
@@ -239,17 +257,29 @@ def worn(store, a, b, n=1, charge=None):
 # ORACLE 1 — the actual pre-change engine, recovered from git.
 # ─────────────────────────────────────────────────────────────────────────────
 
+_PRE_CACHE = []           # memoised: git is slow and four tests want the same module
+
+
 def load_pre_change_engine():
     """Recover the last version of nous_activation.py that predates the overlay.
 
     Resolved by CONTENT, not by a pinned hash: walk the file's history newest-first and
     take the first revision that does not mention normalization_sigma. That survives a
     rebase, which a hardcoded sha would not. Returns None if git is unavailable.
+
+    SPEC-0c §6.1 (tester-owned nit): the temporary module is written to a TEMP DIRECTORY,
+    never into tests/. The previous version wrote `tests/__pre0b2_oracle.py` and removed it
+    in a `finally`, so an interrupted run left a stray module in the test package — which it
+    did once, during the 0b2 pass. A temp dir is cleaned by the OS even if the process dies.
     """
+    if _PRE_CACHE:
+        return _PRE_CACHE[0]
+    result = None
     try:
         log = subprocess.run(["git", "log", "--format=%H", "--", "src/nous_activation.py"],
                              cwd=ROOT, capture_output=True, text=True, timeout=30)
         if log.returncode != 0:
+            _PRE_CACHE.append(None)
             return None
         for sha in log.stdout.split():
             blob = subprocess.run(["git", "show", f"{sha}:src/nous_activation.py"],
@@ -259,7 +289,9 @@ def load_pre_change_engine():
             if "normalization_sigma" in blob.stdout:
                 continue
             import importlib.util
-            path = os.path.join(HERE, "__pre0b2_oracle.py")
+            import tempfile
+            tmpdir = tempfile.mkdtemp(prefix="nous_pre0b2_")
+            path = os.path.join(tmpdir, "__pre0b2_oracle.py")
             with open(path, "w", encoding="utf-8") as fh:
                 fh.write(blob.stdout)
             try:
@@ -268,27 +300,221 @@ def load_pre_change_engine():
                 sys.modules["__pre0b2_oracle"] = mod   # dataclass needs it registered
                 spec.loader.exec_module(mod)
                 mod.__nous_sha__ = sha
-                mod.__nous_source__ = blob.stdout      # the temp file is removed below
-                return mod
+                mod.__nous_source__ = blob.stdout      # the temp tree is removed below
+                result = mod
+                break
             finally:
-                try:
-                    os.remove(path)
-                except OSError:
-                    pass
-        return None
+                shutil.rmtree(tmpdir, ignore_errors=True)
     except (OSError, subprocess.SubprocessError):
-        return None
+        result = None
+    _PRE_CACHE.append(result)
+    return result
 
 
 # ─────────────────────────────────────────────────────────────────────────────
-# ORACLE 2 — an independent implementation of the documented pre-change algorithm,
-# written from nous_activation.py's DESIGN DECISIONS docstring rather than copied from
-# its body. Always available, so N-1 keeps an oracle even without git.
+# THE BOUNDARY ON ORACLE 1 — and SPEC-0c §2.3 STATES IT ONE OFF. Recorded here
+# because a boundary that is wrong by one is worse than no boundary: it invites the
+# next reader to conclude the fix broke neutrality when it did not.
+#
+# The git-recovered engine accumulates convergent contributions with a naive running
+# float add, so it has a single well-defined answer only where no node accumulates three
+# or more terms (a + b == b + a is exact; a + b + c is not). SPEC-0c §2.3 and O-8 render
+# that region as "IN-DEGREE <= 2". That is not the same set.
+#
+#   THE SEED'S OWN ENERGY IS A CONTRIBUTION. `activation` starts as {seed: energy}, so a
+#   seed node that is also reached by two in-roads — an ordinary cycle back to the seed —
+#   accumulates energy + 2 flows = THREE terms while its in-degree is 2. Its value is
+#   therefore order-dependent in the pre-change engine, inside the region the spec calls
+#   safe.
+#
+# Measured, not argued: on `low_in_degree_graph(0)`, max in-degree 2, seeding at n1 with
+# energy=1e6, the pre-change engine gives 1086319.0400302166 and the post-0c engine gives
+# 1086319.0400302163 — a mismatch at a node whose in-degree is 2 and which is the seed.
+#
+# The correct boundary is stated on CONTRIBUTIONS, not on in-degree:
+#     no node may accumulate >= 3 contributions, where the seed's energy counts as one.
+# Enforced structurally below by requiring in-degree <= 2 everywhere AND in-degree <= 1 at
+# the seed, and then ASSERTED from the engine's own recorded flows rather than trusted.
+# ─────────────────────────────────────────────────────────────────────────────
+
+def low_in_degree_graph(seed):
+    """An adversarial graph in which NO node has in-degree >= 3.
+
+    Hostility is preserved everywhere it does not collide with the bound: self-loops,
+    cycles, duplicate pairs (which dedup), closed and traumatic roads, saturated and
+    decayed strengths, isolated nodes. Only the in-degree is capped, and it is capped by
+    REFUSING an edge that would exceed it — asserted below, never assumed.
+    """
+    rng = random.Random(seed)
+    clock = Clock(simulated=True, start=0.0)
+    store = SubstrateStore(clock=clock)
+    n = rng.randint(1, 11)
+    ids = [store.add_node("n%d" % i, rng.choice(list(NodeType))) for i in range(n)]
+    indeg = {i: 0 for i in ids}
+    for _ in range(rng.randint(0, 40)):
+        a, b = rng.choice(ids), rng.choice(ids)
+        existing = store.find_road(a, b)
+        if existing is None and indeg[b] >= 2:
+            continue                       # would push b past the boundary: refuse it
+        k = rng.random()
+        charge = None
+        if k < 0.22:
+            charge = {"dread": -rng.uniform(0.75, 1.0)}       # closes the road
+        elif k < 0.40:
+            charge = {"joy": rng.uniform(0.2, 0.9)}
+        if existing is None:
+            indeg[b] += 1
+        for _ in range(rng.randint(1, 12)):
+            store.traverse(a, b, charge)
+        if rng.random() < 0.35:
+            clock.advance(rng.uniform(0.0, 40.0))             # exercise lazy decay
+    clock.advance(0.0)
+    return store, list(store.all_node_ids())
+
+
+def in_degrees(store):
+    indeg = {n: 0 for n in store.all_node_ids()}
+    for rid in store.all_road_ids():
+        t = store.get_road(rid, apply_decay=False).target_id
+        indeg[t] = indeg.get(t, 0) + 1
+    return indeg
+
+
+def max_in_degree(store):
+    return max(in_degrees(store).values(), default=0)
+
+
+def oracle1_safe_seeds(store):
+    """The seeds for which the PRE-CHANGE engine had a single well-defined answer.
+
+    A node accumulates one term per in-road that fires, plus — if it is the seed — the
+    seed energy. So the region is `in-degree <= 2` everywhere AND `in-degree <= 1` at the
+    seed. Returning the seeds rather than filtering graphs keeps the graphs as hostile as
+    they were: cycles, self-loops and closed roads all survive, only the seeding is bounded.
+    """
+    indeg = in_degrees(store)
+    return [n for n in store.all_node_ids() if indeg.get(n, 0) <= 1]
+
+
+def max_arriving_contributions(store, result, seed_node, energy):
+    """How many terms the largest accumulation in `result` actually took, counted from the
+    engine's OWN recorded flows. This is what the boundary is really about, so it is
+    measured rather than inferred from topology."""
+    n = {}
+    for rid in result.flow:
+        t = store.get_road(rid).target_id
+        n[t] = n.get(t, 0) + 1
+    n[seed_node] = n.get(seed_node, 0) + 1        # the seed energy is a contribution
+    return max(n.values(), default=0)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ORACLE 2 — an independent implementation, RE-BASED for 0c (SPEC-0c O-8).
+#
+# THE TRAP THIS AVOIDS, quoted because it is the whole point of the re-base:
+#
+#   "The reference implementation must mirror the INTENDED semantics — ordered
+#    iteration AND fsum accumulation — not the semantics it was written against. A
+#    reference that still models the old naive accumulator will agree with a BROKEN
+#    engine and disagree with a correct one. At that point it has silently stopped being
+#    an oracle and has become A SECOND COPY OF THE BUG."   — SPEC-0c O-8
+#
+# And the second half of the trap, which is subtler: re-basing it by copying the new
+# src/ would build a MIRROR, not an oracle, and N-1 would become vacuous — it would
+# assert that the engine equals itself. So every line below is derived from SPEC-0c's
+# PROSE description of what the engine should do, clause by clause, with the clause
+# cited. The tester has deliberately not transcribed src/nous_activation.py; the two
+# implementations differ in shape (this one keeps `settled` and `nxt` separate, uses a
+# different loop skeleton and different names) and agree only because they compute the
+# same function.
+#
+#   §2.2  roads_from()/roads_into() yield in ROAD-CREATION ORDER. That is the store's
+#         contract, so the reference simply consumes it; O-1 verifies it independently.
+#   §2.3  the accumulator keeps PER-TARGET CONTRIBUTION LISTS and reduces them with
+#         math.fsum "at each layer boundary, plus once at the end". The reduction is over
+#         the WHOLE list each time, never a running total folded back in, so no boundary's
+#         rounding is baked into a later value.
+#   §3    materialise the expanding node's roads ONCE, so out_total and every
+#         road.strength come from a single clock instant.
+#   §4    reject non-finite / non-positive sigma at the boundary, and reject a non-finite
+#         `transmitted` on its own terms BEFORE the floor comparison.
+#
+# Everything else is nous_activation's own documented design and is untouched by 0c: the
+# hop-layer freeze, the closed-road breakthrough/leak policy, the floor guard, flow
+# recording, and first-arrival settling.
 # ─────────────────────────────────────────────────────────────────────────────
 
 def reference_spread(store, seed_node, *, energy=DEFAULT_SEED_ENERGY,
                      decay_per_hop=DEFAULT_DECAY_PER_HOP, floor=DEFAULT_FLOOR,
-                     hop_budget=DEFAULT_HOP_BUDGET):
+                     hop_budget=DEFAULT_HOP_BUDGET, normalization_sigma=None):
+    if normalization_sigma is not None and (
+            not math.isfinite(normalization_sigma) or normalization_sigma <= 0.0):
+        raise ValueError(f"normalization_sigma must be finite and strictly positive, "
+                         f"got {normalization_sigma!r}")            # §4 part 1
+    if not store.exists(seed_node):
+        raise NotFound(f"seed node {seed_node}")
+    arriving = {seed_node: [energy]}                                # §2.3 contribution lists
+    settled = {seed_node: 0}
+    broke = []
+    flow = {}
+    layer = [seed_node]
+    for hop in range(hop_budget + 1):
+        if not layer:
+            break
+        nxt = {}
+        # §2.3 — reduce the WHOLE list at the layer boundary, exactly rounded
+        frozen = {n: math.fsum(arriving[n]) for n in layer}
+        for node in layer:
+            node_act = frozen[node]
+            if hop >= hop_budget:
+                continue                                     # settle, do not expand
+            # §3 — one materialisation, therefore one clock instant for the expansion
+            seen_roads = [(rid, store.get_road(rid)) for rid in store.roads_from(node)]
+            out_total = 0.0
+            if normalization_sigma is not None:
+                out_total = math.fsum(rd.strength for _, rd in seen_roads)
+            for rid, road in seen_roads:
+                outgoing = node_act
+                if road.closed:
+                    # the closed-road policy, re-stated from its documented rule
+                    if outgoing <= CLOSED_BREAKTHROUGH_THRESHOLD:
+                        continue
+                    outgoing = outgoing * CLOSED_LEAK_FRACTION
+                    broke.append(rid)
+                transmitted = outgoing * road.strength * decay_per_hop
+                if normalization_sigma is not None:
+                    competing = out_total - road.strength
+                    if competing > 0.0:
+                        transmitted *= (normalization_sigma
+                                        / (normalization_sigma + competing))
+                if not math.isfinite(transmitted):                  # §4 part 2
+                    raise ValueError(
+                        f"non-finite transmitted activation ({transmitted!r}) on road {rid}")
+                if transmitted < floor:
+                    continue
+                tgt = road.target_id
+                arriving.setdefault(tgt, []).append(transmitted)
+                flow[rid] = flow.get(rid, 0.0) + transmitted
+                if tgt not in settled:
+                    settled[tgt] = hop + 1
+                    nxt[tgt] = None
+        layer = list(nxt.keys())
+    # §2.3 — and once at the end, again over the whole list
+    return ActivationResult(seed=seed_node,
+                            activation={n: math.fsum(v) for n, v in arriving.items()},
+                            hops=settled, broke_through=broke, flow=flow)
+
+
+def stale_reference_spread(store, seed_node, *, energy=DEFAULT_SEED_ENERGY,
+                           decay_per_hop=DEFAULT_DECAY_PER_HOP, floor=DEFAULT_FLOOR,
+                           hop_budget=DEFAULT_HOP_BUDGET):
+    """The PRE-0c reference, kept verbatim so the re-base can be shown to be a real change.
+
+    If `reference_spread` above were still modelling the naive accumulator, it would agree
+    with this one everywhere and N-1 would be a second copy of the bug rather than an
+    oracle. test_N1_the_rebase_is_real asserts the two DISAGREE, on the region where they
+    are supposed to disagree and nowhere else.
+    """
     if not store.exists(seed_node):
         raise NotFound(f"seed node {seed_node}")
     activation = {seed_node: energy}
@@ -300,16 +526,15 @@ def reference_spread(store, seed_node, *, energy=DEFAULT_SEED_ENERGY,
         if not layer:
             break
         nxt = {}
-        frozen = {n: activation[n] for n in layer}          # freeze before expanding
+        frozen = {n: activation[n] for n in layer}
         for node in layer:
             node_act = frozen[node]
             if hop >= hop_budget:
-                continue                                     # settle, do not expand
+                continue
             for rid in store.roads_from(node):
                 road = store.get_road(rid)
                 outgoing = node_act
                 if road.closed:
-                    # the closed-road policy, re-stated from its documented rule
                     if outgoing <= CLOSED_BREAKTHROUGH_THRESHOLD:
                         continue
                     outgoing = outgoing * CLOSED_LEAK_FRACTION
@@ -318,7 +543,7 @@ def reference_spread(store, seed_node, *, energy=DEFAULT_SEED_ENERGY,
                 if transmitted < floor:
                     continue
                 tgt = road.target_id
-                activation[tgt] = activation.get(tgt, 0.0) + transmitted
+                activation[tgt] = activation.get(tgt, 0.0) + transmitted   # NAIVE
                 flow[rid] = flow.get(rid, 0.0) + transmitted
                 if tgt not in settled:
                     settled[tgt] = hop + 1
@@ -384,41 +609,82 @@ PARAM_SWEEP = [
 # ═════════════════════════════════════════════════════════════════════════════
 
 def test_N1_byte_identity_vs_git_pre_change_engine():
-    section("N-1 neutral byte-identity vs the ACTUAL pre-change engine (recovered from git)")
-    pre = load_pre_change_engine()
-    if pre is None:
-        note("git unavailable — oracle 1 skipped; oracle 2 (independent reference) still runs")
-        check(True, "oracle 1 unavailable, recorded rather than silently passed")
-        return
+    """Oracle 1, BOUNDED at in-degree <= 2 (SPEC-0c §2.3 correction / §6.1).
+
+    The git-recovered engine is still a real, unfakeable external yardstick — but only on
+    the region where it had a single well-defined answer. Above in-degree 2 it accumulates
+    naively in an order the pre-0c store did not fix, so it never had a stable value there
+    for 0c to reproduce. The bound is ASSERTED against the generated graphs, not trusted:
+    if the generator ever drifts past it, this test says so instead of quietly comparing
+    against a number that means nothing.
+
+    O-17: the same number of checks is emitted whether or not .git is present.
+    """
+    section("N-1/O-8 byte-identity vs the ACTUAL pre-change engine, inside its real boundary")
     check("normalization_sigma" not in open(
         os.path.join(SRC, "nous_activation.py"), encoding="utf-8").read().split(
         "def spread_activation")[0],
         "the overlay parameter is not introduced above spread_activation (sanity)")
-
+    # The bound is a property of the fixtures and is checked with or without git, so the
+    # check count does not depend on the environment (O-17).
+    degrees = [max_in_degree(low_in_degree_graph(gs)[0]) for gs in range(120)]
+    check(max(degrees) <= 2,
+          f"every oracle-1 fixture stays at in-degree <= 2: max observed = {max(degrees)}")
+    check(sum(1 for d in degrees if d == 2) >= 40,
+          f"and the boundary is APPROACHED, not avoided: {sum(1 for d in degrees if d == 2)} "
+          f"of {len(degrees)} fixtures reach in-degree exactly 2, where a+b==b+a is the "
+          f"only reason the oracle is well-defined at all")
+    pre = load_pre_change_engine()
+    if pre is None:
+        note("git unavailable — oracle 1 degrades to an observation; the checks below are "
+             "still emitted, so the suite total does not move (O-17)")
+        check(True, "oracle 1 (git pre-change engine): UNAVAILABLE, recorded (git absent)")
+        check(True, "oracle 1 contribution bound: UNAVAILABLE, recorded (git absent)")
+        return
     compared = 0
     mismatches = []
+    worst_terms = 0
     for gs in range(120):
-        store, ids = adversarial_graph(gs)
-        for seed_node in ids:
+        store, ids = low_in_degree_graph(gs)
+        for seed_node in oracle1_safe_seeds(store):
             for params in PARAM_SWEEP:
-                got = signature(spread_activation(
-                    store, seed_node, normalization_sigma=None, **params))
+                res = spread_activation(store, seed_node, normalization_sigma=None, **params)
+                worst_terms = max(worst_terms, max_arriving_contributions(
+                    store, res, seed_node, params.get("energy", DEFAULT_SEED_ENERGY)))
+                got = signature(res)
                 want = signature(pre.spread_activation(store, seed_node, **params))
                 compared += 1
                 if got != want and len(mismatches) < 3:
                     mismatches.append((gs, store.get_node(seed_node).content, params))
+    # THE BOUNDARY, ASSERTED FROM THE ENGINE'S OWN FLOWS rather than from topology. If a
+    # future generator change ever let a 3-term accumulation into this battery, this fires
+    # instead of the comparison below silently becoming meaningless.
+    check(worst_terms <= 2,
+          f"no compared spread accumulated 3 or more contributions at any node "
+          f"(max observed = {worst_terms}) — this, not 'in-degree <= 2', is the region the "
+          f"pre-change engine was deterministic on; the seed's own energy counts as a term")
     check(not mismatches,
-          f"N-1: {compared} adversarial comparisons vs git {getattr(pre, '__nous_sha__', '?')[:7]} "
-          f"byte-identical (mismatches: {mismatches})")
-    print(f"  ({compared} comparisons against the real pre-change engine, 0 mismatches)")
+          f"oracle 1: {compared} in-boundary comparisons vs git "
+          f"{getattr(pre, '__nous_sha__', '?')[:7]} byte-identical "
+          f"(mismatches: {mismatches})")
+    print(f"  ({compared} comparisons against the real pre-change engine "
+          f"inside its boundary, {len(mismatches)} mismatches)")
 
 
 def test_N1_byte_identity_vs_independent_reference():
-    section("N-1 neutral byte-identity vs an INDEPENDENT reimplementation of the algorithm")
+    """Oracle 2, RE-BASED (SPEC-0c O-8). The gating property of the whole overlay.
+
+    Unbounded, unlike oracle 1: a reference that models the intended semantics is well
+    defined at every in-degree, which is exactly why the re-base is what restores N-1's
+    reach rather than merely repairing it.
+    """
+    section("N-1/O-8 byte-identity vs the RE-BASED independent reference (unbounded)")
     compared = 0
     mismatches = []
+    max_deg = 0
     for gs in range(120):
         store, ids = adversarial_graph(1000 + gs)
+        max_deg = max(max_deg, max_in_degree(store))
         for seed_node in ids:
             for params in PARAM_SWEEP:
                 got = signature(spread_activation(
@@ -427,10 +693,111 @@ def test_N1_byte_identity_vs_independent_reference():
                 compared += 1
                 if got != want and len(mismatches) < 3:
                     mismatches.append((gs, params))
+    check(max_deg >= 3,
+          f"the battery genuinely exercises the region oracle 1 cannot reach: max "
+          f"in-degree = {max_deg} (need >= 3, or this test proves nothing oracle 1 did not)")
     check(not mismatches,
-          f"N-1: {compared} adversarial comparisons vs the independent reference "
+          f"oracle 2: {compared} adversarial comparisons vs the re-based reference "
           f"byte-identical (mismatches: {mismatches})")
-    print(f"  ({compared} comparisons against an independent implementation, 0 mismatches)")
+    print(f"  ({compared} comparisons against an independent implementation, "
+          f"{len(mismatches)} mismatches)")
+
+
+def test_N1_the_rebase_is_real_and_the_oracle_is_not_a_mirror():
+    """The re-base's own falsifier, and the reason O-8's trap cannot be walked into quietly.
+
+    Two ways the re-base could be worthless, and both are asserted against:
+
+      (a) IT NEVER HAPPENED. If `reference_spread` still modelled the naive accumulator it
+          would agree with `stale_reference_spread` everywhere, and N-1 would be asserting
+          that the engine reproduces a bug. So the two references must DISAGREE — and
+          disagree with the precise signature SPEC-0c §8(i) gives: only where a node takes
+          three or more contributions, never in flow/hops/broke_through except as a
+          downstream consequence, and with the new value equal to fsum over that node's own
+          arriving contributions.
+
+      (b) IT IS A MIRROR. If the reference were copied from src/ it would agree with the
+          engine trivially and N-1 would be vacuous. That cannot be asserted by running
+          code — a mirror passes every runtime test by construction — so it is asserted
+          structurally: the reference must not be textually derived from the module under
+          test. The check below is weak evidence on its own and is honest about that; the
+          real control is that the reference is derived from the SPEC and reviewed as such.
+    """
+    section("N-1/O-8 the re-base is REAL: the oracle changed, and it is not a copy of src/")
+    moved = 0
+    only_at_3plus = True
+    fsum_matches = 0
+    fsum_total = 0
+    for gs in range(60):
+        store, ids = adversarial_graph(1000 + gs)
+        for seed_node in ids:
+            for params in PARAM_SWEEP:
+                new = reference_spread(store, seed_node, **params)
+                old = stale_reference_spread(store, seed_node, **params)
+                ncontrib = {}
+                for rid in new.flow:
+                    t = store.get_road(rid).target_id
+                    ncontrib[t] = ncontrib.get(t, 0) + 1
+                ncontrib[seed_node] = ncontrib.get(seed_node, 0) + 1
+                for k, v in new.activation.items():
+                    if bits(v) != bits(old.activation.get(k, float("nan"))):
+                        moved += 1
+                        fsum_total += 1
+                        terms = [new.flow[rid] for rid in new.flow
+                                 if store.get_road(rid).target_id == k]
+                        if k == seed_node:
+                            terms = [params.get("energy", DEFAULT_SEED_ENERGY)] + terms
+                        if bits(math.fsum(terms)) == bits(v):
+                            fsum_matches += 1
+                        # a node with < 3 arriving contributions may still move, but ONLY
+                        # because something upstream of it did (SPEC-0c §8(ii)'s carve-out)
+                        if ncontrib.get(k, 0) < 3:
+                            upstream_moved = any(
+                                store.get_road(rid).target_id == k
+                                and bits(new.flow[rid]) != bits(old.flow.get(rid, float("nan")))
+                                for rid in new.flow)
+                            if not upstream_moved:
+                                only_at_3plus = False
+    check(moved > 0,
+          f"(a) the re-based reference DISAGREES with the pre-0c one ({moved} moved "
+          f"activation values) — the re-base is a real change, not a relabelling. If this "
+          f"were 0 the oracle would still be a second copy of the bug.")
+    check(only_at_3plus,
+          "(a) and it disagrees ONLY where SPEC-0c §8(i) says it should: at a node taking "
+          "three or more contributions, or downstream of one that did — never spontaneously")
+    check(fsum_total and fsum_matches == fsum_total,
+          f"(a) every moved value equals math.fsum over that node's OWN arriving "
+          f"contributions ({fsum_matches}/{fsum_total}) — the new oracle computes the "
+          f"exactly rounded sum of the multiset, which is what §2.3 specifies")
+    # (b) NOT A MIRROR BY DELEGATION. This half IS mechanically decidable and is asserted
+    #     absolutely: an oracle that calls the module under test proves nothing, and that
+    #     is a property of the text, not a threshold.
+    engine_src = open(os.path.join(SRC, "nous_activation.py"), encoding="utf-8").read()
+    this_src = open(os.path.abspath(__file__), encoding="utf-8").read()
+    body = this_src.split("def reference_spread", 1)[1].split("\ndef ", 1)[0]
+    engine_body = engine_src.split("def spread_activation", 1)[1]
+    check("spread_activation(" not in body and "nous_activation" not in body,
+          "(b) the reference never calls spread_activation and never reaches into "
+          "nous_activation — it cannot be a mirror by delegation. It consumes only the "
+          "store's public surface and the module's exported CONSTANTS.")
+
+    # And the residual honesty. A TRANSCRIBED reference cannot be caught at runtime at
+    # all: agreement is the goal, so a copy passes every runtime test by construction. A
+    # text-overlap metric is not a control either — it is reported as an OBSERVATION, with
+    # the overlapping text shown, so a reviewer can judge it instead of trusting a
+    # threshold this test would otherwise have been free to tune until it passed.
+    def shingles(text, k=8):
+        toks = text.split()
+        return {tuple(toks[i:i + k]) for i in range(max(0, len(toks) - k + 1))}
+
+    overlap = sorted(shingles(body) & shingles(engine_body))
+    note(f"reference/engine shared 8-token runs: {len(overlap)}. Inspected: every one is "
+         f"an equation SPEC-0b2/0c states verbatim (`transmitted = outgoing * "
+         f"road.strength * decay_per_hop`, `competing = out_total - road.strength`, the "
+         f"sigma validation predicate). Any correct implementation must contain these, so "
+         f"the overlap is evidence of a shared SPECIFICATION, not of transcription. "
+         f"Provenance and review are the real control here, and this is said plainly "
+         f"rather than dressed up as a passing assertion.")
 
 
 def test_N1_default_argument_is_the_neutral_value():
@@ -447,12 +814,23 @@ def test_N1_default_argument_is_the_neutral_value():
 
 
 def test_N1_byte_identity_loop_closed_on_a_system_built_substrate():
-    section("N-1 LOOP-CLOSED: identity on a substrate the system's own pipeline built")
-    # The graph is not hand-drawn: it is what traverse() — the biological primitive the
-    # layer below exposes — produces from a stream of associations, then perceive()
-    # chooses the seeds by matching the utterance against node content. Nothing about
-    # which nodes seed the spread is chosen by this test.
+    """LOOP-CLOSED, and re-based (SPEC-0c §6.1 row 4).
+
+    Nothing here is hand-placed. The graph is what traverse() — the substrate's own
+    biological primitive — produces from a stream of associations; perceive() chooses which
+    nodes seed the spread by matching the utterance against node CONTENT; cluster_sources()
+    decides which of those actually reach the field; and build_activation_field() supplies
+    the per-source energies. The test picks the utterance and nothing else.
+
+    The git oracle is deliberately NOT used here. This graph has in-degree well above 2, so
+    it is outside the region where the pre-change engine had a single answer (§2.3). Using
+    it would be pointing a stale oracle above its boundary, which is the exact mistake §8
+    was rewritten to prevent — and it is asserted, not assumed, that the graph is outside
+    the boundary.
+    """
+    section("N-1/O-8 LOOP-CLOSED: identity on a substrate the system's own pipeline built")
     from nous_perceive import perceive
+    from nous_source_clustering import cluster_sources
     store = frozen_store()
     words = ["coffee", "warmth", "morning routine", "cozy feeling", "kitchen",
              "work", "desk", "deadline pressure", "writing code", "commute"]
@@ -461,18 +839,39 @@ def test_N1_byte_identity_loop_closed_on_a_system_built_substrate():
     for _ in range(60):
         a, b = rng.choice(ids), rng.choice(ids)
         worn(store, a, b, n=rng.randint(1, 9))
-    pre = load_pre_change_engine()
-    seeds = sorted(perceive(store, "coffee in the kitchen before work").sources)
-    check(len(seeds) > 0, "perception produced seeds from the utterance (loop is closed)")
-    mismatches = 0
-    for seed_node in seeds:
-        got = signature(spread_activation(store, seed_node, normalization_sigma=None))
-        if got != signature(reference_spread(store, seed_node)):
-            mismatches += 1
-        if pre is not None and got != signature(pre.spread_activation(store, seed_node)):
-            mismatches += 1
-    check(mismatches == 0,
-          f"neutral output byte-identical on perception-selected seeds ({mismatches} mismatches)")
+    perception = perceive(store, "coffee in the kitchen before work")
+    check(len(perception.sources) > 0,
+          "perception produced seeds from the utterance (the loop is closed at stage 1)")
+    check(max_in_degree(store) >= 3,
+          f"the system-built graph is OUTSIDE oracle 1's boundary (max in-degree "
+          f"{max_in_degree(store)} >= 3), so the git oracle is correctly not used here")
+    # stage 2: the clusterer decides which sources reach the field, and with what energy
+    clustering = cluster_sources(store, perception.sources)
+    seeds = list(clustering.group_seeds.items())
+    check(len(seeds) > 0, "clustering produced group seeds (the loop is closed at stage 2)")
+    mismatches = []
+    for seed_node, seed_energy in seeds:
+        # the ENERGY is the system's too, not a default this test chose
+        got = signature(spread_activation(store, seed_node, energy=seed_energy,
+                                          normalization_sigma=None))
+        want = signature(reference_spread(store, seed_node, energy=seed_energy))
+        if got != want:
+            mismatches.append(store.get_node(seed_node).content)
+    check(not mismatches,
+          f"neutral output byte-identical on pipeline-selected seeds at pipeline-selected "
+          f"energies ({len(mismatches)} mismatches: {mismatches})")
+    # and one level further out: the whole multi-source field, driven end to end
+    from nous_field import build_activation_field
+    f1 = build_activation_field(store, list(clustering.group_seeds.keys()),
+                                source_energies=clustering.group_seeds)
+    ref_total = {}
+    for src in f1.sources:
+        r = reference_spread(store, src, energy=clustering.group_seeds[src])
+        for n, a in r.activation.items():
+            ref_total[n] = ref_total.get(n, 0.0) + a
+    check({k: bits(v) for k, v in f1.total.items()} == {k: bits(v) for k, v in ref_total.items()},
+          "and the merged multi-source field reproduces bit-for-bit when every per-source "
+          "spread is replaced by the reference — the loop closes through 1a as well as 0b")
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -587,43 +986,90 @@ def _three_way_convergence_store(counts=CONVERGENCE_COUNTS[None]):
     return store, S, T
 
 
-def test_N2_DEFECT_A_convergent_accumulation_is_order_dependent():
-    section("N-2 DEFECT-A: convergent accumulation depends on out-road iteration order")
+def test_N2_O6_convergent_accumulation_is_order_INDEPENDENT():
+    """WAS an asserted-negative (`..._DEFECT_A_convergent_accumulation_is_order_dependent`).
+
+    This is the negative D-013 ground 1 called decisive: under ordering ALONE it would
+    keep passing, truthfully, because the engine would still be order-dependent and merely
+    pinned. Its going red is the evidence that 0c fixed the CAUSE and not the symptom. The
+    replacement is O-6, and it is strictly stronger than the negative it retires.
+
+    Non-vacuity is asserted, not assumed: the SAME three contributions summed by an
+    explicit naive left-fold must genuinely disagree across the same six orders. Without
+    that, O-6 would pass against a broken engine on an insensitive input.
+    """
+    section("O-6 order-perturbation invariance: permuting roads_from leaves the bits alone")
     store, S, T = _three_way_convergence_store()
     seen = {}
+    contributions = {}
     for perm in itertools.permutations(range(3)):
         def permute(roads, p=perm):
             return [roads[i] for i in p] if len(roads) == 3 else roads
         r = spread_activation(PermutingStore(store, permute), S)   # LIBRARY DEFAULTS
         seen.setdefault(bits(r.activation[T]), []).append(perm)
-    check(len(seen) > 1,
-          "DEFECT-A present: reordering a source's out-roads changes activation[T] "
-          f"(distinct bit patterns over 3! orders = {len(seen)}). "
-          "IF THIS TEST FAILS BECAUSE THE DEFECT WAS FIXED: delete it and re-verify N-2.")
+        # the per-edge contributions arriving at T, in THIS permutation's arrival order
+        contributions[perm] = [r.flow[rid] for rid in r.flow
+                               if store.get_road(rid).target_id == T]
     for b, perms in seen.items():
-        print(f"    {b}  = {struct.unpack('<d', bytes.fromhex(b))[0]!r}   from {len(perms)} of 6 orders")
-    check(isinstance(store._out[S], set),
-          "the exposure is real: roads_from() iterates a SET of uuid4 ids "
-          "(nous_store.py:444), whose order is not fixed across processes")
+        print(f"    {b}  = {struct.unpack('<d', bytes.fromhex(b))[0]!r}   "
+              f"from {len(perms)} of 6 orders")
+    # (a) NON-VACUITY. A naive left-fold over the very same terms must disagree with
+    #     itself, or this fixture cannot tell a fixed engine from a broken one.
+    naive = {bits(naive_sum(c)) for c in contributions.values()}
+    check(len(naive) > 1,
+          f"the fixture is SENSITIVE: a naive left-fold over T's own three arriving "
+          f"contributions gives {len(naive)} distinct bit patterns across the 6 orders "
+          f"({sorted(naive)}), so a merely order-PINNED engine would still fail below")
+    # (b) THE PROPERTY.
+    check(len(seen) == 1,
+          f"activation[T] is ONE bit pattern under all 3! out-road orders "
+          f"(distinct = {len(seen)}) — the accumulation is order-INDEPENDENT, not merely "
+          f"order-pinned")
+    # (c) AND IT IS THE EXACTLY-ROUNDED SUM, derived from the engine's own recorded flows
+    #     rather than from a number this test chose.
+    one = next(iter(contributions.values()))
+    check(bits(math.fsum(one)) == next(iter(seen)),
+          "and it equals math.fsum over T's own recorded per-edge flows, to the bit — "
+          "the value is the exactly rounded sum of the multiset, not of a sequence")
+    check(isinstance(store._out[S], dict) and not isinstance(store._out[S], set),
+          "the store's own index is an insertion-ordered MAPPING, not a set of uuid4 ids "
+          "(SPEC-0c §2.2) — the enabling condition for DEFECT-A is gone at its owner")
 
 
-def test_N2_DEFECT_A_is_inherited_from_0b_not_introduced_by_the_overlay():
-    section("N-2 DEFECT-A scoping: present at sigma=None, so the overlay did not cause it")
+def test_N2_O6_order_independence_holds_with_the_overlay_ON_as_well():
+    """WAS an asserted-negative (`..._DEFECT_A_is_inherited_from_0b_not_introduced_by_the_overlay`).
+
+    "Inherited, not introduced" is moot once the defect is fixed (SPEC-0c §6.1). What is
+    NOT moot is that order-independence must hold on BOTH code paths — the neutral one and
+    the normalized one — since the overlay multiplies an extra order-sensitive factor into
+    `transmitted`. Each fixture below is the count set that exposed the defect at that
+    sigma, so the inputs are the ones that historically broke, not friendlier ones.
+    """
+    section("O-6 order-independence on both paths: sigma=None AND sigma=1.0")
     for sigma, counts in CONVERGENCE_COUNTS.items():
         store, S, T = _three_way_convergence_store(counts)
         seen = set()
+        contributions = None
         for perm in itertools.permutations(range(3)):
             def permute(roads, p=perm):
                 return [roads[i] for i in p] if len(roads) == 3 else roads
             r = spread_activation(PermutingStore(store, permute), S,
                                   normalization_sigma=sigma)
             seen.add(bits(r.activation[T]))
-        check(len(seen) > 1,
-              f"order-dependence reproduces at sigma={sigma!r} on {counts} "
-              f"({len(seen)} distinct results)")
-    note("The defect is present with the overlay OFF, so 0b2 did not introduce it and "
-         "0b2 does not fix it. Which particular graphs expose it differs between the two "
-         "(the normalized values are different floats), but the class is identical.")
+            if contributions is None:
+                contributions = [r.flow[rid] for rid in r.flow
+                                 if store.get_road(rid).target_id == T]
+        check(len({bits(naive_sum(contributions))} | {bits(naive_sum(contributions[::-1]))}) > 1
+              or len(set(map(bits, contributions))) == len(contributions),
+              f"sigma={sigma!r}: the fixture's three contributions are distinct floats, so "
+              f"their order is a real degree of freedom ({len(contributions)} terms)")
+        check(len(seen) == 1,
+              f"sigma={sigma!r} on {counts}: ONE bit pattern across all 6 out-road orders "
+              f"({len(seen)} distinct)")
+    note("Order-independence is asserted on the normalized path too, not just the neutral "
+         "one: the overlay multiplies transmitted by sigma/(sigma+competing), and competing "
+         "is derived from an fsum over the SAME roads whose order is being permuted. A fix "
+         "that only reached the accumulator would fail here.")
 
 
 DEFECT_A_DRIVER = textwrap.dedent('''
@@ -641,20 +1087,35 @@ DEFECT_A_DRIVER = textwrap.dedent('''
 ''')
 
 
-def test_N2_DEFECT_A_reaches_real_processes_at_library_defaults():
-    section("N-2 DEFECT-A reachability: fresh REAL processes disagree, no proxy involved")
+def test_N2_O4_the_DEFECT_A_reproduction_is_ONE_bit_pattern_in_real_processes():
+    """WAS an asserted-negative (`..._DEFECT_A_reaches_real_processes_at_library_defaults`).
+
+    The input is unchanged — SPEC-0c §1 case 1, the five-node traverse()-only graph at
+    library defaults on which 48 fresh processes returned two values. Only the expected
+    outcome is inverted. SPEC-0c §7 calls this the external, unfakeable done-means: bit
+    patterns across fresh processes are either identical or they are not, and no tolerance
+    can be adjusted to make them so.
+
+    The full O-4 matrix (all five interpreters x six hash seeds) lives in
+    tests/test_tester_0c_adversarial.py; this is the in-suite regression leg.
+    """
+    section("O-4 the DEFECT-A reproduction now gives ONE bit pattern in fresh processes")
     outs = run_probe(DEFECT_A_DRIVER, interps=[sys.executable], reps=8)
     distinct = sorted(set(o for o in outs if not o.startswith("ERROR")))
     for d in distinct:
         print(f"    {d}  = {struct.unpack('<d', bytes.fromhex(d))[0]!r}"
               f"   ({outs.count(d)} of {len(outs)} runs)")
-    check(len(distinct) > 1,
-          f"DEFECT-A observed in production conditions: {len(distinct)} distinct results "
-          f"over {len(outs)} fresh processes on a 5-node traverse()-only graph at library "
-          f"defaults. IF THIS FAILS BECAUSE THE DEFECT WAS FIXED: delete it and re-verify N-2.")
-    note("DEFECT-A varies even at a FIXED PYTHONHASHSEED: uuid4 ids differ per process, so "
-         "pinning the hash seed does not pin set-iteration order. Seed-pinning alone cannot "
-         "establish determinism for this substrate.")
+    check(not [o for o in outs if o.startswith("ERROR")],
+          f"every probe process ran ({len([o for o in outs if o.startswith('ERROR')])} errors)")
+    check(len(distinct) == 1,
+          f"O-4: ONE bit pattern over {len(outs)} fresh processes on the 5-node "
+          f"traverse()-only graph at library defaults (distinct = {len(distinct)}: "
+          f"{distinct}). This is the exact input that produced two values before 0c.")
+    note("What changed is the GUARANTEE, not just the number. Before 0c this varied at a "
+         "FIXED PYTHONHASHSEED, because uuid4 ids differ per process and the seed axis "
+         "never controlled the order. After 0c there is no order left for any axis to "
+         "perturb: iteration is creation-ordered and the reduction is exactly rounded "
+         "(SPEC-0c §5.2). The property is structural now, not sampled.")
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -925,8 +1386,20 @@ def test_N5_lone_out_road_factor_is_exactly_one_on_a_frozen_clock():
     check(not bad, f"lone out-road unattenuated at every sigma on a frozen clock ({bad})")
 
 
-def test_N5_DEFECT_B_lone_out_road_IS_attenuated_on_a_moving_clock():
-    section("N-5 DEFECT-B: on a clock that advances, a LONE out-road is attenuated")
+def test_N5_O10_lone_out_road_factor_is_exactly_one_ON_A_MOVING_CLOCK():
+    """WAS an asserted-negative (`..._DEFECT_B_lone_out_road_IS_attenuated_on_a_moving_clock`).
+
+    N-5 restored, and the moving clock IS the point (SPEC-0c O-10). DEFECT-B was invisible
+    to every test in the repository because they all froze the clock; the fixture below
+    deliberately advances time on EVERY read, so a second read of the same road cannot help
+    but return a different strength. That is what makes `competing == 0.0` an assertion
+    about the read pattern rather than about the arithmetic.
+
+    Asserted at every valid sigma, not one: the guarantee SPEC-0b2 §2 row 3 makes is
+    "at any sigma", and a lone road is the one case where the factor must be exactly 1.0
+    however small sigma gets.
+    """
+    section("O-10 a lone out-road transmits with factor EXACTLY 1.0 on a MOVING clock")
     clock = TickClock(1e-6)                 # ~1 microsecond per read: conservative
     store = SubstrateStore(clock=clock)
     A = store.add_node("A", NodeType.CONCEPT)
@@ -937,45 +1410,99 @@ def test_N5_DEFECT_B_lone_out_road_IS_attenuated_on_a_moving_clock():
     r = spread_activation(rec, A, normalization_sigma=1.0)
     rid = next(iter(store.roads_from(A)))
     reads = [s for (rr, s) in rec.reads if rr == rid]
-    check(len(reads) == 2,
-          f"the overlay reads the same road TWICE per expansion (got {len(reads)} reads) "
-          "— once for out_total, once in the transmission loop")
-    if len(reads) == 2:
-        competing = reads[0] - reads[1]
-        expected_unattenuated = DEFAULT_SEED_ENERGY * reads[1] * DEFAULT_DECAY_PER_HOP
-        actual = r.flow[rid]
-        factor = actual / expected_unattenuated
-        print(f"    read #1 (out_total) strength = {reads[0]!r}")
-        print(f"    read #2 (transmit)  strength = {reads[1]!r}")
-        print(f"    competing = {competing!r}   (SPEC-0b2 requires exactly 0.0)")
-        print(f"    applied factor = {factor!r}  (SPEC-0b2 requires exactly 1.0)")
-        check(competing > 0.0,
-              "DEFECT-B present: competing > 0 for a source with EXACTLY ONE out-road, "
-              "because out_total and road.strength are read at different clock instants. "
-              "IF THIS FAILS BECAUSE THE DEFECT WAS FIXED: delete it and re-verify N-5.")
-        check(factor < 1.0,
-              f"DEFECT-B consequence: the lone road is attenuated by {1.0 - factor:.3e} "
-              "relative, violating SPEC-0b2 §2 property table row 3 and N-5")
-    note("DEFECT-B is invisible to every existing test because they all use "
-         "Clock(simulated=True), where dt <= 0 makes lazy decay a no-op. The LIBRARY "
-         "DEFAULT, SubstrateStore() with Clock(simulated=False), is affected.")
+    check(len(reads) == 1,
+          f"the road is read exactly ONCE per expansion (got {len(reads)} reads) — "
+          f"out_total and the transmission loop share one materialised road view, so both "
+          f"come from a single clock instant (SPEC-0c §3)")
+    # The factor is recovered from the engine's OWN recorded flow and its OWN recorded
+    # strength, so the assertion cannot be satisfied by a number this test supplies.
+    strength_used = reads[0]
+    expected_unattenuated = DEFAULT_SEED_ENERGY * strength_used * DEFAULT_DECAY_PER_HOP
+    actual = r.flow[rid]
+    print(f"    the single strength read      = {strength_used!r}")
+    print(f"    unattenuated transmission     = {expected_unattenuated!r}")
+    print(f"    actual transmission           = {actual!r}")
+    check(bits(actual) == bits(expected_unattenuated),
+          f"the lone road is transmitted BIT-IDENTICALLY to the unnormalized value "
+          f"(factor exactly 1.0), on a clock that advanced between reads")
+    # ...and at every sigma on the ladder, each on its own freshly-ticking clock.
+    bad = []
+    for sigma in SIGMAS:
+        c2 = TickClock(1e-6)
+        s2 = SubstrateStore(clock=c2)
+        a2 = s2.add_node("A", NodeType.CONCEPT)
+        b2 = s2.add_node("B", NodeType.CONCEPT)
+        worn(s2, a2, b2, n=3)
+        c2.ticking = True
+        rec2 = RecordingStore(s2)
+        rr = spread_activation(rec2, a2, normalization_sigma=sigma)
+        rid2 = next(iter(s2.roads_from(a2)))
+        strengths = [st for (k, st) in rec2.reads if k == rid2]
+        want = DEFAULT_SEED_ENERGY * strengths[0] * DEFAULT_DECAY_PER_HOP
+        if len(strengths) != 1 or bits(rr.flow[rid2]) != bits(want):
+            bad.append((sigma, len(strengths)))
+    check(not bad,
+          f"factor is exactly 1.0 at every sigma in {SIGMAS} on a moving clock "
+          f"(deviating: {bad})")
+    note("Before 0c this same fixture gave competing = 1.7265900376095544e-09 and a factor "
+         "of 0.99999999827341 — an elapsed-time residue masquerading as conductance. The "
+         "residue is not merely small now, it is structurally absent: there is only one "
+         "read, so there is no second instant for it to come from.")
 
 
-def test_N5_DEFECT_B_scoping_absent_from_the_pre_change_engine():
-    section("N-5 DEFECT-B scoping: the pre-change engine read each road once")
+def test_N5_O9_the_expansion_loop_reads_each_road_exactly_once():
+    """WAS an asserted-negative (`..._DEFECT_B_scoping_absent_from_the_pre_change_engine`).
+
+    It asserted the source contains `store.get_road(` TWICE inside spread_activation, which
+    was DEFECT-B's cause. After SPEC-0c §3 it appears once; SPEC-0c §6.1 says to rewrite the
+    expected count to 1. Done — but a source-text count is weak evidence on its own, so the
+    structural half (a recording proxy, counting real calls on real graphs) is asserted
+    first and the text count is kept only as a corroborating tripwire.
+
+    O-17: this test emits the SAME NUMBER OF CHECKS whether or not git is available. The
+    git leg's outcome is recorded as an observation; its check is emitted either way.
+    """
+    section("O-9 each road is read exactly once per expansion (structural, then textual)")
+    # (a) STRUCTURAL — the property itself, measured on adversarial graphs including
+    #     high-degree fans, cycles, self-loops and closed roads, at both sigma settings.
+    worst = []
+    for gs in range(25):
+        store, ids = adversarial_graph(9100 + gs)
+        for seed_node in ids:
+            for sigma in (None, 1.0):
+                rec = RecordingStore(store)
+                spread_activation(rec, seed_node, normalization_sigma=sigma)
+                # count decayed reads per (expanding source, road); a road belongs to
+                # exactly one source, and a source expands at most once per spread
+                per_road = {}
+                for rid, _ in rec.reads:
+                    per_road[rid] = per_road.get(rid, 0) + 1
+                over = {k: v for k, v in per_road.items() if v > 1}
+                if over:
+                    worst.append((gs, seed_node, sigma, over))
+    check(not worst,
+          f"no road is read more than once in any expansion, across 25 adversarial graphs "
+          f"x every seed x sigma in (None, 1.0) ({len(worst)} violations; {worst[:2]})")
+    # (b) TEXTUAL — the tripwire. SPEC-0c §6.1 fixes the expected count at 1.
     src = open(os.path.join(SRC, "nous_activation.py"), encoding="utf-8").read()
     body = src.split("def spread_activation", 1)[1]
-    check(body.count("store.get_road(") == 2,
-          f"the overlay added a second get_road site inside the expansion "
-          f"(found {body.count('store.get_road(')} sites; the pre-change engine had 1)")
+    check(body.count("store.get_road(") == 1,
+          f"exactly ONE `store.get_road(` call site inside spread_activation "
+          f"(found {body.count('store.get_road(')}) — the duplicated read DEFECT-B rested "
+          f"on is gone from the source, not merely made harmless")
+    # (c) The pre-change comparison, if git is here. The CHECK IS EMITTED EITHER WAY, so
+    #     the suite's assertion total does not depend on whether .git is present (O-17).
     pre = load_pre_change_engine()
     if pre is None:
-        note("git unavailable — pre-change read-count comparison skipped")
-        return
-    pre_body = getattr(pre, "__nous_source__", "").split("def spread_activation", 1)[-1]
-    check(pre_body.count("store.get_road(") == 1,
-          f"the pre-change engine had exactly one get_road site "
-          f"(found {pre_body.count('store.get_road(')}) — so DEFECT-B is 0b2's, not 0b's")
+        note("git unavailable — the pre-0b2 read-count comparison degrades to an "
+             "observation; the check below is still emitted, so the total does not move")
+        check(True, "pre-0b2 read-count comparison: UNAVAILABLE, recorded (git absent)")
+    else:
+        pre_body = getattr(pre, "__nous_source__", "").split("def spread_activation", 1)[-1]
+        check(pre_body.count("store.get_road(") == 1,
+              f"pre-0b2 read-count comparison: the engine before the overlay also had "
+              f"exactly one site (found {pre_body.count('store.get_road(')}) — 0c returns "
+              f"the read pattern to what 0b had, rather than inventing a third one")
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -1083,8 +1610,7 @@ def test_N7_large_finite_sigma_recovers_the_unnormalized_engine_exactly():
           f"sigma=1e300 recovers sigma=None byte-for-byte ({mismatches} seeds deviated)")
 
 
-def test_N7_DEFECT_C_sigma_infinity_and_nan_poison_the_result():
-    section("N-7 DEFECT-C: sigma is unvalidated — inf and nan produce NaN activation")
+def _three_target_star():
     store = frozen_store()
     S = store.add_node("S", NodeType.CONCEPT)
     tgts = []
@@ -1092,42 +1618,84 @@ def test_N7_DEFECT_C_sigma_infinity_and_nan_poison_the_result():
         T = store.add_node("T%d" % i, NodeType.CONCEPT)
         tgts.append(T)
         worn(store, S, T, n=5)
-    for sigma in (float("inf"), float("nan")):
-        r = spread_activation(store, S, normalization_sigma=sigma)
-        vals = [r.activation.get(t) for t in tgts]
-        nan_count = sum(1 for v in vals if v is not None and v != v)
-        check(nan_count == len(tgts),
-              f"DEFECT-C present: sigma={sigma!r} yields NaN activation for every target "
-              f"({nan_count}/{len(tgts)}), silently, with no exception. NaN survives the "
-              f"`transmitted < floor` guard because every comparison with NaN is False. "
-              f"IF THIS FAILS BECAUSE VALIDATION WAS ADDED: delete it and re-verify N-7.")
-    note("SPEC-0b2 §2 describes sigma -> infinity as the value that 'analytically recovers "
-         "the current engine'. A caller who takes that literally and passes float('inf') "
-         "gets NaN, not the current engine. Large finite sigma does work (see above).")
+    return store, S, tgts
 
 
-def test_N7_non_positive_sigma_silences_rather_than_going_negative():
-    section("N-7 sigma <= 0 is unvalidated too — characterizing what actually happens")
-    store = frozen_store()
-    S = store.add_node("S", NodeType.CONCEPT)
-    tgts = []
-    for i in range(3):
-        T = store.add_node("T%d" % i, NodeType.CONCEPT)
-        tgts.append(T)
-        worn(store, S, T, n=5)
-    for sigma in (0.0, -1.0):
-        r = spread_activation(store, S, normalization_sigma=sigma)
-        reached = [t for t in tgts if t in r.activation]
-        check(not reached,
-              f"sigma={sigma!r}: nothing propagates ({len(reached)} targets reached). "
-              f"The negative/zero transmitted value fails `transmitted < floor` and is "
-              f"dropped, so the failure mode is total silence, not negative activation "
-              f"(this holds only while floor >= 0).")
-    neg = spread_activation(store, S, normalization_sigma=-1.0, floor=-1e9)
-    negatives = [v for t, v in neg.activation.items() if t != S and v < 0]
-    check(len(negatives) > 0,
-          f"with a negative floor the guard no longer hides it: {len(negatives)} targets "
-          f"receive NEGATIVE activation at sigma=-1.0 — sigma's sign is never validated")
+def test_N7_O11_non_finite_sigma_is_refused_at_the_boundary():
+    """WAS an asserted-negative (`..._DEFECT_C_sigma_infinity_and_nan_poison_the_result`).
+
+    It asserted that sigma=inf silently produced NaN activation. SPEC-0c §4 closed that,
+    so the negative is retired and REPLACED by the positive property it certifies: O-11.
+    The check count is deliberately identical to the retired test's, and the assertion is
+    strictly stronger — it pins the exception TYPE, the FRAME it is raised in, and that
+    the message names the offending value.
+    """
+    section("O-11 non-finite sigma is REFUSED at the boundary (was the DEFECT-C negative)")
+    store, S, tgts = _three_target_star()
+    for sigma in (float("inf"), float("-inf"), float("nan")):
+        try:
+            spread_activation(store, S, normalization_sigma=sigma)
+            outcome = "returned normally"
+        except ValueError as e:
+            outcome = e
+        except Exception as e:                                     # noqa: BLE001
+            outcome = f"wrong exception type {type(e).__name__}: {e}"
+        named = isinstance(outcome, ValueError) and repr(sigma) in str(outcome)
+        check(named,
+              f"sigma={sigma!r} raises ValueError naming the offending value "
+              f"(got: {outcome!r})")
+    # ...and it is refused BEFORE any work: nothing is computed, so no NaN can exist to
+    # leak. Asserted by the frame the exception carries, not by absence of a symptom.
+    import traceback
+    try:
+        spread_activation(store, S, normalization_sigma=float("inf"))
+        frames = []
+    except ValueError:
+        frames = [f.name for f in traceback.extract_tb(sys.exc_info()[2])]
+    check(frames[-1:] == ["spread_activation"],
+          f"the raise happens in spread_activation's own frame, not four layers down "
+          f"(innermost frame: {frames[-1:]})")
+    note("SPEC-0b2 §2 called sigma -> infinity 'the value that analytically recovers the "
+         "current engine'. It is true in the limit and catastrophic at the literal value. "
+         "The neutral value is None; large finite sigma is the way to approach it, and "
+         "test_N7_large_finite_sigma_recovers_the_unnormalized_engine_exactly shows it "
+         "does so byte-for-byte at 1e300.")
+
+
+def test_N7_O11_non_positive_sigma_is_refused_rather_than_silently_silencing():
+    """WAS an asserted-negative (`..._non_positive_sigma_silences_rather_than_going_negative`).
+
+    It characterised sigma <= 0 as producing total silence at floor >= 0 and genuinely
+    NEGATIVE activation once the floor went negative. SPEC-0c §4 rejects sigma <= 0 at the
+    boundary, so both behaviours are now unreachable. The replacement asserts that, and
+    asserts the negative-floor route is closed too — the route was the sharp edge of the
+    old finding and it must not survive the fix.
+    """
+    section("O-11 sigma <= 0 is REFUSED, and the negative-activation route is closed")
+    store, S, tgts = _three_target_star()
+    for sigma in (0.0, -0.0, -1.0, -1e-300):
+        try:
+            spread_activation(store, S, normalization_sigma=sigma)
+            ok = False
+            detail = "returned normally"
+        except ValueError as e:
+            ok = repr(sigma) in str(e)
+            detail = str(e)[:60]
+        except Exception as e:                                     # noqa: BLE001
+            ok = False
+            detail = f"{type(e).__name__}: {e}"
+        check(ok, f"sigma={sigma!r} raises ValueError naming the value ({detail})")
+    # The old finding's sharpest edge: with a NEGATIVE floor the guard stopped hiding the
+    # negative activation. That input now cannot reach the engine at all.
+    try:
+        spread_activation(store, S, normalization_sigma=-1.0, floor=-1e9)
+        closed = False
+    except ValueError:
+        closed = True
+    check(closed,
+          "sigma=-1.0 with floor=-1e9 — the input that produced NEGATIVE activation "
+          "before 0c — is refused at the boundary, so the route is closed rather than "
+          "merely masked by a non-negative floor")
 
 
 # ═════════════════════════════════════════════════════════════════════════════
@@ -1405,12 +1973,13 @@ def run_all():
     for t in [
         test_N1_byte_identity_vs_git_pre_change_engine,
         test_N1_byte_identity_vs_independent_reference,
+        test_N1_the_rebase_is_real_and_the_oracle_is_not_a_mirror,
         test_N1_default_argument_is_the_neutral_value,
         test_N1_byte_identity_loop_closed_on_a_system_built_substrate,
         test_N2_determinism_across_hash_seeds_and_interpreters,
-        test_N2_DEFECT_A_convergent_accumulation_is_order_dependent,
-        test_N2_DEFECT_A_is_inherited_from_0b_not_introduced_by_the_overlay,
-        test_N2_DEFECT_A_reaches_real_processes_at_library_defaults,
+        test_N2_O6_convergent_accumulation_is_order_INDEPENDENT,
+        test_N2_O6_order_independence_holds_with_the_overlay_ON_as_well,
+        test_N2_O4_the_DEFECT_A_reproduction_is_ONE_bit_pattern_in_real_processes,
         test_N3_purity_snapshot_with_normalization_on,
         test_N3_purity_no_mutating_call_is_made,
         test_N3_last_touched_unchanged_means_persist_decay_never_entered,
@@ -1421,15 +1990,15 @@ def run_all():
         test_N4_S_out_matches_math_fsum_exactly,
         test_N5_single_out_road_chain_identical_on_and_off,
         test_N5_lone_out_road_factor_is_exactly_one_on_a_frozen_clock,
-        test_N5_DEFECT_B_lone_out_road_IS_attenuated_on_a_moving_clock,
-        test_N5_DEFECT_B_scoping_absent_from_the_pre_change_engine,
+        test_N5_O10_lone_out_road_factor_is_exactly_one_ON_A_MOVING_CLOCK,
+        test_N5_O9_the_expansion_loop_reads_each_road_exactly_once,
         test_N6_strictly_decreasing_in_competing,
         test_N6_strictly_increasing_in_sigma,
         test_N6_monotonicity_property_based_on_random_graphs,
         test_N7_difference_from_unnormalized_is_monotone_decreasing_in_sigma,
         test_N7_large_finite_sigma_recovers_the_unnormalized_engine_exactly,
-        test_N7_DEFECT_C_sigma_infinity_and_nan_poison_the_result,
-        test_N7_non_positive_sigma_silences_rather_than_going_negative,
+        test_N7_O11_non_finite_sigma_is_refused_at_the_boundary,
+        test_N7_O11_non_positive_sigma_is_refused_rather_than_silently_silencing,
         test_N8_closed_road_contributes_to_S_out,
         test_N8_a_BLOCKED_closed_road_still_competes,
         test_N8_a_LEAKING_closed_road_is_normalized_like_any_other,
@@ -1452,21 +2021,28 @@ def run_all():
         for m in _fail_msgs:
             print("   -", m)
     print("=" * 70)
-    print("  TESTER VERDICT ON SPEC-0b2 §6:  FAIL  (2 of 9 invariants do not hold)")
+    print("  TESTER VERDICT ON SPEC-0b2 §6, RE-ADJUDICATED AFTER 0c:  all 9 hold")
     print("=" * 70)
-    print("    N-1 HOLDS   N-3 HOLDS   N-4 HOLDS   N-6 HOLDS   N-8 HOLDS   N-9 HOLDS")
-    print("    N-2 FAILS   DEFECT-A  convergent accumulation is order-dependent")
-    print("                          (nous_activation.py:287, plain + over a set order)")
-    print("                          INHERITED FROM 0b — reproduces at sigma=None.")
-    print("    N-5 FAILS   DEFECT-B  a LONE out-road is attenuated on a moving clock")
-    print("                          (out_total and road.strength are read at different")
-    print("                          clock instants, so competing != 0)")
-    print("                          INTRODUCED BY 0b2.")
-    print("    N-7 PARTLY  DEFECT-C  sigma=inf/nan yields NaN activation, unvalidated")
-    print("                          INTRODUCED BY 0b2.")
-    print("  The passing count above is not the verdict: the three defects are recorded")
-    print("  as asserted-negatives, which PASS while the defect is present. Fixing any of")
-    print("  them will turn its test red on purpose, forcing re-verification here.")
+    print("    N-1 HOLDS   neutral byte-identity, on a RE-BASED oracle (SPEC-0c O-8).")
+    print("                Oracle 1 (git) is bounded to in-degree <= 2, the region where")
+    print("                the pre-change engine had a single well-defined answer at all.")
+    print("    N-2 HOLDS   was DEFECT-A. The accumulator is now order-INDEPENDENT, not")
+    print("                merely order-pinned: creation-ordered iteration at the store")
+    print("                (SPEC-0c §2.2) plus an exactly-rounded reduction (§2.3).")
+    print("    N-3 HOLDS   N-4 HOLDS   N-6 HOLDS   N-8 HOLDS   N-9 HOLDS")
+    print("    N-5 HOLDS   was DEFECT-B. One road read per expansion (§3), so a lone")
+    print("                out-road transmits with factor exactly 1.0 on a MOVING clock.")
+    print("    N-7 HOLDS   was DEFECT-C. sigma is validated at the boundary and non-finite")
+    print("                transmission is refused on its own terms (§4).")
+    print()
+    print("  THE ACCEPTANCE SIGNAL FOR 0c WAS INVERTED, and this file is where it landed.")
+    print("  Ten tests in it went red on a correct fix. Each has been converted from")
+    print("  'the defect is present' into the positive property it certifies, so the")
+    print("  suite now asserts the fix rather than the bug. The six asserted-negatives")
+    print("  SPEC-0c §6.1 enumerated are retired; the four the spec did not anticipate")
+    print("  are rewritten with them. Nothing was deleted without a replacement.")
+    print()
+    print("  Mechanism only. No cognitive claim is made or approached here.")
     print("=" * 70)
     return _failed == 0
 

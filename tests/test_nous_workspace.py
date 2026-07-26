@@ -282,7 +282,10 @@ def test_determinism_winner_and_pruning_across_6_seeds():
     # Loop-closed end-to-end through think(); serialize by STABLE keys (content +
     # creation_seq), never uuids. Ties everywhere (equal energies, equal strengths) so this
     # genuinely stresses the order-dependence seams in competition AND pruning.
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     driver = textwrap.dedent('''
+        import struct
+        def _b(x): return struct.pack("<d", x).hex()
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
@@ -298,7 +301,7 @@ def test_determinism_winner_and_pruning_across_6_seeds():
         winner = tuple(sorted(s.get_node(m).content for m in r.thought.members)) if r.thought else None
         pruned = tuple(sorted(s.get_node(m).content for m in r.workspace.pruned_members))
         ranked = tuple(
-            (tuple(sorted(s.get_node(m).content for m in c.members)), round(c.strength, 9))
+            (tuple(sorted(s.get_node(m).content for m in c.members)), _b(c.strength))
             for c in r.workspace.ranked
         )
         rep = s.get_node(r.thought.representative()).content if r.thought else None
@@ -308,6 +311,270 @@ def test_determinism_winner_and_pruning_across_6_seeds():
     check(len(set(outs)) == 1,
           f"winner+pruning+ranking identical across 6 hash seeds "
           f"(distinct outputs: {len(set(outs))})")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 0c §1 case 2 / §2.5 — THE COMPETITION PATH
+#
+# SPEC-0c §1 originally carried one reproduction case, and it exercised only the
+# activation accumulator. That probe cannot see this path: Coalition.members
+# inherits its order from a set of uuid4 NodeIDs built in the coalition layer, so
+# the store's ordering contract does not reach it. §1 case 2 is the reproduction
+# that does, and it runs end to end through think() — perceive, field, coalitions,
+# clustering, competition, pruning — so every stage is driven by what the previous
+# stage actually produced.
+# ─────────────────────────────────────────────────────────────────────────────
+
+COMPETITION_PATH_PROBE = textwrap.dedent('''
+    import struct, itertools
+    from nous_store import SubstrateStore, Clock, NodeType
+    from nous_perceive import think
+    s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
+    add = lambda c: s.add_node(c, NodeType.CONCEPT)
+    warm = [add(x) for x in ("coffee","kitchen","morning","mug","toast")]
+    cold = [add(x) for x in ("work","code","deadline")]
+    def w(a,b,n):
+        for _ in range(n): s.traverse(a,b)
+    for a,b in itertools.permutations(warm,2): w(a,b,7)
+    for a,b in itertools.permutations(cold,2): w(a,b,9)
+    w(warm[0], cold[0], 8)
+    r = think(s, "coffee kitchen morning mug toast")
+    # membership is serialised by CONTENT, never by uuid: uuids are regenerated per
+    # process by construction, so a uuid-keyed payload could never be compared.
+    members = tuple(sorted(s.get_node(n).content for n in r.thought.members))
+    print(repr((struct.pack("<d", r.thought.strength).hex(), members)))
+''')
+
+
+def test_0c_competition_path_is_one_bit_pattern_across_fresh_processes():
+    section("0c/§1 case 2: think() on the eight-node two-domain graph yields ONE bit "
+            "pattern for the winner's strength across fresh processes")
+    # Fresh PROCESSES, not merely fresh hash seeds: what perturbs this is the uuid4
+    # draw, which is freshly random every process whatever PYTHONHASHSEED says. The
+    # seed axis is swept as well, but it is the cheap regression probe here, not the
+    # guarantee (SPEC-0c §5.2).
+    #
+    # Winner MEMBERSHIP is asserted alongside the strength on purpose. If a future
+    # change moves the strength, the membership tells us immediately whether a
+    # category moved with it or only a float did — attributable rather than merely
+    # visible.
+    outs = []
+    cwd = os.path.dirname(__file__) or "."
+    for seed in ("0", "1", "2", "3", "7", "42"):
+        env = dict(os.environ, PYTHONHASHSEED=seed)
+        for _ in range(5):                       # 6 seeds x 5 reps = 30 fresh processes
+            rr = subprocess.run([sys.executable, "-c", COMPETITION_PATH_PROBE], cwd=cwd,
+                                capture_output=True, text=True, env=env)
+            outs.append(rr.stdout.strip() if rr.returncode == 0
+                        else f"ERROR {rr.stderr[-200:]}")
+    strengths = sorted({o.split("'")[1] if o.startswith("('") else o for o in outs})
+    members = sorted({o.split(", (")[-1] for o in outs})
+    for d in sorted(set(outs)):
+        print(f"    {d}   ({outs.count(d)} of {len(outs)})")
+    check(len(strengths) == 1,
+          f"ONE strength bit pattern over {len(outs)} fresh processes "
+          f"(distinct = {len(strengths)}: {strengths})")
+    check(len(members) == 1,
+          f"ONE winner membership over {len(outs)} fresh processes "
+          f"(distinct = {len(members)})")
+
+
+def test_0c_competition_path_agrees_across_every_interpreter():
+    section("0c/§1 case 2: the same think() graph gives the same winner bits on every "
+            "CPython on this machine")
+    # A DIFFERENT failure class from the one above, and the only one that can see a
+    # naive float sum at a FIXED iteration order: CPython 3.12 changed builtin sum()
+    # to Neumaier compensated summation, so 3.10/3.11 and 3.12+ disagree on the same
+    # code and the same input. Nothing else in this repository compares values across
+    # interpreters — capture_run compares per-suite COUNTS.
+    #
+    # Scoped honestly: a claim about interpreters on ONE machine, not about platforms.
+    # The clock is frozen and the graph carries no charges, so the platform libm's
+    # math.exp is not what is being compared.
+    import shutil
+    cwd = os.path.dirname(__file__) or "."
+    interps = [p for p in ("python3.10", "python3.11", "python3.12", "python3.13",
+                           "python3.14") if shutil.which(p)]
+    # include the running interpreter too, but only if it is not already one of the named
+    # five — resolved through realpath, so `python3.14` and the absolute path it resolves
+    # to are not counted as two interpreters.
+    _real = {os.path.realpath(shutil.which(p)) for p in interps}
+    if os.path.realpath(sys.executable) not in _real:
+        interps.append(sys.executable)
+    outs = {}
+    for py in interps:
+        rr = subprocess.run([py, "-c", COMPETITION_PATH_PROBE], cwd=cwd,
+                            capture_output=True, text=True)
+        outs[py] = rr.stdout.strip() if rr.returncode == 0 else f"ERROR {rr.stderr[-200:]}"
+    for py, o in outs.items():
+        print(f"    {os.path.basename(py):<12} {o}")
+    check(len(set(outs.values())) == 1,
+          f"identical winner strength bits and membership across {len(outs)} interpreter "
+          f"runs (distinct = {len(set(outs.values()))})")
+
+
+# ── the two aggregation sites, as unit properties ────────────────────────────
+
+# One multiset of five plausible activation magnitudes whose naive left-fold is
+# genuinely order-dependent. Ordinary two-digit values, not engineered denormals:
+# the point is that this is not an exotic input.
+_ORDER_SENSITIVE = (0.9, 0.8, 0.7, 0.6, 0.5)
+
+
+def _naive_fold(values):
+    """An EXPLICIT left-fold, written here rather than borrowed from the builtin, so
+    the vacuity witness is the same arithmetic on every interpreter regardless of what
+    builtin sum() does on that version."""
+    t = 0.0
+    for v in values:
+        t += v
+    return t
+
+
+def _b(x):
+    import struct
+    return struct.pack("<d", x).hex()
+
+
+def test_0c_pruned_winner_strength_depends_only_on_the_surviving_multiset():
+    section("0c/§2.5 site 1: the PRUNED winner's strength is a function of the surviving "
+            "members' activations, never of their insertion order")
+    import itertools
+    import math
+    # Store, perception, field and clustering are all SYSTEM-GENERATED. Only the
+    # coalition is hand-built, and only its member ORDER varies — this is the narrow
+    # unit test of a pure helper the suite docstring allows, not a competition claim.
+    s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
+    named = [s.add_node(c, NodeType.CONCEPT)
+             for c in ("coffee", "kitchen", "morning", "mug")]
+    stray = s.add_node("deadline", NodeType.CONCEPT)     # NO road to the named region
+    for a, b in itertools.combinations(named, 2):
+        _worn(s, a, b, n=20)
+    p = perceive(s, "coffee kitchen morning mug")
+    clustering = cluster_sources(s, p.sources)
+    field_ = build_activation_field(
+        s, list(clustering.group_seeds.keys()),
+        hop_budget=6, source_energies=clustering.group_seeds,
+    )
+    check(set(p.sources) >= set(named) and stray not in p.sources,
+          "precondition: the four named nodes are perceived and the stray is not")
+
+    acts = dict(zip(named, _ORDER_SENSITIVE[:4]))
+    acts[stray] = _ORDER_SENSITIVE[4]
+    seq = {n: s.get_node(n).creation_seq for n in acts}
+    keys = list(acts)
+
+    seen, sizes, prunes = set(), set(), set()
+    for order in itertools.permutations(keys):           # 120 member insertion orders
+        members = {n: acts[n] for n in order}
+        c = Coalition(members=members, strength=math.fsum(members.values()), _seq=dict(seq))
+        res = select_winner(s, [c], field_, clustering, p.sources)
+        seen.add(_b(res.winner.strength))
+        sizes.add(res.winner.size())
+        prunes.add(frozenset(res.pruned_members))
+
+    # STRUCTURAL PRECONDITION — without this the assertion below is vacuous, because
+    # the recompute at the prune site would never be reached at all.
+    check(prunes == {frozenset({stray})} and sizes == {4},
+          f"precondition: the stray IS pruned in every order, so the strength recompute "
+          f"is actually reached (prune sets seen: {len(prunes)}, winner sizes: {sizes})")
+    check(len(seen) == 1,
+          f"ONE strength bit pattern across {len(keys)} members' {math.factorial(len(keys))} "
+          f"insertion orders (distinct = {len(seen)}: {sorted(seen)})")
+
+    surviving = _ORDER_SENSITIVE[:4]
+    naive_bits = {_b(_naive_fold(perm)) for perm in itertools.permutations(surviving)}
+    check(len(naive_bits) >= 2,
+          f"VACUITY WITNESS: a naive left-fold over the SAME surviving multiset gives "
+          f"{len(naive_bits)} distinct bit patterns, so the invariance above is a "
+          f"property of the code and not of the input")
+
+
+def test_0c_pruned_winner_strength_agrees_with_the_coalition_formation_rule():
+    section("0c/§2.5 site 1: the prune site's strength rule is the SAME rule coalition "
+            "formation uses — asserted, not asserted-in-a-comment")
+    # The prune site's own comment claims it applies "the same 'sum of member
+    # activations' rule coalition formation uses". BUG-0b1 changed that rule at the two
+    # nous_coalitions sites and missed this one, so for a month the comment was false and
+    # nothing checked it. This test makes the two sites agree on a common input, with the
+    # formation value produced by the REAL form_coalitions(), not by a copy of it here.
+    import itertools
+    import math
+    from nous_activation import ActivationResult
+    from nous_coalitions import form_coalitions
+
+    s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
+    named = [s.add_node(c, NodeType.CONCEPT)
+             for c in ("coffee", "kitchen", "morning", "mug")]
+    stray = s.add_node("deadline", NodeType.CONCEPT)
+    rids = {}
+    for a, b in itertools.combinations(named, 2):
+        _worn(s, a, b, n=20)
+        rids[(a, b)] = s.find_road(a, b)
+
+    acts = dict(zip(named, _ORDER_SENSITIVE[:4]))
+
+    # (i) the FORMATION rule, via the real function: an ActivationResult whose four
+    #     co-activated nodes are bound by equal flow, so they form exactly one coalition
+    #     whose members are the four activations above.
+    ar = ActivationResult(
+        seed=named[0],
+        activation=dict(acts),
+        hops={n: 1 for n in acts},
+        broke_through=[],
+        flow={rid: 0.5 for rid in rids.values()},
+    )
+    formed = form_coalitions(s, ar)
+    check(len(formed) == 1 and set(formed[0].members) == set(named),
+          f"precondition: form_coalitions produced exactly one coalition over the four "
+          f"named nodes (got {len(formed)} coalition(s))")
+    formation_strength = formed[0].strength
+
+    # (ii) the PRUNE rule, via select_winner, on the same four survivors
+    p = perceive(s, "coffee kitchen morning mug")
+    clustering = cluster_sources(s, p.sources)
+    field_ = build_activation_field(
+        s, list(clustering.group_seeds.keys()),
+        hop_budget=6, source_energies=clustering.group_seeds,
+    )
+    with_stray = dict(acts)
+    with_stray[stray] = _ORDER_SENSITIVE[4]
+    c = Coalition(members=with_stray, strength=math.fsum(with_stray.values()),
+                  _seq={n: s.get_node(n).creation_seq for n in with_stray})
+    res = select_winner(s, [c], field_, clustering, p.sources)
+    check(set(res.pruned_members) == {stray},
+          "precondition: only the stray was pruned, so both sites see the same members")
+    check(_b(res.winner.strength) == _b(formation_strength),
+          f"the two sites agree BIT FOR BIT on the same member multiset "
+          f"(prune site {_b(res.winner.strength)} vs formation site "
+          f"{_b(formation_strength)})")
+
+
+def test_0c_total_strength_after_depends_only_on_the_road_strength_multiset():
+    section("0c/§2.5 site 2: Broadcast.total_strength_after() is a function of the "
+            "strength multiset, never of road insertion order")
+    # By its own docstring this is "the bounded aggregate the no-divergence test watches
+    # converge across cycles" — a statistic that feeds an assertion. A convergence test
+    # whose statistic moves with the interpreter is a weak test.
+    import itertools
+    from nous_workspace import Broadcast
+
+    keys = [f"r{i}" for i in range(len(_ORDER_SENSITIVE))]
+    seen = set()
+    for order in itertools.permutations(range(len(keys))):
+        after = {keys[i]: _ORDER_SENSITIVE[i] for i in order}
+        b = Broadcast(road_ids=list(after), before={k: 0.0 for k in after},
+                      after=after, winner_member_count=len(after))
+        seen.add(_b(b.total_strength_after()))
+    check(len(seen) == 1,
+          f"ONE bit pattern across {len(list(itertools.permutations(range(len(keys)))))} "
+          f"road insertion orders (distinct = {len(seen)}: {sorted(seen)})")
+
+    naive_bits = {_b(_naive_fold(perm))
+                  for perm in itertools.permutations(_ORDER_SENSITIVE)}
+    check(len(naive_bits) >= 2,
+          f"VACUITY WITNESS: a naive left-fold over the same multiset gives "
+          f"{len(naive_bits)} distinct bit patterns")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -812,6 +1079,12 @@ def run_all():
         # §6.4 integrity + cross-process determinism
         test_selection_preserves_integrity,
         test_determinism_winner_and_pruning_across_6_seeds,
+        # 0c §1 case 2 / §2.5 — the competition path and its two aggregation sites
+        test_0c_competition_path_is_one_bit_pattern_across_fresh_processes,
+        test_0c_competition_path_agrees_across_every_interpreter,
+        test_0c_pruned_winner_strength_depends_only_on_the_surviving_multiset,
+        test_0c_pruned_winner_strength_agrees_with_the_coalition_formation_rule,
+        test_0c_total_strength_after_depends_only_on_the_road_strength_multiset,
         # scale-invariance (isolated selection layer + floor-safe end-to-end)
         test_selection_layer_scale_invariance_isolated,
         test_end_to_end_scale_invariance_above_floors,

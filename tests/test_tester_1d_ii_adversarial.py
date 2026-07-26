@@ -772,7 +772,11 @@ def test_F_determinism_whole_store_after_n_broadcasts_6_seeds():
     section("F SUBSTRATE BAR: the WHOLE store state after N broadcast cycles on a HOSTILE "
             "graph (dense clique + an unnamed clique + a bridge) is byte-identical across all "
             "6 hash seeds in fresh interpreters (our own probe; ties everywhere)")
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9). This probe watches the WRITE path,
+    # where a rounded strength would hide exactly the kind of accumulated last-bit drift
+    # 15 successive broadcast cycles are most likely to produce.
     driver = textwrap.dedent('''
+        import struct
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
@@ -796,7 +800,8 @@ def test_F_determinism_whole_store_after_n_broadcasts_6_seeds():
         for rid in s.all_road_ids():
             rd = s.get_road(rid, apply_decay=False)
             rows.append((s.get_node(rd.source_id).content, s.get_node(rd.target_id).content,
-                         rd.creation_seq, round(rd.strength, 9), rd.traversal_count, rd.closed))
+                         rd.creation_seq, struct.pack("<d", rd.strength).hex(),
+                         rd.traversal_count, rd.closed))
         rows.sort()
         print(repr(tuple(rows)))
     ''')
@@ -813,7 +818,9 @@ def test_F_determinism_bias_then_escape_trace_6_seeds():
     section("F SUBSTRATE BAR (loop-closed, multi-percept): the winner+broadcast trace across "
             "bias-A-then-escape-to-B on a BRIDGED graph is byte-identical across 6 hash seeds "
             "(our own probe) — the write AND the escape selection are both deterministic")
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     driver = textwrap.dedent('''
+        import struct
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
@@ -833,7 +840,7 @@ def test_F_determinism_bias_then_escape_trace_6_seeds():
             wmem=tuple(sorted(s.get_node(m).content for m in r.thought.members)) if r.thought else None
             bc=tuple(sorted((s.get_node(s.get_road(rid).source_id).content,
                              s.get_node(s.get_road(rid).target_id).content,
-                             round(s.get_road(rid,apply_decay=False).strength,9))
+                             struct.pack("<d", s.get_road(rid,apply_decay=False).strength).hex())
                             for rid in r.broadcast_.road_ids))
             trace.append((wmem,bc))
         for _ in range(20):
