@@ -7,7 +7,7 @@ skills: psyche-lane
 color: red
 hooks:
   PreToolUse:
-    - matcher: "Write|Edit|NotebookEdit"
+    - matcher: "Write|Edit|NotebookEdit|Bash"
       hooks:
         - type: command
           command: "python3 ${CLAUDE_PROJECT_DIR}/tools/hooks/guard_tester_lane.py"

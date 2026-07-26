@@ -89,27 +89,16 @@ number exists.
 Most bricks stop at phase 3 with **no cognitive claim**, and that is the normal, correct
 outcome.
 
-## Phase 5 — close out
+## Phase 5 — close out (architect-pm, NOT the tester)
 
-0. **REGISTER any new suite in `run_tests.py` — before capturing, not after.** A suite that
-   exists on disk but is not in `SUITES` is invisible to the canonical count, so the capture
-   records a green run that omits it and the ledger then certifies an incomplete
-   verification. This has happened: 0c's tester suite was written, passed in full, and sat
-   outside the capture entirely.
-
-   **This step is architect-pm's, not the tester's.** `run_tests.py` decides what the
-   canonical count includes, which makes registration a fact-of-record change rather than a
-   test change — and the lane hook blocks the tester from it, correctly. If a suite is
-   deliberately excluded (data-dependent, parked, validator-run), it goes in
-   `ledger.unregistered_suites` **with its reason**. `ledger_check` C5 enforces exactly this
-   and will fail the build if a suite is neither registered nor excused.
+**0. Register the tester's suite in `run_tests.py`.** The tester is hook-blocked from it, and
+from `capture_run`/`ledger_sync`, because those move the canonical count and that is a claim.
+A tester close-out that moved the totals could never satisfy the pre-commit gate on its own —
+this step is what closes that gap (D-016). `ledger_check` C5 fails until it is done.
 
 1. Capture the run: `python3 run_tests.py > docs/TEST_OUTPUT.txt` (with the header block
    naming the interpreters swept and the seed set).
-2. `python3 tools/ledger_sync.py` — and **never sync from a partial run.** If the capture
-   omitted a suite, or the run was not green on every interpreter, the ledger must not record
-   it: a ledger describing an incomplete capture is precisely the staleness the ledger exists
-   to prevent. Fix the run, then sync.
+2. `python3 tools/ledger_sync.py`
 3. Update the brick's status in `tools/ledger.json`, and append the decision to
    `DECISIONS.md` — date, what changed, evidence, who decided.
 4. `python3 tools/ledger_check.py` — fix every document the change now contradicts.

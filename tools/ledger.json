@@ -81,18 +81,18 @@
   "bricks": {
     "0a": {
       "name": "substrate store",
-      "status": "BUILT-UNVALIDATED",
-      "note": "DEMOTED 2026-07-25 (D-012). Integrity and purity unaffected. Determinism leg of Phase 0's done-means falsified by DEFECT-A: roads_from() yields from an unordered set of uuid4 ids, which is the enabling condition. Returns to PROVEN on fix + re-verification."
+      "status": "PROVEN",
+      "note": "RESTORED 2026-07-25 (D-016) after 0c. Determinism is now structural — no order dependence to perturb — not sampled. Verified across five CPython versions."
     },
     "0b": {
       "name": "spreading activation",
-      "status": "BUILT-UNVALIDATED",
-      "note": "DEMOTED 2026-07-25 (D-012). DEFECT-A: convergent accumulation is a naive sequential float add over uuid4-ordered terms; 48 fresh processes gave two results at library defaults on a 5-node graph. Returns to PROVEN on fix + re-verification."
+      "status": "PROVEN",
+      "note": "RESTORED 2026-07-25 (D-016) after 0c. The flow accumulator is retained naive and PROVED structurally single-term rather than converted; that bound is registered."
     },
     "0b1": {
       "name": "coalition strength determinism fix",
       "status": "PROVEN",
-      "note": "math.fsum at both sites; 40/40 identical at fixed seed on 3.10 where it was 20/10. See BUG-0b1. AMENDED 2026-07-25: correct at its own site, but its INPUTS are 1-ULP-unstable across processes on in-degree >= 3 graphs (DEFECT-A on 0b), so an order-independent sum of order-dependent terms is still order-dependent. BUG-0b1 section 5's 'Tier 1 is not affected' sentence is retracted in place. CORRECTED 2026-07-26 (D-014): the report's 'two sites' was WRONG — there are three Coalition construction sites in src/ (nous_coalitions.py:228, :311, and nous_workspace.py:426) and the third was never converted, so the bug was reported closed while a live instance remained on the same competition path. Corrected in place in docs/BUG-0b1-*.md sections 2 and 9, which also now explain the 3.11-vs-3.12 split: CPython 3.12 made builtin sum() Neumaier-compensated, so the pre-fix code was accidentally correct on newer interpreters. The third site converts in 0c. WHETHER 0b1 KEEPS 'PROVEN' GIVEN ITS COMPLETENESS CLAIM WAS FALSE IS AN OPEN CALL FOR CAGAN — not re-labelled here on an agent's initiative."
+      "note": "Property claim held and holds. Its ENUMERATION was incomplete — a third Coalition construction site in nous_workspace.py was missed; corrected in place. Labels track properties, not report quality (D-016)."
     },
     "0b2": {
       "name": "conserved activation (overlay, default-off)",
@@ -100,14 +100,14 @@
       "note": "overlay landed default-off; tester verdict FAIL — 7 of 9 invariants hold. DEFECT-B (N-5) and DEFECT-C (N-7) are the overlay's own and are OPEN. See D-011, D-012."
     },
     "0c": {
-      "name": "deterministic road ordering",
-      "status": "DESIGNED",
-      "note": "SPEC-0c. Repair brick for the three defects the 0b2 tester pass returned (D-011). Ordering AND math.fsum both land (D-013): _out/_in become insertion-ordered so roads_from() yields creation order, and the convergence accumulator uses math.fsum, so the engine is order-INDEPENDENT rather than merely order-pinned. Also: read each road once per expansion (DEFECT-B), validate sigma and guard non-finite transmission (DEFECT-C). D-014 CLOSES the last open call and WIDENS scope: all three surviving naive float sum() sites in src/ convert, because nous_workspace.py:426 is a LIVE instance of the defect BUG-0b1 was reported to have closed — reproduced post-0c at a FIXED hash seed, 2 distinct strengths on 3.10 and 1 on 3.14 (the Neumaier split). SPEC-0c section 1 now carries a SECOND reproduction case on the competition path, asserted by O-4b; the original falsifier exercised only the activation accumulator and would have let this ship. Acceptance signal is inverted: all six asserted-negatives in tests/test_tester_0b2_adversarial.py must go RED, plus four further tests the spec now enumerates. Returns 0a and 0b to PROVEN on tester re-verification."
+      "name": "deterministic road ordering + fsum",
+      "status": "PROVEN",
+      "note": "Tester PASS 18/18. Restores Phase 0. Does NOT close the order-dependent-aggregate class — see 0d."
     },
     "0d": {
-      "name": "float-accumulation detector",
+      "name": "order-dependent-aggregate detector + registry",
       "status": "DESIGNED",
-      "note": "SPEC-0d. Deliverable is a DETECTOR, not a patch: a structural check (ledger_check C6) enumerating every float accumulation in src/ and requiring each to be math.fsum or registered in ledger.float_accumulation_exemptions with a reason, failing the build when a new naive one appears. THEN fixes what it finds: nous_field.py:131 (confirmed — 2 bit patterns over source-order permutations, reaching Coalition.strength) and nous_field.py:124 / merged_flow (SAME SHAPE, did NOT reproduce on a four-way-convergence probe — converted on shape, not on a witness). Rationale: all three prior encounters of this shape (BUG-0b1's two sites, SPEC-0c section 2.5's third, section 2.7's fourth) were found BY LOOKING, never by a sweep, and twice the survivor sat in a file the previous fix's author had open. Both known sites are ORDER-PINNED, so 0d is hardening, NOT a determinism repair, and does not block Phase 0's re-labelling."
+      "note": "Detector first, not a fifth patch. Three prior encounters of this shape were all found by looking, never by a sweep."
     },
     "1a": {
       "name": "multi-source field",
@@ -169,6 +169,11 @@
     "3c": {
       "name": "grounded language",
       "status": "DESIGNED"
+    },
+    "0c-ii": {
+      "name": "boundary finiteness completion (floor)",
+      "status": "DESIGNED",
+      "note": "floor=NaN SILENTLY disables the locality guard (3 nodes reached vs 6, no error, identical to floor=-inf), changing coalition membership and the competition. Same class as O-12 and DEFECT-C. decay_per_hop is deliberately NOT validated: it refuses loudly, and silence is the discriminator. D-016."
     }
   },
   "valid_statuses": [
@@ -206,7 +211,7 @@
     "swow_cues": 12217
   },
   "uncalibrated_constants": {
-    "DEFAULT_FLOOR": 0.02,
+    "DEFAULT_FLOOR": "0.02 — uncalibrated, and UNVALIDATED for finiteness pending 0c-ii",
     "DEFAULT_DECAY_PER_HOP": 0.65,
     "DEFAULT_SEED_ENERGY": 1.0,
     "DEFAULT_HOP_BUDGET": 6,
