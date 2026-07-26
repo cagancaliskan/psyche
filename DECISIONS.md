@@ -590,3 +590,101 @@ new suite*, and a ledger recording an incomplete capture is precisely the stalen
 exists to prevent. `tools/ledger.json` and `docs/TEST_OUTPUT.txt` are back at their committed
 values, `ledger_check` is clean apart from the 14 held-paper C2 findings, and **the capture is
 deferred until O-12 is resolved and the suite registered.**
+
+## D-015 · 2026-07-25 · O-12 closes by validating energy; the fourth aggregate becomes brick 0d
+**Decided by:** Cagan
+**Supersedes:** narrows D-014's scope statement (which refused *negative*-energy validation —
+a different question from finiteness)
+
+### Call 1 — O-12 closes by option (A): validate `energy` for finiteness at the boundary.
+
+Adopted, and for a stronger reason than consistency with σ. The isolated-node case is not the
+risk; it is the *visible instance* of a general fact: `contributions = {seed: [energy]}` means
+**the seed's own activation is unguarded on every graph, connected or not.** §4's guard is on
+`transmitted`, which only ever sees downstream values.
+
+A NaN at the seed therefore lands in the **returned** activation map. That map is consumed by
+`nous_field`, accumulated into basins, and reaches `Coalition.strength` and thence
+`_competition_key` — where every NaN comparison is False and the ordering silently degrades.
+That is DEFECT-C's failure mode one input earlier, and §4 already judged this hazard "more
+general than σ". Validating σ for finiteness while leaving `energy` unvalidated is the same
+guard applied to one of two adjacent doors.
+
+Option (B) is rejected on its own description: it weakens an invariant to fit an
+implementation. That is the one move this project cannot make.
+
+**Scope, kept narrow:** reject non-finite `energy` (NaN, ±inf) with the same error shape as σ.
+**Negative energy is untouched** — D-014's ruling on −0.0 stands, and the two questions stay
+separate so the record stays legible.
+
+**A consequence that must be written into the spec, or someone deletes the guard later.** Once
+both `energy` and σ are finiteness-validated, and given every multiplier is ≤ 1, the internal
+`transmitted` NaN guard becomes **unreachable from the public API**. It stays as a backstop.
+Its test must inject below the boundary, and §4 must say so explicitly — otherwise a future
+reader correctly identifies it as dead code and removes the belt while keeping the braces.
+
+### Call 2 — the fourth aggregate is brick 0d, not a third widening of 0c. Agreed.
+
+The distinction is in kind, not degree, and it is the one that matters:
+
+- §2.5's site 3 (`nous_workspace.py:428`) **reproduced nondeterminism across processes**. It
+  falsified 0c's core claim, so it was mandatory scope.
+- `nous_field.py:131` is **order-pinned** — source order is program order — so it falsifies
+  nothing 0c claims. What is missing there is the weaker property, order-*independence*.
+
+D-013 ground 1 does apply to it, but as a *new instance*, not as a defect in 0c's delivery. A
+brick that keeps growing never closes, and 0c is 17/18 done with an uncommitted implementation.
+
+**Two conditions.**
+
+1. **0d is registered now** — ledger and roadmap, status `DESIGNED`, dated — not left as a
+   note. The precedent is this project's own: `experiments/harness.py:290` documented this
+   exact hazard in writing and `PROVEN` shipped anyway. A recorded intention has already
+   failed to protect anything once here.
+2. **0c's claim is narrowed to what it delivers.** 0c may state: determinism restored at the
+   enumerated sites, order-independence achieved at those sites, one further site identified
+   and deferred, order-pinned and therefore not a determinism defect. **0c may not state that
+   the order-dependent-aggregate class is closed.**
+
+### 0d's deliverable is a DETECTOR, not a fifth patch.
+
+"This is the third time this project has met this shape" is the most important sentence in the
+0c verdict. Three encounters — `nous_coalitions` (BUG-0b1), `nous_activation` +
+`nous_workspace:428` + two others (§2.5), now `nous_field:131` — and every one was found by a
+person looking, never by a sweep.
+
+The evidence that symptom-hunting cannot close this: **`nous_field.py:124` (`merged_flow`) has
+the identical shape and did NOT reproduce variation** on a four-source, four-way-convergence
+probe. Shape present, symptom absent on that input. That is the friendly-input trap in its
+purest form, and no amount of further reproduction hunting answers it.
+
+So 0d builds a structural test that enumerates every float accumulation in `src/` and requires
+each to be either `math.fsum` or explicitly registered in the ledger with a reason — failing
+when a new naive accumulation appears. **Then** it fixes whatever the detector finds, which
+will include `:131`, probably `:124`, and possibly sites nobody has looked at. That converts
+the third encounter into the last one.
+
+### Bookkeeping — the revert was right, and it exposed a hole that was mine.
+
+Reverting the ledger to its committed values was correct: a ledger recording a capture that
+omitted a suite present on disk is precisely the staleness the ledger exists to prevent.
+
+But `capture_run` accepted that capture. It had no notion of whether the runner ran everything,
+so the count could silently under-report by forgetting to register a suite — and the capture
+would be internally consistent and wrong. **`ledger_check` now has C5, runner-completeness:**
+every `test_*.py` on disk must be registered in `run_tests.py` or listed in the ledger's new
+`unregistered_suites` with a reason. It also catches phantom registrations and stale excuses.
+Verified against this repo: it flags `test_tester_0c_adversarial.py`. The four deliberately
+excluded data-dependent suites are now recorded with their reasons rather than assumed.
+
+**The hook-block was correct and the workflow was incomplete.** Keeping `run_tests.py` out of
+the tester's hands stops a tester inflating the canonical count with its own suite — that
+safeguard stays. What was missing is an explicit registration step, in another lane, after a
+tester pass. That belongs in `psyche-brick` phase 5.
+
+### The labels
+
+0a and 0b are **eligible** to return to `PROVEN`, and neither the tester nor architect-pm was
+right to re-label. That call is mine and it is **pending**: the labels return when O-12 closes,
+the 0c suite is registered, and a complete capture across all five interpreters is taken. Not
+before, and not on the strength of 17 of 18.

@@ -57,6 +57,11 @@ Each step carries a status tag:
               0b2 conserved activation (overlay, default-off) ✓built · tester verdict FAIL
                  7 of 9 invariants hold; N-2 (inherited DEFECT-A) and N-5 (DEFECT-B) do not;
                  N-7 partial (DEFECT-C: sigma=inf -> NaN). Default flip NOT started.
+              0d float-accumulation detector  ·designed (SPEC-0d, D-015) — a DETECTOR, not a
+                 patch: ledger_check C6 enumerates every float accumulation in src/ and fails
+                 the build on a new naive one; THEN fixes nous_field.py:131 and :124. Both are
+                 order-PINNED, so 0d is hardening, NOT a determinism repair, and it does not
+                 block Phase 0's re-labelling.
               0c deterministic road ordering  ·designed — THE NEXT BRICK (SPEC-0c, D-013)
                  ordered _out/_in AND math.fsum at the accumulator, so the engine becomes
                  order-INDEPENDENT rather than merely order-pinned. Fixes DEFECT-A/B/C.
