@@ -21,6 +21,10 @@ Four checks:
                          listed in the ledger's unregistered_suites with a reason. Catches
                          a capture that silently under-reports because a suite was never
                          wired in.
+  C6 FLOAT-ACCUMULATION  every float accumulation in src/ is either math.fsum or registered
+                         in the ledger's float_accumulations with a reason. Catches a NEW
+                         naive accumulation the moment it is written, instead of on the
+                         fourth manual hunt (SPEC-0d).
 
 Exit 0 = clean. Exit 1 = findings. Exit 2 = the tool itself could not run.
 
@@ -38,17 +42,20 @@ Usage:
     python3 tools/ledger_check.py --root PATH
     python3 tools/ledger_check.py --only C2,C4
     python3 tools/ledger_check.py --quiet         # findings only, no OK lines
+    python3 tools/ledger_check.py --list-accumulations
+                                                  # print C6's census for adjudication
 """
 
 from __future__ import annotations
 
 import argparse
+import ast
 import json
 import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Set, Tuple
 
 LEDGER_REL = Path("tools/ledger.json")
 CAPTURE_REL = Path("docs/TEST_OUTPUT.txt")
@@ -483,12 +490,399 @@ def check_runner_completeness(root: Path, ledger: dict) -> List[Finding]:
     return out
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# C6 — the float-accumulation census
+# ─────────────────────────────────────────────────────────────────────────────
+#
+# WHY THIS EXISTS (SPEC-0d §0.1). This project has met the naive-float-accumulation
+# shape three times — nous_coalitions (BUG-0b1), nous_workspace:426 (SPEC-0c §2.5),
+# nous_field:131 (SPEC-0c §2.7) — and every one was found by a person looking, never by
+# a sweep. Twice the survivor sat in a file the previous fix's author had open. A fourth
+# manual hunt has no better prior than the first three, so this is the sweep.
+#
+# WHAT IT DOES AND DOES NOT DECIDE. It does not rewrite anything and it does not judge
+# whether a site is dangerous. It enumerates the sites and requires each one to be
+# ADJUDICATED ONCE, in tools/ledger.json, with a reason. `math.fsum` sites are checked
+# mechanically (the verdict must match the AST); everything else needs a human sentence.
+#
+# SCOPE, stated so the gate is never read as a whole-repository guarantee:
+#   * src/ ONLY. experiments/, tests/ and tools/ are NOT scanned.
+#   * ADDITIVE reduction only. A multiplicative chain (`x *= k` in a loop) is equally
+#     order-sensitive and is NOT detected.
+#   * An accumulation laundered across statements THROUGH A TEMPORARY is detected only
+#     one hop (`prior = d.get(k, 0.0)` then `d[k] = f(prior + v)`); two hops is not.
+#   * math.sumprod, numpy-style reductions and Counter.update are not detected.
+# These are limitations, not silences: they are asserted as negatives in
+# tools/test_ledger.py so that "the detector is clean" never quietly means "the detector
+# did not look."
+
+SRC_REL = Path("src")
+ACCUM_KEY = "float_accumulations"
+VALID_VERDICTS = ("fsum", "registered")
+# A floor on the reason, not a judgement of it. SPEC-0d §3.1's standard — a reason that
+# explains rather than asserts — is a human call and is the tester's F-6, not this check's.
+MIN_REASON_CHARS = 24
+
+EXACT_REDUCERS = {"fsum"}                       # exactly rounded, order-independent
+NAIVE_REDUCERS = {"sum", "mean", "fmean"}       # order-dependent in the last bits
+# names whose result is an integer count, so math.fsum would be the WRONG fix (§2.2)
+INT_CALLS = {"len", "int", "ord", "bit_count", "bit_length"}
+SELF_READ_METHODS = {"get", "setdefault", "pop"}
+
+
+@dataclass(frozen=True)
+class Accumulation:
+    """One adjudicable site. `key` is <path>:<scope>.<symbol> — deliberately NOT a line
+    number, because a registry keyed by line rots on every insertion above it and trains
+    people to re-key mechanically instead of re-reading."""
+    key: str
+    path: str
+    line: int
+    col: int
+    kind: str      # fsum | builtin-sum | mean | fmean | reduce-add | aug-add | self-add
+    symbol: str
+    scope: str
+
+    @property
+    def exact(self) -> bool:
+        return self.kind == "fsum"
+
+
+def _dotted(e) -> Optional[str]:
+    """`self._t` -> 'self._t'; `x` -> 'x'; `grid[i]` -> 'grid[]'; anything else -> None.
+
+    The subscript arm collapses the index deliberately. It exists so a nested accumulator —
+    `grid[i][j] = grid[i][j] + v` — has a name to be compared under; without it the target
+    resolves to None and the site is invisible. That hole was found by an assertion of this
+    detector's own that turned out to be vacuously true."""
+    if isinstance(e, ast.Name):
+        return e.id
+    if isinstance(e, ast.Attribute):
+        base = _dotted(e.value)
+        return f"{base}.{e.attr}" if base else None
+    if isinstance(e, ast.Subscript):
+        base = _dotted(e.value)
+        return f"{base}[]" if base else None
+    return None
+
+
+def _container(e) -> Optional[str]:
+    """The dotted name an assignment target writes into: `d[k]` -> 'd'."""
+    if isinstance(e, ast.Subscript):
+        return _dotted(e.value)
+    return _dotted(e)
+
+
+def _symbol_of(e) -> str:
+    d = _container(e)
+    if d is None:
+        return "<expr>"
+    return d[5:] if d.startswith("self.") else d
+
+
+def _looks_integer(e) -> bool:
+    """Integer EVIDENCE, structural — never the identifier's name.
+
+    Exempting by name ('anything called *_count') would be a hole the day someone names a
+    float `weight_count`. `road.traversal_count += 1` is exempt because the addend is an
+    int literal, which is a fact about the code rather than about the vocabulary."""
+    if isinstance(e, ast.Constant):
+        return isinstance(e.value, int) and not isinstance(e.value, bool)
+    if isinstance(e, ast.Call):
+        return (_dotted(e.func) or "").split(".")[-1] in INT_CALLS
+    if isinstance(e, ast.UnaryOp):
+        return _looks_integer(e.operand)
+    if isinstance(e, ast.BinOp):
+        return _looks_integer(e.left) and _looks_integer(e.right)
+    return False
+
+
+def _sum_is_integer(call: ast.Call) -> bool:
+    """`sum(1 for _ in xs)` and `sum(range(n))` are tallies; fsum would change their type."""
+    if not call.args:
+        return False
+    a = call.args[0]
+    if isinstance(a, (ast.GeneratorExp, ast.ListComp, ast.SetComp)):
+        return _looks_integer(a.elt)
+    if isinstance(a, ast.Call) and (_dotted(a.func) or "").split(".")[-1] == "range":
+        return True
+    if isinstance(a, (ast.List, ast.Tuple, ast.Set)):
+        return bool(a.elts) and all(_looks_integer(x) for x in a.elts)
+    return False
+
+
+def _is_add_reduce(call: ast.Call) -> bool:
+    """functools.reduce is only an accumulation when the operator is addition."""
+    if not call.args:
+        return False
+    f = call.args[0]
+    if (_dotted(f) or "") in {"operator.add", "operator.iadd", "add", "iadd"}:
+        return True
+    if isinstance(f, ast.Lambda) and isinstance(f.body, ast.BinOp) \
+            and isinstance(f.body.op, ast.Add):
+        return True
+    return False
+
+
+def _reducer_kind(call: ast.Call) -> Optional[str]:
+    name = (_dotted(call.func) or "").split(".")[-1]
+    if name in EXACT_REDUCERS:
+        return "fsum"
+    if name == "sum":
+        return None if _sum_is_integer(call) else "builtin-sum"
+    if name in NAIVE_REDUCERS:
+        return name
+    if name == "reduce":
+        return "reduce-add" if _is_add_reduce(call) else None
+    return None
+
+
+def _reads_accumulator(e, container: Optional[str], aliases: Dict[str, str]) -> bool:
+    """True if the subtree `e` reads the very thing being assigned to.
+
+    Self-reference is what separates an ACCUMULATION from an ordinary two-term add. It is
+    also what makes the term count unbounded: `flow[r] = flow.get(r, 0.0) + t` is a
+    two-operand add per execution and an N-term reduction over the loop."""
+    if container is None:
+        return False
+    for sub in ast.walk(e):
+        if isinstance(sub, (ast.Name, ast.Attribute)) and _dotted(sub) == container:
+            return True
+        if isinstance(sub, ast.Subscript) and _dotted(sub.value) == container:
+            return True
+        if isinstance(sub, ast.Call) and isinstance(sub.func, ast.Attribute) \
+                and sub.func.attr in SELF_READ_METHODS \
+                and _dotted(sub.func.value) == container:
+            return True
+        if isinstance(sub, ast.Name) and aliases.get(sub.id) == container:
+            return True
+    return False
+
+
+def _statement_accumulation(st, aliases: Dict[str, str]) -> Optional[Tuple[str, str]]:
+    """(kind, symbol) if this statement accumulates into its own target, else None."""
+    if isinstance(st, ast.AugAssign) and isinstance(st.op, ast.Add):
+        if _container(st.target) is None or _looks_integer(st.value):
+            return None
+        return ("aug-add", _symbol_of(st.target))
+
+    if isinstance(st, ast.Assign):
+        targets = list(st.targets)
+    elif isinstance(st, ast.AnnAssign):
+        targets = [st.target]
+    else:
+        return None
+    if st.value is None:
+        return None
+
+    for tgt in targets:
+        container = _container(tgt)
+        if container is None:
+            continue
+        for sub in ast.walk(st.value):
+            if not (isinstance(sub, ast.BinOp) and isinstance(sub.op, ast.Add)):
+                continue
+            left = _reads_accumulator(sub.left, container, aliases)
+            right = _reads_accumulator(sub.right, container, aliases)
+            if not (left or right):
+                continue
+            addend = sub.right if left else sub.left
+            if _looks_integer(addend):
+                continue
+            return ("self-add", _symbol_of(tgt))
+    return None
+
+
+def _record_alias(st, aliases: Dict[str, str]) -> None:
+    """One-hop dataflow: `prior = road.charges.get(f, 0.0)` makes `prior` a read of
+    `road.charges`. Without this, an accumulation is hidden from the detector by the most
+    natural refactor there is — pulling the previous value onto its own line."""
+    if not (isinstance(st, ast.Assign) and len(st.targets) == 1
+            and isinstance(st.targets[0], ast.Name)):
+        return
+    name = st.targets[0].id
+    v = st.value
+    src = None
+    if isinstance(v, ast.Call) and isinstance(v.func, ast.Attribute) \
+            and v.func.attr in SELF_READ_METHODS:
+        src = _dotted(v.func.value)
+    elif isinstance(v, ast.Subscript):
+        src = _dotted(v.value)
+    elif isinstance(v, ast.Name) and v.id in aliases:
+        src = aliases[v.id]              # a chain of plain renames is still one hop
+    if src:
+        aliases[name] = src
+    else:
+        aliases.pop(name, None)
+
+
+def _non_stmt_children(node) -> Iterable[ast.AST]:
+    """Every child that is not a nested statement list — so an expression scan can never
+    wander into a nested function body and attribute a site to the wrong scope."""
+    for name, val in ast.iter_fields(node):
+        if name in ("body", "orelse", "finalbody", "handlers"):
+            continue
+        for it in (val if isinstance(val, list) else [val]):
+            if isinstance(it, ast.AST) and not isinstance(it, ast.stmt):
+                yield it
+
+
+def scan_source(text: str, relpath: str) -> List[Accumulation]:
+    """Enumerate every additive float accumulation in one module."""
+    tree = ast.parse(text)
+    raw: List[Tuple[int, int, str, str, str]] = []   # line, col, kind, symbol, scope
+
+    def scope_name(scope: List[str]) -> str:
+        return ".".join(scope)
+
+    def scan_calls(node, scope: List[str], hint: str) -> None:
+        if isinstance(node, ast.keyword) and node.arg:
+            hint = node.arg
+        if isinstance(node, ast.Call):
+            kind = _reducer_kind(node)
+            if kind:
+                raw.append((node.lineno, node.col_offset, kind, hint, scope_name(scope)))
+        for ch in ast.iter_child_nodes(node):
+            scan_calls(ch, scope, hint)
+
+    def stmt_hint(st) -> str:
+        if isinstance(st, ast.Assign) and st.targets:
+            return _symbol_of(st.targets[0])
+        if isinstance(st, (ast.AnnAssign, ast.AugAssign)):
+            return _symbol_of(st.target)
+        if isinstance(st, ast.Return):
+            return "<return>"
+        return "<expr>"
+
+    def walk(stmts, scope: List[str], aliases: Dict[str, str]) -> None:
+        for st in stmts:
+            if isinstance(st, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                # decorators, defaults and bases are evaluated in the OUTER scope
+                for child in _non_stmt_children(st):
+                    scan_calls(child, scope, "<signature>")
+                walk(st.body, scope + [st.name], {})
+                continue
+            hint = stmt_hint(st)
+            for child in _non_stmt_children(st):
+                scan_calls(child, scope, hint)
+            acc = _statement_accumulation(st, aliases)
+            if acc:
+                raw.append((st.lineno, st.col_offset, acc[0], acc[1], scope_name(scope)))
+            _record_alias(st, aliases)
+            for field in ("body", "orelse", "finalbody"):
+                sub = getattr(st, field, None)
+                if isinstance(sub, list):
+                    walk([s for s in sub if isinstance(s, ast.stmt)], scope, aliases)
+            for h in getattr(st, "handlers", []) or []:
+                for child in _non_stmt_children(h):
+                    scan_calls(child, scope, "<except>")
+                walk(h.body, scope, aliases)
+
+    walk(tree.body, [], {})
+
+    out: List[Accumulation] = []
+    used: Dict[str, int] = {}
+    for line, col, kind, symbol, scope in sorted(raw):
+        key = f"{relpath}:{scope}.{symbol}" if scope else f"{relpath}:{symbol}"
+        used[key] = used.get(key, 0) + 1
+        if used[key] > 1:                      # two sites, one name: keep both adjudicable
+            key = f"{key}#{used[key]}"
+        out.append(Accumulation(key=key, path=relpath, line=line, col=col,
+                                kind=kind, symbol=symbol, scope=scope))
+    return out
+
+
+def scan_float_accumulations(root: Path) -> Tuple[List[Accumulation], List[Finding]]:
+    """The census over src/. Returns (sites, tool-level findings)."""
+    sites: List[Accumulation] = []
+    problems: List[Finding] = []
+    src = root / SRC_REL
+    if not src.is_dir():
+        return sites, problems
+    for p in sorted(src.rglob("*.py")):
+        if any(part in SKIP_DIRS for part in p.relative_to(root).parts):
+            continue
+        rel = p.relative_to(root).as_posix()
+        try:
+            sites.extend(scan_source(p.read_text(encoding="utf-8"), rel))
+        except SyntaxError as e:
+            problems.append(Finding("C6", rel, e.lineno or 0,
+                                    f"could not parse for the float-accumulation census: {e.msg}",
+                                    "the census cannot certify a file it cannot parse"))
+    return sites, problems
+
+
+def check_float_accumulation(root: Path, ledger: dict) -> List[Finding]:
+    sites, out = scan_float_accumulations(root)
+    registry = ledger.get(ACCUM_KEY)
+    if registry is None:
+        registry = {}
+        if sites:
+            out.append(Finding("C6", LEDGER_REL.as_posix(), 0,
+                               f"the ledger has no {ACCUM_KEY!r} key, but src/ contains "
+                               f"{len(sites)} float accumulation(s)",
+                               f"add a {ACCUM_KEY!r} object; see SPEC-0d §2.3"))
+    if not isinstance(registry, dict):
+        return out + [Finding("C6", LEDGER_REL.as_posix(), 0,
+                              f"{ACCUM_KEY!r} must be an object of "
+                              f"<path>:<symbol> -> {{verdict, reason}}")]
+
+    seen: Set[str] = set()
+    for s in sites:
+        seen.add(s.key)
+        entry = registry.get(s.key)
+        if entry is None:
+            out.append(Finding(
+                "C6", s.path, s.line,
+                f"unregistered {s.kind} accumulation: {s.key}",
+                "sum it with math.fsum, or register it in ledger."
+                f"{ACCUM_KEY}[{s.key!r}] with a verdict and a reason that explains why "
+                "this site cannot break (SPEC-0d §3.1 is the standard)"))
+            continue
+        if not isinstance(entry, dict):
+            out.append(Finding("C6", LEDGER_REL.as_posix(), 0,
+                               f"{s.key}: entry must be an object with verdict and reason"))
+            continue
+        verdict = entry.get("verdict")
+        reason = (entry.get("reason") or "").strip()
+        if verdict not in VALID_VERDICTS:
+            out.append(Finding("C6", LEDGER_REL.as_posix(), 0,
+                               f"{s.key}: verdict {verdict!r} is not one of "
+                               f"{list(VALID_VERDICTS)}"))
+        elif verdict == "fsum" and not s.exact:
+            out.append(Finding(
+                "C6", s.path, s.line,
+                f"{s.key}: the registry says 'fsum' but the site is a {s.kind} "
+                f"accumulation — the entry no longer describes the code",
+                "re-adjudicate this site; a registry that can rot silently is a note again"))
+        elif verdict == "registered" and s.exact:
+            out.append(Finding(
+                "C6", s.path, s.line,
+                f"{s.key}: the registry says 'registered' but the site is now math.fsum",
+                "set the verdict to 'fsum'"))
+        if len(reason) < MIN_REASON_CHARS:
+            out.append(Finding(
+                "C6", LEDGER_REL.as_posix(), 0,
+                f"{s.key}: the reason is {len(reason)} characters; a registry entry "
+                f"without a reason is an approval, not an adjudication",
+                "state why this site cannot break, so a later reader can check it"))
+
+    for key in sorted(set(registry) - seen):
+        out.append(Finding(
+            "C6", LEDGER_REL.as_posix(), 0,
+            f"{ACCUM_KEY} lists {key!r}, which no longer exists in src/",
+            "remove the stale entry — a registry that outlives its sites stops being read"))
+    return out
+
+
 CHECKS = {
     "C1": ("ledger agrees with the captured test run", check_ledger_vs_capture),
     "C2": ("prose counts agree with the ledger",       check_prose_vs_ledger),
     "C3": ("status labels are valid and agree",        check_status_vocabulary),
     "C4": ("no forbidden claims outside quarantine",   check_forbidden_claims),
     "C5": ("every suite on disk is registered or excused", check_runner_completeness),
+    "C6": ("every float accumulation in src/ is fsum or registered",
+                                                       check_float_accumulation),
 }
 
 
@@ -498,6 +892,8 @@ def main(argv: Optional[List[str]] = None) -> int:
     ap.add_argument("--root", default=".", help="repository root (default: .)")
     ap.add_argument("--only", default="", help="comma-separated check ids, e.g. C2,C4")
     ap.add_argument("--quiet", action="store_true", help="print findings only")
+    ap.add_argument("--list-accumulations", action="store_true",
+                    help="print C6's census of src/ and exit (for adjudication)")
     args = ap.parse_args(argv)
 
     root = Path(args.root).resolve()
@@ -506,6 +902,20 @@ def main(argv: Optional[List[str]] = None) -> int:
         return 2
 
     ledger = load_ledger(root)
+
+    if args.list_accumulations:
+        sites, problems = scan_float_accumulations(root)
+        registry = ledger.get(ACCUM_KEY) or {}
+        for s in sites:
+            entry = registry.get(s.key) or {}
+            mark = entry.get("verdict") or "UNREGISTERED"
+            print(f"{s.path}:{s.line:<4} {mark:<12} {s.kind:<12} {s.key}")
+        print(f"\n{len(sites)} site(s) in {SRC_REL}/ "
+              f"({sum(1 for s in sites if s.exact)} fsum, "
+              f"{sum(1 for s in sites if not s.exact)} naive)")
+        for f in problems:
+            print(f.render())
+        return 0
     selected = [c.strip().upper() for c in args.only.split(",") if c.strip()] or list(CHECKS)
 
     findings: List[Finding] = []

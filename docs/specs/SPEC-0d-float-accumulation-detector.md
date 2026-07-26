@@ -152,23 +152,44 @@ permutations**, and the difference reaches `Coalition.strength`. **Order-PINNED*
 order is program order — so it is **not** a determinism defect and no 0c result depends on
 it. Registered with exactly that reason and left in place.
 
-### 3.3 `src/nous_field.py:124` — identical shape, symptom absent, and this is the argument
+### 3.3 `src/nous_field.py:124` — CORRECTED: the symptom was present; the probe could not see it
 
 ```python
 merged_flow[rid] = merged_flow.get(rid, 0.0) + fv
 ```
 
-**Same shape as §3.2, four lines away. A four-way-convergence probe produced no variation.**
+> **THIS SECTION WAS WRONG, and the correction is worth more than the original claim.**
+> It read: *"same shape as §3.2, four lines away. A four-way-convergence probe produced no
+> variation. Shape present, symptom absent — this pair is the entire case for a detector."*
+> The tester ran the entry's own falsifier on 2026-07-26 and **it fires**: 2 distinct bit
+> patterns over 4! source orders, on 40 of 40 randomly generated convergent stores.
 
-**Shape present, symptom absent — this pair is the entire case for a detector.** Had 0d been
-a fourth reproduction hunt, §3.3 would have been marked clean and left unregistered, exactly
-as `nous_workspace.py:426` was left in place by a report that had found the other two. The
-detector does not care whether a probe happened to make a site vary; it cares that the shape
-is there and unadjudicated.
+**Why the clearing probe could not have worked, which is the actual lesson.** The probe used
+four sources converging on **one node**. At hop 1 every road is traversed by exactly **one**
+source's spread, so each `merged_flow` value is **single-term** — and a single-term sum cannot
+vary by reordering. The probe was **structurally incapable of exhibiting the symptom it was
+run to look for.** A shared road must sit **downstream** of the convergence to accumulate
+terms from several spreads; put it there and the site moves.
 
-It is registered as **shape-present, symptom-unreproduced**, which is a different and more
-honest verdict than "safe" — and unlike a memory, it is written where the next person will
-be forced to read it.
+That is the six-bug checklist's **structurally-impossible branch** — *"can a branch never
+fire? prove the structure can do what it claims"* — occurring **inside the brick built to stop
+exactly this class**, and written into this spec as its headline argument. Recorded rather
+than quietly amended, because the failure mode is the point: a clearing probe that cannot
+fail is indistinguishable from a passing one, which is the same sentence as F-3's, one level
+up.
+
+**So the case for a detector is stronger than the false version, not weaker.** The original
+argument was *"a site can have the shape and lack the symptom, so shapes must be enumerated."*
+The true argument is: **a site can have the shape, have the symptom, and still clear a probe
+that a competent person designed to look for it.** Reproduction cannot be the gate. Only
+enumeration can.
+
+**The corrected registry entry** carries the verdict `CONFIRMED ORDER-DEPENDENT, order-pinned`
+— identical to §3.2 — and rests on a bound that has been verified rather than assumed:
+`ActivationField.flow` **has no reader in `src/`**. `form_coalitions_from_field` reads only
+`field_.total`, `field_.broke_through` and `field_.dominant`; the `.flow` read inside
+`form_coalitions` is `ActivationResult.flow` from a single spread, and `form_coalitions` has
+no caller in `src/`. Falsifier: any consumer that starts reading `ActivationField.flow`.
 
 ---
 

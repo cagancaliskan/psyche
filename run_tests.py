@@ -65,6 +65,11 @@ SUITES = [
     # thing rather than against a transcription. Three defects are recorded here as
     # asserted-negatives — they PASS while the defect is present, and go red on a fix.
     "test_tester_0b2_adversarial.py",
+    # 0d float-accumulation detector — TESTER-authored adversarial verification of SPEC-0d §4
+    # (F-1..F-8). Its F-1 leg is loop-closed on the project's OWN git history: it extracts src/ at
+    # three pre-fix commits and shows the detector would have caught all three manual hunts on the
+    # day the code was written. Registered by architect-pm (fact-of-record change; C5 enforces it).
+    "test_tester_0d_adversarial.py",
     # 0b2 MECHANISM RE-VERIFICATION — TESTER-authored, written from scratch (not an extension of
     # test_tester_0b2_adversarial.py) after 0c fixed all three defects the original FAIL verdict
     # recorded. Adjudicates SPEC-0b2 §6's N-1..N-9 in full. Its P-0 block asserts the measurement

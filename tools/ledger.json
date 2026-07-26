@@ -271,6 +271,83 @@
     "test_exp2c_capture.py": "parked, uncommitted per D-005 — stimulus construction for a graded run that is not happening.",
     "test_tester_exp2c_capture_adversarial.py": "parked with the above; reusable if a 2c re-spec earns its own pre-check."
   },
+  "_float_accumulations_README": [
+    "THE FLOAT-ACCUMULATION REGISTRY (brick 0d, SPEC-0d §2.3). Enforced by ledger_check C6.",
+    "",
+    "Every additive float accumulation in src/ must appear here exactly once, keyed",
+    "<path>:<scope>.<symbol> — never by line number, which rots on the first insertion",
+    "above the site. Two verdicts and no third:",
+    "",
+    "  fsum       the site IS math.fsum. C6 checks this against the AST, so the verdict",
+    "             cannot drift away from the code without the build going red.",
+    "  registered the site is naive and has been adjudicated. The reason is the artifact.",
+    "",
+    "A reason should EXPLAIN, not assert. The standard is the flow entry: it states the",
+    "structural bound that makes the site safe, and names what would falsify it. 'Registered",
+    "because it is fine' is an entry that trains people to skim, and a registry nobody reads",
+    "is worse than no check.",
+    "",
+    "This registry does NOT record that a site is safe, and 0d fixed nothing. Two entries",
+    "record a site that is order-dependent today and left that way on purpose."
+  ],
+  "float_accumulations": {
+    "src/nous_activation.py:spread_activation.flow": {
+      "verdict": "registered",
+      "reason": "THE MODEL ENTRY (SPEC-0d §3.1). Registered with a BOUND rather than converted: under hop-layered single expansion a road's source expands exactly once per spread, so a road transmits exactly once and the add's second operand cannot exist. Measured by the 0c tester — 574 spreads across 60 hostile graphs (cycles, self-loops, high-degree fans), no road read twice in any spread. A bound is stronger than a conversion because it says WHY the site cannot break, which a later reader can check; a conversion would have hidden the reasoning behind an idiom. FALSIFIER: any spread that writes the same road id twice."
+    },
+    "src/nous_activation.py:spread_activation.frozen": {
+      "verdict": "fsum",
+      "reason": "Hop-layer boundary reduction over each node's whole contribution list. Exactly rounded, so the value a node expands from is a function of the contribution MULTISET alone and not of arrival order (SPEC-0c, DEFECT-A)."
+    },
+    "src/nous_activation.py:spread_activation.out_total": {
+      "verdict": "fsum",
+      "reason": "SPEC-0b2 overlay: total outgoing conductance of one source. Exactly rounded, so no ULP asymmetry from road iteration order reaches the divisive-normalization factor."
+    },
+    "src/nous_activation.py:spread_activation.activation": {
+      "verdict": "fsum",
+      "reason": "The final reduction over each node's contribution list. Exactly rounded, so the returned activation map depends on the multiset of contributions and not on the order they converged in (SPEC-0c, DEFECT-A)."
+    },
+    "src/nous_coalitions.py:form_coalitions.strength": {
+      "verdict": "fsum",
+      "reason": "BUG-0b1's site. Coalition strength was summed over a uuid4-keyed member dict, so two mathematically identical coalitions differed by one ULP depending on iteration order and that resolved the comparison before the creation_seq tie-break ever ran. fsum makes strength a function of the member multiset, which is what makes the tie-break reachable."
+    },
+    "src/nous_coalitions.py:form_coalitions_from_field.strength": {
+      "verdict": "fsum",
+      "reason": "The second Coalition construction site, converted with the first by BUG-0b1's fix. Same argument: strength decides an ordering, so it must not depend on member iteration order."
+    },
+    "src/nous_field.py:build_activation_field.merged_flow": {
+      "verdict": "registered",
+      "reason": "CONFIRMED ORDER-DEPENDENT, order-pinned. CORRECTED 2026-07-26 (D-021): this entry previously read 'shape present, symptom unreproduced'. That was FALSE. The clearing probe — four sources converging on one node — was STRUCTURALLY INCAPABLE of exhibiting the symptom: at hop 1 each road is traversed by exactly one source's spread, so every merged_flow value is single-term there. A shared road DOWNSTREAM of the convergence is multi-term, and then it moves: measured 2 distinct bit patterns over 4! source orders on a 4-sources -> hub -> tail store (0.4325968097408329 vs 0.43259680974083287), and on 40 of 40 randomly generated convergent stores. BOUND (verified, and this is what the entry actually rests on): ActivationField.flow has NO READER in src/. form_coalitions_from_field reads only field_.total, field_.broke_through and field_.dominant; the .flow read in form_coalitions is ActivationResult.flow from a single spread, and form_coalitions has no caller in src/. So the moving bits reach no decision today. FALSIFIER: any consumer that starts reading ActivationField.flow kills this bound."
+    },
+    "src/nous_field.py:build_activation_field.total": {
+      "verdict": "registered",
+      "reason": "CONFIRMED ORDER-DEPENDENT and deliberately left naive (SPEC-0d §3.2). field.total takes two distinct bit patterns over the 3! source-order permutations and the difference reaches Coalition.strength. It is order-PINNED — source order is program order — so it is reproducible across processes and interpreters and falsifies nothing brick 0c claims; what is absent is the weaker property, order-INDEPENDENCE. 0d fixes nothing here on purpose: the gate is the deliverable, and a brick that also cleared the backlog would let the empty backlog be read as the deliverable. A later brick that converts this site re-verifies at this entry."
+    },
+    "src/nous_store.py:Clock.advance._t": {
+      "verdict": "registered",
+      "reason": "CORRECTED 2026-07-26 (D-021): this entry previously claimed 'there is no term SET that could be permuted — no alternative order a correct program could produce'. The second clause is FALSE and it was the half a reader relies on: permuting a multiset of dt values DOES move _t — measured 2.402012593713817 vs 2.4020125937138173 over 4! orders on the first multiset tried. What is TRUE and mechanical: exactly one AugAssign to _t per advance() call, so a single call is two-operand, and src/ contains NO CALLER of advance() at all (it is simulated-clock test scaffolding). What actually protects the site is that time order is SEMANTICALLY FIXED — a real but weaker argument than the one first written, and it is stated here as the weaker one. FALSIFIER: a src/ caller of advance(), or any path that applies elapsed deltas in a caller-chosen order."
+    },
+    "src/nous_store.py:Road.valence.<return>": {
+      "verdict": "fsum",
+      "reason": "SPEC-0c §2.5 site 3. This aggregate decides a CATEGORY — whether a road is closed or reopened, against _CLOSURE_THRESHOLD — so it is exactly the comparison the float rule forbids resolving on an independently-accumulated float. fsum makes valence a function of the charge multiset alone."
+    },
+    "src/nous_store.py:SubstrateStore.strengthen.road.strength": {
+      "verdict": "registered",
+      "reason": "Two-operand update, not a fold: min(1.0, road.strength + gain) adds exactly one term per crossing and both operands are fixed by the expression, so no container is iterated and there is no ordering for fsum to make irrelevant. Across crossings the order is caller program order, as for Clock.advance. FALSIFIER: a version that gathers several gains from a collection and folds them in one call."
+    },
+    "src/nous_store.py:SubstrateStore.strengthen.road.charges": {
+      "verdict": "registered",
+      "reason": "EMA blend, detected only because C6 follows the one-hop temporary `prior` back to road.charges.get(feeling, 0.0). (1.0 - blend) * prior + blend * intensity is a two-term add with both operands fixed by the expression, applied per feeling key, so no key's value is folded over an unordered collection; the order across crossings is caller program order. FALSIFIER: any change that sums several intensities for one feeling inside a single call."
+    },
+    "src/nous_workspace.py:Broadcast.total_strength_after.<return>": {
+      "verdict": "fsum",
+      "reason": "SPEC-0c §2.5 site 2. This statistic is what the no-divergence test asserts convergence on, and a convergence test whose statistic moves with road iteration order or with the CPython minor version is a weak test. Exactly rounded, it is a function of the strength multiset."
+    },
+    "src/nous_workspace.py:select_winner.strength": {
+      "verdict": "fsum",
+      "reason": "SPEC-0c §2.5 site 1 — the THIRD Coalition construction site, which BUG-0b1's report claimed did not exist. For a month the pruned winner's strength, the value _competition_key compares, was computed by the naive rule on the very path BUG-0b1's flip occurred on. Members inherit their order from a set of uuid4 NodeIDs, which the store's ordering contract does not reach, so this had to be fixed at the arithmetic."
+    }
+  },
   "meaning_bar": {
     "status": "OPEN",
     "attempts": [
