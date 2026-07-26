@@ -251,7 +251,11 @@ def test_P2_cross_process_determinism_full_clustering():
     # proximity), all equal energy (ties in representative election), PLUS an unconnected
     # equal-energy pair. Serialized by stable content keys. If any iteration order leaked,
     # group order / representatives / group_seeds would differ across seeds.
+    # SPEC-0c §5.1: the payload serialises BIT PATTERNS, never round(x, 9). round() is
+    # structurally blind to everything below 1e-9, and 1 ULP is exactly what BUG-0b1 was;
+    # a determinism probe that rounds is not a determinism probe.
     driver = textwrap.dedent('''
+        import struct
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_perceive import perceive
         from nous_source_clustering import cluster_sources
@@ -269,7 +273,7 @@ def test_P2_cross_process_determinism_full_clustering():
         for g in cl.groups:
             members = tuple(sorted(s.get_node(m).content for m in g.members))
             rep = s.get_node(g.representative).content
-            seed = round(cl.group_seeds[g.representative], 9)
+            seed = struct.pack("<d", cl.group_seeds[g.representative]).hex()
             out.append((members, rep, seed))
         print(repr(out))
     ''')
@@ -282,7 +286,9 @@ def test_P2_cross_process_determinism_full_clustering():
 def test_P2b_cross_process_determinism_full_think_pipeline():
     section("P2b cross-process determinism: full think() coalitions + clustering across 6 "
             "seeds (loop-closed end to end)")
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     driver = textwrap.dedent('''
+        import struct
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
@@ -299,11 +305,11 @@ def test_P2b_cross_process_determinism_full_think_pipeline():
         for g in r.clustering.groups:
             clu.append((tuple(sorted(s.get_node(m).content for m in g.members)),
                         s.get_node(g.representative).content,
-                        round(r.clustering.group_seeds[g.representative], 9)))
+                        struct.pack("<d", r.clustering.group_seeds[g.representative]).hex()))
         co = []
         for c in r.coalitions:
             co.append((tuple(sorted(s.get_node(m).content for m in c.members)),
-                       round(c.strength, 9),
+                       struct.pack("<d", c.strength).hex(),
                        s.get_node(c.representative()).content))
         print(repr((clu, co, s.get_node(r.thought.representative()).content if r.thought else None)))
     ''')

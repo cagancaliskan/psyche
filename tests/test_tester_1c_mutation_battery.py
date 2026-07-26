@@ -188,8 +188,10 @@ def test_mutation_battery_cross_process_determinism():
     src = os.path.join(os.path.dirname(here), "src")
     # Inject WORDS via a repr-prepended assignment so the driver body contains NO percent
     # formatting at all (avoids any %-escaping fragility in the embedded source).
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     driver = "WORDS = " + repr(_WORDS) + "\n" + textwrap.dedent('''
         import random
+        import struct
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_perceive import perceive
         from nous_source_clustering import cluster_sources
@@ -221,7 +223,7 @@ def test_mutation_battery_cross_process_determinism():
                 members = tuple(sorted((s.get_node(m).content, g._seq.get(m, -1))
                                        for m in g.members))
                 rep_seq = s.get_node(g.representative).creation_seq
-                seed = round(clustering.group_seeds[g.representative], 9)
+                seed = struct.pack("<d", clustering.group_seeds[g.representative]).hex()
                 out.append((members, rep_seq, seed))
             return sorted(out)
 

@@ -268,7 +268,10 @@ def test_replay_requires_a_trace():
 def test_replay_friction_byte_identical_across_6_seeds():
     section("§(D-1) determinism: replay friction sequence byte-identical across 6 hash seeds "
             "(fresh interpreters)")
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 12).
     driver = textwrap.dedent('''
+        import struct
+        def _b(x): return struct.pack("<d", x).hex()
         from nous_bodysensor import BodySensor, TelemetrySample
         wanted = [0.05, 0.33, 0.61, 0.0, 0.9, 0.5]
         samples = [TelemetrySample(0.0, 0.0)]
@@ -277,7 +280,7 @@ def test_replay_friction_byte_identical_across_6_seeds():
             perf += 1.0; proc += (1.0 - f)
             samples.append(TelemetrySample(perf, proc))
         b = BodySensor(simulated=True, trace=samples)
-        out = [round(b.read(), 12) for _ in range(len(wanted) + 1)]
+        out = [_b(b.read()) for _ in range(len(wanted) + 1)]
         print(repr(out))
     ''')
     outs = _det_probe(driver)
@@ -431,7 +434,11 @@ def test_modulation_changes_the_field_not_just_a_stored_number():
 def test_winner_flip_is_byte_identical_across_6_seeds():
     section("§(D-1)+(D-5): the loop's winner trace under a replayed friction sweep is byte-"
             "identical across 6 hash seeds (the winner-flip is REPRODUCIBLE, not a one-off)")
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 4) — the friction scalar that indexes
+    # the trace is serialised exactly, so two runs that differ below 1e-4 are not merged.
     driver = textwrap.dedent('''
+        import struct
+        def _b(x): return struct.pack("<d", x).hex()
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_perceive import think
         from nous_bodysensor import BodySensor, TelemetrySample
@@ -457,7 +464,7 @@ def test_winner_flip_is_byte_identical_across_6_seeds():
             s=build()
             r=think(s,"alpha gamma",body_sensor=sensor_for(f))
             win=tuple(sorted(s.get_node(m).content for m in r.thought.members)) if r.thought else None
-            out.append((round(f,4), win))
+            out.append((_b(f), win))
         print(repr(out))
     ''')
     outs = _det_probe(driver)

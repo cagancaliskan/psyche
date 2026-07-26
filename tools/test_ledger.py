@@ -268,6 +268,41 @@ def run(tmp: Path) -> None:
     f = LC.check_forbidden_claims(r, LC.load_ledger(r))
     check(len(f) == 1, "one finding per line")
 
+    # ── C5 ───────────────────────────────────────────────────────────────────
+    section("C5 passes when every suite on disk is registered")
+    r = make_repo(tmp, files={"run_tests.py": 'S = ["test_a.py", "test_b.py"]\n',
+                              "tests/test_a.py": "", "tests/test_b.py": ""})
+    check(LC.check_runner_completeness(r, LC.load_ledger(r)) == [], "clean C5")
+
+    section("C5 catches the real hole — a suite on disk the runner never runs")
+    r = make_repo(tmp, files={"run_tests.py": 'S = ["test_a.py"]\n',
+                              "tests/test_a.py": "",
+                              "tests/test_tester_0c_adversarial.py": ""})
+    f = LC.check_runner_completeness(r, LC.load_ledger(r))
+    check(len(f) == 1 and "0c_adversarial" in f[0].message, "unregistered suite caught")
+
+    section("C5 honours a deliberately-excused suite")
+    led5 = json.loads(json.dumps(BASE_LEDGER))
+    led5["unregistered_suites"] = {"test_priming.py": "needs the uncommitted SWOW file"}
+    r = make_repo(tmp, ledger=led5,
+                  files={"run_tests.py": 'S = ["test_a.py"]\n', "tests/test_a.py": "",
+                         "experiments/test_priming.py": ""})
+    check(LC.check_runner_completeness(r, LC.load_ledger(r)) == [], "excused suite honoured")
+
+    section("C5 catches a registered suite that no longer exists")
+    r = make_repo(tmp, files={"run_tests.py": 'S = ["test_a.py", "test_gone.py"]\n',
+                              "tests/test_a.py": ""})
+    f = LC.check_runner_completeness(r, LC.load_ledger(r))
+    check(any("does not exist" in x.message for x in f), "phantom registration caught")
+
+    section("C5 catches a stale excuse")
+    led5 = json.loads(json.dumps(BASE_LEDGER))
+    led5["unregistered_suites"] = {"test_vanished.py": "reason"}
+    r = make_repo(tmp, ledger=led5,
+                  files={"run_tests.py": 'S = ["test_a.py"]\n', "tests/test_a.py": ""})
+    f = LC.check_runner_completeness(r, LC.load_ledger(r))
+    check(any("stale" in (x.fix or "") for x in f), "stale excuse caught")
+
     # ── sync ─────────────────────────────────────────────────────────────────
     section("ledger_sync --check passes on a current ledger")
     r = make_repo(tmp)

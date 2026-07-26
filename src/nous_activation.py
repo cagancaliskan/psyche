@@ -170,12 +170,68 @@ def spread_activation(
 
     Returns an ActivationResult: the set of reached nodes with accumulated activation,
     the hop distance each was settled at, and any closed-road breakthroughs observed.
+
+    Raises `ValueError` for a non-finite `energy` and for a `normalization_sigma` that is
+    neither None nor finite-and-strictly-positive; `NotFound` for an unknown seed. Only
+    NON-FINITENESS is rejected in `energy` — negative and zero energy are accepted, which
+    is a separate decision with a separate record (D-014 / D-015). Note that an
+    extreme-but-finite energy can still overflow the exactly-rounded accumulation and
+    surface as `OverflowError` from `math.fsum`, which is not a `ValueError`.
     """
+    # DEFECT-C part 1 — validate sigma at the boundary, before any work, so the error
+    # is raised in the CALLER's frame rather than surfacing as a NaN four layers down.
+    # The neutral value is None, never infinity: sigma -> inf recovers this engine
+    # analytically in the limit, but the literal float('inf') computes inf/inf = NaN.
+    if normalization_sigma is not None and (
+        not math.isfinite(normalization_sigma) or normalization_sigma <= 0.0
+    ):
+        raise ValueError(
+            f"normalization_sigma must be finite and strictly positive, got "
+            f"{normalization_sigma!r}. The neutral value is None (normalization off), "
+            f"never infinity; a large finite sigma is the way to approach it."
+        )
+
+    # DEFECT-C part 3 (D-015) — validate `energy` for finiteness at the same boundary.
+    # The reason is the GENERAL one, not consistency with sigma: the engine seeds
+    # `contributions = {seed_node: [energy]}` below, so the SEED's own activation is
+    # unguarded on EVERY graph, connected or not. Part 2's guard is on `transmitted`,
+    # which only ever sees downstream values, so a seed that never transmits offers it
+    # nothing to inspect. A NaN seed therefore lands in the RETURNED activation map, is
+    # consumed by nous_field, accumulated into basins, and reaches Coalition.strength and
+    # thence _competition_key — where every NaN comparison is False and the ordering
+    # silently degrades. The isolated node is the visible instance, not the risk.
+    #
+    # FINITENESS ONLY, and the two questions stay apart on purpose: the SIGN of energy was
+    # decided separately (D-014) and negative energy is deliberately NOT rejected here.
+    if not math.isfinite(energy):
+        raise ValueError(
+            f"energy must be finite, got {energy!r}. A non-finite seed energy is written "
+            f"straight into the returned activation map, where no downstream comparison "
+            f"can reject it (every comparison with NaN is False). Note this rejects "
+            f"non-finiteness only: negative and zero energy are accepted."
+        )
+
     if not store.exists(seed_node):
         raise NotFound(f"seed node {seed_node}")
 
-    # accumulated activation arriving at each node (convergent paths SUM here)
-    activation: Dict[str, float] = {seed_node: energy}
+    # Activation arriving at each node, kept as the LIST OF CONTRIBUTIONS rather than as
+    # a running total, and reduced with math.fsum — at each hop-layer boundary (where a
+    # node's expansion value is frozen) and once at the end (for the returned result).
+    #
+    # Why a list and not `total += x`: float addition is not associative, so a running
+    # total is a function of the order the terms arrive in, and at in-degree >= 3 that
+    # order decided the last ULP. math.fsum is EXACTLY ROUNDED, so its result does not
+    # depend on the order of its arguments at all. That is the difference between
+    # order-INDEPENDENT (a different iteration order gives the same bits) and merely
+    # order-pinned (the order happens to be fixed). Ordering the store gives the second;
+    # this gives the first, and only the first survives a future reordering — the design
+    # note below already contemplates one ("expand only the top-K most active nodes"
+    # within a hop layer, which reorders iteration).
+    #
+    # It also makes the semantics uniform across interpreters: CPython 3.12 changed the
+    # builtin sum() to Neumaier compensated summation, so naive float summation returns
+    # different bits on 3.11 and 3.12. math.fsum is exactly rounded on every version.
+    contributions: Dict[str, List[float]] = {seed_node: [energy]}
     settled_hops: Dict[str, int] = {}
     broke_through: List[str] = []
     flow: Dict[str, float] = {}   # RoadID -> activation transmitted (what the spread did)
@@ -233,29 +289,46 @@ def spread_activation(
         # dropped" — a→b→c→f is a length-3 path to f and is correctly not propagated as
         # if it were length-2), now enforced even in the presence of same-hop edges.
         #
-        # After this, accumulation is an order-independent commutative sum, and
-        # expansion reads only this frozen snapshot — so there is no remaining place
-        # where live-mutation order can leak into a result. This closes the
-        # order-dependence thread, not merely one more layer of it.
-        frozen = {node: activation[node] for node in current_layer}
+        # CORRECTION, kept in place because the mistake is instructive. An earlier
+        # version of this comment claimed the freeze left "no remaining place where
+        # live-mutation order can leak into a result" and "closes the order-dependence
+        # thread." That was false. The freeze removes order-dependence from WHICH VALUE
+        # a node expands with; it does nothing about the order the contributions were
+        # ADDED IN, and a naive running total is a function of exactly that. The leak
+        # survived here for the life of the substrate (DEFECT-A) while this comment
+        # asserted it could not. What closes it is the reduction below being exactly
+        # rounded, not the freeze.
+        #
+        # The reduction is over the node's WHOLE contribution list, not over a running
+        # total plus the new terms: fsum of the full list is the exactly rounded sum,
+        # whereas folding an already-rounded partial back in would bake this boundary's
+        # rounding into every later value and re-introduce a dependence on where the
+        # boundaries fell.
+        frozen = {node: math.fsum(contributions[node]) for node in current_layer}
 
         for node in current_layer:
             node_act = frozen[node]  # value as settled at THIS hop — not live
             if hop >= hop_budget:
                 continue  # locality guard: settle but do not expand past the budget
 
+            # Materialise this node's roads ONCE per expansion (DEFECT-B's fix). Both
+            # out_total and the transmission loop below read from this one list, so every
+            # strength in the expansion comes from a SINGLE clock instant. Reading twice
+            # applied lazy decay at two different clock.now() values, which made
+            # `competing = out_total - road.strength` an elapsed-time residue instead of
+            # exactly 0 on any clock that advances — i.e. on the library default. It also
+            # halves the road reads, so this is strictly better on both axes.
+            roads = [(rid, store.get_road(rid))    # pure decayed VIEWs; nothing mutated
+                     for rid in store.roads_from(node)]
+
             # SPEC-0b2 overlay: total outgoing conductance of this source, used only when
             # normalization is enabled. math.fsum so the sum is exactly rounded and
             # therefore order-independent (no ULP leak from container iteration order).
             out_total = 0.0
             if normalization_sigma is not None:
-                out_total = math.fsum(
-                    store.get_road(r).strength for r in store.roads_from(node)
-                )
+                out_total = math.fsum(road.strength for _, road in roads)
 
-            for road_id in store.roads_from(node):
-                road = store.get_road(road_id)  # pure decayed VIEW; nothing mutated
-
+            for road_id, road in roads:
                 outgoing = node_act
                 if road.closed:
                     frac = closed_transmission(outgoing, road)
@@ -271,20 +344,57 @@ def spread_activation(
                 if normalization_sigma is not None:
                     # Divisive normalization (Carandini & Heeger canonical form):
                     # this road's drive is divided by sigma plus the COMPETING
-                    # conductance out of the same source. sigma -> inf recovers the
-                    # unnormalized engine exactly; a lone out-road is never attenuated
-                    # (competing == 0 => factor 1.0) at any sigma.
+                    # conductance out of the same source. A lone out-road is never
+                    # attenuated (competing == 0 exactly => factor 1.0) at any sigma.
+                    #
+                    # The neutral value is None, NOT infinity. "sigma -> inf recovers
+                    # the unnormalized engine" is true analytically in the limit and
+                    # catastrophic at the literal value: inf/inf is NaN. A large finite
+                    # sigma does recover it (1e300 is byte-identical to None); infinity
+                    # is rejected at the boundary above.
                     competing = out_total - road.strength
                     if competing > 0.0:
                         transmitted *= normalization_sigma / (
                             normalization_sigma + competing
                         )
+                # DEFECT-C part 2 — a GENERAL guard, deliberately not scoped to sigma.
+                # `transmitted < floor` is False for NaN, because every comparison with
+                # NaN is False, so a NaN walks straight past the floor and into the
+                # result with no exception. That is a property of the floor comparison,
+                # not of any one term, so any future term that can go non-finite
+                # inherits it. Refuse loudly at the point of computation rather than
+                # propagating a poisoned float — a spread is a pure read, so nothing is
+                # left half-written.
+                #
+                # DO NOT DELETE THIS AS DEAD CODE (D-015, SPEC-0c §4). Since `energy` and
+                # `normalization_sigma` are both validated for finiteness above, and every
+                # multiplier in the chain is <= 1 within the documented parameter domain,
+                # a reader looking for a public route into this branch will mostly not
+                # find one — and would be reading correctly but concluding wrongly. It is
+                # a BACKSTOP against a future term that manufactures a non-finite value
+                # from finite inputs, which is the class it was written for; removing the
+                # belt because the braces hold is how the braces come to be load-bearing
+                # unnoticed. (One in-domain-violating public route does survive:
+                # `decay_per_hop` is documented as 0..1 but is not validated, because
+                # D-015 scoped the boundary work to `energy` alone. Widening it is a
+                # separate decision with its own record.) Both routes into this branch —
+                # the surviving public one and an injected non-finite road strength from
+                # below the boundary — are asserted in tests/test_nous_activation.py.
+                if not math.isfinite(transmitted):
+                    raise ValueError(
+                        f"non-finite transmitted activation ({transmitted!r}) on road "
+                        f"{road_id}: it would pass the floor guard silently. "
+                        f"inputs — source activation {node_act!r}, road strength "
+                        f"{road.strength!r}, decay_per_hop {decay_per_hop!r}, "
+                        f"normalization_sigma {normalization_sigma!r}"
+                    )
                 if transmitted < floor:
                     continue  # too faint to matter (also aids locality)
 
                 target = road.target_id
-                # convergent activation SUMS at the target
-                activation[target] = activation.get(target, 0.0) + transmitted
+                # convergent activation SUMS at the target — recorded, then reduced with
+                # math.fsum at the layer boundary and at the end (see `contributions`).
+                contributions.setdefault(target, []).append(transmitted)
                 # record what this edge ACTUALLY transmitted — the flow. Under hop-
                 # layered single-expansion a road's source expands once, so a road
                 # transmits once; we sum defensively in case of any future re-traversal.
@@ -296,6 +406,14 @@ def spread_activation(
                     next_layer_set[target] = None
 
         current_layer = list(next_layer_set.keys())
+
+    # The final reduction. Key order is first-arrival order, exactly as when the totals
+    # were accumulated in place, so nothing downstream that iterates the mapping sees a
+    # change; only the last bits of the values can move, and only where three or more
+    # contributions converge.
+    activation: Dict[str, float] = {
+        node: math.fsum(values) for node, values in contributions.items()
+    }
 
     return ActivationResult(
         seed=seed_node, activation=activation, hops=settled_hops,

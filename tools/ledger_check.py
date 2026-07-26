@@ -17,6 +17,10 @@ Four checks:
                          and must match the ledger's status for that brick.
   C4 FORBIDDEN-CLAIMS    CONTRIBUTING.md rule 1 terms may not appear outside the quarantined
                          paths, unless the line carries an explicit allow pragma.
+  C5 RUNNER-COMPLETENESS every test file on disk is either registered in run_tests.py or
+                         listed in the ledger's unregistered_suites with a reason. Catches
+                         a capture that silently under-reports because a suite was never
+                         wired in.
 
 Exit 0 = clean. Exit 1 = findings. Exit 2 = the tool itself could not run.
 
@@ -431,11 +435,60 @@ def check_forbidden_claims(root: Path, ledger: dict) -> List[Finding]:
 # main
 # ─────────────────────────────────────────────────────────────────────────────
 
+RUNNER_REL = Path("run_tests.py")
+SUITE_FILE_RE = re.compile(r'"(test_\S+?\.py)"')
+
+
+def check_runner_completeness(root: Path, ledger: dict) -> List[Finding]:
+    """Every suite on disk must be either registered in the runner or explicitly excused.
+
+    The hole this closes: on 2026-07-25 a tester-authored suite sat in tests/ unregistered,
+    capture_run captured a run that omitted it, and ledger_sync wrote the under-reported
+    total into the ledger. The capture was internally consistent and wrong, which is exactly
+    the failure the ledger exists to prevent. Nothing checked that the runner ran everything.
+    """
+    out: List[Finding] = []
+    runner = root / RUNNER_REL
+    if not runner.exists():
+        return [Finding("C5", RUNNER_REL.as_posix(), 0, "no run_tests.py found")]
+
+    registered = set(SUITE_FILE_RE.findall(runner.read_text(encoding="utf-8")))
+    excused = dict(ledger.get("unregistered_suites", {}) or {})
+
+    on_disk: List[Path] = []
+    for sub in ("tests", "experiments"):
+        d = root / sub
+        if d.is_dir():
+            on_disk += sorted(d.glob("test_*.py"))
+
+    for p in on_disk:
+        name = p.name
+        if name in registered or name in excused:
+            continue
+        out.append(Finding(
+            "C5", p.relative_to(root).as_posix(), 0,
+            f"{name} exists but is neither registered in run_tests.py nor listed in "
+            f"ledger.unregistered_suites",
+            "register it in run_tests.py, or add it to unregistered_suites with the reason "
+            "it is deliberately excluded"))
+
+    disk_names = {p.name for p in on_disk}
+    for name in sorted(set(registered) - disk_names):
+        out.append(Finding("C5", RUNNER_REL.as_posix(), 0,
+                           f"run_tests.py registers {name}, which does not exist"))
+    for name in sorted(set(excused) - disk_names):
+        out.append(Finding("C5", LEDGER_REL.as_posix(), 0,
+                           f"unregistered_suites lists {name}, which does not exist",
+                           "remove the stale entry"))
+    return out
+
+
 CHECKS = {
     "C1": ("ledger agrees with the captured test run", check_ledger_vs_capture),
     "C2": ("prose counts agree with the ledger",       check_prose_vs_ledger),
     "C3": ("status labels are valid and agree",        check_status_vocabulary),
     "C4": ("no forbidden claims outside quarantine",   check_forbidden_claims),
+    "C5": ("every suite on disk is registered or excused", check_runner_completeness),
 }
 
 

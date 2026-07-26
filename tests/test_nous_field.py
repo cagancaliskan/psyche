@@ -158,7 +158,10 @@ def test_intrusive_node_in_field_coalition():
 def test_field_determinism_adversarial_across_hash_seeds():
     section("ADVERSARIAL determinism: field coalitions identical across hash seeds")
     import subprocess, sys, os, textwrap
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     probe = textwrap.dedent('''
+        import struct
+        def _b(x): return struct.pack("<d", x).hex()
         from nous_store import SubstrateStore, Clock, NodeType
         from nous_field import build_activation_field
         from nous_coalitions import form_coalitions_from_field
@@ -178,7 +181,7 @@ def test_field_determinism_adversarial_across_hash_seeds():
         out = []
         for c in cs:
             out.append((tuple(sorted(s.get_node(m).content for m in c.members)),
-                        round(c.strength, 9),
+                        _b(c.strength),
                         s.get_node(c.representative()).content,
                         c.intrusive))
         print(repr(out))

@@ -145,6 +145,7 @@ mutates nothing.
 
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional, FrozenSet, Set
 
@@ -231,8 +232,14 @@ class Broadcast:
 
     def total_strength_after(self) -> float:
         """Sum of the broadcast roads' canonical strengths after the write — the bounded
-        aggregate the no-divergence test watches converge across cycles."""
-        return sum(self.after.values())
+        aggregate the no-divergence test watches converge across cycles.
+
+        math.fsum, not sum(): this statistic feeds an assertion, and a convergence test
+        whose statistic depends on road iteration order or on which CPython runs it
+        (3.12+ compensates builtin sum(); 3.10/3.11 do not) is a weak test. fsum is
+        exactly rounded, so the aggregate is a function of the strength MULTISET alone.
+        SPEC-0c §2.5 site 2."""
+        return math.fsum(self.after.values())
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -416,16 +423,25 @@ def select_winner(
             _seq=dict(raw_winner._seq),
         )
 
-    # Build the pruned winner. Strength is recomputed as the sum of surviving members'
-    # activations (the same "sum of member activations" rule coalition formation uses), so
-    # the winner remains internally consistent after pruning. Intrusive/breakthrough marks
-    # are carried for surviving members only.
+    # Build the pruned winner. Strength is recomputed as math.fsum over the surviving
+    # members' activations — literally the same rule coalition formation uses
+    # (nous_coalitions.py, both Coalition construction sites), so the winner remains
+    # internally consistent after pruning. Intrusive/breakthrough marks are carried for
+    # surviving members only.
+    #
+    # This is the THIRD Coalition construction site in src/, and BUG-0b1 converted only
+    # the other two while its report claimed there were two in total. So for a month this
+    # comment's "same rule" claim was false and the pruned winner's strength — the value
+    # _competition_key compares — was computed by the naive, version-dependent rule on the
+    # very path BUG-0b1's flip occurred on. Members inherit their order from a set of uuid4
+    # NodeIDs built in the coalition layer, which the store's ordering contract does not
+    # reach, so this had to be fixed at the arithmetic. SPEC-0c §2.5 site 1 / §2.5.1.
     pruned_members = {n: a for n, a in raw_winner.members.items() if n in kept}
     pruned_seq = {n: raw_winner._seq[n] for n in pruned_members if n in raw_winner._seq}
     surviving_bt = set(raw_winner.breakthrough_members) & set(pruned_members)
     pruned_winner = Coalition(
         members=pruned_members,
-        strength=sum(pruned_members.values()),
+        strength=math.fsum(pruned_members.values()),
         intrusive=bool(surviving_bt),
         breakthrough_members=surviving_bt,
         _seq=pruned_seq,
