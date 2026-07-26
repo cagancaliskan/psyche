@@ -65,6 +65,13 @@ SUITES = [
     # thing rather than against a transcription. Three defects are recorded here as
     # asserted-negatives — they PASS while the defect is present, and go red on a fix.
     "test_tester_0b2_adversarial.py",
+    # 0b2 MECHANISM RE-VERIFICATION — TESTER-authored, written from scratch (not an extension of
+    # test_tester_0b2_adversarial.py) after 0c fixed all three defects the original FAIL verdict
+    # recorded. Adjudicates SPEC-0b2 §6's N-1..N-9 in full. Its P-0 block asserts the measurement
+    # NOISE FLOOR: on a live clock two identical sigma=None calls differ by ~1e9 ULP through lazy
+    # decay, which is larger than DEFECT-B's effect — so the frozen clock is a requirement, and the
+    # suite proves it rather than asserting it in a comment.
+    "test_tester_0b2_reverify.py",
     # 0c deterministic road ordering — TESTER-authored adversarial verification of SPEC-0c §6
     # (O-1..O-17 incl. O-4b). Data-free synthetic topologies; makes no meaning claim. Registered
     # by architect-pm, NOT by the tester: run_tests.py decides what the canonical count includes,

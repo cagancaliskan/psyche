@@ -848,3 +848,57 @@ skip-with-recorded-reason. Not decided; must be before submission.
 The check asserting that *the interpreters which can expose the defect were actually swept* is
 the best single assertion in this repository and must survive the conversion. It encodes "a
 coverage axis is only evidence for the property it can perturb" as executable.
+
+## D-017 · 2026-07-26 · 0b2's mechanism bar closes — tester PASS on all nine invariants
+**Decided by:** tester (the verdict) · architect-pm (the record and the close-out)
+**Supersedes:** the FAIL verdict of D-011, which is preserved in SPEC-0b2 §8 as the record it was
+
+**The verdict (recorded, not decided). PASS — all nine of SPEC-0b2 §6's invariants hold** under
+adversarial and loop-closed conditions. Suite `tests/test_tester_0b2_reverify.py`, written from
+scratch rather than as an extension of the original adversarial suite; swept five CPython minors ×
+six hash seeds × two reps, one digest throughout. Canonical run: **23 suites, 1,973 assertions, 0
+failures**, all five interpreters agreeing.
+
+The three defects the FAIL recorded are closed: **DEFECT-A** by brick 0c, **DEFECT-B** by the
+single-read materialisation, **DEFECT-C** by σ validation and then `energy` validation (D-015).
+
+**`0b2` stays `BUILT-UNVALIDATED`.** This closes the **mechanism** bar only. No cognitive claim is
+made or approached, and the meaning bar is untouched — still open after three structurally distinct
+refusals.
+
+**The most useful output of this pass is a measurement technique, not a verdict.** N-5 must be
+tested on a **frozen** clock, and the numbers say why: on the library-default live clock, two
+*identical* `sigma=None` calls differ (`0.2433743747480014` vs `0.24337436243963237`), and over 60
+identical calls the spread is ≈ 2e-9 relative — about 1e9 ULP — from lazy decay between calls.
+**DEFECT-B's entire effect is inside that spread.** Cagan hit this and nearly filed a defect against
+a working engine. The suite now **asserts** the noise floor, so the reason every bit-exact test
+freezes the clock lives in the tests rather than in a deletable comment. *Establish the noise floor
+before believing the signal* generalises well past this brick.
+
+**A correction that is itself the lesson.** SPEC-0b2 recorded the silencing cliff as "survives to
+16, none from 32". The re-verification measured **24**. An exhaustive binary search found the truth:
+**every out-degree 1…31 survives; 32 is fully silenced.** Three measurements, three answers, none
+wrong as observations — each reported *the largest value it happened to sample*. **A boundary
+located by sampling is the last sample, not the boundary.** Corrected in §6.9 and §8, and "cliff,
+not taper" is now scoped to **equal-strength** fans, since unequal fans taper genuinely.
+
+**What stays open for 0b2, and the two floor questions are NOT one question.** The §5 default-flip
+decision (Cagan's). **D-008** — the floor's **SCALE-INVARIANCE** — open, and it is what **blocks the
+flip**. Brick **0c-ii** — the floor's **FINITENESS** — registered, blocks nothing. They touch the
+same constant and are otherwise unrelated: validating `floor` for finiteness leaves it as absolute
+as it was, and making it relative leaves it as non-finite-able as it was. Stated in SPEC-0b2 §5,
+SPEC-0c §4 and SPEC-0d §7.1 so the two cannot quietly merge.
+
+**Two observations routed, neither blocking.** (i) `spread_activation`'s seed guard is
+`store.exists(seed_node)`, which is **true for RoadIDs**: at `hop_budget=0` a road id yields a
+well-formed result seeded on a road with no error; at a larger budget `NotFound` is raised from
+inside the expansion rather than at the boundary. Verified identical on the pre-overlay engine —
+**pre-existing, not 0b2's** — and unreachable from any internal caller. Same class as O-12 and
+DEFECT-C; **recommend folding into 0c-ii**, whose scope is exactly that class. (ii) The overlay's
+own arithmetic has **no builder-side assertion** — `tests/test_nous_activation.py` has one test
+named for it, and everything else lives in tester-owned files. Not a defect and not a reason to
+doubt the verdict, but the overlay would have no coverage if those suites were removed. Worth a
+builder pass eventually.
+
+**Also swept, worth recording:** the machine now carries CPython **3.14.5** alongside 3.14.4; both
+were exercised. The ledger records whatever `python3.14` resolves to at capture time.

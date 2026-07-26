@@ -1,8 +1,10 @@
 # SPEC-0b2 — Conserved activation: divisive normalization at the transmission site
 
-**Status:** brick 1 (the overlay) **BUILT, default-off** · **TESTER VERDICT ON §6: FAIL** — seven
-of nine invariants hold, **N-2 and N-5 do not**, N-7 holds only for finite sigma · brick 2 (the
-activation floor) **NOT STARTED** · the §5 default-flip decision remains **open**
+**Status:** brick 1 (the overlay) **BUILT, default-off** · **MECHANISM BAR CLOSED —
+tester verdict on §6: PASS, all nine invariants** (re-verified 2026-07-26 after brick 0c fixed
+all three defects; the original FAIL of 2026-07-25 is preserved below as the record it was) ·
+brick 2 (the activation floor) **NOT STARTED** · the §5 default-flip decision remains **open** ·
+`0b2` stays **`BUILT-UNVALIDATED`**: mechanism verified, **no cognitive claim**
 **Revises:** 0b, the spreading-activation engine — was `PROVEN`, now `BUILT-UNVALIDATED`.
 Demoted on 2026-07-25 by D-012: §6.0's DEFECT-A falsifies the determinism leg of Phase 0's
 done-means at library defaults.
@@ -300,7 +302,7 @@ was.**
 
 1. **The horizon does not taper, it cliffs.** The table above suggests a gradient. On
    equal-strength fans at σ = 1.0 and the default floor, the measured behaviour is a **step**:
-   every target survives up to out-degree 16 and **none** survives from out-degree 32 onward
+   every target survives up to out-degree **31** and **none** survives from out-degree 32 onward
    (`(out_degree, reached)` = `(1,1) (2,2) (4,4) (8,8) (16,16) (32,0) (64,0) (128,0) (200,0)`).
    Equal-strength roads cross the floor together, so the censoring arrives all at once rather than
    thinning gradually. The silencing is at least **observable** — the result is an empty flow with
@@ -479,7 +481,14 @@ BUG-0b1 established that **1 ULP** was enough to flip a workspace winner 8 times
 
 ### 6.6 N-6 monotonicity — **PASS**
 
-*Claim: transmitted activation is strictly decreasing in `competing` and strictly increasing in σ.*
+*Claim: transmitted activation is strictly decreasing in `competing`, and strictly increasing
+in σ **until it saturates to the unnormalized value**.*
+
+> **Wording corrected 2026-07-26.** The draft said "strictly increasing in σ" without
+> qualification, and that is false past saturation: at σ ≳ 1e13 the factor rounds to exactly
+> 1.0 and further increases change nothing. That saturation is not a defect — **it is N-7's
+> convergence**, which this spec requires. The two invariants were stating the same behaviour
+> in contradictory words, and N-6 was the one that was wrong.
 
 Both directions hold, and transmitted activation never exceeds the unnormalized value.
 Property-based over 30 random adversarial graphs plus targeted fixtures.
@@ -529,8 +538,22 @@ byte-identical. The same graph is **not** silent unnormalized, so the horizon ch
 *difference* rather than hidden inside a truncated result.
 
 Empirically sharper than §5's table: on equal-strength fans at σ = 1.0 and the default floor, the
-horizon **cliffs rather than tapers** — every target survives up to out-degree 16 and none survives
+horizon **cliffs rather than tapers** — every target survives up to out-degree 31 and none survives
 from 32 onward, because equal-strength roads cross the floor together.
+
+
+> **CORRECTED 2026-07-26, and the correction is itself the lesson.** This spec recorded the
+> cliff as "survives to 16, none from 32". The 0b2 re-verification measured 24. An
+> exhaustive binary search then found the true boundary: **every out-degree 1…31 fully
+> survives and 32 is fully silenced.** Three measurements, three different answers — and
+> each one reported *the largest value it happened to sample*. 16 and 24 were not wrong
+> observations; they were correct observations mistaken for a boundary. A boundary found by
+> sampling is the last sample, not the boundary.
+>
+> **And "cliff, not taper" holds only for EQUAL-STRENGTH fans.** Equal roads cross the floor
+> together, which is what makes it a step. On *unequal* fans the re-verification measured a
+> genuine partial taper (17/21, 17/23, 17/24, 18/30, 19/33), with the survivors matching §2's
+> formula exactly. The unqualified claim overstates the effect.
 
 ### 6.10 Structural findings outside the nine invariants
 
@@ -580,7 +603,8 @@ characterization on a synthetic star, not a graded behavioral result against hum
    probation. Tests pin the qualitative regime (monotone, bounded, neutral at None), never a
    magnitude. Nothing downstream may depend on σ's value.
 3. **Degree-dependent horizon.** §5. Real, unresolved, visible by N-9 — and measured to be a
-   **cliff, not a taper** (§6.9): every target survives to out-degree 16 and none from 32 on, at
+   **cliff, not a taper on equal-strength fans** (§6.9): every target survives to out-degree 31
+   and none from 32 on, at
    σ = 1.0 with the default floor on equal-strength fans.
 4. **`S_out` is a per-expansion cost.** One extra pass over each expanding node's out-roads.
    Negligible on the current toy graphs; on SWOW-scale it doubles the road reads in the
@@ -603,3 +627,79 @@ characterization on a synthetic star, not a graded behavioral result against hum
    as "intrusive recall happened" over-reports. Pre-existing, widened here.
 9. **σ's domain is unvalidated** (§6.7). Until DEFECT-C is resolved, `inf`, `nan`, `0` and negative
    values are all accepted and all misbehave, one of them silently.
+
+
+---
+
+## 9. Mechanism re-verification, 2026-07-26 — VERDICT: PASS
+
+**All nine invariants N-1 … N-9 hold** under adversarial and loop-closed conditions.
+Suite: `tests/test_tester_0b2_reverify.py`, written from scratch rather than as an extension
+of the original adversarial suite. Swept 5 CPython minor versions × 6 hash seeds × 2 reps,
+one digest throughout.
+
+**The three defects the FAIL recorded are closed:** DEFECT-A by brick 0c (ordering +
+`math.fsum`), DEFECT-B by the single-read materialisation, DEFECT-C by σ validation and then
+by `energy` validation (D-015, after this spec's own O-12 gap was found).
+
+**§8's earlier sections are left exactly as written.** They record what was true on
+2026-07-25. A verification record edited afterwards to reflect a later state is not a record;
+what changed since is recorded here.
+
+### 9.1 The noise floor — now an assertion, not a comment
+
+The single most useful thing this pass produced is not a verdict, it is a measurement
+technique, and it is worth stating because it nearly produced a false defect report.
+
+**N-5 must be tested on a frozen clock, and here is why, in numbers.** On the library-default
+live clock, two *identical* `sigma=None` calls already differ:
+
+```
+call 1 = 0.2433743747480014
+call 2 = 0.24337436243963237     # same call, same arguments, sigma=None both times
+```
+
+Over 60 identical calls the spread is ≈ 2e-9 relative — roughly 1e9 ULP — from lazy decay
+between the calls. **DEFECT-B's entire effect is *inside* that spread.** So on a live clock
+the noise exceeds the signal, and any deviation attributed to normalization is the probe's
+fault. The suite now asserts the noise floor, so the reason every bit-exact test freezes the
+clock lives in the tests rather than in a comment someone can delete.
+
+**Establish the noise floor before believing the signal.** That generalises past this brick.
+
+### 9.2 One correction that is itself the lesson
+
+This spec recorded the silencing cliff at "survives to 16, none from 32". The
+re-verification measured **24**. An exhaustive binary search then found the truth: **every
+out-degree 1…31 fully survives; 32 is fully silenced.**
+
+Three measurements, three answers, and none of them wrong as observations — each reported
+*the largest value it happened to sample*. A boundary located by sampling is the last sample,
+not the boundary. §6.9 and §8 item 3 are corrected, and the "cliff, not taper" claim is now
+scoped to **equal-strength** fans, since unequal fans taper genuinely.
+
+### 9.3 What stays open for 0b2 — and the two floor questions are NOT the same question
+
+- **The §5 default-flip decision.** Open. Cagan's.
+- **D-008 — the floor's SCALE-INVARIANCE.** Open, and it is what **blocks the default flip**.
+- **Brick 0c-ii — the floor's FINITENESS.** Registered, blocks nothing.
+
+D-008 and 0c-ii touch the same constant and are otherwise unrelated; fixing either does
+nothing for the other. The full table is in SPEC-0d §7.1, and §5 carries it too.
+
+### 9.4 Two observations for whoever owns them
+
+**A seed guard that accepts road ids.** `spread_activation`'s guard is
+`store.exists(seed_node)`, which is **true for RoadIDs**. At `hop_budget=0` a road id yields a
+well-formed `ActivationResult` seeded on a road, with no error; at any larger budget it raises
+`NotFound` from *inside* the expansion rather than at the boundary. **Verified identical on
+the pre-overlay engine — pre-existing, not 0b2's**, and unreachable from any internal caller.
+It is the same class as O-12 and DEFECT-C: silent acceptance where loud refusal was intended.
+Recommend folding into **0c-ii**, whose scope is exactly that class.
+
+**The overlay's evidence lives entirely in tester-owned files.** `tests/test_nous_activation.py`
+contains one test named for the overlay. The overlay's own arithmetic — `S_out = fsum`,
+`competing = S_out − s`, the closed-road competition decision, the horizon change — has no
+builder-side assertion at all. Not a defect, and not a reason to doubt the verdict, but it
+means that if the tester suites were ever removed the overlay would have no coverage. Worth a
+builder pass at some point; not urgent.

@@ -1,7 +1,7 @@
 ======================================================================
   NOUS — CAPTURED TEST OUTPUT (verbatim)
 ======================================================================
-Generated : 2026-07-26 14:36:54 +0300
+Generated : 2026-07-26 15:49:14 +0300
 Machine   : Darwin 24.5.0 arm64
 Python    : Python 3.14.4   (primary — this transcript)
 Swept     : python3.10 (3.10.17), python3.11 (3.11.15), python3.12 (3.12.4), python3.13 (3.13.14), python3.14 (3.14.4)
@@ -10,7 +10,7 @@ Command   : python3 tools/capture_run.py   (wraps run_tests.py per interpreter)
 Note      : Built-in harness (not pytest); each suite prints RESULT: N passed,
             M failed and exits non-zero on any failure. Every interpreter above
             produced identical per-suite counts; a disagreement refuses capture.
-            Totals: 22 suites, 1727 assertions, 0 failures.
+            Totals: 23 suites, 1973 assertions, 0 failures.
 ======================================================================
 ######################################################################
 # test_nous_store.py
@@ -945,6 +945,180 @@ S2 structural: the parameter is keyword-only and defaults to None
 ======================================================================
 
 ######################################################################
+# test_tester_0b2_reverify.py
+######################################################################
+==========================================================================
+  TESTER — SPEC-0b2 §6 RE-ADJUDICATION (N-1 … N-9), independent second pass
+  src/ untouched. Mechanism only; no cognitive claim is made or approached.
+==========================================================================
+
+P-0 noise floor: on a LIVE clock, identical sigma=None calls DISAGREE
+  live-clock spread over 60 identical calls: 1.7499283852528968e-07  (7.190e-07 relative, ~6304781459 ULP)
+  NOTE: N-5 and all byte-identity claims below run on Clock(simulated=True). This is a property of 0a's lazy decay, not of the 0b2 overlay.
+
+N-1a the neutral value is byte-identical to omitting the parameter (exception path included)
+  compared 1989; 0 of them exercised the EXCEPTION path
+
+N-1b byte-identity vs the ACTUAL pre-overlay engine recovered from git
+  recovered pre-overlay engine at 5d2907102216
+  compared 2298, of which 351 at the 2-contribution boundary; 692 skipped as outside the oracle's valid region
+
+N-1i exhaustive: every divergence from the pre-overlay engine is one of four DECIDED 0c changes — none is the overlay's
+  4600 comparisons; 2959 byte-identical; divergences by class: {'energy_finiteness_D015': 690, 'transmitted_backstop_D015': 346, 'signed_zero_D014': 230, 'fsum_accumulation_D013': 375}
+
+N-1c byte-identity vs the independent oracle (no in-degree bound)
+
+N-1d the oracle is not a mirror: seven deliberate mutations, all caught
+  mutations caught: 7/7
+
+N-1e LOOP-CLOSED: seeds from perceive(), then from the previous spread's own ranking
+
+N-1f LOOP-CLOSED through build_activation_field(): the consumer's results equal explicit sigma=None
+
+N-1g the neutrality lives in the SIGNATURE, not only at a call site
+
+N-1h the neutral path reads the store exactly as the omitted parameter does — and the overlay ON adds no reads either
+
+N-2a determinism: one bit pattern across 6 hash seeds x every CPython minor version present, overlay OFF and ON, on the shape that broke
+    3.10.11    /usr/local/bin/python3.10
+    3.10.15    /opt/local/bin/python3.10
+    3.10.17    /opt/homebrew/bin/python3.10
+    3.11.10    /opt/local/bin/python3.11
+    3.11.15    /opt/homebrew/bin/python3.11
+    3.12.4     /opt/anaconda3/bin/python3.12
+    3.12.7     /opt/local/bin/python3.12
+    3.13.14    /opt/homebrew/bin/python3.13
+    3.14.4     /Users/cagancaliskan/.local/bin/python3.14
+    3.14.5     /opt/homebrew/bin/python3.14
+  digest: 98485e011330daf74e24d70f7738b220a31b80c66bac1e2fa92fb8da849499e8
+
+N-2b order-INDEPENDENCE: permuting out-road iteration changes no value
+
+N-2c repeated identical calls in one process are bit-identical (overlay ON, frozen clock)
+
+N-3a purity: the stored substrate is byte-identical after normalized spreads over 40 hostile graphs
+
+N-3b purity: structurally, the engine never calls a mutating method
+
+N-3c purity: _persist_decay is never entered, on a clock that advances
+
+N-3d integrity: indices stay mutually consistent through a randomized mutation battery interleaved with normalized spreads
+
+N-4a sensitivity: a left fold over these out-road strengths IS order-dependent (else N-4 is vacuous)
+  traverse counts (1, 4, 4) -> creation-order fold 1.0849945410000001 vs fsum 1.084994541; 2 distinct fold totals across orders, 1 distinct fsum totals
+
+N-4b S_out equals math.fsum of the out-road strengths, to the bit, and is NOT the left-fold value
+
+N-4c S_out order-independence on random high-degree fans (property-based, shuffled through a proxy)
+
+N-5a a lone out-road: sigma ON is byte-identical to sigma OFF at every sigma on the ladder (frozen clock)
+
+N-5b negative control: adding one sibling road DOES attenuate, so N-5a is not passing because the overlay does nothing
+
+N-5c a lone out-road transmits with factor exactly 1.0 on a clock that ADVANCES (within-call identity, immune to the noise floor)
+
+N-5d competing is exactly 0.0 for a lone out-road at every strength the substrate can produce, decayed or saturated
+
+N-6a transmitted activation is strictly decreasing in the competing conductance
+
+N-6b transmitted activation increases with sigma — strictly until it saturates at the unnormalized value, then exactly equal
+  NOTE: SPEC-0b2 N-6 says 'strictly increasing in sigma'. In float arithmetic that is true only until saturation: past ~1e13 the factor rounds to exactly 1.0 and further sigma changes nothing. That is N-7's convergence, and the two statements are in tension only if 'strictly' is read past the limit. Recorded, not counted as a failure — the engine cannot do better and the saturating behaviour is the one the spec wants.
+
+N-6c property-based: normalized transmission never exceeds unnormalized, on 35 random hostile graphs
+
+N-7a the gap to the unnormalized engine shrinks monotonically along a sigma ladder, on hostile graphs
+
+N-7b sigma = 1e100 and 1e300 recover sigma=None BYTE-FOR-BYTE on hostile graphs
+
+N-7c sigma's domain: inf / -inf / nan / 0.0 / -0.0 / negative are all REFUSED with ValueError, before any work
+
+N-7d the overlay never emits a non-finite value from finite inputs
+
+N-7e competing = S_out - strength is never negative on any reachable substrate state
+
+N-8a the sharpest case: a closed road BELOW the breakthrough threshold transmits nothing, is absent from flow, and still attenuates its sibling
+
+N-8b a closed road that breaks through is normalized like any other
+
+N-8c closed-road breakthrough at the EXACT boundary: <= blocks, and the overlay does not move it
+
+N-8d recorded wart: broke_through can list a road absent from flow (appended before the floor guard)
+  NOTE: N-8d asserts a KNOWN LIMITATION, not a desired behaviour. It turns red if the ordering is ever changed, which is the point.
+
+N-8e a source with only blocked closed roads: nothing transmits, nothing raises, the seed still stands
+
+N-9a a source at out-degree 200 with sigma=1.0 and the default floor goes OBSERVABLY empty — not quietly truncated
+
+N-9b the same graph is NOT silent unnormalized, and NOT silent at floor=0.0 — so the horizon change is visible as a DIFFERENCE
+
+N-9c the horizon on equal-strength fans is a CLIFF, not a taper (equal roads cross the floor together)
+  (out_degree, reached) = (1,1) (2,2) (4,4) (8,8) (16,16) (24,24) (32,0) (64,0) (128,0) (200,0)
+  NOTE: measured cliff: every target survives to out-degree 24, none from 32. Any floor design in a later brick must reckon with a step, not a slope. This is a mechanism observation only.
+
+N-9e on an UNEQUAL-strength fan the silencing is partial, and the survivors are exactly those the §2 formula puts at or above the floor
+    trial 0: out-degree 21, survivors 17/21
+    trial 1: out-degree 23, survivors 17/23
+    trial 2: out-degree 24, survivors 17/24
+    trial 3: out-degree 30, survivors 18/30
+    trial 4: out-degree 33, survivors 19/33
+    trial 5: out-degree 33, survivors 19/33
+
+N-9d silencing never raises and never leaves a partial result
+
+B-1 the floor guard at its EXACT boundary: transmitted == floor propagates; one ULP below does not
+
+B-2 degenerate inputs: empty graph, single node, isolated seed, hop_budget 0, unknown seed, road id as seed
+  NOTE: OUT OF SCOPE OBSERVATION for architect-pm, not a 0b2 defect and not one of N-1..N-9: spread_activation's seed guard is `store.exists(seed_node)`, which is true for ROAD ids. At hop_budget=0 a road id therefore yields a well-formed ActivationResult with no error; at any larger budget it raises NotFound from inside the expansion rather than at the boundary. Same class as O-12 and DEFECT-C (silent acceptance where a loud refusal was intended), pre-existing, unreachable from any internal caller. Registering it is architect-pm's call.
+
+B-3 a never-worn road (add_road only) still competes for budget
+
+S-1 structural: build_activation_field() and think() still expose no normalization_sigma
+  NOTE: The default flip therefore requires plumbing the parameter through the field builder first. That is a separate brick and is Cagan's call; nothing here tests as though it were decided.
+
+S-2 the §2 transmission rule reproduces every transmitted value on a 128-way fan, at four sigmas
+
+==========================================================================
+  RESULT: 246 passed, 0 failed
+  NOTES CARRIED TO THE REPORT:
+   - N-5 and all byte-identity claims below run on Clock(simulated=True). This is a property of 0a's lazy decay, not of the 0b2 overlay.
+   - SPEC-0b2 N-6 says 'strictly increasing in sigma'. In float arithmetic that is true only until saturation: past ~1e13 the factor rounds to exactly 1.0 and further sigma changes nothing. That is N-7's convergence, and the two statements are in tension only if 'strictly' is read past the limit. Recorded, not counted as a failure — the engine cannot do better and the saturating behaviour is the one the spec wants.
+   - N-8d asserts a KNOWN LIMITATION, not a desired behaviour. It turns red if the ordering is ever changed, which is the point.
+   - measured cliff: every target survives to out-degree 24, none from 32. Any floor design in a later brick must reckon with a step, not a slope. This is a mechanism observation only.
+   - OUT OF SCOPE OBSERVATION for architect-pm, not a 0b2 defect and not one of N-1..N-9: spread_activation's seed guard is `store.exists(seed_node)`, which is true for ROAD ids. At hop_budget=0 a road id therefore yields a well-formed ActivationResult with no error; at any larger budget it raises NotFound from inside the expansion rather than at the boundary. Same class as O-12 and DEFECT-C (silent acceptance where a loud refusal was intended), pre-existing, unreachable from any internal caller. Registering it is architect-pm's call.
+   - The default flip therefore requires plumbing the parameter through the field builder first. That is a separate brick and is Cagan's call; nothing here tests as though it were decided.
+==========================================================================
+  TESTER VERDICT ON SPEC-0b2 §6, SECOND INDEPENDENT PASS: all nine hold
+==========================================================================
+    N-1 neutral byte-identity ....... omitted == None over the whole
+        parameter surface, exception path included; every divergence from
+        the git-recovered pre-overlay engine classified and shown to be
+        0c-owned (N-1i); oracle proven to discriminate at 1 ULP (N-1d);
+        loop-closed through perceive() and build_activation_field().
+    N-2 determinism ................. one SHA-256 across fresh processes,
+        6 hash seeds x every CPython minor version present, on a graph with
+        three or more convergent contributions; and order-INDEPENDENT under
+        externally permuted out-road iteration, proven non-vacuous.
+    N-3 purity ...................... byte-identical substrate, structural
+        write-trap, and last_touched unchanged on a MOVING clock.
+    N-4 S_out order-independence .... equals math.fsum and NOT the left
+        fold, on a fixture searched to make the two differ.
+    N-5 lone out-road ............... exactly 1.0 on a frozen clock at ten
+        sigmas, and as a WITHIN-CALL identity on a clock that advances.
+    N-6 monotonicity ................ strict in competing; strict in sigma
+        until saturation, non-decreasing across 80 ULP-adjacent sigmas.
+    N-7 sigma -> infinity ........... monotone convergence, 1e100/1e300
+        byte-identical to None, and the domain refused at the boundary.
+    N-8 closed roads compete ........ exact arithmetic, the excluded
+        alternative asserted, breakthrough pinned at its exact boundary.
+    N-9 no silent silencing ......... observable at out-degree 200, a CLIFF
+        on equal fans, and exactly the documented survivors on unequal ones.
+
+  Mechanism only. No cognitive claim is made, implied or approached.
+  0b2 remains BUILT-UNVALIDATED whatever this file reports; a pass here
+  closes the MECHANISM bar and nothing else.
+==========================================================================
+
+######################################################################
 # test_tester_0c_adversarial.py
 ######################################################################
 ==========================================================================
@@ -1236,5 +1410,5 @@ RESULT: 42 passed, 0 failed
 RESULT: 67 passed, 0 failed
 
 ======================================================================
-  OVERALL: all 22 suites passed (0 failures)
+  OVERALL: all 23 suites passed (0 failures)
 ======================================================================
