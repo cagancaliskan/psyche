@@ -530,10 +530,22 @@ activation once `floor` is negative.
    is False and the ordering silently degrades**. That is DEFECT-C's own failure mode, one
    input earlier. The isolated node in §4.1 is the *visible instance*, not the risk.
 
-**A consequence that must be stated here, or someone will correctly delete the guard.** Once
-both `energy` and σ are finiteness-validated, and given every multiplier in the transmission
-chain is ≤ 1, **part 2's `transmitted` non-finite guard becomes unreachable from the public
-API.** It stays as a **backstop** — it protects against a future term that can manufacture a
+**A consequence that must be stated here, or someone will delete the guard.** Once both
+`energy` and σ are finiteness-validated, part 2's `transmitted` non-finite guard becomes
+unreachable **within the documented parameter domain**.
+
+> **CORRECTED 2026-07-26, on the builder's challenge — my earlier wording said "unreachable
+> from the public API" and that was wrong.** `decay_per_hop` is *documented* as 0..1 but is
+> **not validated**: D-015 scoped the boundary to `energy`. So `decay_per_hop=inf` or `nan`
+> is a live public route that still reaches the guard, and it fires correctly —
+> `ValueError: non-finite transmitted activation (inf) on road …`, verified. The guard is
+> therefore not merely a theoretical backstop; it has a demonstrable public route today.
+> **Whether `decay_per_hop` should itself be validated is a third question** — separate from
+> σ (D-012) and from `energy` (D-015), and deliberately not answered here. It is low
+> urgency precisely because the guard catches it loudly rather than silently, which is the
+> failure mode that mattered. Flagged for Cagan; not decided by an agent.
+
+It stays as a **backstop** — it protects against a future term that can manufacture a
 non-finite value from finite inputs, which is exactly the class part 2 was written for. Two
 things follow, and both are requirements:
 
