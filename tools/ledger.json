@@ -22,10 +22,10 @@
   },
   "tests": {
     "_GENERATED": "by tools/ledger_sync.py from docs/TEST_OUTPUT.txt — do not hand-edit",
-    "suites": 22,
-    "assertions": 1727,
+    "suites": 23,
+    "assertions": 1973,
     "failures": 0,
-    "captured_at": "2026-07-26 14:36:54 +0300",
+    "captured_at": "2026-07-26 15:49:14 +0300",
     "captured_python": "3.14.4",
     "per_suite": {
       "test_nous_store.py": 67,
@@ -45,6 +45,7 @@
       "test_tester_1e_instrument_adversarial.py": 76,
       "test_tester_1e_loopclosed.py": 58,
       "test_tester_0b2_adversarial.py": 104,
+      "test_tester_0b2_reverify.py": 246,
       "test_tester_0c_adversarial.py": 150,
       "test_tester_2c_adversarial.py": 350,
       "test_harness.py": 17,
@@ -97,7 +98,7 @@
     "0b2": {
       "name": "conserved activation (overlay, default-off)",
       "status": "BUILT-UNVALIDATED",
-      "note": "overlay landed default-off; tester verdict FAIL — 7 of 9 invariants hold. DEFECT-B (N-5) and DEFECT-C (N-7) are the overlay's own and are OPEN. See D-011, D-012."
+      "note": "MECHANISM BAR CLOSED 2026-07-26 (D-017): tester verdict on SPEC-0b2 section 6 is PASS, all nine invariants N-1..N-9, suite tests/test_tester_0b2_reverify.py written from scratch, swept 5 CPython minors x 6 hash seeds x 2 reps. The 2026-07-25 FAIL is preserved in section 8 as the record it was. All three defects closed: DEFECT-A by 0c, DEFECT-B by the single-read materialisation, DEFECT-C by sigma then energy validation. STAYS BUILT-UNVALIDATED: mechanism verified, NO cognitive claim. Still open and NOT closed by this: the section 5 default-flip decision, and D-008 (the floor's SCALE-INVARIANCE), which is what blocks the flip. D-008 is INDEPENDENT of brick 0c-ii (the floor's FINITENESS) despite the shared constant — fixing either does nothing for the other."
     },
     "0c": {
       "name": "deterministic road ordering + fsum",
