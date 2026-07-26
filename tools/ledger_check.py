@@ -523,7 +523,34 @@ def check_runner_completeness(root: Path, ledger: dict) -> List[Finding]:
 #     in tools/test_ledger.py so "the detector is clean" can never quietly mean "the
 #     detector did not look":
 #       L2  walrus — `if (acc := acc + v):`             FALSIFIER: a walrus fold in src/.
-#       L3  tuple / starred targets — `a, b = a + x, b + y`.   FALSIFIER: a tuple fold in src/.
+#       L3  CLOSED 2026-07-26 by SPEC-2f STEP ZERO (D-025), and CONVERTED rather than
+#           deleted — a deleted limitation leaves no trace that the limit ever existed, a
+#           converted one is a record of a capability gained. Tuple-target accumulation
+#           (`a, b = a + x, b + y`) IS now detected, elementwise, for both plain-name and
+#           subscript targets, and for `[a, b] = ...` list-target syntax which is the same
+#           shape. Sites report as self-add / self-sub like any other: the kind names the
+#           ARITHMETIC, not the syntax that carried it.
+#           WHY IT WAS CLOSED BY 2f AND NOT BY 0d: the gate was blind at exactly the point
+#           of use — `trace[rid], counts[rid] = trace[rid] + e, counts[rid] + 1` scored ZERO
+#           while the same accumulation split over two lines was caught. Ownership belongs
+#           to the brick that needs the coverage, and extending the gate is a normal cost of
+#           building rather than an interruption to it.
+#           POSITIVE ASSERTION, replacing the old negative: tools/test_ledger.py requires
+#           the 2f line to be seen. FALSIFIER: a tuple fold in src/ that the census misses.
+#       The pairing is POSITIONAL, so it is sound only when both sides are literal sequences
+#       of equal length. Every unsound case is REFUSED rather than guessed, and each refusal
+#       is a limitation below rather than a silence:
+#       L11 STARRED elements on either side — `a, *b = ...`. A star makes position
+#           non-positional, so no pairing is sound.  FALSIFIER: a starred fold in src/.
+#       L12 NESTED sequence targets — `(a, (b, c)) = ...`. Not recursed into; the outer
+#           pairing is refused wholesale rather than partially applied.
+#                                                FALSIFIER: a nested-target fold in src/.
+#       L13 A right-hand side that is not a literal sequence — `a, b = f()`. The pairing is
+#           NOT STATICALLY KNOWABLE: which element of f()'s result lands in which target
+#           cannot be read off the syntax, and guessing would be worse than refusing.
+#                                                FALSIFIER: a fold through an unpacked call.
+#       (Arity mismatch — `a, b = (x,)` — is also refused, but it is a runtime error rather
+#        than a hole, so it is not a limitation. Noted so nobody adds it as one.)
 #       L4  itertools.accumulate.                        FALSIFIER: an accumulate() over floats.
 #       L5  `operator.add(acc, v)` called as a FUNCTION in a loop (the reduce ARGUMENT form
 #           is detected; the direct-call form is not).   FALSIFIER: operator.add in a src/ loop.
@@ -582,6 +609,23 @@ class Accumulation:
     @property
     def exact(self) -> bool:
         return self.kind == "fsum"
+
+
+@dataclass(frozen=True)
+class Refusal:
+    """A sequence assignment the scanner SAW and knowingly declined to fold (L11-L13, or an
+    arity mismatch). Not a finding: the repository is not inconsistent because a fold was
+    declined, so a refusal never fails the build. It is a countable, surfaced statement that
+    the census looked here and chose not to answer."""
+    path: str
+    line: int
+    col: int
+    scope: str
+    rule: str      # L11 | L12 | L13 | arity
+
+    @property
+    def detail(self) -> str:
+        return _REFUSAL_RULES.get(self.rule, self.rule)
 
 
 def _dotted(e) -> Optional[str]:
@@ -695,48 +739,186 @@ def _reads_accumulator(e, container: Optional[str], aliases: Dict[str, str]) -> 
     return False
 
 
-def _statement_accumulation(st, aliases: Dict[str, str]) -> Optional[Tuple[str, str]]:
-    """(kind, symbol) if this statement accumulates into its own target, else None."""
+def _self_ref_kind(tgt, value, aliases: Dict[str, str]) -> Optional[str]:
+    """The self-referential test, factored out so ONE definition serves both the
+    single-target form and the elementwise tuple-target form.
+
+    Returns 'self-add' / 'self-sub' if `value` reads the thing `tgt` writes, under an
+    additive operator, with a non-integer addend. Otherwise None."""
+    container = _container(tgt)
+    if container is None:
+        return None
+    for sub in ast.walk(value):
+        if not (isinstance(sub, ast.BinOp) and isinstance(sub.op, (ast.Add, ast.Sub))):
+            continue
+        left = _reads_accumulator(sub.left, container, aliases)
+        right = _reads_accumulator(sub.right, container, aliases)
+        if not (left or right):
+            continue
+        if isinstance(sub.op, ast.Sub):
+            # `x = x - v` accumulates; `x = v - x` REFLECTS (x alternates sign) and is
+            # not the same shape, so subtraction only counts when the accumulator is on
+            # the LEFT. Addition is commutative and counts on either side.
+            if not left:
+                continue
+            addend = sub.right
+        else:
+            addend = sub.right if left else sub.left
+        if _looks_integer(addend):
+            continue
+        return "self-add" if isinstance(sub.op, ast.Add) else "self-sub"
+    return None
+
+
+# Tuple-target accumulation. SPEC-2f STEP ZERO (D-025): closed by the brick that needed the
+# coverage, before that brick wrote a line of its own mechanism.
+#
+# The shape that motivated it is the one 2f will write:
+#     trace[rid], counts[rid] = trace[rid] + e, counts[rid] + 1
+# Before this, C6 reported ZERO findings on that line while catching the identical
+# accumulation split across two statements — the gate was blind at exactly the point of use.
+#
+# Pairing is positional and therefore only sound when both sides are literal sequences of
+# equal length. Every case where it is NOT sound is refused rather than guessed, and each
+# refusal is a stated limitation (L11-L13) rather than a silence.
+_SEQ_TARGETS = (ast.Tuple, ast.List)      # `a, b = ...` and `[a, b] = ...` are one shape
+
+
+# FINDING 2f-0-2 (tester, 2026-07-26). A refusal used to be indistinguishable from a clean
+# pass: `scan_source` returned [] for a declined fold and [] for an empty file, so "I could
+# not look" and "there is nothing here" were byte-identical to a caller. That is the
+# exit-code contract's defect in a different costume, and it is the third time this project
+# has met the shape.
+#
+# THE LINE, and it is drawn exactly here: **anything the scanner KNOWINGLY DECLINES is
+# recorded; anything it simply NEVER MATCHED stays a documented limitation.** L1's
+# multiplicative shape never matches — the scanner has nothing to report and L1 is unchanged.
+# L11-L13 and the arity case are decisions taken with full knowledge of a sequence
+# assignment the scanner could see and chose not to fold. Those, and only those, are
+# recorded.
+#
+# `_NOT_A_SEQUENCE` is the case that must NOT become a refusal: a plain `a = f()` is the
+# ordinary single-target path, not a decline. Conflating it would turn every assignment in
+# src/ into a refusal record and the signal would be worthless within one commit.
+_NOT_A_SEQUENCE = "not-a-sequence"
+_REFUSAL_RULES = {
+    "L11": "starred element — a star makes position non-positional",
+    "L12": "nested sequence target — not recursed into",
+    "L13": "right-hand side is not a literal sequence — pairing unknowable statically",
+    "arity": "length mismatch — a runtime error, not a coverage hole",
+}
+
+
+def _pairing(tgt, value):
+    """(pairs, refusal) for a sequence assignment. Exactly one is non-None.
+
+    Single source of truth for both the fold and the refusal record, so the two can never
+    drift into disagreeing about what was declined."""
+    if not isinstance(tgt, _SEQ_TARGETS):
+        return None, _NOT_A_SEQUENCE      # ordinary single-target form; NOT a decline
+    if not isinstance(value, _SEQ_TARGETS):
+        return None, "L13"                # `a, b = f()` — seen, and knowingly declined
+    if any(isinstance(e, ast.Starred) for e in tgt.elts) \
+            or any(isinstance(e, ast.Starred) for e in value.elts):
+        return None, "L11"
+    if any(isinstance(e, _SEQ_TARGETS) for e in tgt.elts):
+        return None, "L12"
+    if len(tgt.elts) != len(value.elts):
+        return None, "arity"
+    return list(zip(tgt.elts, value.elts)), None
+
+
+def _paired_elements(tgt, value) -> Optional[List[Tuple[ast.AST, ast.AST]]]:
+    """Elementwise (target, value) pairs for a sequence assignment, or None if the pairing
+    is not statically sound. Returning None is a REFUSAL, not a miss: see L11-L13."""
+    return _pairing(tgt, value)[0]
+
+
+def _statement_refusals(st) -> List[str]:
+    """The rules this statement's sequence targets were KNOWINGLY declined under.
+
+    Empty for every statement that is not a sequence assignment — those were never
+    matched, which is a limitation, not a decision."""
+    if isinstance(st, ast.Assign):
+        targets = list(st.targets)
+    elif isinstance(st, ast.AnnAssign):
+        targets = [st.target]
+    else:
+        return []
+    if st.value is None:
+        return []
+    out = []
+    for tgt in targets:
+        rule = _pairing(tgt, st.value)[1]
+        if rule is not None and rule != _NOT_A_SEQUENCE:
+            out.append(rule)
+    return out
+
+
+def _statement_accumulations(st, aliases: Dict[str, str]) -> List[Tuple[str, str]]:
+    """Every (kind, symbol) this statement accumulates into. A LIST because one tuple
+    assignment can accumulate into several targets at once — which is precisely the shape
+    that was invisible before."""
     if isinstance(st, ast.AugAssign) and isinstance(st.op, (ast.Add, ast.Sub)):
         if _container(st.target) is None or _looks_integer(st.value):
-            return None
+            return []
         kind = "aug-add" if isinstance(st.op, ast.Add) else "aug-sub"
-        return (kind, _symbol_of(st.target))
+        return [(kind, _symbol_of(st.target))]
 
     if isinstance(st, ast.Assign):
         targets = list(st.targets)
     elif isinstance(st, ast.AnnAssign):
         targets = [st.target]
     else:
-        return None
+        return []
     if st.value is None:
-        return None
+        return []
 
+    # (1) sequence targets, paired elementwise. Each element is an INDEPENDENT site, so a
+    #     line that accumulates into two things is two findings, not one.
+    #
+    #     FINDING 2f-0-1 (tester, 2026-07-26). The emission is DEDUPED on (kind, symbol).
+    #     A chained assignment applies the same value to every target, so `a, b = c, d = ...`
+    #     walks two target lists against one value; when the names repeat —
+    #     `a, b = a, b = x + a, y + b` — the one accumulation into `a` was emitted twice.
+    #     The surplus was not merely a wrong count: `scan_source`'s dedup renames the second
+    #     to `<key>#2`, so the census grew a PHANTOM SITE, and a phantom site gets a reason
+    #     written for it. A registry that invents work is worse than one that misses it,
+    #     because the invented entry puts a false reason into the record — which is the
+    #     failure this brick already had once (DEFECT 0d-1).
+    #
+    #     The dedup key is (kind, STRUCTURE of the target), not (kind, symbol). Symbol alone
+    #     would be too coarse and would widen this fix into a coverage loss:
+    #     `d[i], d[j] = d[i] + x, d[j] + y` is two genuinely distinct accumulations that both
+    #     resolve to the symbol `d`, and collapsing them would make the tuple form report
+    #     fewer sites than the identical code split across two statements — breaking the one
+    #     property that closing L3 was for. `ast.dump` excludes positions by default, so
+    #     `d[k]` written twice is one structure while `d[i]` and `d[j]` are two.
+    out: List[Tuple[str, str]] = []
+    seen: set = set()
     for tgt in targets:
-        container = _container(tgt)
-        if container is None:
+        pairs = _paired_elements(tgt, st.value)
+        if pairs is None:
             continue
-        for sub in ast.walk(st.value):
-            if not (isinstance(sub, ast.BinOp) and isinstance(sub.op, (ast.Add, ast.Sub))):
+        for sub_tgt, sub_val in pairs:
+            kind = _self_ref_kind(sub_tgt, sub_val, aliases)
+            if not kind:
                 continue
-            left = _reads_accumulator(sub.left, container, aliases)
-            right = _reads_accumulator(sub.right, container, aliases)
-            if not (left or right):
+            fingerprint = (kind, ast.dump(sub_tgt))
+            if fingerprint in seen:
                 continue
-            if isinstance(sub.op, ast.Sub):
-                # `x = x - v` accumulates; `x = v - x` REFLECTS (x alternates sign) and is
-                # not the same shape, so subtraction only counts when the accumulator is on
-                # the LEFT. Addition is commutative and counts on either side.
-                if not left:
-                    continue
-                addend = sub.right
-            else:
-                addend = sub.right if left else sub.left
-            if _looks_integer(addend):
-                continue
-            kind = "self-add" if isinstance(sub.op, ast.Add) else "self-sub"
-            return (kind, _symbol_of(tgt))
-    return None
+            seen.add(fingerprint)
+            out.append((kind, _symbol_of(sub_tgt)))
+    if out:
+        return out
+
+    # (2) the ordinary single-target form. First match wins, exactly as before — the
+    #     tuple path above is additive and changes no existing count.
+    for tgt in targets:
+        kind = _self_ref_kind(tgt, st.value, aliases)
+        if kind:
+            return [(kind, _symbol_of(tgt))]
+    return []
 
 
 def _record_alias(st, aliases: Dict[str, str]) -> None:
@@ -784,10 +966,14 @@ def _non_stmt_children(node) -> Iterable[ast.AST]:
                 yield it
 
 
-def scan_source(text: str, relpath: str) -> List[Accumulation]:
-    """Enumerate every additive float accumulation in one module."""
+def _scan_module(text: str, relpath: str) -> Tuple[List[Accumulation], List[Refusal]]:
+    """One traversal, two products: the sites folded and the sequence assignments knowingly
+    declined. They share a walk deliberately — a refusal recorded by a second, parallel
+    traversal could disagree with the fold about what was declined, and a disagreement
+    between them is exactly the failure the record exists to prevent."""
     tree = ast.parse(text)
     raw: List[Tuple[int, int, str, str, str]] = []   # line, col, kind, symbol, scope
+    raw_ref: List[Tuple[int, int, str, str]] = []    # line, col, rule, scope
 
     def scope_name(scope: List[str]) -> str:
         return ".".join(scope)
@@ -822,9 +1008,10 @@ def scan_source(text: str, relpath: str) -> List[Accumulation]:
             hint = stmt_hint(st)
             for child in _non_stmt_children(st):
                 scan_calls(child, scope, hint)
-            acc = _statement_accumulation(st, aliases)
-            if acc:
+            for acc in _statement_accumulations(st, aliases):
                 raw.append((st.lineno, st.col_offset, acc[0], acc[1], scope_name(scope)))
+            for rule in _statement_refusals(st):
+                raw_ref.append((st.lineno, st.col_offset, rule, scope_name(scope)))
             _record_alias(st, aliases)
             for field in ("body", "orelse", "finalbody"):
                 sub = getattr(st, field, None)
@@ -855,6 +1042,43 @@ def scan_source(text: str, relpath: str) -> List[Accumulation]:
             key = f"{key}#{used[key]}"
         out.append(Accumulation(key=key, path=relpath, line=line, col=col,
                                 kind=kind, symbol=symbol, scope=scope))
+    refusals = [Refusal(path=relpath, line=line, col=col, scope=scope, rule=rule)
+                for line, col, rule, scope in sorted(raw_ref)]
+    return out, refusals
+
+
+def scan_source(text: str, relpath: str) -> List[Accumulation]:
+    """Enumerate every additive float accumulation in one module."""
+    return _scan_module(text, relpath)[0]
+
+
+def scan_source_refusals(text: str, relpath: str) -> List[Refusal]:
+    """Enumerate every sequence assignment this module declined to fold.
+
+    A SEPARATE entry point rather than a wider return from `scan_source`, because
+    `scan_source`'s contract — a list of sites — is depended on by both suites, and
+    widening it to carry refusals would make every existing caller's `== []` mean
+    something new without a single line of those callers changing."""
+    return _scan_module(text, relpath)[1]
+
+
+def scan_float_refusals(root: Path) -> List[Refusal]:
+    """Every knowingly-declined sequence assignment in src/, in census order."""
+    out: List[Refusal] = []
+    src = root / SRC_REL
+    if not src.is_dir():
+        return out
+    for p in sorted(src.rglob("*.py")):
+        if any(part in SKIP_DIRS for part in p.relative_to(root).parts):
+            continue
+        rel = p.relative_to(root).as_posix()
+        try:
+            out.extend(scan_source_refusals(p.read_text(encoding="utf-8"), rel))
+        except (UnicodeDecodeError, OSError, SyntaxError, ValueError) as e:
+            # The census raises CensusUnreadable for these and is the authority on whether
+            # the tool can run at all. This helper never invents a second opinion about it.
+            raise CensusUnreadable(f"{rel}: cannot scan for refusals "
+                                   f"({type(e).__name__})") from e
     return out
 
 
@@ -1071,9 +1295,29 @@ def main(argv: Optional[List[str]] = None) -> int:
             entry = registry.get(s.key) or {}
             mark = entry.get("verdict") or "UNREGISTERED"
             print(f"{s.path}:{s.line:<4} {mark:<12} {s.kind:<12} {s.key}")
+        # Refusals are listed ALONGSIDE the census, never mixed into it: a site is something
+        # to adjudicate, a refusal is somewhere the census declined to look. Printing them
+        # in one list would recreate the confusion the record exists to end.
+        #
+        # Each refusal line begins with REFUSED, deliberately NOT with the path. This
+        # listing is CONSUMED, not merely read — the loop-closed test feeds it back as a
+        # registry and takes the last token of every line starting with `src/` as a key. A
+        # refusal that began with its path would be read back as a site, which would have
+        # made the fix for "refusals are invisible" hand the census two phantom keys. The
+        # `src/`-prefixed namespace belongs to sites alone.
+        refusals = scan_float_refusals(root)
+        if refusals:
+            print()
+            for r in refusals:
+                print(f"REFUSED {r.rule:<6} {r.path}:{r.line:<4} "
+                      f"{r.scope} — {r.detail}")
         print(f"\n{len(sites)} site(s) in {SRC_REL}/ "
               f"({sum(1 for s in sites if s.exact)} fsum, "
-              f"{sum(1 for s in sites if not s.exact)} naive)")
+              f"{sum(1 for s in sites if not s.exact)} naive), "
+              f"{len(refusals)} refusal(s)")
+        if refusals:
+            print("refusals are NOT findings and never fail the build — they are sequence "
+                  "assignments the census saw and declined to fold (L11-L13, arity).")
         for f in problems:
             print(f.render())
         return 0

@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import json
 import shutil
+import subprocess
 import sys
 import tempfile
 from pathlib import Path
@@ -641,14 +642,15 @@ def run(tmp: Path) -> None:
     # in this cycle BY DECISION: whether any is worth detecting is a scoping call, and a
     # gate that never ships because it is still being perfected guarded nothing. Each
     # carries the falsifier from ledger_check.py's scope block.
-    section("C6/F-8 ASSERTED NEGATIVES: the eight known holes, L2-L10")
+    section("C6/F-8 ASSERTED NEGATIVES: the known holes — L3 CONVERTED OUT of this list")
+    # L3 was here. It is gone from this block because the hole is CLOSED (D-025), not
+    # because the assertion was inconvenient: its replacement is the POSITIVE assertion
+    # above, which fails if the capability regresses. A limitation leaves this list only
+    # by being closed and asserted positively somewhere else.
     for label, src in (
         ("L2 walrus",
          "def f(xs):\n    a = 0.0\n    for x in xs:\n        if (a := a + x) > 1.0:\n"
          "            pass\n    return a\n"),
-        ("L3 tuple targets",
-         "def f(xs):\n    a = b = 0.0\n    for x, y in xs:\n        a, b = a + x, b + y\n"
-         "    return a, b\n"),
         ("L4 itertools.accumulate",
          "import itertools\ndef f(xs):\n    return list(itertools.accumulate(xs))\n"),
         ("L5 operator.add called directly in a loop",
@@ -694,6 +696,187 @@ def run(tmp: Path) -> None:
         "def f(xs):\n    n = 0\n    for x in xs:\n        n -= 1\n    return n\n",
         "src/p.py") == [],
         "an integer tally that subtracts is still exempt — the structural rule holds for Sub")
+
+    # ── D-025 / SPEC-2f STEP ZERO: tuple-target accumulation is DETECTED ───────
+    section("C6 tuple-target accumulation is seen (SPEC-2f STEP ZERO, L3 CLOSED)")
+    # THE line brick 2f will write. Before this it scored ZERO while the same accumulation
+    # split over two statements was caught — the gate was blind at the point of use.
+    IDIOM = ("def f(trace, counts, rid, e):\n"
+             "    trace[rid], counts[rid] = trace[rid] + e, counts[rid] + 1\n")
+    got = LC.scan_source(IDIOM, "src/p.py")
+    check([(s.kind, s.symbol) for s in got] == [("self-add", "trace")],
+          "the idiomatic 2f line is SEEN: the float accumulation into `trace` is reported, "
+          "and the integer counter stays out of scope (L7 — not a hole)")
+    split = ("def f(trace, counts, rid, e):\n"
+             "    trace[rid] = trace[rid] + e\n"
+             "    counts[rid] = counts[rid] + 1\n")
+    check([(s.kind, s.symbol) for s in LC.scan_source(split, "src/p.py")]
+          == [(s.kind, s.symbol) for s in got],
+          "and it now agrees with the same computation split across two statements — the "
+          "syntax no longer decides whether the gate can see the arithmetic")
+    check([(s.kind, s.symbol) for s in LC.scan_source(
+        "def f(xs):\n    a=b=0.0\n    for x, y in xs:\n        a, b = a + x, b + y\n",
+        "src/p.py")] == [("self-add", "a"), ("self-add", "b")],
+        "TWO accumulating targets on one line are TWO findings, not one — each element is "
+        "an independent site")
+    check([(s.kind, s.symbol) for s in LC.scan_source(
+        "def f(xs):\n    a=b=0.0\n    for x, y in xs:\n        [a, b] = [a + x, b - y]\n",
+        "src/p.py")] == [("self-add", "a"), ("self-sub", "b")],
+        "list-target syntax is the same shape and is covered; the Sub asymmetry carries "
+        "through the elementwise path unchanged")
+    check(LC.scan_source(
+        "def f(xs):\n    a=b=0.0\n    for x, y in xs:\n        a, b = x - a, y + b\n",
+        "src/p.py") == [("self-add", "b")] or
+        [s.kind for s in LC.scan_source(
+            "def f(xs):\n    a=b=0.0\n    for x, y in xs:\n        a, b = x - a, y + b\n",
+            "src/p.py")] == ["self-add"],
+        "`a` REFLECTS (x - a) and is correctly not counted while `b` accumulates — the "
+        "left-operand-only rule for Sub is enforced per ELEMENT, not per statement")
+
+    section("C6 the tuple path cannot double-count (self-audit item 2, asserted)")
+    # A chained assignment gives the tuple path TWO target lists against ONE value tuple.
+    # `a` and `b` self-read; `c` and `d` do not. Two findings, not four, and not two-of-the-
+    # same — the risk a list-returning accumulator introduces is exactly this.
+    chained = LC.scan_source(
+        "def f(x, y):\n    a=b=c=d=0.0\n    a, b = c, d = x + a, y + b\n", "src/p.py")
+    keys = [(s.line, s.col, s.kind, s.symbol) for s in chained]
+    check(sorted(s.symbol for s in chained) == ["a", "b"],
+          "chained tuple targets report only the elements that self-read (a, b) — c and d "
+          "receive the same values but read nothing of their own")
+    check(len(set(keys)) == len(keys),
+          "and no (line, col, kind, symbol) is emitted twice — the list-returning form "
+          "introduced the double-count risk and this is the guard against it")
+    check(len(LC.scan_source("def f(d, k, v):\n    d[k] = d.get(k, 0.0) + v\n",
+                             "src/p.py")) == 1,
+          "the single-target path is untouched and still first-match-wins: the tuple path "
+          "is ADDITIVE, and a statement takes one path or the other, never both")
+
+    # FINDING 2f-0-1 (tester). The guard above was verified on a fixture with DISTINCT names
+    # and holds only for that. When the names repeat, one accumulation was emitted twice —
+    # and `scan_source`'s dedup renamed the surplus to `<key>#2`, so the census grew a
+    # PHANTOM SITE that someone would then write a reason for. A registry that invents work
+    # is worse than one that misses it, because a false reason enters the record.
+    repeated = LC.scan_source(
+        "def f(x, y):\n    a=b=0.0\n    a, b = a, b = x + a, y + b\n", "src/p.py")
+    rkeys = [(s.line, s.col, s.kind, s.symbol) for s in repeated]
+    check(len(repeated) == 2 and len(set(rkeys)) == 2,
+          f"REPEATED names across chained sequence targets are folded ONCE: "
+          f"`a, b = a, b = ...` reports {len(repeated)} (was 4, at 2 distinct keys)")
+    dup_sub = LC.scan_source("def f(d, k, x, y):\n    d[k], d[k] = d[k] + x, d[k] + y\n",
+                             "src/p.py")
+    check(len(dup_sub) == 1,
+          f"and a repeated SUBSCRIPT inside one target list is one site, not two "
+          f"(got {len(dup_sub)}) — the same write spelled twice is one adjudication")
+    check(not any(s.key.endswith("#2") for s in
+                  LC.scan_source("def f(x, y):\n    a=b=0.0\n"
+                                 "    a, b = a, b = x + a, y + b\n", "src/p.py")),
+          "THE DAMAGE, asserted directly: no `#2` phantom key survives into the census")
+    # The dedup is on the target's STRUCTURE, not on its symbol — the distinction that keeps
+    # this fix from becoming a coverage loss.
+    distinct = LC.scan_source("def f(d, i, j, x, y):\n    d[i], d[j] = d[i] + x, d[j] + y\n",
+                              "src/p.py")
+    split_eq = LC.scan_source("def f(d, i, j, x, y):\n    d[i] = d[i] + x\n"
+                              "    d[j] = d[j] + y\n", "src/p.py")
+    check(len(distinct) == 2 and len(distinct) == len(split_eq),
+          f"`d[i], d[j] = ...` stays TWO sites ({len(distinct)}) and still agrees with the "
+          f"same code split across two statements ({len(split_eq)}) — deduping on the symbol "
+          f"alone would have collapsed these and made the tuple form report less than the "
+          f"split form, which is the exact property closing L3 existed to establish")
+
+    section("C6 refusals are VISIBLE, not silent (FINDING 2f-0-2)")
+    # THE LINE: anything the scanner KNOWINGLY DECLINES is recorded; anything it simply
+    # never matched stays a documented limitation. L1's multiplicative shape never matches
+    # and is unchanged. L11-L13 and arity are decisions taken with full sight of a sequence
+    # assignment, and those are recorded.
+    for label, src, rule in (
+        ("L11 starred", "def f(x, r):\n    a=b=0.0\n    a, *b = x + a, r\n", "L11"),
+        ("L12 nested",
+         "def f(x, y):\n    a=b=c=0.0\n    (a, b), c = (a + x, b + y), c + x\n", "L12"),
+        ("L13 non-literal RHS", "def f(x):\n    a=b=0.0\n    a, b = g(a + x, b + x)\n", "L13"),
+        ("arity mismatch", "def f(x):\n    a=b=0.0\n    a, b = (a + x,)\n", "arity"),
+    ):
+        refs = LC.scan_source_refusals(src, "src/p.py")
+        check([r.rule for r in refs] == [rule],
+              f"the decline is RECORDED and named: {label} -> {rule}")
+        check(LC.scan_source(src, "src/p.py") == [],
+              f"and it is still not a SITE — a refusal is not a finding: {label}")
+        check(refs[0].line == 3 or refs[0].line == 2,
+              f"with a line number a reader can go to: {label} at line {refs[0].line}")
+    # The discriminator that motivated the finding: silence must no longer be ambiguous.
+    empty = "def f():\n    pass\n"
+    check(LC.scan_source_refusals(empty, "src/p.py") == [],
+          "a file with NOTHING in it records NO refusal — so `[]` from the refusal scan "
+          "now means 'nothing here' and never 'I could not look'")
+    check(LC.scan_source_refusals("def f():\n    a = g()\n", "src/p.py") == [],
+          "and a plain `a = g()` is NOT a decline — it is the ordinary single-target path. "
+          "Recording it would make every assignment in src/ a refusal and the signal would "
+          "be worthless within one commit")
+    check(LC.scan_source_refusals(
+        "def f(xs):\n    a=1.0\n    for x in xs:\n        a = a * x\n", "src/p.py") == [],
+        "L1's multiplicative shape records NOTHING: the scanner never matched it, so it has "
+        "nothing to declare. That is the line, and it is held exactly here")
+
+    section("C6 --list-accumulations SURFACES refusals without polluting the census")
+    # SELF-AUDIT ITEM 7, and it caught a real break. This CLI contract was asserted ONLY in
+    # the tester's suite, so when the first version of this fix printed refusal lines
+    # beginning with their path, nothing here went red — the tester's loop-closed test found
+    # it. The listing is CONSUMED, not merely read: it is fed back as a registry, and every
+    # line starting with `src/` is taken as a key. A refusal printed into that namespace
+    # would have handed the census two phantom keys, which is the very defect being fixed.
+    proc = subprocess.run([sys.executable, str(REPO / "tools" / "ledger_check.py"),
+                           "--root", str(REPO), "--list-accumulations"],
+                          capture_output=True, text=True)
+    check(proc.returncode == 0, f"the listing exits 0 (got {proc.returncode})")
+    lines = proc.stdout.splitlines()
+    site_lines = [ln for ln in lines if ln.startswith("src/")]
+    ref_lines = [ln for ln in lines if ln.startswith("REFUSED")]
+    check(len(site_lines) == len(LC.scan_float_accumulations(REPO)[0]),
+          f"every `src/`-prefixed line is a SITE and there are exactly as many as the census "
+          f"has ({len(site_lines)}) — the consumed namespace belongs to sites alone")
+    check(all(not ln.startswith("src/") for ln in ref_lines) and len(ref_lines) >= 1,
+          f"refusals are printed ({len(ref_lines)}) and NONE of them begins with `src/`, so "
+          f"feeding this output back as a registry cannot invent a key")
+    census_keys = {s.key for s in LC.scan_float_accumulations(REPO)[0]}
+    check({ln.split()[-1] for ln in site_lines} == census_keys,
+          "the last token of every site line IS a census key — which is the contract the "
+          "loop-closed feed-back relies on, asserted here rather than only downstream")
+    check(all(any(f"{r.path}:{r.line}" in ln for r in LC.scan_float_refusals(REPO))
+              for ln in ref_lines),
+          "and each refusal line names a real file:line a reader can open")
+    summary = [ln for ln in lines if "site(s) in" in ln]
+    check(len(summary) == 1 and "refusal(s)" in summary[0],
+          f"the summary line reports BOTH counts: {summary[0] if summary else '<missing>'}")
+    check(f"{len(ref_lines)} refusal(s)" in summary[0],
+          "and the refusal count in the summary matches the lines printed — a count that "
+          "disagreed with the list would be worse than no count")
+    check(any("never fail the build" in ln for ln in lines),
+          "the listing states in words that a refusal is not a finding, so the reader who "
+          "sees REFUSED does not go looking for a broken build")
+
+    section("C6/L11-L13 ASSERTED NEGATIVES: the pairings that are REFUSED, not guessed")
+    # Pairing is positional, so it is sound only for literal sequences of equal length.
+    # Each refusal below is a stated limitation; the flattened control proves it is a REAL
+    # hole rather than a property of the computation.
+    for label, src in (
+        ("L11 starred target",
+         "def f(xs):\n    a=0.0\n    b=[]\n    for x in xs:\n        a, *b = a + x, 1, 2\n"),
+        ("L11 starred value",
+         "def f(xs, r):\n    a=0.0\n    b=0.0\n    for x in xs:\n        a, b = *r, a + x\n"),
+        ("L12 nested target",
+         "def f(xs):\n    a=b=c=0.0\n    for x in xs:\n"
+         "        (a, (b, c)) = (a + x, (b + x, c + x))\n"),
+        ("L13 non-literal RHS",
+         "def f(xs, g):\n    a=b=0.0\n    for x in xs:\n        a, b = g(a, b, x)\n"),
+        ("arity mismatch (a runtime error, NOT a limitation)",
+         "def f(xs):\n    a=b=0.0\n    for x in xs:\n        a, b = (a + x,)\n"),
+    ):
+        check(LC.scan_source(src, "src/p.py") == [],
+              f"REFUSED rather than guessed: {label}")
+    check([s.symbol for s in LC.scan_source(
+        "def f(xs):\n    a=b=0.0\n    for x in xs:\n        a, b = a + x, b + x\n",
+        "src/p.py")] == ["a", "b"],
+        "and the flattened equivalent IS detected — so L11-L13 are real holes in the "
+        "pairing, not properties of the computation being refused")
 
     # ── D-021 FIX 2: match cases are walked ────────────────────────────────────
     section("C6 statements inside a `match` case are walked (D-021 FIX 2)")
