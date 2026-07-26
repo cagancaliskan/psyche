@@ -103,6 +103,11 @@
       "status": "DESIGNED",
       "note": "SPEC-0c. Repair brick for the three defects the 0b2 tester pass returned (D-011). Ordering AND math.fsum both land (D-013): _out/_in become insertion-ordered so roads_from() yields creation order, and the convergence accumulator uses math.fsum, so the engine is order-INDEPENDENT rather than merely order-pinned. Also: read each road once per expansion (DEFECT-B), validate sigma and guard non-finite transmission (DEFECT-C). D-014 CLOSES the last open call and WIDENS scope: all three surviving naive float sum() sites in src/ convert, because nous_workspace.py:426 is a LIVE instance of the defect BUG-0b1 was reported to have closed — reproduced post-0c at a FIXED hash seed, 2 distinct strengths on 3.10 and 1 on 3.14 (the Neumaier split). SPEC-0c section 1 now carries a SECOND reproduction case on the competition path, asserted by O-4b; the original falsifier exercised only the activation accumulator and would have let this ship. Acceptance signal is inverted: all six asserted-negatives in tests/test_tester_0b2_adversarial.py must go RED, plus four further tests the spec now enumerates. Returns 0a and 0b to PROVEN on tester re-verification."
     },
+    "0d": {
+      "name": "float-accumulation detector",
+      "status": "DESIGNED",
+      "note": "SPEC-0d. Deliverable is a DETECTOR, not a patch: a structural check (ledger_check C6) enumerating every float accumulation in src/ and requiring each to be math.fsum or registered in ledger.float_accumulation_exemptions with a reason, failing the build when a new naive one appears. THEN fixes what it finds: nous_field.py:131 (confirmed — 2 bit patterns over source-order permutations, reaching Coalition.strength) and nous_field.py:124 / merged_flow (SAME SHAPE, did NOT reproduce on a four-way-convergence probe — converted on shape, not on a witness). Rationale: all three prior encounters of this shape (BUG-0b1's two sites, SPEC-0c section 2.5's third, section 2.7's fourth) were found BY LOOKING, never by a sweep, and twice the survivor sat in a file the previous fix's author had open. Both known sites are ORDER-PINNED, so 0d is hardening, NOT a determinism repair, and does not block Phase 0's re-labelling."
+    },
     "1a": {
       "name": "multi-source field",
       "status": "BUILT-UNVALIDATED"
@@ -242,6 +247,12 @@
     "WORKING-NOTES.md",
     "docs/report/"
   ],
+  "unregistered_suites": {
+    "test_priming.py": "data-dependent 2B experiment result script; needs the uncommitted ~53 MB SWOW file and makes a meaning claim. Validator-run, deliberately out of the canonical runner.",
+    "test_exp1c.py": "same: data-dependent experiment result script for the 1c SWOW recovery run.",
+    "test_exp2c_capture.py": "parked, uncommitted per D-005 — stimulus construction for a graded run that is not happening.",
+    "test_tester_exp2c_capture_adversarial.py": "parked with the above; reusable if a 2c re-spec earns its own pre-check."
+  },
   "meaning_bar": {
     "status": "OPEN",
     "attempts": [

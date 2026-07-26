@@ -1,6 +1,8 @@
 # SPEC-0c — Deterministic road ordering: removing the order-dependence class at its source
 
-**Status:** BUILT · **tester verdict FAIL on O-12** (§4.1) · two calls open: §4.1 and §2.7
+**Status:** BUILT · tester verdict FAIL on O-12, **now closed by D-015** (§4.1) ·
+awaiting the energy-validation fix, O-12 re-verification, suite registration and capture ·
+**scope narrowed (§0.4)** · §2.7's site deferred to brick 0d
 **Revises:** 0a (substrate store), 0b (spreading activation), 0b2 (normalization overlay)
 **Depends on:** D-011 (the verdict), D-012 (the resolutions and the fix shapes),
 D-013 (§2.3 — `fsum` joins the ordering fix), D-014 (§2.5, §2.6 and the routing split)
@@ -33,6 +35,32 @@ D-012 fixed the *shape* of each fix. This spec fixes the *contract, the invarian
 re-validation plan*. It must not quietly widen the change: every item below is either a
 named defect's cause, or the methodology change D-012 mandated. Anything else is a later
 brick.
+
+### 0.4 What 0c may and may not claim — the scope is narrowed, deliberately (D-015)
+
+0c began as "removing the order-dependence class at its source." **It does not do that, and
+the title now overstates it.** Three separate encounters with the same shape — BUG-0b1's two
+sites, §2.5's third site, §2.7's fourth — plus the fact that each was found by *looking* and
+none by a *sweep*, is sufficient evidence that the class is larger than any one brick's
+enumeration. So the claim is bounded to what was actually verified:
+
+**0c MAY claim:**
+- Determinism is **restored at the enumerated sites**, verified structurally rather than
+  sampled — §1 case 1 and case 2, O-1…O-6, O-16.
+- **Order-independence** is achieved at those sites: a different iteration order yields the
+  same bits, not merely a fixed order yielding a fixed result.
+- One further site is **identified and deferred** (§2.7, `nous_field.py`). It is
+  **order-pinned**, so it is **not a determinism defect** and it falsifies nothing 0c
+  asserts.
+
+**0c MAY NOT claim:**
+- That the order-dependent-aggregate **class is closed**. It is not. No sweep has
+  established that the four known sites are all of them, and §2.7 exists precisely because
+  the second sweep was not exhaustive either.
+
+This distinction is not pedantry: "the class is closed" is the claim that would let the next
+brick stop looking. Brick **0d** replaces looking with a detector, and until 0d lands the
+honest statement is *"every site we have found is fixed,"* which is a different sentence.
 
 ---
 
@@ -489,13 +517,40 @@ activation once `floor` is negative.
    produce NaN or ±inf inherits it. The guard must reject non-finite `transmitted` on its
    own terms, not as a side effect of σ validation.
 
+3. **Validate `energy` for finiteness at the boundary (D-015, closing O-12).** Reject NaN
+   and ±inf with the same error shape as σ. **Negative energy is untouched** — D-014's
+   ruling stands and the two questions stay separate, so the record stays legible.
+
+   **The reason is not "consistency with σ", and stating it that way would understate it.**
+   The engine seeds `contributions = {seed_node: [energy]}`, so **the seed's own activation
+   is unguarded on every graph, connected or not** — part 2's guard is on `transmitted`,
+   which only ever sees downstream values. A NaN at the seed therefore lands in the
+   **returned** activation map, is consumed by `nous_field`, accumulated into basins, and
+   reaches `Coalition.strength` and thence `_competition_key`, where **every NaN comparison
+   is False and the ordering silently degrades**. That is DEFECT-C's own failure mode, one
+   input earlier. The isolated node in §4.1 is the *visible instance*, not the risk.
+
+**A consequence that must be stated here, or someone will correctly delete the guard.** Once
+both `energy` and σ are finiteness-validated, and given every multiplier in the transmission
+chain is ≤ 1, **part 2's `transmitted` non-finite guard becomes unreachable from the public
+API.** It stays as a **backstop** — it protects against a future term that can manufacture a
+non-finite value from finite inputs, which is exactly the class part 2 was written for. Two
+things follow, and both are requirements:
+
+- Its test **must inject below the boundary** (construct the non-finite `transmitted`
+  directly rather than by passing a bad `energy`), because a test that drives it through the
+  public API will now fail at validation and never reach the guard.
+- The guard **must not be removed as dead code**. A future reader who finds no public route
+  to it is reading correctly and concluding wrongly: this is belt *and* braces, and removing
+  the belt because the braces hold is how the braces come to be load-bearing unnoticed.
+
 **Prose correction, already made by D-012 and restated here so the spec is self-contained:
 the neutral value is `None`, never infinity.** "σ → ∞ recovers the current engine" is true
 analytically in the limit and catastrophic at the literal value. Large finite σ does behave
 — σ = 1e300 was verified byte-identical to `None` — but that is a fact about large finite
 σ, and the spec must not invite a caller to write `inf`.
 
-### 4.1 O-12 FAILS as written — the tester's verdict, and the call it routes · **OPEN**
+### 4.1 O-12 — the tester's FAIL, and how it closes · **DECIDED (D-015)**
 
 **Tester verdict on brick 0c: FAIL.** Seventeen of the eighteen enumerated properties hold
 under adversarial and loop-closed conditions. **O-12 does not.**
@@ -528,9 +583,13 @@ pre-0c engine returns `nan` on the same input, confirmed against the committed e
 `perceive()` / `cluster_sources()` and are always finite. It is caller-supplied input, the
 same class σ=inf was before §4 closed that one.
 
-**The call, which is Cagan's.** D-014 declined `energy` validation — but that decision was
-argued about *negative* energy, and this is *non-finite* energy. The two are not the same
-question and the earlier answer should not be stretched to cover it.
+**DECIDED by Cagan, D-015: option (A).** D-014 declined `energy` validation — but that
+decision was argued about *negative* energy, and this is *non-finite* energy. The two are
+not the same question and the earlier answer was not stretched to cover it. The fix is
+specified in §4 part 3, with the reason stated as the general one rather than as
+consistency with σ. **Option (B) was rejected on its own description: it weakens an
+invariant to fit an implementation, which is the one move this project cannot make.**
+O-12's wording stands unchanged, and becomes true.
 
 - **(A) Close it in code.** Validate `energy` for finiteness at the same boundary σ is
   validated. Consistent with §4's own reasoning — the NaN hazard was already judged "more
@@ -542,12 +601,9 @@ question and the earlier answer should not be stretched to cover it.
 - **(C) Validate both `energy` and the seed contribution** — a superset of (A) that also
   covers any future pre-seeded value. Cost: scope creep beyond the defect.
 
-**Recommendation: (A).** §4 already established that the non-finite hazard is not σ's
-alone; leaving the one entry point that bypasses the guard is answering "can a NaN reach
-the output?" with "only if you hand us one." **(B) is defensible** and cheaper, but it
-weakens an invariant to fit an implementation, which is the move this project refuses
-elsewhere. Whichever is chosen, **O-12 cannot stay as it is** — it currently asserts
-something false.
+The options are retained above because the reasoning that rejected (B) is the reusable
+part: an invariant that asserts something false is fixed by making it true, not by
+narrowing it until it is.
 
 ---
 

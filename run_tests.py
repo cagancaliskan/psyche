@@ -65,6 +65,13 @@ SUITES = [
     # thing rather than against a transcription. Three defects are recorded here as
     # asserted-negatives — they PASS while the defect is present, and go red on a fix.
     "test_tester_0b2_adversarial.py",
+    # 0c deterministic road ordering — TESTER-authored adversarial verification of SPEC-0c §6
+    # (O-1..O-17 incl. O-4b). Data-free synthetic topologies; makes no meaning claim. Registered
+    # by architect-pm, NOT by the tester: run_tests.py decides what the canonical count includes,
+    # so registration is a fact-of-record change and the lane hook blocks the tester from it —
+    # correctly. ledger_check C5 fails if a suite on disk is neither registered here nor excused
+    # in ledger.unregistered_suites.
+    "test_tester_0c_adversarial.py",
     # 2c interoception — TESTER-authored adversarial verification + pilot fairness audit.
     # Self-bootstraps src/ and experiments/ onto sys.path; DATA-FREE on the mechanism side
     # (synthetic adversarial topologies) and reads the ALREADY-FROZEN pilot trace artifact
