@@ -72,6 +72,7 @@ Run directly:
 from __future__ import annotations
 
 import ast
+import copy
 import hashlib
 import itertools
 import json
@@ -520,6 +521,13 @@ CLOSED_GAPS = [
      "            case 1:\n                a += x\n            case _:\n"
      "                a = a + x\n    return a\n",
      ["aug-add", "self-add"]),
+    # CONVERTED 2026-07-26 (SPEC-2f step zero). L3 was the one limitation this suite
+    # asserted was load-bearing for 2f — see test_F8, which was written to make that
+    # burden precise. The builder closed it; the negative becomes the capability.
+    ("TUPLE TARGET `a, b = a + x, b + y` (was L3)",
+     "def f(xs):\n    a = 0.0\n    b = 0.0\n    for x in xs:\n"
+     "        a, b = a + x, b + x * x\n    return a, b\n",
+     ["self-add", "self-add"]),
 ]
 
 UNDOCUMENTED_GAPS = [
@@ -529,9 +537,6 @@ UNDOCUMENTED_GAPS = [
     ("walrus in a while test",
      "def f(xs):\n    a = 0.0\n    it = iter(xs)\n"
      "    while (a := a + next(it, 0.0)) < 1.0:\n        pass\n    return a\n"),
-    ("tuple target `a, b = a + x, b + y`",
-     "def f(xs):\n    a = 0.0\n    b = 0.0\n    for x in xs:\n"
-     "        a, b = a + x, b + x * x\n    return a, b\n"),
     ("itertools.accumulate",
      "import itertools\ndef f(xs):\n    return list(itertools.accumulate(xs))[-1]\n"),
     ("operator.add(acc, v) called in a loop",
@@ -553,7 +558,7 @@ def test_F3_GAP_ASSERTED_NEGATIVES_shapes_the_detector_cannot_see():
     note("each of the five is named in ledger_check's own SCOPE comment, so a reader is "
          "warned before trusting the gate")
 
-    section("F-3  CONVERTED: three gaps CLOSED — the capability is asserted positively")
+    section("F-3  CONVERTED: FOUR gaps CLOSED — the capability is asserted positively")
     # Each of these was an asserted-negative saying "the scanner cannot see X". The builder
     # closed all three. Verified INDEPENDENTLY below with inputs of this suite's own
     # construction, then converted — the assertion now says "the scanner sees X", so a
@@ -578,20 +583,117 @@ def test_F3_GAP_ASSERTED_NEGATIVES_shapes_the_detector_cannot_see():
     check(LC.scan_source("def f(v, x):\n    x = v - x\n    return x\n", "src/p.py") == [],
           "and the asymmetry is deliberate: `x = v - x` REFLECTS rather than accumulates, "
           "so subtraction counts only with the accumulator on the LEFT")
+
+    section("F-3  L3 in depth — the SUBSCRIPT form, which is what 2f will actually write")
+    # Verified with inputs constructed here. The builder's own fixture used plain names;
+    # SPEC-2f's trace is a mapping, so the subscript form is the one that carries the risk,
+    # and it is the one hit hardest.
+    sub = LC.scan_source(
+        "def f(trace, rid, e, d):\n    trace[rid], trace[d] = trace[rid] + e, trace[d] + e\n",
+        "src/p.py")
+    check(sorted(s.kind for s in sub) == ["self-add", "self-add"],
+          f"SUBSCRIPT targets pair elementwise: both halves are seen ({len(sub)} findings)")
+    check(all(s.symbol == "trace" for s in sub),
+          "and both resolve to the base symbol `trace`, not to the key expression")
+    lst = LC.scan_source("def f(xs):\n    a = b = 0.0\n    [a, b] = [a + xs, b + xs]\n",
+                         "src/p.py")
+    check(sorted(s.kind for s in lst) == ["self-add", "self-add"],
+          f"the LIST form `[a, b] = [...]` pairs identically ({len(lst)} findings) — the "
+          f"implementation keys on sequence-ness, not on the Tuple node specifically")
+    check(sorted(s.kind for s in LC.scan_source(
+        "def f(t, c, r, e):\n    t[r], c[r] = t[r] + e, c[r] - e\n", "src/p.py")) ==
+        ["self-add", "self-sub"],
+        "MIXED operators pair per element rather than per statement — an implementation "
+        "that classified the statement as a whole would report one kind twice")
+    one = LC.scan_source("def f(t, c, r, e, n):\n    t[r], c[r] = t[r] + e, n\n", "src/p.py")
+    check(len(one) == 1 and one[0].symbol == "t",
+          f"and when only ONE element accumulates, exactly that one is reported "
+          f"({[s.symbol for s in one]}) — the pairing does not smear a kind across the "
+          f"statement")
+
+    section("F-3  L3 double-counting — the risk the builder named, attacked with my inputs")
+    # The builder asserted `a, b = c, d = x + a, y + b` reports exactly a and b. That fixture
+    # has DISTINCT names in the two chained targets. These do not.
+    def keys(src):
+        return [(s.line, s.col, s.kind, s.symbol) for s in LC.scan_source(src, "src/p.py")]
+    k1 = keys("def f(x, y):\n    a = b = c = d = 0.0\n    a, b = c, d = x + a, y + b\n")
+    check(len(k1) == 2 and len(set(k1)) == 2,
+          f"the builder's own case holds: distinct chained targets report 2 unique keys {k1}")
+    check(len(keys("def f(x):\n    a = 0.0\n    a = a, = (a + x,)\n")) == 1,
+          "a name appearing as BOTH a single target and a sequence element is reported once "
+          "— the two paths are exclusive, as asserted")
+    note("both of the above hold. The next two do NOT, and are FINDINGS — recorded as "
+         "asserted-negatives so they go red when fixed.")
+    finding("2f-0-1", "the double-count guard holds only for chained targets with DISTINCT "
+                      "names. `a, b = a, b = x + a, y + b` reports 4 findings at 2 distinct "
+                      "keys; `d[k], d[k] = d[k] + x, d[k] + y` reports 2 at 1. The census "
+                      "dedup turns the surplus into a phantom `#2` registry entry. Not "
+                      "reachable in src/ today (14 sites, 14 unique keys).")
+    finding("2f-0-2", "the four refusal paths (starred, nested, non-literal RHS, arity "
+                      "mismatch) are REAL code paths — instrumenting _paired_elements shows "
+                      "it is entered and declines — but scan_source returns [] for a refused "
+                      "fold and [] for an empty file, so a caller cannot distinguish 'I "
+                      "declined to look' from 'there is nothing here'. Unlike L1-L10, these "
+                      "are decisions the scanner takes KNOWINGLY and records nowhere.")
+
+    # ---- FINDING 2f-0-1: the double-count guard is incomplete -------------------------
+    # The builder's assertion is true of its fixture and false in general. When the SAME
+    # name appears in two chained sequence targets, each target is paired against the same
+    # value tuple, so the one accumulation is reported twice at the SAME (line, col).
+    dup = keys("def f(x, y):\n    a = b = 0.0\n    a, b = a, b = x + a, y + b\n")
+    check(len(dup) == 4 and len(set(dup)) == 2,
+          f"ASSERTED-NEGATIVE (FINDING 2f-0-1): a repeated name across chained sequence "
+          f"targets is DOUBLE-COUNTED — 4 findings, 2 distinct keys {sorted(set(k[3] for k in dup))}. "
+          f"The builder asserted no duplicate keys; that holds only when the chained "
+          f"targets name different variables, which its fixture did")
+    dup2 = keys("def f(d, k, x, y):\n    d[k], d[k] = d[k] + x, d[k] + y\n")
+    check(len(dup2) == 2 and len(set(dup2)) == 1,
+          f"same shape via a repeated SUBSCRIPT in one target list: {len(dup2)} findings, "
+          f"{len(set(dup2))} distinct key. In the census these become `...d` and `...d#2`, "
+          f"so the cost is a PHANTOM REGISTRY ENTRY — a site somebody must adjudicate that "
+          f"does not independently exist")
+    live_keys = [s.key for s in LC.scan_float_accumulations(ROOT)[0]]
+    check(len(live_keys) == len(set(live_keys)),
+          f"NOT reachable in src/ today: the live census has {len(live_keys)} sites and "
+          f"{len(set(live_keys))} distinct keys, so 2f-0-1 is a latent defect in the guard, "
+          f"not a live corruption of the registry. It becomes live the day 2f writes the "
+          f"shape — which is the exact reason step zero existed")
+
+    # ---- FINDING 2f-0-2: the four refusals are invisible from outside -----------------
+    # Instrumented directly: _paired_elements IS entered for each of these and DOES decline,
+    # so the refusals are real code paths. But scan_source returns [] for a refused fold and
+    # [] for a file containing nothing — and the caller cannot tell which happened.
+    refused = ["def f(x, r):\n    a = b = 0.0\n    a, *b = x + a, r\n",          # L11 starred
+               "def f(x, y):\n    a = b = c = 0.0\n    (a, b), c = (a + x, b + y), c + x\n",
+               "def f(x):\n    a = b = 0.0\n    a, b = pair(a + x, b + x)\n",    # L13 non-literal
+               "def f(x):\n    a = b = 0.0\n    a, b = (a + x,)\n"]              # arity mismatch
+    for src in refused:
+        check(LC.scan_source(src, "src/p.py") == [], "refusal path yields no finding")
+    check(LC.scan_source("def f():\n    pass\n", "src/p.py") == [],
+          "ASSERTED-NEGATIVE (FINDING 2f-0-2): a file with NO accumulation yields exactly "
+          "what all four refusals yield — the empty list. The scanner reaches a sequence "
+          "assignment, examines it, declines it, and records that decision NOWHERE. This is "
+          "the one class of limitation where the scanner HAS the information to speak: L1's "
+          "multiplicative shape never matches, but L11-L13 are decisions taken with full "
+          "knowledge. Silence that means 'I could not look' is being rendered identically "
+          "to silence that means 'there is nothing here' — the exit-code defect's shape")
+
     note("DEFECT 0d-2 is RESOLVED for these three. The remaining shapes are no longer "
-         "undocumented either — they are L2-L10 in ledger_check's scope block, each with a "
+         "undocumented either — they are L2-L13 in ledger_check's scope block, each with a "
          "falsifier — so 0d-2 as originally written (undetected AND undocumented) no "
          "longer describes anything.")
 
-    section("F-3  ASSERTED NEGATIVE: the remaining gaps, now DOCUMENTED as L2-L10")
+    section("F-3  ASSERTED NEGATIVE: the remaining gaps, now DOCUMENTED as L2-L13")
     doc_scope = (TOOLS / "ledger_check.py").read_text(encoding="utf-8").split("SRC_REL = Path")[0]
     for label, src in UNDOCUMENTED_GAPS:
         got = LC.scan_source(src, "src/probe.py")
         check(got == [], f"still undetected, and now documented: {label}")
-    check(all(f"L{i}" in doc_scope for i in range(1, 11)),
-          "and L1-L10 are each named in the scope block with a falsifier — so a reader is "
-          "warned before trusting the gate, which is what makes these limitations rather "
-          "than silences")
+    check(all(f"L{i}" in doc_scope for i in range(1, 14)),
+          "and L1-L13 are each named in the scope block with a falsifier — L11-L13 (starred "
+          "elements, nested targets, non-literal RHS) were added by step zero as the price "
+          "of closing L3, so the limitation count went 10 -> 13 while the COVERAGE grew. "
+          "That is the honest bookkeeping: a closed gap that opens three narrower ones is "
+          "reported as three, not as one net win")
 
     section("F-3  CONVERTED: the scope comment no longer promises coverage it lacks")
     doc = (TOOLS / "ledger_check.py").read_text(encoding="utf-8")
@@ -802,17 +904,69 @@ def test_F6_every_entry_is_structurally_well_formed():
     check(bounded | confirmed == set(naive),
           f"every naive entry either states a falsifier or records the site as already "
           f"confirmed; neither={sorted(set(naive) - bounded - confirmed)}")
-    check(len(bounded) == 5 and len(confirmed) == 2,
-          f"CONVERTED: five entries state a falsifier and TWO are recorded as confirmed "
-          f"order-dependent (got {len(bounded)}/{len(confirmed)}). It was 5/1 — merged_flow "
-          f"moved from 'symptom unreproduced' to CONFIRMED when its own falsifier was run "
-          f"and fired (DEFECT 0d-1)")
+    # DE-BRITTLED 2026-07-26. These two assertions previously pinned the COMPOSITION of the
+    # registry — "exactly 5 bounded, exactly 2 confirmed", and "the one entry naming no
+    # falsifier is `total`". Both went red when a ledger-only edit ADDED a falsifier to an
+    # entry, i.e. when the registry got BETTER. A count is not the property; it was a proxy
+    # for one, and SPEC-0d §3.1 states the property directly: a naive entry that CLAIMS A
+    # BOUND owes a falsifier, and the only thing that discharges the debt is being recorded
+    # as already confirmed, because a confirmed site claims nothing that could be disproved.
+    # That is a RELATION between two fields, and it is what these tests were always for.
+    claiming = set(naive) - confirmed
     unfalsified = sorted(set(naive) - bounded)
-    check(unfalsified == ["src/nous_field.py:build_activation_field.total"],
-          f"and exactly one entry still names NO falsifier: {unfalsified}. It is the "
-          f"already-CONFIRMED site, so there is nothing left to disprove — but the "
-          f"asymmetry is recorded rather than assumed, because five of six naming one is "
-          f"a convention a reader will generalise")
+    check(claiming <= bounded,
+          f"SUBSTANCE: every entry that CLAIMS A BOUND names a falsifier. Claiming without "
+          f"one: {sorted(claiming - bounded)}")
+    check(set(unfalsified) <= confirmed,
+          f"SUBSTANCE: exemption from the falsifier debt is EARNED, never assumed — an "
+          f"entry may omit a falsifier only where it is recorded CONFIRMED ORDER-DEPENDENT, "
+          f"which is the state in which there is nothing left to disprove. Exempt but "
+          f"unconfirmed: {sorted(set(unfalsified) - confirmed)}")
+    # Non-emptiness, not equality. If nothing were ever confirmed the exemption route would
+    # be untested; if everything were, the falsifier convention would be vacuous. Both are
+    # real properties of the partition and neither breaks when a sentence improves.
+    check(len(confirmed) >= 1 and len(claiming) >= 1,
+          f"and BOTH routes are exercised — {len(confirmed)} confirmed, {len(claiming)} "
+          f"claiming — so neither the debt nor its discharge is a dead branch")
+
+    # THE DISCRIMINATING EXAMPLES, RUN RATHER THAN CLAIMED.
+    # "De-brittle the assertion" is one step from "assert nothing", and the only proof that
+    # a replacement still bites is a registry state the two assertions disagree about. Both
+    # mutations below are applied to the REAL registry and measured.
+    def _measure(r):
+        nv = {k: (e.get("reason") or "") for k, e in r.items()
+              if isinstance(e, dict) and e.get("verdict") == "registered"}
+        bd = {k for k, v in nv.items() if "FALSIFIER" in v.upper()}
+        cf = {k for k, v in nv.items() if "CONFIRMED ORDER-DEPENDENT" in v.upper()}
+        return (  # (OLD_A, OLD_B, NEW_A, NEW_B)
+            len(bd) == 5 and len(cf) == 2,
+            sorted(set(nv) - bd) == ["src/nous_field.py:build_activation_field.total"],
+            (set(nv) - cf) <= bd,
+            (set(nv) - bd) <= cf)
+
+    def _blank(r, key, phrase):
+        r = copy.deepcopy(r)
+        r[key]["reason"] = r[key]["reason"].replace(phrase, "xxxx")
+        return r
+
+    STRENGTH = "src/nous_store.py:SubstrateStore.strengthen.road.strength"
+    TOTAL = "src/nous_field.py:build_activation_field.total"
+
+    old_a, old_b, new_a, new_b = _measure(_blank(reg, STRENGTH, "FALSIFIER"))
+    check(old_a and not new_a,
+          "DISCRIMINATOR for the first assertion: strip the falsifier from `strength` and "
+          "the OLD count assertion PASSES (bounded falls 6->5, confirmed stays 2 — its exact "
+          "5/2) while the NEW one FAILS. The count was satisfied by an improvement and a "
+          "regression CANCELLING, which is precisely the state that shipped silently")
+    old_a, old_b, new_a, new_b = _measure(
+        _blank(_blank(reg, TOTAL, "FALSIFIER"), TOTAL, "CONFIRMED ORDER-DEPENDENT"))
+    check(old_b and not new_b,
+          "DISCRIMINATOR for the second: make `total` exempt AND drop its CONFIRMED record "
+          "and the OLD literal-list assertion PASSES exactly, while the NEW one FAILS — an "
+          "entry claiming a bound with nothing to disprove and no debt paid. That is the "
+          "shape DEFECT 0d-1 had, and the old assertion was satisfied by it")
+    note("both mutations are measured here, not argued. An assertion that no registry state "
+         "can falsify is surrender wearing a test's clothes; these two have witnesses.")
     note("this is the strongest property a machine can check about a reason. That the "
          "bound is STATED is checkable; that it is TRUE is F-6, and is measured below — "
          "where one of the five bounds turns out to be false.")
@@ -1337,13 +1491,15 @@ def test_F8_L3_and_L7_interact_and_2f_is_where_it_lands():
     updating a trace and a counter together is idiomatic. Measured here, with the exact
     line 2f would plausibly contain, because the burden has been placed on a reader of
     SPEC-2f and that burden is only fair if the limitation is precise."""
-    section("F-8  L3 is load-bearing for 2f, and it compounds with L7")
+    section("F-8  CONVERTED: L3 is CLOSED, and the compounding with L7 is what remains")
     idiomatic = ("def f(trace, counts, rid, e):\n"
                  "    trace[rid], counts[rid] = trace[rid] + e, counts[rid] + 1\n")
-    check(LC.scan_source(idiomatic, "src/p.py") == [],
-          "the idiomatic 2f line — update a trace and a counter in one tuple assignment — "
-          "produces ZERO findings. This is L3, and it is the shape 2f is most likely to "
-          "write")
+    idio = LC.scan_source(idiomatic, "src/p.py")
+    check(len(idio) == 1 and idio[0].kind == "self-add" and idio[0].symbol == "trace",
+          f"CONVERTED (was: ZERO findings, L3): the idiomatic 2f line — update a trace and "
+          f"a counter in one tuple assignment — now yields exactly the FLOAT half "
+          f"({[(s.symbol, s.kind) for s in idio]}). This is the single line that motivated "
+          f"step zero, and it is the assertion that goes red if the traversal regresses")
     split = ("def f(trace, counts, rid, e):\n"
              "    trace[rid] = trace[rid] + e\n"
              "    counts[rid] = counts[rid] + 1\n")
@@ -1352,11 +1508,17 @@ def test_F8_L3_and_L7_interact_and_2f_is_where_it_lands():
           f"split across two lines, the FLOAT accumulation is caught ({len(got)} finding) — "
           f"so L3 is a real hole and not a property of the computation")
     check(all(s.symbol != "counts" for s in got),
-          "and the integer counter is correctly exempt (L7), which means a 2f author who "
-          "writes the tuple form loses the float site to L3 while the int site was never "
-          "in scope — the two limitations COMPOUND on exactly the line 2f would write")
-    note("Recorded for SPEC-2f: write the trace update on its own line, or the gate that "
-         "exists to catch 2f's accumulations will not see the one accumulation 2f adds.")
+          "and the integer counter is still correctly exempt (L7) — unchanged by step zero, "
+          "which closed L3 only")
+    check([s.symbol for s in idio] == [s.symbol for s in got],
+          f"THE PROPERTY THAT MATTERS: the tuple form and the split form now report the "
+          f"SAME sites ({[s.symbol for s in idio]}). L3 was load-bearing precisely because "
+          f"the two spellings disagreed, so a 2f author's formatting choice decided whether "
+          f"the gate saw the accumulation. It no longer does")
+    note("SPEC-2f's recorded warning — 'write the trace update on its own line' — is now "
+         "OBSOLETE as a requirement and should be struck by architect-pm. It is not the "
+         "tester's file to edit; recorded here so the instruction does not outlive its "
+         "reason and get cited as a live constraint.")
 
 
 def test_robustness_unreadable_and_unparseable_modules():
@@ -1454,28 +1616,32 @@ def main():
         for m in _fail_msgs:
             print("   -", m)
     print("=" * 78)
-    print("  TESTER VERDICT ON SPEC-0d §4 — PASS  (re-verification, 2026-07-26)")
+    print("  TESTER VERDICT ON SPEC-2f STEP ZERO — FAIL  (2026-07-26)")
+    print("  (SPEC-0d §4 itself still HOLDS in full; the FAIL is on step zero's own bar)")
     print("=" * 78)
     print("    F-1  HOLDS       RE-RUN after the builder touched the traversal: all three")
     print("                     historical bugs still caught on the pre-fix trees they")
-    print("                     lived in. This is the only evidence the detector works.")
+    print("                     lived in, at identical per-commit counts 10/12/12, and the")
+    print("                     census digest is unchanged on all five interpreters.")
     print("    F-2  HOLDS       zero unregistered; registry and census in bijection")
-    print("    F-3  HOLDS       three gaps CLOSED and CONVERTED to positive assertions;")
-    print("                     the remaining nine are documented L2-L10 with falsifiers,")
-    print("                     and each is a REAL hole (an equivalent form IS detected)")
+    print("    F-3  HOLDS       FOUR gaps now CLOSED and CONVERTED — L3 joins the three")
+    print("                     from last cycle. Limitations went 10 -> 13: closing L3 cost")
+    print("                     three narrower ones (L11-L13), reported as three.")
     print("    F-4  HOLDS       no false positive on any integer tally in src/")
     print("    F-5  HOLDS       rot shapes caught; reason-TRUTH is out of machine reach")
     print("    F-6  HOLDS       all SIX reasons survived their OWN falsifiers, run rather")
-    print("                     than admired. DEFECT 0d-1 and FINDING 0d-3 are corrected,")
-    print("                     and the corrections were checked against the code, not")
-    print("                     against the architect's search.")
+    print("                     than admired. Its two count assertions are DE-BRITTLED to")
+    print("                     the debt relation SPEC-0d §3.1 actually states.")
     print("    F-7  HOLDS       both nous_field sites still naive; src/ has zero diff")
-    print("    F-8  HOLDS       DEFECT 0d-2 and FINDING 0d-4 both RESOLVED")
+    print("    F-8  HOLDS       CONVERTED: the tuple and split spellings now report the")
+    print("                     SAME sites, which is what L3 being load-bearing meant.")
     print("=" * 78)
-    print("  ONE NEW FINDING, 0d-5, and it does not block: the bound_on_absence docstring")
-    print("  promises OVER-reporting, and it under-reports on dynamic access —")
-    print("  getattr(x,'flow'), x.__dict__['flow'], and an aliased call are all missed.")
-    print("  The bounds themselves are TRUE today and enforced on the realistic path.")
+    print("  WHY FAIL, on one criterion only: the four refusal paths do not refuse VISIBLY.")
+    print("  L3 detection is sound under inputs of this suite's own construction, and the")
+    print("  retro-catch is untouched. But 2f-0-2 stands — a declined fold and an empty file")
+    print("  are the same [] to a caller — and 2f-0-1 shows the double-count guard holds")
+    print("  only for chained targets with distinct names. Neither is reachable in src/")
+    print("  today; both become reachable the day 2f writes the shape step zero was for.")
     print("=" * 78)
     print("=" * 78)
     if _findings:
