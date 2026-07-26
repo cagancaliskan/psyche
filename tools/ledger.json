@@ -115,6 +115,11 @@
       "status": "DESIGNED",
       "note": "DEFECT, second occurrence, registered as its own brick by D-022 and SCHEDULED BEFORE THE PAPER CAPTURE. A test that RAISES rather than fails does not appear in the suite's failure list and aborts every test after it, so 'N passed, 0 failed' can be true of the report and false of the repository. Seen twice: the 0b2 suite's DEFECT-C negatives hid 13 downstream tests, and the 0d suite's robustness block hid its own tail — BOTH found only because someone ran the file directly. Twice is a pattern. It is NOT 0d's problem: it affects every suite that uses the built-in harness, and the project's headline assertion count — the number the paper cites — rides on it. Fix shape (not decided): the harness must catch an exception from a test function, record it as a FAILURE, and continue to the next test. MUST land before the capture the paper cites."
     },
+    "0f": {
+      "name": "C4 forbidden-claim matcher evades on any interpolated word",
+      "status": "DESIGNED",
+      "note": "CONFIRMED DEFECT, measured by perturbation and reproduced independently 2026-07-26 (D-024). SCHEDULED BEFORE THE PAPER CAPTURE alongside 0e. C4 matches forbidden_claim_terms as LITERAL SUBSTRINGS via str.find(), so any interpolated word breaks the match: 'Nous is conscious.' -> 1 finding; 'Nous is a mind.' -> 1; but 'Nous is a conscious mind.' -> 0, 'Nous is clearly conscious.' -> 0, 'Nous is, in every sense, a mind.' -> 0, 'Nous is undeniably sentient.' -> 0, and 'This is, by any measure, an AGI.' -> 0. THE EVADING FORMS ARE PRECISELY THE SENTENCES SOMEONE WRITES WHEN OVERCLAIMING — an unhedged assertion attracts an intensifier. C4 guards CONTRIBUTING.md rule 1, the rule this project's credibility rests on, so every 'C4 passes' in the record has covered less than it appeared to. NOT a reason to distrust the existing record: no forbidden claim has been found by any other means either. Fix shape (NOT decided): match on a normalised token sequence, or a regex permitting bounded filler between the copula and the noun, WITHOUT breaking the negation-cue logic that keeps disclaimers from being flagged. That constraint is the hard part and the reason this is a brick rather than an edit. ACCEPTANCE: the table above must go from 5 evasions to 0, the existing disclaimer-heavy documents must still pass, and docs/CONSCIOUSNESS-YARDSTICK.md must be re-checked under the widened matcher."
+    },
     "1a": {
       "name": "multi-source field",
       "status": "BUILT-UNVALIDATED"
@@ -163,7 +168,7 @@
     "2e": {
       "name": "motivation architecture (+ the AOL autonomy criteria, SPEC-2e)",
       "status": "DESIGNED",
-      "note": "SPEC-2e now exists and holds the project's first PRE-REGISTERED acceptance criteria: AOL-1..AOL-5, AUTONOMY AND OPEN-ENDED LEARNING. NOT consciousness tests and must never be labelled as such in any document — a system could satisfy all five and possess nothing any such theory points at; they measure what the system DOES, never what it is. Butlin et al.'s indicator properties remain the ORTHOGONAL architectural axis (Cagan's standing assessment: 0/14, 1 partial — a figure that is RECORDED NOWHERE in this repository and needs its own document if it is going to be cited). All five are MECHANISM ABSENT today: a DATE, not a rejection, unlike 1e/1e-prime/2c. AOL-2 was UPGRADED before adoption — difficulty growth alone is passable by a system that improves at nothing, so the criterion is the CONJUNCTION of difficulty growth AND capability growth, with difficulty measured externally. AOL-3 carries a HARD CLAUSE (selection signal and scoring signal from independent named sources) and is recorded as PRE-REGISTERED BUT NOT RUNNABLE, because the two sources cannot be named today. AOL-5 was ADDED by architect-pm and is load-bearing: without scarcity a system passes AOL-1..4 by mere ENUMERATION, which is exactly how 1e-prime died. Frozen on adoption; amendment only before any bearing number exists, never toward an easier result."
+      "note": "SPEC-2e now exists and holds the project's first PRE-REGISTERED acceptance criteria: AOL-1..AOL-5, AUTONOMY AND OPEN-ENDED LEARNING. NOT consciousness tests and must never be labelled as such in any document — a system could satisfy all five and possess nothing any such theory points at; they measure what the system DOES, never what it is. Butlin et al.'s indicator properties remain the ORTHOGONAL architectural axis (Cagan's standing assessment: 0/14, 1 partial — recorded in docs/CONSCIOUSNESS-YARDSTICK.md as of 2026-07-26 (D-024). STANDING RULE: that figure is cited BY REFERENCE to that file and nowhere else — not in this ledger, the roadmap, the paper, or conversation. Its scope is fixed: verified against arXiv:2308.08708 Table 1 ONLY; the published TiCS version could not be reached at verification time, and it must NOT be upgraded to 'verified' until someone reads the published version). All five are MECHANISM ABSENT today: a DATE, not a rejection, unlike 1e/1e-prime/2c. AOL-2 was UPGRADED before adoption — difficulty growth alone is passable by a system that improves at nothing, so the criterion is the CONJUNCTION of difficulty growth AND capability growth, with difficulty measured externally. AOL-3 carries a HARD CLAUSE (selection signal and scoring signal from independent named sources) and is recorded as PRE-REGISTERED BUT NOT RUNNABLE, because the two sources cannot be named today. AOL-5 was ADDED by architect-pm and is load-bearing: without scarcity a system passes AOL-1..4 by mere ENUMERATION, which is exactly how 1e-prime died. Frozen on adoption; amendment only before any bearing number exists, never toward an easier result."
     },
     "2f": {
       "name": "temporal credit assignment",
@@ -262,7 +267,8 @@
     "docs/experiments/EXP-2c-interoception.md",
     "DECISIONS.md",
     "tools/ledger.json",
-    "tools/ledger_check.py"
+    "tools/ledger_check.py",
+    "docs/CONSCIOUSNESS-YARDSTICK.md"
   ],
   "count_quarantine_paths": [
     "docs/experiments/",
@@ -401,6 +407,13 @@
     "docs/experiments/": "frozen pre-registrations — a pre-registration edited after the fact is not one",
     "docs/specs/PAPER_CLAIM_INVENTORY.md": "the document whose job is to adjudicate historical figures",
     "WORKING-NOTES.md": "working notes quoting figures as illustration",
-    "docs/report/": "PUBLISHED under DOI 10.5281/zenodo.20474613 on 2026-05-31. Its 130/56/5 figures are correct for what was published and are immutable by definition. Never 'corrected'. (D-012)"
+    "docs/report/": "PUBLISHED under DOI 10.5281/zenodo.20474613 on 2026-05-31. Its 130/56/5 figures are correct for what was published and are immutable by definition. Never 'corrected'. (D-012)",
+    "docs/CONSCIOUSNESS-YARDSTICK.md": "REFUSED 2026-07-26 (D-024) — deliberately NOT added to count_quarantine_paths. C2's regex requires a number followed by assertions/suites/checks-passed/passed; '256 participants', '655 electrodes', '0 of 14' and '1 partial' are STRUCTURALLY out of its reach, verified by running COUNT_RE against each. A quarantine is refused here because it would be granted against a gate that cannot fire, which is exactly the convenience-grant this project treats as how a gate rots. The distinction from the C4 grant is the point: C4's is a property of the SUBJECT, C2's would be a property of a RUN."
+  },
+  "_claim_quarantine_reasons": {
+    "docs/CONSCIOUSNESS-YARDSTICK.md": [
+      "GRANTED 2026-07-26 (D-024) on SUBJECT MATTER, and the distinction matters: this is the one document whose subject IS the claim and whose entire content is the argument for why the project must never make it. Same class as PAPER_CLAIM_INVENTORY.md. NOT granted on the strength of C4 currently passing on the file — that silence is uninformative, because brick 0f records C4 as matching forbidden terms by literal substring, so it is weaker than a clean pass makes it look. The file does contain 'is conscious' and 'validated cognitive model'; both are negated and C4's negation logic correctly skips them TODAY. When 0f widens the matcher, C4 will see more of this file, and without the quarantine someone would 'fix' the one document whose job is to make the argument. RE-CHECK THIS FILE when 0f lands — it is an explicit 0f acceptance item."
+    ],
+    "_NOTE": "The other eight entries in claim_quarantine_paths carry NO recorded reason. That is the same failure this entry was required to avoid, and on the MORE important of the two gates — count_quarantine_paths has had a reasons field all along, claim_quarantine_paths has not. FLAGGED 2026-07-26, not retro-filled: writing reasons for exemptions granted by someone else, after the fact, would manufacture provenance rather than record it. Each should gain its reason the next time it is touched."
   }
 }
