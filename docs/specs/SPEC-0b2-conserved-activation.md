@@ -320,7 +320,8 @@ restated in place so the claim and its adjudication sit together.
 | | |
 |---|---|
 | Suite | `tests/test_tester_0b2_adversarial.py` — written independently in the tester lane, from the invariants below, **not** adapted from the builder's suite. `src/` untouched. |
-| Result line | 83 assertions, 0 failures. |
+<!-- ledger:allow-count -->
+| Result line | 83 assertions, 0 failures — **the figure at this pass**, deliberately not updated. The suite has since been re-adjudicated under brick 0c and now reports 104; rewriting the number here would falsify a record of what was run and found on 2026-07-25. |
 | Environment | Identical on **CPython 3.10.17, 3.11.15, 3.12.4, 3.13.14 and 3.14.4**, hash seeds swept **{0, 1, 2, 3, 7, 42}**, Darwin 24.5.0 arm64. |
 | **Verdict** | **FAIL.** Seven of nine invariants hold. **N-2 fails** (DEFECT-A) and **N-5 fails** (DEFECT-B); **N-7 holds only for finite σ** (DEFECT-C). |
 
@@ -328,7 +329,16 @@ restated in place so the claim and its adjudication sit together.
 CLAUDE.md's definition of done: each test passes *while the defect is present* and turns red
 deliberately the moment the defect is fixed, so a fix must come back through this suite and
 re-verify the property it restores. The suite prints the verdict as a banner at the end of its
-output, and the banner — not the `83 passed` line — is the finding.
+output, and the banner — not the passing-count line — is the finding.
+
+> **Superseded by brick 0c, 2026-07-26.** All three defects this record adjudicates are fixed:
+> DEFECT-A and its siblings by ordering + `math.fsum` (D-013, D-014), DEFECT-B by the
+> single-read materialisation, DEFECT-C by σ validation and — after this record's O-12 gap was
+> found — `energy` validation (D-015). The asserted-negatives above were retired and converted
+> into the positive properties they certify; the suite now reports 104 assertions and passes.
+> **This section is left as written**, because a verification record that is edited after the
+> fact to reflect a later state is not a record. What it says was true when it was written, and
+> what changed since is recorded here and in SPEC-0c.
 
 **Attribution matters more than the count.** Of the three defects, **one is inherited** from 0b and
 neither caused nor fixed by this change (DEFECT-A), and **two are this change's own** (DEFECT-B,

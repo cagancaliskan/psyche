@@ -688,3 +688,66 @@ tester pass. That belongs in `psyche-brick` phase 5.
 right to re-label. That call is mine and it is **pending**: the labels return when O-12 closes,
 the 0c suite is registered, and a complete capture across all five interpreters is taken. Not
 before, and not on the strength of 17 of 18.
+
+## D-016 · 2026-07-26 · The 0c tester verdict is PASS; Phase 0 is eligible for re-labelling
+**Decided by:** tester (the verdict) · architect-pm (the record and the prose reconciliation)
+**The label restoration below is NOT decided and belongs to Cagan.**
+
+**The verdict (recorded, not decided). PASS.** All eighteen enumerated properties — O-1 … O-17
+including O-4b — hold under adversarial and loop-closed conditions. O-12, the single failure of the
+previous pass, is closed by D-015's `energy` finiteness validation and re-verified against the
+invariant rather than against the patch: **10 seed shapes × 7 non-finite energies × 8 parameter
+sets = 560 calls, none returned a result.** The energies include a *payload* NaN
+(`0x7ff8000000000001`), so the check cannot be passing by comparing against one canonical NaN.
+D-014 is intact and directly asserted: negative finite energy is accepted, `-0.0` still normalises
+to `+0.0`, and `-1e300` is accepted where `-inf` is refused — so the discriminator is finiteness,
+not sign.
+
+**Canonical run: 22 suites, 1,727 assertions, 0 failures**, identical per-suite counts on CPython
+3.10.17 / 3.11.15 / 3.12.4 / 3.13.14 / 3.14.4. Verified independently by architect-pm on 3.10.
+§1 case 1 (`0d7ceee443f9b93f`) and case 2 (`3e71cc2431921040`) are unmoved.
+
+**Three things the tester added that were not asked for, and each is worth keeping.**
+(i) The backstop guard's presence is now **machine-checked by AST** — a raising `If` on
+`math.isfinite(transmitted)` inside `spread_activation` — so SPEC-0c §4's "must not be removed as
+dead code" is *enforced* rather than requested. (ii) A **loop-closed third route** into the guard
+through `think(body_sensor=…)`: a primed replay sensor yields NaN friction, `modulated_decay_per_hop`
+returns NaN because neither clamp fires on NaN, and the guard catches it three modules downstream.
+(iii) A **bound** on FINDING 1's scope: `nous_activation`'s `flow[rid] = flow.get(rid, 0.0) + …` has
+the same shape but is *structurally single-term* — over 574 spreads on 60 hostile graphs no road was
+read twice per spread — so the field-merge finding must not be read as wider than it is.
+
+**Prose reconciliation (architect-pm).** The totals moved 21/1,455 → 22/1,727, which staled 39
+figures outside `docs/paper/`. All are reconciled: `README.md`, `docs/REPORT.md` (its per-suite
+table rebuilt from the ledger rather than patched), `docs/nous_roadmap.md`, `docs/outreach/*`.
+**`ledger_check` C1/C3/C4/C5 are green and C2 now reports 16 findings, every one of them in
+`docs/paper/*.tex`** — the HELD paper (D-012), where red is correct signal.
+
+**SPEC-0b2 §6 was deliberately NOT rewritten.** Its "83 assertions" is the figure at the FAIL pass;
+the suite now reports 104 after its 0c re-adjudication. The number is preserved under an explicit
+`ledger:allow-count` pragma with its reason, and a supersession note records what changed. **A
+verification record edited after the fact to reflect a later state is not a record.**
+
+**A process conflict the tester surfaced rather than resolved, and it was right to.** CLAUDE.md
+requires `ledger_check` to exit 0 before any commit; the close-out sequence handed to it required
+reporting the C2 staleness without fixing it, since prose is architect-pm's lane. So commit
+`1b5780a` was made at exit 1. That is now resolved by this reconciliation, and the sequencing gap
+is real: **a tester close-out that moves the totals cannot satisfy the pre-commit gate on its own.**
+Either the gate tolerates C2-only findings during a lane hand-off, or the reconciliation must
+precede the commit. Recorded for Cagan; not resolved here.
+
+**OPEN CALL — restore Phase 0's labels?** All three conditions Cagan set are now met: O-12 closed in
+code, the 0c suite registered in `run_tests.py` (C5 green), and a complete five-interpreter capture
+taken. On the tester's evidence `0a` and `0b` are **ELIGIBLE** to return to `PROVEN`: ordering
+asserted against `creation_seq` through mutation batteries, purity and integrity intact, one bit
+pattern across fresh processes on both reproduction cases, order-perturbation invariance, and
+cross-interpreter bit-identity. **`0c`'s own status is also stale at `DESIGNED`** — it is built and
+tester-verified. Neither is changed here. Restoring a label on an agent's initiative is the
+circularity this project exists to avoid, and the three prior status changes in this log were all
+Cagan's.
+
+**Also open, all minor, all recorded rather than actioned:** whether `0b1` keeps `PROVEN` given its
+completeness claim was false (D-014); whether `decay_per_hop` should be finiteness-validated as a
+third boundary (SPEC-0c §4, low urgency — the guard catches it loudly, and silence was the failure
+mode that mattered); and a stray untracked `_c5.tar.gz` at the repository root, which is not an
+agent's to delete.
