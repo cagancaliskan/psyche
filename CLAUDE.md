@@ -156,6 +156,15 @@ yardsticks*, never a general law about spreading activation or cognition.
   `chore:`. Branch per brick: `brick/<id>`.
 - Before any commit: `python3 tools/ledger_check.py` must exit 0, and `/psyche-claim-check`
   must return SHIP.
+- **Never `git stash`. Inspect an old revision with `git show <rev>:<path>` or a temporary
+  worktree.** A stash is **repo-wide**: taken inside one lane it silently reverts every other
+  lane's uncommitted work, and one that is never popped discards it. This is not hypothetical
+  — during SPEC-2f step zero a stash taken at `044008c` swallowed 315 lines of
+  `CLAUDE-CODE-PROMPTS.md` and nothing noticed. Damage was bounded to that one file and it
+  was recovered, verified by diffing every path in the stash against `HEAD` and disk. On the
+  same task the builder did it correctly (`git show` plus a diff) and the tester used stash,
+  which is the point: **lane discipline that a routine git command can cross is not lane
+  discipline.** The rule is about the command's blast radius, not about anyone's care.
 
 ---
 

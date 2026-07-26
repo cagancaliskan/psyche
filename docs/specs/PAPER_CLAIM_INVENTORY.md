@@ -398,6 +398,28 @@ explicitly-labelled **historical snapshot from Phase 0's completion moment** (se
 harnesses) is a **lower assurance tier** than PROVEN or MECHANISM-VERIFIED: it is self-tested, **not** tester- or
 validator-verified, and makes **no** cognitive claim of its own. It may not be cited as if it were tier-1/tier-2.
 
+**CC-11.** The **census digest** and the **listing digest** are **two named values in the ledger but ONE value in
+the tool.** `determinism.census_digest` (`b11fd55a71d900ee`) covers only the census rows of
+`--list-accumulations`; `determinism.listing_digest` (`a2f7ed1d67f53fbe`) covers that command's full stdout, and
+the determinism probe hashes the latter. **A report-format change therefore moves an invariant the census never
+moved** — it did exactly that across SPEC-2f step zero, and two consecutive verification passes spent real effort
+re-deriving from git that the movement was benign. Cite the **census** digest for any claim about the census
+being stable; cite the listing digest only for claims about the command's output. Separating them in the tool is
+**CC-12** and is **not done**.
+
+**CC-12 — REGISTERED, NOT DONE. Two mechanical checks the project has decided it wants and has not built.**
+Both are recorded here rather than left as intentions, because this project's standing rule is that a written
+note is not a gate:
+  1. **`capture_run.py` must refuse on a runner/capture suite mismatch.** It already refuses when interpreters
+     disagree on counts; it does not compare the suites `run_tests.py` *runs* against the suites the capture
+     *contains*. That gap let `docs/TEST_OUTPUT.txt` omit `tests/test_tester_0d_adversarial.py` — 334
+     assertions, the primary evidence that brick 0d works — while **C1 and C5 both passed**, because C1 compares
+     the ledger to the capture and C5 compares disk to the registry, and neither compares the runner to the
+     capture. The omission was closed by hand on 2026-07-26 (D-026) and verified by an explicit name-by-name
+     diff; **nothing prevents it recurring.**
+  2. **Split the census digest from the listing digest in `ledger_check.py`** (see CC-11), so a report-format
+     change cannot move a census invariant.
+
 ---
 
 # SECTION 3 — CLAIM-TO-EVIDENCE MAP

@@ -4,7 +4,7 @@ Short, honest templates for sharing Nous. Replace every `[BRACKETED]` field. The
 deliberately methodology-first and non-salesy: Nous is an engineering prototype and a
 software-testing-methodology case study, never a mind, a consciousness, an AGI, or a validated
 cognitive model. Numbers are taken from `tools/ledger.json`, which is the single source of truth and is
-generated from `docs/TEST_OUTPUT.txt` (currently **1,973 assertions across 23 suites, all
+generated from `docs/TEST_OUTPUT.txt` (currently **2,307 assertions across 24 suites, all
 passing**). Never type a count from memory — run `python3 tools/ledger_check.py` before
 sending anything. Do not add cognitive claims beyond what the technical report supports.
 
@@ -21,7 +21,7 @@ Python prototype of a graph memory and spreading-activation substrate, written t
 software-testing-methodology case study.
 
 To be precise about scope: the substrate and activation layers are rigorously tested for
-determinism, integrity, and purity, inside a suite of 1,973 assertions across 23 suites that
+determinism, integrity, and purity, inside a suite of 2,307 assertions across 24 suites that
 all pass; the cognitive layers above run deterministically, but their meaningfulness is not
 claimed, and known limitations are asserted as explicit negative tests.
 
@@ -84,7 +84,7 @@ architecture, presented as a software-testing-methodology case study. Four layer
 test-first: a graph substrate store, a deterministic spreading-activation engine, a multi-source
 field, and an end-to-end perceive-then-think slice. The lower two layers are verified for
 determinism (including across process hash seeds and across CPython versions), integrity, and
-purity, inside a suite of 1,973 assertions across 23 suites that pass with zero failures. The upper
+purity, inside a suite of 2,307 assertions across 24 suites that pass with zero failures. The upper
 layers run deterministically, but their cognitive meaningfulness is not claimed. One failure mode recurred at every layer: a component passes on a
 friendly, hand-built input and breaks only under adversarial testing, or once the loop is closed
 with system-generated inputs. Six structural bugs were caught this way. Closing the loop with real

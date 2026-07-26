@@ -901,7 +901,7 @@ Open your report with the plain-language summary for Cagan.
 
 ---
 
-## CC-10 · Land the yardstick, and register a confirmed hole in C4 ▶ LIVE
+## CC-10 · Land the yardstick, and register a confirmed hole in C4 ✔ DONE (6425553)
 
 `docs/CONSCIOUSNESS-YARDSTICK.md` is written and untracked in the working tree. It is the
 assessment behind the "0 of 14, 1 partial" figure that had been cited for two days with no
@@ -974,7 +974,7 @@ Then commit. ledger_check should exit 1 with exactly the 16 held paper findings.
 
 ---
 
-## CC-11 · 2f step zero — teach the gate the shape ▶ QUEUED (run after CC-10)
+## CC-11 · 2f step zero — teach the gate the shape ✔ BUILT (tester next)
 
 SPEC-2f §0.5. The gate must see tuple-target accumulation **before** the code that would hide in
 it is written. This is the whole reason 0d closed without fixing L3: ownership sits with the brick
@@ -1046,6 +1046,428 @@ does all evidence for it live in tester files?
 
 Open your report with the plain-language summary for Cagan.
 ```
+
+---
+
+## CC-12 · The gate-hardening block ⏸ QUEUED — before the paper capture, NOT before 2f
+
+**Do not run this before 2f.** It is scheduled ahead of the capture the paper cites, and nowhere
+earlier. Recorded now so the reasoning is not reconstructed from memory in a month.
+
+**Why it is one block.** Three gates have now been perturbed. **Two failed on first contact** —
+the determinism probes could not see 1 ULP (they compared `round(x, 9)`), and C4 cannot see an
+adverb. The one that survived, C6, survived because it shipped with an injection test *as its
+acceptance criterion*. That is not luck, and the base rate is the argument: **four gates have
+never been perturbed at all**, and one of them, C2, is what holds every number the paper prints.
+
+**Standing rule, adopted now and applying forward from this moment:** *every gate ships with an
+injection test proving it can fail.* Not a special measure for suspicious gates — the default.
+A gate without one is an unmeasured claim wearing a green tick.
+
+Contents of the block, in priority order:
+
+1. **The eight unreasoned claim exemptions.** `claim_quarantine_paths` had eight entries and no
+   reasons field at all, while the *counts* gate has had one all along — so the more important
+   gate is the one whose exemptions were unexplained. They were flagged rather than retro-filled,
+   correctly: writing reasons after the fact for someone else's exemptions manufactures provenance
+   instead of recording it. Each gets adjudicated — a reason, or removal. **Ask specifically about
+   `docs/design/`:** a wholesale directory exemption means the entire vision corpus is unchecked
+   for overclaims, and the vision corpus is exactly where grandiose language would live. That
+   exemption may well be right — vision documents are description, not specification — but nobody
+   has written down why, and "may well be right" is not a record.
+2. **0f — C4's interpolation hole.** Confirmed by perturbation; five evading phrasings recorded in
+   the ledger, plus "undeniably sentient" and "by any measure, an AGI". The matcher must widen
+   *without* breaking the negation-cue logic that keeps this project's disclaimer-dense documents
+   from being flagged. Those two requirements pull against each other; that tension is the work.
+3. **0e — abort-hides-tests.** A test that raises is invisible to the failure list, so "0 failures"
+   can be true of the report and false of the repository. Second occurrence when registered.
+4. **Perturb C1, C2, C3, C5 — the four never tested.** For each: inject the exact defect the check
+   exists to catch and confirm it fires. C2 first, because the paper's numbers rest on it. Any that
+   fails joins this block; any that survives gets its injection test committed as a permanent
+   acceptance criterion, per the standing rule above.
+
+5. **`post_edit_ledger.py` does not run the tests the ledger feeds.** It runs `ledger_check`
+   (consistency) and reports findings naming the edited file — so a ledger edit that leaves the
+   ledger self-consistent while breaking a test that reads it is invisible to it. That is exactly
+   how two failures shipped silently. The hook is already wired in `.claude/settings.json`, so the
+   extension point exists: on an edit to `tools/ledger.json` specifically, also run the suites that
+   read it. Belt to the braces of de-brittling the assertions themselves.
+6. **`tools/test_ledger.py` is outside both the canonical runner and C5's scope.** C5 scans
+   `tests/`, not `tools/`, so the gate's own 191 assertions are in neither place — which is the
+   silence Option B was routed to close. Land Option B in this block if it has not landed by then.
+
+7. **C1 verifies ledger == capture, never capture == reality.** A stale capture makes both agree
+   and both wrong, and C1 stays green throughout. It is live right now: at `656c38a` the ledger
+   says 1,973 assertions and the repository holds 1,992. Staleness is normally bounded by the
+   cycle, since the capture is retaken at close-out — but nothing detects a capture that was never
+   retaken, which is precisely the "documents disagree with reality" failure C2 exists to prevent,
+   arriving through the capture instead of through prose. Register it; do not fix it before 2f.
+
+8. **Nothing compares the runner to the capture, and a whole suite went missing.** Confirmed at
+   `044008c`: `test_tester_0d_adversarial` is in `run_tests.py` and **entirely absent** from
+   `docs/TEST_OUTPUT.txt` — 23 suites captured, 24 in the runner — while **C1 and C5 both pass**.
+   C1 compares ledger to capture; C5 compares suites on disk to the registry; neither compares
+   what the runner RUNS to what the capture CONTAINS. The missing suite is the 1,335-line
+   adversarial file that is the primary evidence 0d works, so the headline figure omits the
+   evidence for the brick it is quoted alongside. This is the **third** occurrence of "the count
+   silently under-reports" — after the unregistered-suite hole that created C5, and 0e. Cheapest
+   fix is in `capture_run.py`, which already refuses on interpreter disagreement: refuse on
+   runner/capture suite mismatch too.
+
+**Bounded on purpose.** This block does not grow. Anything found beyond these four items is
+registered as a limitation with a falsifier and scheduled after the paper, unless it demonstrably
+lets a false claim into a document — which is the only condition permitted to widen it.
+
+---
+
+## CC-14 · Close 2f step zero — the tester, and four red assertions ✔ RUN (FAIL on 2f-0-2)
+
+Four failures in the tester's own file: two are its L3 negatives flipping by design, **two are
+pre-existing and were shipped silently two passes ago** by a ledger-only edit that changed a note
+those tests asserted the exact prose of. Nobody re-ran the suite after a ledger edit.
+
+**Root cause, and the fix is not a detector.** Asserting the *exact wording* of a ledger note was
+always a proxy. The property those tests were for is that the note carries certain substance — a
+falsifier, a correction date, a named bound. Assert the substance and the brittleness is gone at
+the source, which is better than adding a hook to notice the breakage. The hook extension is
+recorded in CC-12 anyway, as belt to this braces.
+
+```
+/psyche-orient
+
+Work in the TESTER lane. The builder has landed SPEC-2f step zero — C6 now sees tuple-target
+accumulation (L3). Verify it, and fix the four red assertions in your own file. Then hand back.
+
+FOUR FAILURES, TWO CAUSES — DO NOT TREAT THEM THE SAME
+
+Two are yours and flip BY DESIGN: your L3 asserted-negatives, because L3 is now closed. Convert
+them, never delete them — the rule that governed the nine last cycle. Verify the capability with
+inputs of your OWN first, not by re-running the builder's fixtures.
+
+Two are PRE-EXISTING and were shipped silently two passes ago. A ledger-only edit changed a note;
+your tests asserted its exact prose; nobody re-ran the suite because the edit "only touched a
+document". The ledger is an INPUT to your tests, and editing an input can break them.
+
+For those two, do NOT simply update the string to the new wording. That leaves the same trap armed
+for the next note edit. Instead ask, for each: WHAT PROPERTY WAS THIS TEST ALWAYS FOR? Almost
+certainly it was that the entry carries certain substance — that it names a falsifier, that it
+records a correction, that it states the bound it rests on. Assert THAT, and the test stops
+breaking every time someone improves a sentence.
+
+THE TRAP IN THAT INSTRUCTION, AND YOU MUST NOT FALL INTO IT
+"De-brittle the assertion" is one short step from "assert nothing". A check that a note is longer
+than twenty characters is not a substance check, it is surrender wearing a test's clothes. For
+each of the two, state in your report: the property you now assert, why that property is what the
+test was always for, and — this is the part that proves it — a note that would PASS the old
+assertion and FAIL the new one, or vice versa. If you cannot produce a discriminating example, you
+have not written a substance check.
+
+VERIFY THE L3 IMPLEMENTATION
+- Elementwise pairing on both plain-name and subscript targets, and on the `[a, b] = ...` list
+  form. The subscript form is the one 2f will actually write; hit it hardest.
+- The four refusal paths — starred elements, nested targets, non-literal right-hand side, arity
+  mismatch. For each: does it REFUSE, or does it silently produce nothing? Those look identical
+  from outside and are completely different. A refusal that is indistinguishable from a clean pass
+  is the exit-code defect in a new costume.
+- Arity mismatch is recorded as a runtime error, not a limitation. Confirm that distinction holds
+  and that nobody can mistake one for the other.
+- The builder flagged double-counting as the risk its own change introduced, and asserted against
+  it: `a, b = c, d = x + a, y + b` must report exactly `a` and `b`, with no duplicate keys, and a
+  statement must take the single-target path or the sequence path, never both. Attack that
+  directly — chained targets, repeated names across chained targets, and the same name as both a
+  single target and a sequence element.
+
+REGRESSION — THE ONE THAT MATTERS
+Re-run the retro-catch in full. The builder changed how the gate WALKS code, which is the one
+edit that can silently break everything the gate is for. All three historical bugs must still be
+caught, and the per-commit counts (10/12/12) must be identical. Independently confirm the census
+digest 25ff712c9002fa91 across every interpreter — that digest is the cheapest evidence that the
+traversal change moved nothing it should not have.
+
+EXPECT
+ledger_check exit 1 with exactly 16 [C2] findings, all under docs/paper/. Anything else is real.
+
+VERDICT
+PASS only if L3 detection holds under your own inputs, all four refusal paths refuse visibly, the
+retro-catch is unchanged, and both de-brittled assertions come with a discriminating example. Fix
+nothing outside your own test file. Do not touch src/, run_tests.py, tools/ledger.json or
+docs/TEST_OUTPUT.txt.
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
+
+## CC-15 · Two findings from the step-zero verification ✔ DONE (044008c)
+
+Tester verdict: **FAIL on 2f-0-2**, plus 2f-0-1. The L3 capability itself holds — elementwise
+pairing works on plain names, subscripts and the list form, mixed operators classify per element,
+the retro-catch is unchanged at 10/12/12 and the census digest is identical on five interpreters.
+Both findings are cheap, neither is reachable in `src/` today, and both become reachable **the day
+2f writes the shape step zero existed for.**
+
+```
+/psyche-orient
+
+Work in the BUILDER lane. Two findings from the tester's verification of SPEC-2f step zero. Fix
+exactly these two. Do NOT begin the credit-assignment mechanism — step zero is still step zero.
+
+FINDING 2f-0-1 — the double-count guard holds only for DISTINCT names
+Your guard was verified against a fixture with distinct names, which is the shape you had in mind
+when you wrote it. Repeated names break it:
+
+    a, b = a, b = x + a, y + b        ->  4 findings at 2 distinct keys
+    d[k], d[k] = d[k] + x, d[k] + y   ->  2 findings at 1 key
+
+The count is not the damage. The census dedup turns the surplus into a PHANTOM ENTRY — a site
+someone must adjudicate that does not independently exist. A registry that invents work is worse
+than one that misses it, because the invented entry gets a reason written for it, and now a false
+reason sits in the record. That is the failure this brick already failed once.
+
+FINDING 2f-0-2 — THE ONE THAT FAILS THE PASS. Refusals are invisible from outside.
+The refusals are real code paths — you record ('REFUSED','Tuple','Tuple') for starred, nested and
+arity cases, and ('REFUSED','Tuple','Call') for a non-literal right-hand side. But `scan_source`
+returns `[]` for a declined fold and `[]` for an empty file. From outside, "I could not look" and
+"there is nothing here" are byte-identical. That is the exit-code contract's defect wearing a
+different costume, and this project has now met that shape three times.
+
+THE LINE TO DRAW, AND THE TESTER DREW IT — hold it exactly here
+L1's multiplicative shape NEVER MATCHES, so the scanner has nothing to report and it stays a
+documented limitation. L11–L13 are DECISIONS TAKEN WITH FULL KNOWLEDGE: the scanner uniquely
+possesses the information that it declined, and says nothing. **Anything the scanner knowingly
+declines is recorded. Anything it simply never matched stays a limitation.** Implement that line
+and no wider one.
+
+WHAT A REFUSAL IS AND IS NOT
+- It is NOT a finding. A finding means the repository is inconsistent (exit 1). A refusal means a
+  site exists that the scanner chose not to fold. Do not make refusals fail the build — that would
+  turn three documented limitations into blockers and the gate would be disabled within a week.
+- It IS countable and surfaced. `--list-accumulations` must show them, with file, line, and which
+  refusal applied, alongside the census. The summary line must say so: N sites, M refusals.
+- Keep the exit code unchanged. Exit 2 stays reserved for "the tool could not run at all".
+
+DO NOT WIDEN THIS
+The temptation is a general "report everything the scanner noticed" mechanism. Resist it. Two
+findings, the line above, nothing else. Anything further is a limitation with a falsifier.
+
+REGRESSION — the part that matters
+You are editing the fold path again. Re-run the retro-catch in full: all three historical bugs,
+per-commit counts 10/12/12, all four MUST-CATCH sites. Confirm the census digest across every
+interpreter and report whether it changed — if adding refusal records changes the digest, say so
+explicitly and say why that is or is not correct, rather than letting a digest change pass
+unremarked.
+
+NOT YOURS
+tools/ledger.json and docs/TEST_OUTPUT.txt are stale by exactly 19 assertions (1973 -> 1992) after
+the tester's commit 656c38a. Leave them. The architect recaptures at close-out.
+
+RUN
+Full suite on every interpreter available, plus tools/test_ledger.py. Totals read from the runner
+output, never estimated; report the interpreters swept. ledger_check exit 1 with exactly 16 [C2]
+findings, all under docs/paper/.
+
+SELF-AUDIT
+All seven items. Item seven especially: is every capability AND every refusal asserted in your own
+file, or does the evidence live only in the tester's?
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
+
+## CC-16 · Re-point a dead assertion, and close step zero ✔ RUN (PASS; 2 of 12 assertions were dead)
+
+Builder fixed both findings (044008c). **But its own report names the thing you must fix first:
+your 2f-0-2 asserted-negative has stopped discriminating.** It asserts on `scan_source` alone, and
+the builder deliberately left that contract unchanged — so it passes before the fix and after it.
+An assertion that passes on both sides of the thing it names is not evidence. This is the first
+aphorism landing on your own suite.
+
+```
+/psyche-orient
+
+Work in the TESTER lane. The builder fixed 2f-0-1 and 2f-0-2 (044008c). Verify, fix the
+assertions in your own file, and hand back.
+
+START HERE — YOUR OWN ASSERTION HAS GONE DEAD
+Your 2f-0-2 asserted-negative asserts on scan_source. The builder deliberately kept that
+signature unchanged — widening it would have silently changed what every existing `== []` means
+in both suites — and routed refusals through additive entry points instead. So your assertion
+passes before the fix AND after it. It names a defect it can no longer perturb.
+
+That is "a coverage axis is only evidence for the property it can perturb", arriving in your own
+file, and it is the third time this project has met it. Re-point it at whatever now carries the
+refusal — scan_source_refusals, or the listing — and prove the re-pointing worked the only way
+that counts: show it FAILING against the pre-fix tool from git, and passing against the current
+one. An assertion you cannot make fail on the old code is not verifying the fix.
+
+Then ask the same question of every other assertion you wrote for this brick. How many others
+would pass on both sides? Report the number honestly even if it is uncomfortable.
+
+CONVERT, NEVER DELETE
+Your double-count asserted-negatives now go red by design. Same rule as the nine and the two
+before them: converted, with the positive case asserted.
+
+THE DEDUP KEY — verify the property, not the count
+The builder deduped on (kind, ast.dump(target)) rather than (kind, symbol), and its argument is
+the load-bearing part: symbol-level dedup would make the tuple form report FEWER sites than the
+same code split across two statements, undoing the one property closing L3 established. Test that
+property directly and generatively: for a set of accumulation pairs, assert that the tuple form
+and the split form report the SAME number of sites, and that d[i], d[j] stays two while d[k],
+d[k] collapses to one. The count is not the claim; the equivalence is.
+
+THE LISTING IS A CONSUMED INTERFACE — attack it as one
+The builder's first version printed refusal lines beginning with the file path, and your own
+loop-closed test — which feeds the listing back as a registry and takes the last token of every
+src/-prefixed line — would have been handed two phantom keys. Its fix for invisible refusals was
+one step from creating the exact defect it was fixing, and nothing in its own file caught it.
+
+So: enumerate every consumer of that listing. Is your loop-closed test the only one? Does the
+REFUSED prefix collide with anything a consumer might match? What happens to a consumer if a
+future refusal rule is added? A gate's stdout is an API the moment anything parses it, and this
+one has at least one parser nobody had listed.
+
+THE DIGEST — redo the decomposition, do not inherit it
+The builder reports the digest moved 25ff712c9002fa91 -> a2f7ed1d67f53fbe, and that the census
+lines are byte-identical at b11fd55a71d900ee with only the REFUSED lines and the summary
+differing. That reasoning is correct if the numbers are. Redo it yourself from git rather than
+accepting the diff.
+
+Then answer a design question and route it if you agree: should the census digest and the
+LISTING digest be separate values? A census digest that moves when the report format changes is a
+weaker invariant than one that does not — and this pass had to spend real effort establishing
+that a digest change was benign. That is not your fix to make; say whether you agree and hand it
+to the architect.
+
+VERIFY THE REFUSAL MACHINERY
+Two L13 refusals exist in src/ today. Confirm both independently. Confirm all four rules are
+reachable and that each reports which rule applied. Confirm a refusal never fails the build, and
+that exit 2 still means only "the tool could not run". Confirm refusals are found inside classes,
+methods and match cases — the builder claims the shared walk reaches them.
+
+REGRESSION
+Retro-catch in full: three historical bugs, per-commit counts 10/12/12, four MUST-CATCH sites.
+
+NOT YOURS, AND THE NUMBER IN THE LAST BRIEF WAS WRONG
+docs/TEST_OUTPUT.txt does not contain your 0d suite AT ALL — 23 suites captured, 24 in the
+runner. Confirmed independently. The capture is stale by a whole suite, not by 19 assertions.
+Leave tools/ledger.json and docs/TEST_OUTPUT.txt alone; the architect recaptures.
+
+VERDICT
+PASS only if the re-pointed assertion fails against the pre-fix tool, the dedup equivalence holds
+generatively, and the retro-catch is unchanged.
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
+
+## CC-17 · Close step zero, recapture honestly, then 2f proper begins ▶ LIVE
+
+Tester PASS. Step zero has taken **five passes** for a gate extension, and it produced real value —
+L3 detection, refusal visibility, a dedup correctness fix, two dead assertions found, and a
+machine-check that a future dead assertion goes red. It has also not written one line of the
+learning mechanism. **After this close-out, gate work stops until CC-12.** That is a decision.
+
+```
+/psyche-orient
+
+Work in the ARCHITECT-PM lane. Tester PASS on SPEC-2f step zero. Close it out, recapture, and
+leave the project ready for 2f proper. Do NOT begin 2f's implementation.
+
+FIRST — CLEAR A STALE LOCK, OR NOTHING BELOW CAN COMMIT
+`.git/index.lock` exists, is zero bytes, and no git process is running. It blocks every index
+write — `git add` fails with "Unable to create '.git/index.lock': File exists." It was left by
+tooling that could not unlink it. You run natively and can:
+
+    rm -f .git/index.lock
+
+Also remove the empty `_to_delete/` directory in the repo root if it is still there; it was created
+by the same tooling and is empty. Verify with `git add -A -n` before doing anything else in this
+prompt.
+
+RECAPTURE, AND VERIFY THE CAPTURE IS COMPLETE — this is the part that is currently broken
+docs/TEST_OUTPUT.txt does not contain tests/test_tester_0d_adversarial.py AT ALL. 23 suites
+captured, 24 in the runner, and C1 and C5 BOTH PASS — C1 compares ledger to capture, C5 compares
+disk to registry, neither compares what the runner RUNS to what the capture CONTAINS. The missing
+suite is the 1,335-line file that is the primary evidence 0d works, so the headline figure omits
+the evidence for the brick it is quoted beside.
+
+So: recapture, and then verify completeness EXPLICITLY rather than assuming it. Diff the suite
+names in run_tests.py against the suite names in the new capture and report the result as a list,
+not as a reassurance. The tester's file is now 334 assertions, so do not carry forward 1992 or
+2281 — read the new totals from the runner output. I gave the builder 1992 and it was wrong; I had
+not verified it. Do not inherit a number from a brief, including from this one.
+
+I am choosing an instruction over a mechanism here, deliberately, and the reasoning is on the
+record: three times this cycle I refused a written note in favour of a machine check, because the
+trigger was future code someone else would write. Here the trigger is the next action and this
+prompt is its instruction. The mechanical check — capture_run.py refusing on runner/capture suite
+mismatch, since it already refuses on interpreter disagreement — is registered in CC-12.
+
+THE DIGEST — record two values, do not change the tool
+Both the builder and the tester independently propose splitting the census digest from the
+listing digest, and I agree: a census digest that moves when the report format changes is a weaker
+invariant than one that does not, and two consecutive passes have now spent real effort proving a
+digest change was benign. That cost recurs on every pass that touches the gate.
+
+But the tool change goes in CC-12, not here. What you do NOW is cheaper and captures most of the
+value: record BOTH values in the ledger, named and distinguished —
+  census digest  b11fd55a71d900ee  (the 14 census rows; unchanged across step zero)
+  listing digest a2f7ed1d67f53fbe  (full --list-accumulations stdout; moved because the report grew)
+Once the census digest is a named citable value, nobody has to re-derive whether a change was
+benign. State plainly that they are one value in the tool today and that separating them is
+registered.
+
+STRIKE THE OBSOLETE CONSTRAINT — open for two passes now
+SPEC-2f's recorded warning "write the trace update on its own line" is obsolete: L3 is closed, the
+gate sees the shape. Strike it before it gets quoted as a live constraint. A stale constraint
+cited as current is the same failure class as a stale count, and this project has met that class
+enough times to recognise it on sight.
+
+RECORD THE NEW STANDING RULE — the tester built it, make it doctrine
+The tester now has a test that loads the pre-fix tool from git and requires each of its claims to
+FAIL there. That turns "an assertion must be able to perturb the property it names" from a habit
+into a gate. Two of its twelve assertions for this brick could not fail on the old code — one I
+flagged, one it found itself. Write the rule into docs/METHODOLOGY.md and mark it for the paper:
+**an assertion must be shown capable of failing against the code it was written against.** It is
+the operational form of the third aphorism and it is stronger than the aphorism, because it runs.
+
+NEW RULE — RECORD IT, IT COST SOMETHING TODAY
+Inspecting an old revision must use `git show <rev>:<path>` or a temporary worktree — **never
+`git stash`.** A stash is repo-wide, so a stash taken inside one lane silently reverts uncommitted
+work in every other lane's files, and a stash that is never popped discards it. That happened
+during this brick: `stash@{0}`, taken at 044008c, swallowed 315 lines of CLAUDE-CODE-PROMPTS.md and
+nothing noticed. Damage was bounded to that one file — no code was lost, verified by diffing every
+path in the stash against HEAD and disk — and it has been recovered from the stash and the stash
+dropped. The builder did this correctly on the same task (`git show` + diff); the tester used
+stash. Write the rule into CLAUDE.md's repo conventions, because lane discipline that a routine git
+command can cross is not lane discipline.
+
+
+ADJUDICATE AND REGISTER, briefly
+- The two visible L13 refusals sit on `new_strength, new_charges = _compute_decay(...)` — the one
+  place in the substrate a tuple-returning float computation actually occurs. Those refusals are
+  not noise; L13 declines at exactly the interesting spot. Record that, and name what would make
+  them dangerous rather than merely present.
+- The listing's summary line contains `src/`, so a consumer matching on containment rather than
+  prefix would capture it. The tester recorded rather than fixed it. Register it as a limitation
+  with a falsifier.
+- 0d stays PROVEN; its note records that L3 closed under 2f, and why ownership sat there. 2f stays
+  DESIGNED with §0.5 marked complete — step zero is done, credit assignment has not started.
+
+THEN
+python3 tools/ledger_check.py — expect exit 1 with exactly the 16 held [C2] paper findings and
+nothing else. Append to DECISIONS.md. Commit everything outstanding, including the builder's
+uncommitted tools/ changes and CLAUDE-CODE-PROMPTS.md.
+
+Close with one line: where this leaves us, and confirm in that line that the next action is 2f
+proper — the eligibility trace — and not another gate pass.
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
 
 ---
 

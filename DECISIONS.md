@@ -1344,3 +1344,131 @@ probes could not see 1 ULP, and C4 cannot see an adverb. The one that survived, 
 *because* it was built with an injection test as its acceptance criterion. That is the argument for
 making adversarial self-test the default for every gate this project ships, not a special measure
 for the ones that look suspicious.
+
+---
+
+## D-025 — SPEC-2f step zero: the gate is extended by the brick that needs it
+
+**Date:** 2026-07-26 · **Lane:** architect-pm · **Status:** recorded retroactively
+
+**A recording gap, closed here and labelled rather than hidden.** `D-025` was cited in four
+places in `tools/` — `ledger_check.py` twice, `test_ledger.py` twice — as the decision
+authorising SPEC-2f's step zero, before any such entry existed in this file. The work was
+correctly commissioned (SPEC-2f §0.5, under D-020 and D-022) and correctly executed; only the
+decision record was missing. It is written now, with its number preserved so the four
+references resolve instead of being renumbered around.
+
+**The decision.** Brick 0d's gate could not see `trace[rid], counts[rid] = trace[rid] + e,
+counts[rid] + 1` — the line 2f is most likely to write. Ownership of the fix sat with **2f,
+not 0d**, and that placement was the point rather than a convenience: *extending a gate is a
+normal cost of building on it.* A gate no brick is ever required to extend is a gate that
+narrows silently every time the code grows past it.
+
+**Held to, and worth recording because it was the tempting corner:** step zero closed L3 and
+**stopped**. No eligibility trace, no credit assignment, no "while we are here".
+
+---
+
+## D-026 — Step zero closes: two rules, two digests, and a capture that omitted its own evidence
+
+**Date:** 2026-07-26 · **Lane:** architect-pm · **Status:** decided
+
+Tester PASS on SPEC-2f step zero (`9c26356`), builder fix at `044008c`. Close-out.
+
+### 1. The capture omitted the primary evidence for the brick it was quoted beside
+
+`docs/TEST_OUTPUT.txt` did not contain `tests/test_tester_0d_adversarial.py` **at all** — 23
+suites captured, 24 in the runner. The missing file is the 334-assertion suite that is the
+primary evidence brick 0d works, so the headline figure omitted the evidence for the brick it
+sat next to. **`C1` and `C5` both passed throughout**, and that is the finding: C1 compares
+the ledger to the capture, C5 compares disk to the registry, and **nothing compared what the
+runner runs to what the capture contains.**
+
+Recaptured across all five interpreters, all agreeing: **24 suites, 2,307 assertions, 0
+failures.** Completeness was then verified by an explicit name-by-name diff of
+`run_tests.py`'s suite lists against the capture — reported as a list, not as a reassurance:
+zero missing, zero extra, order identical.
+
+**Three stale totals were in circulation and none survived.** 1,973 (the old capture), 1,992
+(my own figure, given to the builder in a brief, wrong because I had not verified it), and
+2,281 (a correct measurement of a since-changed tree). The canonical number is read from the
+runner output and is **2,307**. *Do not inherit a number from a brief, including from mine.*
+
+**I am choosing an instruction over a mechanism here, and the reasoning is on the record.**
+Three times this cycle I refused a written note in favour of a machine check, because in each
+case the trigger was future code someone else would write. Here the trigger is the next
+action and the brief is its instruction. The mechanical form — `capture_run.py` refusing on a
+runner/capture suite mismatch, as it already refuses on interpreter disagreement — is
+registered as **CC-12** and is **not built**.
+
+### 2. Two digests, named — but still one value in the tool
+
+`census_digest = b11fd55a71d900ee` (the 14 census rows) and `listing_digest =
+a2f7ed1d67f53fbe` (full `--list-accumulations` stdout) are now recorded separately in the
+ledger. Across step zero the **listing** digest moved and the **census** digest did not: the
+report grew by two `REFUSED` rows and a summary suffix while the census was untouched. Both
+the builder and the tester independently proposed splitting them and both were right — a
+census digest that moves when the report format changes is a weaker invariant than one that
+does not, and two consecutive passes spent real effort re-deriving from git that a movement
+was benign.
+
+**Recording the value is not the fix.** In the tool the determinism probe still hashes whole
+stdout. Naming `census_digest` makes it citable so nobody re-derives that question; splitting
+them in `ledger_check.py` is **CC-12** and is not done.
+
+### 3. The obsolete constraint is struck
+
+SPEC-2f carried *"write the trace update on its own line, or the gate will not see the one
+accumulation 2f adds."* True only while L3 was open, and open in the spec for two passes after
+it stopped being true. **Struck visibly**, with the retraction left in place of the text, so
+that anyone who remembers the constraint finds its withdrawal rather than its absence. A stale
+constraint cited as current is the same failure class as a stale count.
+
+### 4. Rule four, and it is the first that runs
+
+**An assertion must be shown capable of failing against the code it was written against.**
+
+The tester audited every assertion it had written for this brick against the pre-fix tool and
+found **2 of 12 passed on both sides** — one I flagged, one it found itself, and neither was
+*wrong*, which is what makes them dangerous. A passing assertion reads as verification.
+
+This is the operational form of the third aphorism and it is stronger, because the tester made
+it a test: `test_the_repointed_assertions_can_actually_fail` loads the pre-fix revision from
+git and requires each claim to fail there. Written into `docs/METHODOLOGY.md` as rule 4 and
+marked for the paper. Both corollaries recorded: **convert, never delete**, and **a dead
+assertion is kept and labelled**, because deleting it destroys the only evidence the failure
+mode is real.
+
+### 5. Never `git stash`
+
+Into `CLAUDE.md`'s repo conventions: inspect an old revision with `git show <rev>:<path>` or a
+temporary worktree. A stash is **repo-wide**, so one taken inside a lane reverts every other
+lane's uncommitted work. During this brick a stash at `044008c` swallowed 315 lines of
+`CLAUDE-CODE-PROMPTS.md` and nothing noticed; damage was bounded to that file and recovered,
+verified by diffing every path in the stash against `HEAD` and disk. On the same task the
+builder used `git show` and the tester used stash — **lane discipline that a routine git
+command can cross is not lane discipline.** The rule is about the command's blast radius, not
+about anyone's care.
+
+### 6. Adjudications
+
+- **The two visible L13 refusals are not noise.** Both sit on `new_strength, new_charges =
+  _compute_decay(road, ...)`, the one place in the substrate where a tuple-returning float
+  computation occurs. **What would make them dangerous rather than merely present**, named so
+  it can be watched for: today each returned value is single-term, so there is no fold to miss.
+  It becomes dangerous the moment either aggregates over a collection — then the gate would be
+  declining to look at precisely the site it exists for. *Falsifier: any change making
+  `_compute_decay` aggregate more than one term per returned value.*
+- **Limitation registered** — the listing's summary line contains `src/`, so a consumer
+  matching on containment rather than prefix would capture it as a key. Every current consumer
+  matches on prefix and is correct. Recorded, not fixed: rewording is cheap but would move the
+  listing digest again for no measured benefit.
+- **Limitations went 10 → 13**, reported as three rather than as one net win. Closing L3 cost
+  L11/L12/L13.
+- **0d stays PROVEN**; **2f stays DESIGNED** with §0.5 marked complete.
+
+### 7. What this does not do
+
+Step zero being complete unblocks SPEC-2f §1 onward. It is **not** partial delivery of it. No
+eligibility trace exists, and 2f still satisfies zero of SPEC-2e's five autonomy criteria
+(D-023). The next action is the mechanism, not another gate pass.
