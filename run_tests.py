@@ -46,6 +46,12 @@ SUITES = [
     # data/telemetry-dependent and stay OUT of the canonical runner, like the 1e selection
     # runner). Makes NO meaning claim.
     "test_nous_bodysensor.py",
+    # 2f-i temporal credit assignment (SPEC-2f Design C) — the episodic trace and the
+    # eligibility kernel, plus think()'s default-off `credit_trace` hook. MECHANISM only:
+    # it verifies that an outcome at cycle t+k moves a weight at t in a bounded, decaying,
+    # reproducible way, against a control matched by construction and a shuffle that
+    # preserves both marginals. It makes NO cognitive claim.
+    "test_nous_credit.py",
     # independent adversarial verification (tester-authored) — kept in the one runner so the
     # canonical captured output reflects the full verification, not just the builder's suites.
     "test_tester_1c_adversarial.py",

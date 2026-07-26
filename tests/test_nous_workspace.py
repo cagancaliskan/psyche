@@ -937,13 +937,21 @@ def test_NEGATIVE_perception_field_coalition_surfaces_unchanged():
     check(list(csig.parameters.keys()) == ["field_", "store", "coherence_floor"],
           "form_coalitions_from_field() signature unchanged")
     # think() keeps its prior surface and gained ONLY opt-in kwargs: the 1d-ii broadcast
-    # flag and the 2c decay_per_hop / body_sensor interoception params. The exact, ordered
-    # parameter list is re-pinned here so any future, unannounced surface change trips.
+    # flag, the 2c decay_per_hop / body_sensor interoception params, and the 2f-i
+    # credit_trace hook. The exact, ordered parameter list is re-pinned here so any
+    # future, unannounced surface change trips. UPDATED for 2f-i (SPEC-2f §3.3): this
+    # assertion did its job — it went red the moment think() grew a parameter, which is
+    # exactly what it exists for, and it is re-pinned rather than loosened.
     tsig = inspect.signature(think)
     check(list(tsig.parameters.keys()) ==
           ["store", "utterance", "source_energy", "hop_budget", "broadcast",
-           "decay_per_hop", "body_sensor"],
-          "think() added only the opt-in broadcast / decay_per_hop / body_sensor kwargs")
+           "decay_per_hop", "body_sensor", "credit_trace"],
+          "think() added only opt-in kwargs: broadcast / decay_per_hop / body_sensor / "
+          "credit_trace")
+    check(all(tsig.parameters[p].default is None
+              for p in ("body_sensor", "credit_trace")),
+          "and every overlay parameter still defaults to None — the off position is the "
+          "default, so an existing caller's behaviour cannot change by upgrading")
     # ...and every added kwarg is OPT-IN / DEFAULT-OFF: with no caller override, think()
     # does no broadcast and runs interoception OFF (body_sensor=None), at the unmodulated
     # default decay. This re-pins the NEW opt-in surface and reinforces the default-off
