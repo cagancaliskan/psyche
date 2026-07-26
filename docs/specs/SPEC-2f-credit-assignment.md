@@ -32,6 +32,22 @@ from consequences in any sense a psychologist would recognise. The vocabulary in
 If this brick lands, the meaning bar is **exactly where it was**: open, after three
 structurally distinct refusals.
 
+### 0.25 Two labels a reader will over-read, corrected here rather than in a ledger note
+
+**`0d` is `PROVEN`. That means the gate does what it says — not that it catches everything.**
+Nine documented holes remain after 2f closes L3 as its step zero, each with a falsifier and
+an asserted negative. **The order-dependent-accumulation class is not closed; it is
+ENUMERATED**, which is a different and more honest thing, and the distinction is the entire
+product of brick 0d. A reader who sees `0d PROVEN` and concludes the class is shut will be
+wrong in exactly the direction this project's method exists to prevent. This is said here,
+in the brick that builds *on* the gate, because here is where someone will act on the
+misreading.
+
+**And 2f satisfies ZERO of the five AOL autonomy criteria** (SPEC-2e). It is a prerequisite
+for three of them, because without a mechanism connecting an outcome to an earlier action
+there is no "learned" for those criteria to measure. **Being a prerequisite is not partial
+credit**, and adopting a yardstick must not become adopting a roadmap.
+
 ### 0.3 Why this is the pivot off substrate work
 
 Four bricks of substrate repair (0b1, 0b2, 0c, 0d) have earned a foundation that is now

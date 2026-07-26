@@ -490,7 +490,7 @@ starting the next brick in the same session is exactly how an arc fails to end.
 
 ---
 
-## CC-8 · Close 0d — the bounded remediation cycle ▶ LIVE
+## CC-8 · Close 0d — the bounded remediation cycle ✔ DONE (PASS, closed at e64e9e6)
 
 Tester verdict on 0d: **FAIL on F-6.** F-1 (retro-catch) succeeded on all three historical bugs
 from real git history, F-3 and F-4 clean. The failure is that two registry reasons were **false**,
@@ -781,6 +781,122 @@ be, and that is the whole reason a stop has to be a decision rather than a disco
 IF FAIL
 Change no status. Commit the evidence and the corrections, never the status. Tell me in plain
 language what remains.
+```
+
+---
+
+## CC-9 · Fix the yardstick before the code ▶ LIVE
+
+The foundation arc is closed. Before any credit-assignment code is written, Cagan's five autonomy
+criteria go into the specs as **pre-registered acceptance criteria**. This is the first time in
+this project's history that the yardstick is fixed *before* the mechanism exists — all three
+cancelled experiments were retrofitted yardsticks, and that ordering is why they were cancelled.
+
+Architect lane. Documents only. **No experiment runs and no code is written from this prompt.**
+
+```
+/psyche-orient
+
+Work in the ARCHITECT-PM lane. Documents only. Do NOT write code, do NOT run an experiment, and
+do NOT begin 2f's implementation. This prompt produces spec text and nothing else.
+
+CONTEXT YOU NEED BEFORE YOU START
+0d is PROVEN, and that label means "the gate does what it says" — NOT "the gate catches
+everything." Nine documented holes remain. In six months someone will read "0d PROVEN" and
+conclude the order-dependent-accumulation class is closed. It is not closed; it is ENUMERATED,
+which is a different and more honest thing. Write that sentence into 2f's opening context, where
+someone might over-read the label, not buried in a ledger note.
+
+THE TASK
+Cagan has proposed five criteria for judging whether this system is doing something mind-like.
+Fold them into the specs as pre-registered acceptance criteria, with every correction and hazard
+below preserved. They are his direction; the corrections are mine and they are not optional.
+
+  Q1. Does it explore its environment differently from random, with no external reward?
+  Q2. Do its self-generated goals get harder over time — an automatic curriculum?
+  Q3. Does goal generation adapt to what the agent can currently learn?
+  Q4. On environment change, does it drop old goals and generate new ones while RETAINING old
+      skills?
+  Q5. Does generating a goal COST anything — does choosing one require giving up another?
+      (Q5 is added, not Cagan's. Reason below; it is load-bearing.)
+
+RULE ONE — THE NAME. These are NOT consciousness tests and must never be labelled as such, in the
+specs, the roadmap, the ledger, or the paper. They measure AUTONOMY and OPEN-ENDED LEARNING. A
+system could pass all five and possess nothing any consciousness theory points at. Calling them
+consciousness tests would be a rule-1 overclaim and C4 should catch it if you slip. Name the
+bucket honestly and say in one line what it does not cover. Butlin et al.'s indicator properties
+remain the ORTHOGONAL architectural axis (0/14, 1 partial) — say explicitly that the two axes are
+complementary, not competing, because a later reader will assume one supersedes the other.
+
+RULE TWO — RUN THE THREE-WALLS GATE ON EACH, AND WRITE THE RESULT INTO THE SPEC. All five are
+MECHANISM ABSENT today: the substrate is entirely passive, nothing initiates, there are no goals
+and no learning. That is a DATE, not a rejection — it is precisely why they can be fixed now. For
+each question state which brick would first make it answerable at all, and what would have to
+exist for a null result to be interpretable. A criterion whose null is uninterpretable is not a
+criterion.
+
+RULE THREE — SCOPE CONTROL, AND THIS IS THE ONE MOST LIKELY TO GO WRONG. These five are acceptance
+criteria for a LAYER, not a feature list for 2f. 2f is temporal credit assignment and nothing
+more. Route each question to the brick that could actually satisfy it, and if the honest answer is
+that 2f alone satisfies ZERO of the five and is merely a prerequisite for three of them, say that
+plainly. Do not let adopting a yardstick turn into adopting a roadmap. If a question is not
+supportable by anything currently on the roadmap, say so and name what would have to be added.
+
+PER-QUESTION CORRECTIONS — each is required, not advisory
+
+Q1 — the strongest of the five, because it brings its own unfakeable control: the random baseline.
+Guard: the baseline must be a REAL random policy matched on everything except the thing being
+tested, not a strawman. Specify the matching explicitly.
+
+Q2 — REQUIRES AN UPGRADE, do not adopt as stated. Difficulty growth alone is passable by a system
+that generates ever-harder goals and improves at none of them, which from outside looks like a
+curriculum. Current work on open-ended learning is explicit that novelty and difficulty growth do
+not imply performance progress. Couple the two: measure CAPABILITY growth alongside difficulty
+growth and make the conjunction the criterion. Also: difficulty must be measured externally, not
+by the agent. Cite what you use.
+
+Q3 — SCIENTIFICALLY THE STRONGEST, STRUCTURALLY THE MOST DANGEROUS. "What the agent can currently
+learn" is the learning-progress signal. If the measure of what-it-can-learn and the measure of
+how-much-it-learned share a source, the system passes BY CONSTRUCTION — this is 1e's circularity
+in new clothes, and 1e is the wall that cost the most. Write a HARD CLAUSE: the two measures come
+from independent sources, and the spec names both sources. If you cannot name two independent
+sources, the criterion is not yet usable and you say so rather than softening the clause.
+
+Q4 — needs skills to exist before it can be asked, so it sits furthest out. Its second half is
+directly the catastrophic-forgetting problem and has a real external literature with baselines.
+Its first half needs a defined environment change that is not authored to produce the result — say
+where that change comes from.
+
+Q5 — ADDED, AND IT IS WHAT MAKES THE OTHER FOUR UNFAKEABLE. 1e' (the fan effect) died because
+nothing in the system was scarce: the engine gave every out-road the source's full activation, so
+the curve was flat to the last digit. Without scarcity, generating a goal is free, and a system
+can pass Q1 through Q4 by mere ENUMERATION — exploring widely, listing ever-harder goals, dropping
+and regenerating them — while nothing is ever traded against anything. Scarcity is what turns goal
+generation into a choice. Route it to whichever brick first introduces a shared budget, and note
+that 0b2's conserved-activation overlay is the nearest existing thing.
+
+EXTERNAL YARDSTICKS — SEARCH, DO NOT ASSERT
+Every criterion in this project needs an external source. For each of the five, search for and
+cite the actual literature, and state whether a usable external benchmark or baseline EXISTS. If
+none exists for a question, say so plainly and design the control differently rather than quietly
+inventing one — a hand-authored ground truth voids the result and that rule has already cost this
+project three experiments. Ground Q2 and Q3 in the intrinsic-motivation / autotelic-agent
+literature specifically; ground Q4's second half in the continual-learning literature.
+
+PRE-REGISTRATION DISCIPLINE
+Once written, these are FIXED. Record explicitly, in the spec, that no threshold moves after a
+number is seen. That is the whole value of writing them now: everything this project has learned
+about its own failure modes was learned from yardsticks chosen after the fact.
+
+OUTPUT
+Spec text folded into SPEC-2f and SPEC-2e (create the latter if it does not exist), plus a short
+section in docs/nous_roadmap.md naming the bucket and stating what it does not measure. Update
+tools/ledger.json if any status or note changes, run python3 tools/ledger_check.py, expect exit 1
+with exactly the 16 held paper findings, append to DECISIONS.md, and commit.
+
+Close with one line: where this leaves us, and what the single next action is.
+
+Open your report with the plain-language summary for Cagan.
 ```
 
 ---

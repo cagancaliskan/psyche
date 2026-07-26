@@ -61,6 +61,28 @@ Each step carries a status tag:
                  SCALE-INVARIANCE — independent of 0c-ii's FINITENESS question). Superseded:
                  7 of 9 invariants hold; N-2 (inherited DEFECT-A) and N-5 (DEFECT-B) do not;
                  N-7 partial (DEFECT-C: sigma=inf -> NaN). Default flip NOT started.
+  ══ THE YARDSTICK, PRE-REGISTERED 2026-07-26 (SPEC-2e, D-023) ══
+     AUTONOMY AND OPEN-ENDED LEARNING criteria, AOL-1..AOL-5. Frozen on adoption; no
+     threshold moves after a number is seen.
+       AOL-1  explores differently from a MATCHED random policy, no external reward
+       AOL-2  self-generated goals get harder AND capability on them rises  (conjunction —
+              difficulty growth alone is passable by a system that learns nothing)
+       AOL-3  goal choice tracks what is currently learnable  (HARD CLAUSE: the selection
+              signal and the scoring signal come from INDEPENDENT sources, both named, or
+              the criterion is NOT RUNNABLE — this is 1e's circularity in new clothes)
+       AOL-4  on environment change, goals turn over while SKILLS are retained
+       AOL-5  generating a goal COSTS something — scarcity is what makes 1-4 unfakeable
+     WHAT THIS BUCKET DOES NOT MEASURE: it says nothing about experience or awareness, and
+     it is NOT a consciousness test — a system could satisfy all five and possess nothing
+     any such theory points at. It measures what the system DOES, never what it is.
+     Butlin et al.'s indicator properties remain the ORTHOGONAL ARCHITECTURAL axis; the two
+     are COMPLEMENTARY and neither supersedes the other. Progress on one is never progress
+     on the other.
+     STATUS: all five are MECHANISM ABSENT — a DATE, not a rejection, unlike the three
+     recorded walls. Four of the five need mechanisms that are NOT on this roadmap:
+     nothing initiates, there are no goals, no skills, no competence measure, no
+     environment. Brick 2f satisfies ZERO of the five and is a prerequisite for three.
+
   ══ THE FOUNDATION ARC IS CLOSED (D-022, 2026-07-26). ◄── YOU ARE HERE ══
      Four repair bricks and a gate: 0b1, 0b2, 0c, 0d. Phase 0 is PROVEN again and its
      determinism is now STRUCTURAL rather than sampled. NEXT IS 2f, beginning with its

@@ -1168,3 +1168,87 @@ builder's bundle and not a ledger edit here. **(d)** the 0d-5 docstring narrowin
 specified and unbuilt, `0e` is registered, L3 is scheduled, the paper is held — but because
 something always will be, and that is precisely why a stop has to be a **decision rather than a
 discovery**. Next is `2f`, beginning with its step zero.
+
+## D-023 · 2026-07-26 · The AOL autonomy criteria are pre-registered — five, not four, and one is upgraded
+**Direction:** Cagan (the four questions) · **corrections and the fifth:** architect-pm · **frozen on adoption**
+
+**What was adopted.** `docs/specs/SPEC-2e-autonomy-criteria.md`: **AOL-1 … AOL-5**, the project's
+first pre-registered acceptance criteria, written while all five are mechanism-absent and nothing
+can be tuned toward them. Also folded into SPEC-2f, the roadmap and the ledger.
+
+**THE NAME IS LOAD-BEARING. These are AUTONOMY AND OPEN-ENDED LEARNING criteria and are NOT
+consciousness tests**, in any document, ever. The reason is accuracy, not squeamishness: **a system
+could satisfy all five and possess nothing any theory of consciousness points at.** Everything the
+five describe is expressible in the vocabulary of control and learning. They measure what the
+system **does**, never what it is; they say nothing about experience or awareness. Butlin et al.'s
+indicator properties remain the **orthogonal architectural** axis — **complementary, neither
+superseding the other**, and progress on one is never progress on the other.
+
+**The three-walls gate, run on all five: MECHANISM ABSENT — and that is a DATE, not a rejection.**
+Unlike 1e (circular by construction), 1e′ (mechanism absent *and* unfixable without changing the
+engine's meaning) and 2c (the signal does not vary), these are absent in the ordinary curable
+sense. Which is exactly why they are worth pre-registering now.
+
+**Corrections that were not optional:**
+
+- **AOL-2 was UPGRADED before adoption.** As posed, "do goals get harder" is passable by a system
+  that generates ever-harder goals and **improves at none of them** — from outside, indistinguishable
+  from a curriculum. The criterion is now the **conjunction**: difficulty rises AND capability on
+  those goals rises. Difficulty is measured **externally**, never by the agent, or the curve measures
+  the scorer.
+- **AOL-3 carries a HARD CLAUSE and is recorded as NOT RUNNABLE.** Learning progress is the
+  best-developed idea in the literature and the most dangerous to implement here: if the measure of
+  *what can be learned* and the measure of *how much was learned* share a source, the system passes
+  **by construction** — 1e's circularity in new clothes, and 1e is the wall that cost most. The two
+  sources must be independent and **named**. They cannot be named today, so the criterion is
+  pre-registered and **not runnable**, stated rather than softened.
+- **AOL-1's baseline must be matched, and the matching is specified in advance** — action space,
+  budget, start distribution, termination, observation pipeline, and a uniform random policy over the
+  **same legal actions**. A strawman baseline proves nothing.
+- **AOL-4's environment change must not be authored to produce the result** — drawn from a
+  pre-declared external family, with the specific shift fixed by a recorded seed.
+- **Every criterion states what makes its NULL interpretable.** A criterion whose null cannot be
+  interpreted is a wish with a threshold attached. Three of the five need a positive control showing
+  the environment/measure has range at all.
+
+**AOL-5 was ADDED, and it is what makes the other four unfakeable.** 1e′ died because **nothing in
+the system was scarce** — every out-road received the source's full activation and the fan curve was
+flat to the last digit. The same hole voids AOL-1…4: **without scarcity, generating a goal is free,
+and a system passes all four by mere ENUMERATION** — exploring widely, listing harder goals, dropping
+and regenerating them — while nothing is ever traded against anything. Scarcity is what turns goal
+generation into a **choice**, and a choice is the only thing that can evidence autonomy. Routed to
+the first brick with a shared budget; **0b2's conserved-activation overlay is the nearest existing
+thing** — right shape, wrong object, and default-off.
+
+**SCOPE CONTROL, recorded because it is the thing most likely to go wrong: 2f satisfies ZERO of the
+five.** It is a prerequisite for three. **Being a prerequisite is not partial credit, and adopting a
+yardstick is not adopting a roadmap.** Four of the five require mechanisms **not on the roadmap at
+all**: nothing initiates, there are no goals, no skills, no competence measure, no environment. That
+gap is stated in the spec rather than left to be discovered.
+
+**External grounding — searched, not asserted.** AOL-1: reward-free exploration, state-entropy and
+coverage metrics (Hazan et al.; Seo et al. RE3, arXiv:2102.09430) — **a usable baseline exists**.
+AOL-2: IMGEP with automatic curriculum learning (Forestier, Mollard & Oudeyer, JMLR v23 /
+arXiv:1708.02190), POET (arXiv:1901.01753), and the open-endedness definitions work
+(arXiv:2311.00344, arXiv:2312.03126) for the novelty≠progress critique. AOL-3: SAGG-RIAC (Baranes &
+Oudeyer), ALP-GMM (Portelas et al.), CURIOUS (Colas et al., arXiv:1810.06284), MAGELLAN
+(arXiv:2502.07709). AOL-4: continual learning — **BWT, Forgetting Measure, MFT/MFN/MAA** are
+standard and borrowable (van de Ven et al., arXiv:2403.05175); BWT < 0 *is* catastrophic forgetting.
+AOL-5: bounded rationality (Simon) and resource-rational analysis (Lieder & Griffiths, BBS) —
+**no off-the-shelf benchmark exists**, so it is designed as a **structural** criterion rather than a
+graded one, and that is said plainly instead of inventing a benchmark.
+
+**Two corrections to the record, made in passing:**
+1. **"0d PROVEN" will be over-read**, so the correction is written into SPEC-2f §0.25 where someone
+   might act on the misreading, not buried in a ledger note: the label means *the gate does what it
+   says*, not *the gate catches everything*. **The class is not closed; it is ENUMERATED** — which is
+   the entire product of brick 0d.
+2. **The "0/14, 1 partial" Butlin figure is recorded NOWHERE in this repository.** It is Cagan's
+   standing position, cited but undocumented — the staleness class C1/C2 exist to prevent, arriving
+   through absence rather than drift. Flagged, not fixed; it needs its own document and ledger entry
+   before it is cited again.
+
+**PRE-REGISTRATION DISCIPLINE.** Fixed on adoption: no threshold, metric, control or matching
+condition moves after a bearing number is seen. Amendment is permitted **only before** any such
+number exists, only via a DECISIONS entry, and **never toward an easier result**; an amendment after
+a number exists becomes a **new** criterion with a new id while the original stands with its result.
