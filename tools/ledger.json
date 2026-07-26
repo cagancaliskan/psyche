@@ -159,6 +159,11 @@
       "name": "motivation architecture",
       "status": "DESIGNED"
     },
+    "2f": {
+      "name": "temporal credit assignment",
+      "status": "DESIGNED",
+      "note": "SPEC-2f. Gives an owner to the problem Layer 0 explicitly deferred and never assigned ('Temporal credit assignment has no owner yet; it must not vanish') — the Layer 2/3 documents it was deferred to were never written. PREMISE CORRECTION on record: the integer traverse_count ladder (5/20/100) NEVER SHIPPED; nous_store already derives quality_of() as a VIEW over continuous Road.strength via float ceilings 0.20/0.50/0.80, and traversal_count is written but read by nothing in src/. So omega already exists in the right shape and 2f adds a time dimension rather than replacing a model — which makes Design C (episodic trace OUTSIDE the store, credit applied through the existing PROVEN strengthen()) cost approximately nothing against Tier 1. THREE OPEN CALLS for Cagan: which design (3.4, rec C as 2f-i with full tag/capture held as 2f-ii), the vestigial traversal_count (2.3, rec leave+document), and where P_PRP lives (4.3, rec caller-supplied scalar with NEUROMODULATION as later publisher). 0d is a PREREQUISITE, not parallel: 2f adds float accumulations and is the first real test of the detector. MECHANISM bar only — no cognitive claim."
+    },
     "3a": {
       "name": "abstraction engine",
       "status": "DESIGNED"
