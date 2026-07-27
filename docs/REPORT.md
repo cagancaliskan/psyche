@@ -64,7 +64,7 @@ caught it: **adversarial/property-based testing** and **loop-closure** (driving 
 system-generated rather than hand-placed inputs). Together they exposed **six distinct structural
 bugs** in the substrate/activation layers, and the same discipline — now split across an
 independent builder and an independent adversarial tester — governed the three later bricks that
-closed the cycle. The artifact's verified totals: **2,307 assertions across 24 test suites, all
+closed the cycle. The artifact's verified totals: **2,594 assertions across 26 test suites, all
 passing.** The first *behavioral* cognitive claim has been attempted three times and refused
 three times, each before any graded number existed and each for a structurally distinct reason
 (semantic priming: circular; the fan effect: generating mechanism absent; interoception: signal
@@ -617,9 +617,9 @@ builder suites.
 | `test_harness.py` | experiment harness mechanism | 17 |
 | `test_priming_instrument.py` | priming instrument mechanism | 42 |
 | `test_priming_1e.py` | blind three-arm selector mechanism | 67 |
-| **Total** | **24 suites** | **2,307 passed, 0 failed** |
+| **Total** | **26 suites** | **2,594 passed, 0 failed** |
 
-The total is **2,307 assertions across 24 suites, 0 failures**, including the cross-process
+The total is **2,594 assertions across 26 suites, 0 failures**, including the cross-process
 determinism checks, randomized mutation batteries, the no-divergence / no-lock-in stability checks
 on the broadcast write, and the resolved over-swallow case now driven through the live cycle. The
 verbatim run is reproduced in Appendix A.
@@ -892,7 +892,7 @@ test_nous_activation.py                 → RESULT: 102 passed, 0 failed
 test_nous_coalitions.py                 → RESULT:  19 passed, 0 failed
 test_nous_field.py                      → RESULT:  13 passed, 0 failed
 test_nous_source_clustering.py          → RESULT:  49 passed, 0 failed
-test_nous_workspace.py                  → RESULT:  95 passed, 0 failed
+test_nous_workspace.py                  → RESULT:  96 passed, 0 failed
 test_nous_workspace_broadcast.py        → RESULT:  63 passed, 0 failed
 test_nous_perceive.py                   → RESULT:  19 passed, 0 failed
 test_nous_bodysensor.py                 → RESULT:  49 passed, 0 failed
@@ -910,7 +910,7 @@ test_tester_2c_adversarial.py           → RESULT: 350 passed, 0 failed
 test_harness.py                         → RESULT:  17 passed, 0 failed
 test_priming_instrument.py              → RESULT:  42 passed, 0 failed
 test_priming_1e.py                      → RESULT:  67 passed, 0 failed
-                                           OVERALL: all 24 suites passed (0 failures); 2,307 assertions
+                                           OVERALL: all 26 suites passed (0 failures); 2,594 assertions
 ```
 
 The complete, unabridged capture (including every individual check label and the asserted-negative
@@ -919,7 +919,7 @@ notes) is the file `docs/TEST_OUTPUT.txt` in the repository.
 ## Appendix B: Reproduction
 
 ```bash
-# all 24 suites (handles the absolute PYTHONPATH for the determinism subprocesses):
+# all 26 suites (handles the absolute PYTHONPATH for the determinism subprocesses):
 python3 run_tests.py
 
 # the canonical capture: the same suite under every CPython on the machine, refusing

@@ -1472,3 +1472,102 @@ about anyone's care.
 Step zero being complete unblocks SPEC-2f §1 onward. It is **not** partial delivery of it. No
 eligibility trace exists, and 2f still satisfies zero of SPEC-2e's five autonomy criteria
 (D-023). The next action is the mechanism, not another gate pass.
+
+---
+
+## D-027 — 2f-i closes: attention, not credit; and a proposal of mine was refused
+
+**Date:** 2026-07-27 · **Lane:** architect-pm · **Status:** decided
+
+Builder `1065c43` / `7886167` / `6411ef7`, tester PASS `19d3286`. Both lanes signed off.
+
+### 1. The status, on two axes, deliberately not collapsed
+
+**Build:** `BUILT-UNVALIDATED`, mechanism **tester-verified**. What 2f-i *is*: a verified
+eligibility trace. Neutral byte-identity against the pre-2f engine recovered from git, the
+window edge established structurally rather than sampled, application order proved
+irrelevant from the code, every caller-supplied number refused at the boundary, every
+control shown capable of failing, loop-closed on real `think()` output.
+
+**Meaning:** `NOT-YET` — and it does not become `YET` by any further mechanism work of this
+shape, which is why the two axes must not be collapsed into one label.
+
+> **The sentence that governs every citation of this brick: the mechanism assigns ATTENTION,
+> not CREDIT.** Every outcome it can express *strengthens* what preceded it. The graph moves
+> one direction only, toward saturation, and nothing it does can be undone by anything it
+> does. It marks which roads preceded a designated outcome and how recently — never whether
+> that outcome was worth repeating. **Feedback with no sign is not feedback.** The half that
+> exists is real and verified; the half that is missing is the half that would make it
+> learning.
+
+Not satisfied, by name: **zero of five AOL criteria** (D-023's reason — all five are
+MECHANISM ABSENT), and **Butlin AE-1**, failed at its *first* conjunct.
+
+### 2. Three bricks registered
+
+**2g — the depression path.** The missing half, and now the **headline item on the
+roadmap**. Nothing above it may be called learning until it exists. It is its own brick
+because honouring a negative outcome needs new arithmetic and at least one **uncalibrated
+constant**, and inventing that mid-verification inside a brick under a FAIL is the pattern
+this project spent a week learning to stop.
+
+**0a-ii — encapsulation.** `get_road(apply_decay=False)` returns the live stored `Road`;
+`apply_decay=True` copies. 0a's **purity claim is not violated** — the read mutates nothing
+— but there is no **encapsulation**. Two options recorded and rejected for now: *copy on
+read* (Tier-1 change to 0a `PROVEN`, re-verifying purity, integrity, determinism and every
+internal caller that relies on the live object) and *freeze `Road`* (strictly larger — every
+internal mutation site rewrites to construct rather than assign). The general
+"does a write follow a binding" question is **dataflow**, was deliberately declined, and
+lives here.
+
+**0g — the registry rots on line numbers.** `bound_on_absence` dismissals are keyed
+`path:line`; one inserted comment fires a false `[C6]`. **Scheduled as STEP ZERO of the next
+brick**, exactly as L3 was step zero of 2f, because the next brick edits `src/` and will trip
+it constantly. The reason it outranks a silent gap: **a false positive that masquerades as
+the check working is worse than a silent gap.** It already cost a real mis-measurement — the
+tester's first blind-spot probe reported all five blind spots as CAUGHT, which was the
+*shifted* bound firing, not the binding bound working. A gate that cries wolf gets ignored,
+and that would waste the entire foundation arc that produced it.
+
+### 3. A generalisation I proposed was refused, and the refusal was right
+
+I put it to the tester that three defects shared one root — C4's interpolation blindness
+(0f), the text scan that cannot tell a mechanism from its negation, and the wrapped-string
+vacuity — all being "text matching that was never normalised."
+
+**The tester checked and reported back that this is only partly true, and the difference
+matters.** All three *are* substring matching on structured text, but they need **three
+different fixes**: tokenisation, parsing, and whitespace normalisation. Merging them would
+have produced a named class that looks closed when one third of it is — and a class that
+reads as closed is worse than three open defects, because nobody re-opens it.
+
+**The refusal is recorded, not just the outcome.** A direction from the person setting
+direction, overturned by evidence from the lane whose job is to check it, is the separation
+of duties doing exactly what it exists for. It should be visible in the record that this
+happened, and how often. This is the second time.
+
+### 4. Three small rules the pass paid for
+
+**The vacuous-assertion rule, in its sharp form.** A **positive** containment assertion that
+passes is live by construction — it passed because the matcher found the text. Only a
+**negative** one can pass vacuously, because absence and impossibility are indistinguishable
+from the result. Into `docs/METHODOLOGY.md` as rule **4a**, beside rule 4, and marked for
+the paper. The sweep also found two ways to run itself wrongly: searching a source blob
+flags a *live* assertion matching a runtime-assembled string, and requiring a string literal
+on the left misses the very shape that caused the defect.
+
+**A hand census that copies the scanner is not a second opinion.** The tester derived 0d's
+census entry for 2f-i by hand from `src/` rather than reading it out of the tool. Small,
+load-bearing, and the first thing that would be lost to convenience.
+
+**"Six naive, unchanged" is the substantive half of the census claim.** The count that
+*moved* (8 → 9 fsum) records that a site was added. The count that **did not move** records
+that 2f-i introduced no naive accumulation — which is the property anyone actually cares
+about, and it is asserted *because* it is unchanged.
+
+### 5. Recapture
+
+26 suites, **2,594 assertions**, 0 failures, all five interpreters agreeing. Completeness
+verified by a name-by-name diff of `run_tests.py` against the capture: zero missing, zero
+extra, order identical. `tests/test_tester_2f_adversarial.py` registered — after its
+conversion landed, so that registering added no aborting suite.

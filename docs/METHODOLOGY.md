@@ -426,3 +426,28 @@ Two corollaries worth stating, because both were paid for here:
 
 *Marked for the paper's methodology section. It is the operational form of rule 3 and the
 first of the four that is enforced by execution rather than by review.*
+
+#### 4a. Only a NEGATIVE containment assertion can pass vacuously
+
+Rule 4's sharp form, and it narrows the search enormously.
+
+A **positive** containment assertion — `check("X" in Y)` — that passes is **live by
+construction**: it passed *because* the matcher found X. It cannot be vacuous.
+
+A **negative** one — `check("X" not in Y)` — passes whenever X is absent, and X is absent
+both when the code is correct **and when X could never have matched at all**. Those two are
+indistinguishable from the result. That is the whole failure mode.
+
+It was found in this repository the expensive way: an assertion that a superseded claim was
+gone searched for a phrase spanning a hard-wrapped docstring line, so it could never match,
+and it passed. A whitespace-normalised comparison fixed it, and a two-sided check — the same
+matcher, run against the revision where the phrase *was* present — proved the fix live.
+
+**The rule:** for every negative containment assertion, produce a **witness** — text where
+the phrase IS findable by the same matcher. No witness, no assertion. A sweep of all four
+suites on this basis found the one instance and zero others, and it also found two ways to
+run the sweep wrongly: searching a source blob flags a *live* assertion matching a
+runtime-assembled string, and requiring a string literal on the left misses the very shape
+that caused the defect, a phrase held in a variable.
+
+*Marked for the paper, beside rule 4.*

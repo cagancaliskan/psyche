@@ -158,7 +158,7 @@ Pure standard library: nothing to install (Python 3.8+; the current capture is s
 CPython 3.10, 3.11, 3.12, 3.13 and 3.14, with 3.14 as the transcript interpreter).
 
 ```bash
-# all 24 suites, with the correct PYTHONPATH handled for you:
+# all 26 suites, with the correct PYTHONPATH handled for you:
 python3 run_tests.py
 
 # or a single suite directly (absolute PYTHONPATH so the determinism subprocess
@@ -202,9 +202,9 @@ with it.
 | `test_harness.py` | experiment harness mechanism | **17** |
 | `test_priming_instrument.py` | priming instrument mechanism | **42** |
 | `test_priming_1e.py` | blind three-arm selector mechanism | **67** |
-| **Total** | **24 suites** | **2,307 passed, 0 failed** |
+| **Total** | **26 suites** | **2,594 passed, 0 failed** |
 
-That total is **2,307 assertions across 24 suites, 0 failures**, including the builder suites
+That total is **2,594 assertions across 26 suites, 0 failures**, including the builder suites
 above and the **independent tester-authored adversarial suites** (`test_tester_*`), which add
 hostile and loop-closed checks: cross-process determinism in fresh interpreters under
 `PYTHONHASHSEED ∈ {0,1,2,3,7,42}`, randomized mutation batteries interleaved with integrity
@@ -258,7 +258,7 @@ nous/
 ├── README.md               ← you are here
 ├── LICENSE                 ← MIT
 ├── requirements.txt        ← standard library only (no dependencies)
-├── run_tests.py            ← runs all 24 suites with the correct absolute PYTHONPATH
+├── run_tests.py            ← runs all 26 suites with the correct absolute PYTHONPATH
 ├── src/                    ← the 8 modules
 │   ├── nous_store.py               substrate store (Layer 1): graph, IDs, decay, closure
 │   ├── nous_activation.py          deterministic spreading activation + flow
