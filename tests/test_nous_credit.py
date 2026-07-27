@@ -41,6 +41,9 @@ Run directly:
 """
 
 import os
+import shutil
+import tempfile
+from pathlib import Path
 import struct
 import subprocess
 import sys
@@ -57,6 +60,8 @@ from nous_credit import (
     DEFAULT_ELIGIBILITY_DECAY,
     NEUTRAL_P_PRP,
 )
+
+ROOT = Path(__file__).resolve().parent.parent
 
 _passed = 0
 _failed = 0
@@ -386,6 +391,110 @@ def test_ASSERTED_NEGATIVE_the_trace_is_potentiation_only():
          "built assigns ATTENTION, not credit — it marks which roads preceded an outcome, "
          "not whether that outcome was worth repeating. 2f-i therefore does NOT satisfy "
          "Butlin AE-1 and moves NONE of SPEC-2e's five AOL criteria.")
+
+
+def test_2f3_the_potentiation_basis_is_an_ABSENCE_and_it_is_machine_checked():
+    section("2f-3  the potentiation basis is an ABSENCE, registered and enforced")
+    # FINDING 2f-3: the original basis ("the store surface is get_road + strengthen")
+    # did not establish the claim, because get_road(apply_decay=False) hands back the
+    # LIVE stored Road. The claim is true; its basis is now stated as what it is.
+    import json
+    import subprocess
+    reg = json.loads((ROOT / "tools" / "ledger.json").read_text(encoding="utf-8"))
+    entry = reg["float_accumulations"]["src/nous_credit.py:EpisodicTrace.eligible.<return>"]
+    bounds = entry.get("bound_on_absence") or []
+    binding = [b for b in bounds if b.get("kind") == "binding"]
+    check(len(binding) == 1 and binding[0]["symbol"] == "get_road",
+          "the absence is REGISTERED as a machine-checked bound on binding get_road, so "
+          "a future brick cannot invalidate it silently")
+    check("_inherited_weakness" in binding[0]
+          and "dataflow" in binding[0]["_inherited_weakness"].lower(),
+          "and the bound records its own blind spots — a reader cannot mistake a clean "
+          "run for proof that no write-through is possible by any route")
+    check(len(binding[0].get("dismissed") or []) == 4,
+          f"the four bindings that exist today are dismissed individually with written "
+          f"reasons ({len(binding[0].get('dismissed') or [])})")
+
+    # THE LIVE-REFERENCE FACT, asserted here rather than taken on trust — it is the whole
+    # reason the basis had to change.
+    s = frozen_store()
+    a = s.add_node("a", NodeType.CONCEPT)
+    b = s.add_node("b", NodeType.CONCEPT)
+    r = s.add_road(a, b)
+    s.strengthen(r)
+    v1 = s.get_road(r, apply_decay=False)
+    check(v1 is s.get_road(r, apply_decay=False),
+          "get_road(apply_decay=False) returns the SAME object twice — it is the stored "
+          "road, which is why binding it is a write-capable handle")
+    w = s.get_road(r, apply_decay=True)
+    check(w is not s.get_road(r, apply_decay=True),
+          "while apply_decay=True returns a fresh copy each call — the asymmetry that "
+          "made this easy to miss, pinned so it cannot silently change")
+
+    # THE BOUND MUST BITE. Plant an undismissed binding-with-write and require C6 red.
+    tmp = Path(tempfile.mkdtemp(prefix="bind-"))
+    shutil.copytree(ROOT / "src", tmp / "src")
+    (tmp / "tools").mkdir()
+    shutil.copy(ROOT / "tools" / "ledger.json", tmp / "tools" / "ledger.json")
+    planted = tmp / "src" / "nous_field.py"
+    planted.write_text(
+        "def _planted(store, rid):\n"
+        "    road = store.get_road(rid, apply_decay=False)\n"
+        "    road.strength *= 0.5\n"
+        "    return road\n\n" + planted.read_text(encoding="utf-8"), encoding="utf-8")
+    rc = subprocess.run([sys.executable, str(ROOT / "tools" / "ledger_check.py"),
+                         "--root", str(tmp), "--only", "C6"],
+                        capture_output=True, text=True)
+    check(rc.returncode == 1 and "RESTS ON THE ABSENCE" in rc.stdout,
+          f"a planted `road = get_road(...); road.strength *= 0.5` turns C6 RED "
+          f"(exit {rc.returncode}) — the bound is enforced, not decorative")
+    shutil.rmtree(tmp, ignore_errors=True)
+    note("DECLINED DELIBERATELY: the general 'write through a returned object' question "
+         "needs real dataflow — passing the road to a function, storing it in a "
+         "container, returning it upward. That is not built, was not attempted badly, "
+         "and is handed to architect-pm as its own brick. This check covers BINDING only.")
+
+
+def test_2f4_the_AOL_and_AE1_reasons_are_the_true_ones():
+    section("2f-4  the stated REASONS are checked, not only the conclusions")
+    import inspect
+    doc = inspect.getsource(cr)
+    check("D-023" in doc,
+          "the AOL paragraph now cites D-023 — mechanism absence — as its reason")
+    check("was invented" in doc or "and it was invented" in doc,
+          "and the superseded reason is recorded as wrong rather than quietly deleted, so "
+          "a reader who remembers it finds the retraction")
+    # The false reason must be GONE as an assertion, not merely contradicted elsewhere.
+    # WHITESPACE-NORMALISED, because the docstring wraps: the first version of this check
+    # searched for a string that spans a line break and therefore could never match — a
+    # vacuous assertion of exactly the kind this project keeps finding. Normalising makes
+    # it able to fail, and the two-sided check below proves it does.
+    import re as _re
+    norm = lambda t: _re.sub(r"\s+", " ", t)
+    bad = ("each of AOL-2, AOL-3 and AOL-4 needs an outcome to be able to make some "
+           "earlier action LESS likely")
+    check(bad not in norm(doc),
+          "the invented claim about what AOL-2/3/4 require is no longer asserted")
+    # RULE FOUR for this assertion specifically: it must FAIL against 7886167.
+    import subprocess as _sp
+    old_mod = _sp.run(["git", "show", "7886167:src/nous_credit.py"], cwd=str(ROOT),
+                      capture_output=True, text=True)
+    if old_mod.returncode == 0:
+        check(bad in norm(old_mod.stdout),
+              "and the SAME normalised check finds it in 7886167 — so the assertion above "
+              "is live, not a string that could never match")
+    check("first" in doc and "conjunct" in doc,
+          "and AE-1's reason is corrected too: it fails at the FIRST conjunct (no outputs "
+          "selected, no goals) rather than only at the 'especially' clause — the same "
+          "backwards move, caught by applying the same suspicion")
+    # THE PROPERTY, not the wording: every AOL/AE claim in the module must be a NEGATIVE
+    for line in doc.splitlines():
+        if "AOL-" in line or "AE-1" in line:
+            low = line.lower()
+            if "satisf" in low:
+                check(("not satisf" in low or "zero of" in low or "does not" in low
+                       or "prerequisite" in low),
+                      f"every satisfaction claim about a criterion is a NEGATIVE: {line.strip()[:76]}")
 
 
 def test_I5_empty_trace_changes_nothing():
@@ -831,6 +940,8 @@ def main():
         test_I2_the_bar_is_the_shuffled_control_not_zero,
         test_I2_credit_decays_with_k_on_the_real_store,
         test_ASSERTED_NEGATIVE_the_trace_is_potentiation_only,
+        test_2f3_the_potentiation_basis_is_an_ABSENCE_and_it_is_machine_checked,
+        test_2f4_the_AOL_and_AE1_reasons_are_the_true_ones,
         test_I5_empty_trace_changes_nothing,
         test_I5_never_traversed_roads_are_never_credited,
         test_I5_ANTI_READBACK_outcome_is_never_derived_from_strength,

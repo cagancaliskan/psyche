@@ -29,6 +29,23 @@ Specifically, and asserted in the suite rather than merely written here:
     than absorbed, because absorbing it would silently reinforce whatever an adverse
     outcome was meant to discourage.
 
+    **WHAT THAT CLAIM RESTS ON — corrected, because the first version of this paragraph
+    claimed more than it established (FINDING 2f-3).** It said the store surface here is
+    exactly `get_road` + `strengthen`, and `strengthen` only increases, therefore nothing
+    can weaken a road. That argument does not hold: `store.get_road(rid,
+    apply_decay=False)` returns the **live stored `Road`**, not a copy, so binding it and
+    assigning `.strength` — or mutating `.charges` — reaches the store while every
+    call-graph check still shows only a read. (`apply_decay=True` *does* copy, and that
+    asymmetry is what made this easy to miss.)
+
+    So the honest basis is an **ABSENCE, not a structural impossibility**: *no code in
+    `src/` binds a returned road and writes through it.* That is a fact about the code as
+    it stands, which a future brick could invalidate silently — which is exactly what 0d's
+    `bound_on_absence` machinery exists for, so the absence is registered there and
+    machine-checked on every run. The check is narrow and biased toward over-reporting,
+    and its blind spots are recorded with it; a clean run proves no *binding* exists
+    outside the dismissed sites, not that no write-through is possible by any route.
+
     The consequence, stated rather than left to be inferred: **what is built assigns
     attention, not credit.** It marks which roads preceded a designated outcome and
     strengthens them in proportion to how recently. It cannot distinguish an outcome
@@ -47,18 +64,31 @@ Specifically, and asserted in the suite rather than merely written here:
     "eligibility trace" invites the reader to imagine a synapse holding something, where
     in fact nothing is.
   - **Zero of the five pre-registered AOL autonomy criteria (SPEC-2e) are satisfied by
-    this module**, and the potentiation-only bound above is why none of them moves: each
-    of AOL-2, AOL-3 and AOL-4 needs an outcome to be able to make some earlier action
-    LESS likely, and nothing here can. It is a prerequisite for those three, and being a
+    this module.** The reason is **D-023**: all five are MECHANISM ABSENT — nothing in
+    this system initiates anything, holds a goal, or has a skill, so there is nothing for
+    the criteria to measure. This module is a prerequisite for three of them, and being a
     prerequisite is not partial credit.
+
+    **An earlier version of this paragraph gave a different reason and it was invented**
+    (FINDING 2f-4): it claimed AOL-2, AOL-3 and AOL-4 "each need an outcome to be able to
+    make an earlier action less likely." None of the three says that. AOL-2 is difficulty
+    growth *conjoined with* capability growth; AOL-3 is goal generation adapting to a
+    learning-progress signal; AOL-4 is skill retention grounded in catastrophic forgetting
+    and Backward Transfer. The conclusion was right and the reason was reasoning backwards
+    from this module's own limitation to a property of the criteria. D-023's reason is
+    both true and stronger, because it does not depend on the sign at all.
 
   - **It does not satisfy Butlin et al.'s AE-1** — *"learning from feedback and selecting
     outputs so as to pursue goals, especially where this involves flexible responsiveness
-    to competing goals."* A one-signed rule cannot select between competing goals, because
-    it cannot express a reason to prefer one over another. Stated by name so that a reader
-    who reaches for the architectural axis finds the answer already given rather than
-    open. The project's standing assessment against that whole list is kept in one
-    document and cited from there alone; it is deliberately not repeated here.
+    to competing goals."* It fails at the **first** conjunct and would still fail at the
+    second: this module selects no outputs and pursues no goals, because there are none —
+    the same mechanism-absence D-023 records. The one-signed limitation is a *further*
+    reason it could not satisfy the "especially" clause, but naming that clause alone was
+    the same backwards move as above: it picked the criterion's most conditional part and
+    skipped the two that fail outright. Stated by name so that a reader who reaches for
+    the architectural axis finds the answer already given rather than open. The project's
+    standing assessment against that whole list is kept in one document and cited from
+    there alone; it is deliberately not repeated here.
 
 The mechanism is *inspired by* the three-factor plasticity framing in the design corpus
 (a pre-synaptic trace, a post-synaptic trace, and a third modulatory term). Inspiration

@@ -1151,7 +1151,7 @@ def scan_float_accumulations(root: Path) -> Tuple[List[Accumulation], List[Findi
 
 
 ABSENCE_KEY = "bound_on_absence"
-ABSENCE_KINDS = ("attribute_read", "call")
+ABSENCE_KINDS = ("attribute_read", "call", "binding")
 
 
 def _absence_occurrences(root: Path, kind: str, symbol: str) -> List[Tuple[str, int]]:
@@ -1194,6 +1194,28 @@ def _absence_occurrences(root: Path, kind: str, symbol: str) -> List[Tuple[str, 
                 if isinstance(node, ast.Call):
                     if (_dotted(node.func) or "").rsplit(".", 1)[-1] == leaf:
                         hits.append((rel, node.lineno))
+            elif kind == "binding":
+                # A claim that rests on "no code BINDS the result of f() to a name" — the
+                # shape FINDING 2f-3 exposed: `store.get_road(rid, apply_decay=False)`
+                # returns the LIVE stored object, so binding it hands out a write-capable
+                # handle while every call-graph check still shows only a read.
+                #
+                # NARROW BY CONSTRUCTION, and the narrowness is stated rather than implied.
+                # This flags a name being bound to the call's result: plain assignment,
+                # annotated assignment, and the walrus. It does NOT and cannot see the
+                # result being passed to another function, stored in a container, returned,
+                # or reached via getattr/__dict__ — those need real dataflow, which is NOT
+                # built here (see the note on the registered bound). Within the form it
+                # does cover, it is biased toward OVER-REPORTING exactly as the other
+                # kinds are: it flags the binding whether or not a write follows, because
+                # deciding "no write follows" is the dataflow question this deliberately
+                # does not answer.
+                val = None
+                if isinstance(node, (ast.Assign, ast.AnnAssign, ast.NamedExpr)):
+                    val = node.value
+                if isinstance(val, ast.Call) \
+                        and (_dotted(val.func) or "").rsplit(".", 1)[-1] == leaf:
+                    hits.append((rel, node.lineno))
     return hits
 
 
