@@ -387,7 +387,21 @@
     },
     "src/nous_credit.py:EpisodicTrace.eligible.<return>": {
       "verdict": "fsum",
-      "reason": "Brick 2f-i. Per-road eligibility summed over that road's occurrences inside the window. A road traversed on several cycles contributes one term per occurrence, and the term set has NO intrinsic order — trace insertion order is an artefact of which cycle recorded first, not a property of the quantity being computed. Exactly rounded, so the eligibility a road receives is a function of the occurrence MULTISET alone. This is the site C6 flagged on the FIRST write of 2f's float arithmetic, before any test ran (SPEC-2f §7.1)."
+      "reason": "Brick 2f-i. Per-road eligibility summed over that road's occurrences inside the window. A road traversed on several cycles contributes one term per occurrence, and the term set has NO intrinsic order — trace insertion order is an artefact of which cycle recorded first, not a property of the quantity being computed. Exactly rounded, so the eligibility a road receives is a function of the occurrence MULTISET alone. This is the site C6 flagged on the FIRST write of 2f's float arithmetic, before any test ran (SPEC-2f §7.1).",
+      "bound_on_absence": [
+        {
+          "kind": "binding",
+          "symbol": "get_road",
+          "_what_this_bound_is_for": "NOT the fsum reason above. This entry is brick 2f-i's registry record, and this bound carries 2f-i's POTENTIATION-ONLY claim — that nothing in src/ can lower a road's strength. FINDING 2f-3 (tester, c23c591) showed the original basis for that claim did not establish it: `store.get_road(rid, apply_decay=False)` returns the LIVE stored Road, not a copy, so assigning `.strength` or mutating `.charges` through it reaches the store, while every call-graph check still reports only a read. `apply_decay=True` DOES copy, and that asymmetry is what made it easy to miss. So the claim rests on an ABSENCE — no code in src/ binds a returned road and writes through it — not on a structural impossibility. This bound is what makes that absence checkable instead of assumed.",
+          "_inherited_weakness": "This bound inherits FINDING 0d-5 in full and then some. The checker sees a name being bound to a get_road() call (assignment, annotated assignment, walrus). It does NOT see the returned road passed to another function, stored in a container, returned upward, or reached through getattr / __dict__ / an alias. Deciding whether a write follows a binding is a DATAFLOW question and no dataflow analysis is built here — that was declined deliberately rather than attempted badly, and the general write-through-a-returned-object case is handed to architect-pm as its own brick. A reader must not treat a clean run of this bound as proof that no write-through exists; it is proof only that no BINDING exists outside the four dismissed below.",
+          "dismissed": [
+            "src/nous_coalitions.py:167 — `road = store.get_road(road_id, apply_decay=False)` inside the breakthrough scan; the binding is read-only, used solely for `road.target_id`. Verified by AST: no assignment target in this module starts with `road.`.",
+            "src/nous_coalitions.py:184 — same shape in the binding-graph build; reads `road.source_id` and `road.target_id` only.",
+            "src/nous_coalitions.py:291 — same shape in form_coalitions_from_field's breakthrough scan; reads `road.target_id` only.",
+            "src/nous_store.py:492 — `road = self.get_road(road_id)` in quality_of. Reads `road.closed` and `road.strength` only, AND uses the default apply_decay=True, which returns a COPY — so this site could not reach the stored object even if it did write. It is the safest of the four and is dismissed twice over."
+          ]
+        }
+      ]
     }
   },
   "meaning_bar": {
