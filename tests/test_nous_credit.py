@@ -75,6 +75,10 @@ def section(name):
     print(f"\n{name}")
 
 
+def note(msg):
+    print(f"  NOTE: {msg}")
+
+
 def bits(x: float) -> str:
     """Bit pattern. round(x, 9) cannot see 1 ULP and this project has been bitten by
     exactly that; every float comparison in this file is on the raw pattern."""
@@ -325,6 +329,64 @@ def test_I2_credit_decays_with_k_on_the_real_store():
 # ─────────────────────────────────────────────────────────────────────────────
 # I-5  The three asserted-negatives of §7
 # ─────────────────────────────────────────────────────────────────────────────
+
+def test_ASSERTED_NEGATIVE_the_trace_is_potentiation_only():
+    section("2f-1  ASSERTED NEGATIVE: POTENTIATION-ONLY — no depression path exists")
+    # The tester found that a negative outcome_magnitude was abs()'d and reinforced
+    # byte-identically to a positive one. Ruled: refuse it at the boundary, and do NOT
+    # build a weakening path in this pass. These assertions pin the refusal AND the
+    # absence, so that "we chose not to build it" cannot decay into "we forgot".
+    s, rp, _ = matched_pair_store()
+    trace = EpisodicTrace()
+    trace.record([rp])
+    for bad in (-1.0, -0.5, -1e-12, -1e9):
+        try:
+            assign_credit(s, trace, outcome_magnitude=bad, p_prp=1.0)
+            check(False, f"outcome_magnitude={bad} must be REFUSED, not absorbed")
+        except ValueError as e:
+            check("POTENTIATION-ONLY" in str(e),
+                  f"outcome_magnitude={bad} is refused, and the message states WHY rather "
+                  f"than naming a range: {str(e)[:70]}...")
+    # the refusal must not have cost the legitimate zero, which is a real no-op
+    before = snapshot(s)
+    r0 = assign_credit(s, trace, outcome_magnitude=0.0, p_prp=1.0)
+    check(snapshot(s) == before and r0.road_ids == [],
+          "outcome_magnitude=0.0 is still ACCEPTED and writes nothing — an outcome of no "
+          "size is not an adverse outcome, and conflating them would be a second defect")
+
+    # THE ABSENCE ITSELF, asserted structurally. If a weakening path is ever added, these
+    # go red and force the author to re-read this block rather than discover it.
+    import ast
+    import inspect
+    src = inspect.getsource(cr)
+    check("abs(outcome_magnitude)" not in src,
+          "the abs() that caused FINDING 2f-1 is GONE, not merely guarded — leaving it "
+          "would keep saying 'the sign does not matter here'")
+    # Decided by the AST, not by searching text. The first version of this check looked
+    # for the WORDS "weaken"/"depress" and went red on the module's own docstring, which
+    # uses them to state that no such path exists. A text scan cannot tell a mechanism
+    # from its negation; only the call graph can.
+    tree = ast.parse(src)
+    store_calls = sorted({n.func.attr for n in ast.walk(tree)
+                          if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                          and isinstance(n.func.value, ast.Name)
+                          and n.func.value.id == "store"})
+    check(store_calls == ["get_road", "strengthen"],
+          f"the module's ENTIRE store surface is {store_calls} — one read and one write, "
+          f"and the write is strengthen(), which cannot decrease strength. The "
+          f"one-directional bound is structural, not a documentation promise")
+    defs = sorted(n.name for n in ast.walk(tree)
+                  if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)))
+    check(not any(w in d.lower() for d in defs
+                  for w in ("weaken", "depress", "decrement", "punish")),
+          f"and no function in the module implements one: {defs}")
+    note("CONSEQUENCE, recorded here because a reader of this suite is exactly who needs "
+         "it: every outcome this mechanism can express STRENGTHENS what preceded it, so "
+         "the graph moves one way only, toward saturation. Nothing can be undone. What is "
+         "built assigns ATTENTION, not credit — it marks which roads preceded an outcome, "
+         "not whether that outcome was worth repeating. 2f-i therefore does NOT satisfy "
+         "Butlin AE-1 and moves NONE of SPEC-2e's five AOL criteria.")
+
 
 def test_I5_empty_trace_changes_nothing():
     section("I-5  ASSERTED NEGATIVE: an outcome with no preceding traversal does nothing")
@@ -768,6 +830,7 @@ def main():
         test_I2_paired_road_gains_more_than_a_matched_unpaired_road,
         test_I2_the_bar_is_the_shuffled_control_not_zero,
         test_I2_credit_decays_with_k_on_the_real_store,
+        test_ASSERTED_NEGATIVE_the_trace_is_potentiation_only,
         test_I5_empty_trace_changes_nothing,
         test_I5_never_traversed_roads_are_never_credited,
         test_I5_ANTI_READBACK_outcome_is_never_derived_from_strength,
