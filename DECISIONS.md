@@ -1658,3 +1658,103 @@ positive that masquerades as the check working is worse than a silent gap** — 
 caused one real mis-measurement, and a gate that cries wolf gets ignored, which would waste
 the foundation arc that produced it. Same placement L3 had as 2f's step zero, for the same
 reason: ownership sits with the brick that needs the coverage.
+
+---
+
+## D-029 — 2g is Option C; the competitive mechanism becomes brick 2h; and a framing error of mine is corrected
+
+**Date:** 2026-07-27 · **Direction:** Cagan · **Lane:** architect-pm · **Status:** decided,
+ready for the builder
+
+### 1. The decision
+
+**Option C now — asymmetric depression with its own rate. The competitive / shared-budget
+mechanism becomes brick 2h, after.** SPEC-2g is re-scoped from three options to one.
+
+### 2. I was asked to check a premise before building on it, and it holds
+
+Cagan's reading, which drove the decision: **B and C are not alternatives.** C is a *local*
+rule (per-road, fast); B is a *global* constraint (across siblings, slow); the literature
+treats them as **complementary**.
+
+**Checked against the four sources SPEC-2g already cites, and it is right.** Turrigiano &
+Nelson (2004) frame homeostatic scaling explicitly as a **complement to** Hebbian plasticity —
+the argument being that Hebbian rules are inherently destabilising and therefore *require* a
+slower homeostatic mechanism alongside them; scaling preserves *relative* weights, which is a
+design for coexisting with a local rule rather than overriding it. **Oja (1982)** is a case
+where the two are **fused in one equation**. **Miller & MacKay (1994)** is *about the
+interaction* — its whole subject is what a constraint does to a Hebbian rule's outcome.
+(**Carandini & Heeger 2012** concerns response normalisation, not plasticity, so it does not
+bear on this question directly.)
+
+**So presenting them as mutually exclusive was this spec's one framing error, it was mine, and
+sequencing them is coherent.** The correction is written into SPEC-2g §1 rather than quietly
+applied.
+
+**One refinement that I would not have found without checking, and it moves a cost:** they are
+complementary in the sense of **composed**, not **independent**. Miller & MacKay's central
+result is that the *choice* of constraint changes what the local rule **converges to** —
+subtractive normalisation drives winner-take-all, multiplicative gives graded outcomes.
+**Therefore 2h will perturb 2g rather than merely sit beside it**, and 2h's delivery must
+re-run 2g's graded-effect invariants under the new constraint. That cost is recorded in 2h's
+ledger note so it cannot be discovered late.
+
+**Epistemic status, stated rather than assumed.** This is assessed from knowledge of these
+sources, **not from re-reading them at verification time** — the same discipline the Butlin
+figure carries, and for the same reason. SPEC-2g §1.2 names what would confirm it and what
+would falsify it. It is **not load-bearing for 2g**, which is buildable and verifiable either
+way; it governs only the claim that 2h is a later *addition* rather than a *replacement*.
+
+### 3. Why C comes first — the reasoning, not the order
+
+**Nothing is being measured yet.** Four of the five AOL criteria are `MECHANISM ABSENT`
+regardless of which mechanism is built, because they need goal generation and skill
+representation and neither option is either. **So doing C first corrupts no measurement and
+forecloses nothing.**
+
+What it buys is that **the coupling question gets its own brick, its own gate and its own
+honest price** — instead of arriving as a side effect of the brick that was commissioned to
+fix the sign. A brick that acquires a second, larger mechanism mid-flight is how a scoped
+change becomes an unscoped one, and this project has a week of evidence about that.
+
+### 4. Option A is recorded as rejected, not deleted
+
+Symmetric depression introduces **no new constant**, which was its whole attraction. It is
+rejected because **symmetry is empirically wrong**: extinction is not the reverse of
+acquisition — spontaneous recovery, reinstatement and renewal all show the original
+association survives extinction (Bouton 2004).
+
+> **A known-wrong mechanism is not made acceptable by being free.**
+
+Kept visible in SPEC-2g §2 so the next person tempted by the cheapest option finds the reason
+it was refused, rather than an absence.
+
+### 5. Brick 2h carries 0b2's unpaid debt, explicitly
+
+A shared budget over out-roads and 0b2's conserved-activation overlay are **the same coupling
+question asked at two layers**, and **0b2's §5 default flip has never been paid for** — it is
+blocked on D-008 (the floor's scale-invariance). Registering 2h separately is what makes that
+debt **payable once, properly, by the brick scoped to pay it**, rather than ridden on by a
+brick that was not.
+
+2h is also **the only route to AOL-5** — *does choosing cost anything?* — and AOL-5 is what
+stops AOL-1…4 being satisfiable by mere enumeration. The evidence that scarcity is required is
+this project's own second wall: **1e′ died because nothing was scarce**, so the fan curve was
+flat to the last digit.
+
+Its cost is recorded as the highest of anything currently registered: it couples roads that
+four bricks proved correct independently, adds a fold the float registry must cover, makes
+sibling order load-bearing where it was not, and re-opens 0a's integrity legs.
+
+### 6. A gate bound its own author, and that is worth the line
+
+Landing D-028, **C3 flagged a sentence I had just written** in `PAPER_CLAIM_INVENTORY.md`,
+because it put a brick id beside a status token. I rephrased rather than reaching for a
+pragma.
+
+**That is a gate working on its author**, which is the case that matters: a gate binds whoever
+is easiest to exempt, or it binds nobody. This project has spent a week learning that the
+author is exactly who a check must still bind — and the same week produced a false claim in a
+spec (D-021), an invented justification in a shipped module (2f-4), and two unverified claims
+in my own briefs. **The instruction to check §2's premise before building on it came from the
+same recognition, and it found a real refinement.**
