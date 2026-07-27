@@ -36,6 +36,8 @@ import itertools
 import os
 import pathlib
 import re
+import shutil
+from pathlib import Path
 import struct
 import subprocess
 import sys
@@ -581,6 +583,143 @@ def test_FINDING_the_structural_argument_does_not_bound_what_it_claims():
                     "encapsulation. The architect owns whether that is 0a's to close.")
 
 
+def _bound_probe(code, label=""):
+    """Plant `code` as a NEW module under a copied src/ and return C6's binding verdict.
+
+    A NEW FILE, never an edit to an existing one — because dismissals are anchored to
+    `path:line` and prepending even a comment to an existing module shifts every line
+    below it, firing an unrelated bound. The first version of this probe did exactly
+    that and mis-measured all five blind spots as CAUGHT (see FINDING 2f-5)."""
+    d = Path(tempfile.mkdtemp(prefix="bnd-"))
+    shutil.copytree(ROOT / "src", d / "src")
+    (d / "tools").mkdir()
+    shutil.copy(ROOT / "tools" / "ledger.json", d / "tools" / "ledger.json")
+    (d / "src" / "probe_mod.py").write_text(code, encoding="utf-8")
+    r = subprocess.run([sys.executable, str(ROOT / "tools" / "ledger_check.py"),
+                        "--root", str(d), "--only", "C6"], capture_output=True, text=True)
+    shutil.rmtree(d, ignore_errors=True)
+    return "of get_road (binding)" in r.stdout
+
+
+def test_the_binding_bound_and_its_four_dismissals():
+    section("2f-3  the binding bound: every dismissal verified, and the bound bites")
+    import json
+    reg = json.loads((ROOT / "tools" / "ledger.json").read_text(encoding="utf-8"))
+    b = [x for x in reg["float_accumulations"][
+             "src/nous_credit.py:EpisodicTrace.eligible.<return>"]["bound_on_absence"]
+         if x["kind"] == "binding"][0]
+    dismissed = {d.split(" ", 1)[0] for d in b["dismissed"]}
+    check(len(dismissed) == 4, f"four dismissals recorded ({len(dismissed)})")
+
+    # EACH ONE VERIFIED HERE, not read. This project has already failed a brick because
+    # two written reasons were false, so a dismissal is a claim like any other.
+    for site, want_reads, want_decay in (
+            ("src/nous_coalitions.py:167", {"source_id", "target_id"}, "False"),
+            ("src/nous_coalitions.py:184", {"source_id", "target_id"}, "False"),
+            ("src/nous_coalitions.py:291", {"target_id"}, "False"),
+            ("src/nous_store.py:492", {"closed", "strength"}, "DEFAULT")):
+        check(site in dismissed, f"{site} is dismissed")
+        fn, ln = site.rsplit(":", 1)
+        ln = int(ln)
+        tree = ast.parse((ROOT / fn).read_text(encoding="utf-8"))
+        bound_name = None
+        decay = "DEFAULT"
+        for n in ast.walk(tree):
+            if isinstance(n, ast.Assign) and n.lineno == ln:
+                if isinstance(n.targets[0], ast.Name):
+                    bound_name = n.targets[0].id
+                if isinstance(n.value, ast.Call):
+                    kw = [k for k in n.value.keywords if k.arg == "apply_decay"]
+                    if kw:
+                        decay = ast.unparse(kw[0].value)
+        owner = None
+        for f in ast.walk(tree):
+            if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                end = max((getattr(x, "lineno", f.lineno) for x in ast.walk(f)),
+                          default=f.lineno)
+                if f.lineno <= ln <= end and (owner is None or f.lineno > owner.lineno):
+                    owner = f
+        writes = []
+        for n in ast.walk(owner):
+            if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name) \
+                    and n.value.id == bound_name and not isinstance(n.ctx, ast.Load):
+                writes.append(f"{n.attr}@{n.lineno}")
+            if isinstance(n, ast.Subscript) and isinstance(n.value, ast.Attribute) \
+                    and isinstance(n.value.value, ast.Name) \
+                    and n.value.value.id == bound_name and not isinstance(n.ctx, ast.Load):
+                writes.append(f"{n.value.attr}[..]@{n.lineno}")
+        check(writes == [],
+              f"VERIFIED, not read: nothing is written through the road bound at {site} "
+              f"(writes found: {writes})")
+        check(decay == want_decay,
+              f"and its apply_decay is {want_decay} as the dismissal states (got {decay})"
+              + (" — so it receives a COPY and could not reach the store even if it wrote"
+                 if want_decay == "DEFAULT" else ""))
+
+    section("2f-3  the bound BITES on the form it covers")
+    check(_bound_probe("def p(store, rid):\n"
+                       "    road = store.get_road(rid, apply_decay=False)\n"
+                       "    road.strength *= 0.5\n"),
+          "a planted `road = get_road(...); road.strength *= 0.5` turns C6 RED")
+
+    section("2f-3  ASSERTED NEGATIVES: the blind spots really are blind")
+    # Not a failure — the documented scope. Asserted so that nobody later reads a clean
+    # run of this bound as "no write path exists".
+    for code, label in (
+            ("def p(store, rid):\n    g = getattr(store, 'get_road')\n"
+             "    road = g(rid, False)\n    road.strength *= 0.5\n",
+             "getattr on the method (aliased call)"),
+            ("def p(store, rid):\n"
+             "    setattr(store.get_road(rid, False), 'strength', 0.01)\n",
+             "setattr, never bound"),
+            ("def p(store, rid):\n    bag = [store.get_road(rid, False)]\n"
+             "    bag[0].strength *= 0.5\n", "write through a container"),
+            ("def h(store, rid):\n    return store.get_road(rid, False)\n\n"
+             "def p(store, rid):\n    r = h(store, rid)\n    r.strength *= 0.5\n",
+             "road returned from a helper, then written"),
+            ("def p(store, rid):\n"
+             "    store.get_road(rid, False).__dict__['strength'] = 0.01\n",
+             "__dict__ assignment")):
+        check(not _bound_probe(code, label),
+              f"ASSERTED NEGATIVE — slips through, as documented: {label}")
+    note("all five need real DATAFLOW, which the builder declined to build rather than "
+         "attempt badly. A clean run of this bound proves no BINDING exists outside the "
+         "four dismissed — never that no write-through is possible.")
+    b_note = (b.get("_inherited_weakness") or "").lower()
+    check("dataflow" in b_note and ("getattr" in b_note or "__dict__" in b_note),
+          "and the decline is recorded IN THE LEDGER where a reader would look, not only "
+          "in a delivery report")
+
+
+def test_FINDING_dismissals_are_line_anchored_and_rot():
+    section("2f-5  FINDING: a dismissal is anchored to path:line and rots on any shift")
+    d = Path(tempfile.mkdtemp(prefix="anchor-"))
+    shutil.copytree(ROOT / "src", d / "src")
+    (d / "tools").mkdir()
+    shutil.copy(ROOT / "tools" / "ledger.json", d / "tools" / "ledger.json")
+    f = d / "src" / "nous_field.py"
+    f.write_text("# a harmless comment\n" + f.read_text(encoding="utf-8"), encoding="utf-8")
+    r = subprocess.run([sys.executable, str(ROOT / "tools" / "ledger_check.py"),
+                        "--root", str(d), "--only", "C6"], capture_output=True, text=True)
+    shutil.rmtree(d, ignore_errors=True)
+    check(r.returncode == 1 and "RESTS ON THE ABSENCE" in r.stdout,
+          "inserting ONE COMMENT LINE above a dismissed occurrence turns C6 red, because "
+          "`dismissed` entries are keyed `path:line` and every line below shifts")
+    finding("2f-5", "bound_on_absence DISMISSALS are line-anchored and rot on any edit "
+                    "above them: adding a single comment to the top of nous_field.py "
+                    "fires a false [C6] against the ActivationField.flow bound. This is "
+                    "the exact failure the Accumulation dataclass docstring says it "
+                    "avoids — 'a registry keyed by line rots on every insertion above it "
+                    "and trains people to re-key mechanically instead of re-reading' — "
+                    "and the dismissal list reintroduces it one field away. It cost a real "
+                    "mis-measurement in this pass: my first blind-spot probe prepended to "
+                    "an existing module and reported all five blind spots as CAUGHT, which "
+                    "was the shifted bound firing, not the binding bound working. Not "
+                    "urgent and not 2f-i's: no dismissal is wrong today. Architect's to "
+                    "route — a content-anchored key (the source line's text, or an AST "
+                    "path) would close it.")
+
+
 def test_2f2_falsifier_is_hypothetical_today_not_live():
     section("2f-2  is the recorded falsifier live or hypothetical? — checked, not assumed")
     # Recorded falsifier: "any path where an eligibility value reaches something NOT
@@ -963,7 +1102,16 @@ def test_LANGUAGE_read_as_a_human_because_C4_is_broken():
             # tool — and the refinement is proved below to still catch the real thing,
             # rather than being a hole opened to make the suite green.
             idiom = re.search(r"\bknown\s+(non-?\w+|to\s+be|at\s+)", low_text) is not None
-            if not negated and not idiom:
+            # HYPHENATED COMPOUND = a term of art, not a predicate about this system.
+            # "learning-progress signal" names a construct from the intrinsic-motivation
+            # literature that SPEC-2e cites; it says nothing about what Nous does. The
+            # exclusion is narrow ON PURPOSE — it fires only when the matched token is
+            # immediately followed by a hyphen and another word — and the planted-claim
+            # proof below shows it opens no hole.
+            # `m` indexes the WHOLE document, so the lookahead must too — indexing the
+            # stripped LINE with a document offset was this fix's first bug.
+            compound = bool(re.match(r"-[a-z]", low[m.end():m.end() + 2]))
+            if not negated and not idiom and not compound:
                 claims.append(f"L{ln+1} [{label}]: {text[:78]}")
     check(claims == [],
           f"no docstring, comment or identifier asserts acquisition, retention, "
@@ -976,7 +1124,8 @@ def test_LANGUAGE_read_as_a_human_because_C4_is_broken():
     # sentences the project asserts. C4 correctly caught the fourth one, which is C4
     # working on a form it CAN see; brick 0f is about the interpolated forms it cannot.
     # The pragma records that this is a fixture rather than silencing a real finding.
-    for planted in ("the system knows which road to pick",       # ledger:allow-claim
+    for planted in ("the module learning from outcomes is real",  # ledger:allow-claim
+                    "the system knows which road to pick",       # ledger:allow-claim
                     "the trace knows what happened",             # ledger:allow-claim
                     "this module learns from outcomes",          # ledger:allow-claim
                     "the graph is aware of the outcome"):        # ledger:allow-claim
@@ -987,7 +1136,8 @@ def test_LANGUAGE_read_as_a_human_because_C4_is_broken():
                 neg = any(w in lt for w in ("not ", "no ", "never", "must not",
                                             "nothing", "neither"))
                 idm = re.search(r"\bknown\s+(non-?\w+|to\s+be|at\s+)", lt) is not None
-                if not neg and not idm:
+                cmp_ = bool(re.match(r"-[a-z]", planted.lower()[m.end():m.end() + 2]))
+                if not neg and not idm and not cmp_:
                     hit = True
         check(hit, f"the refined matcher still flags a genuine claim: {planted!r}")
 
@@ -1053,6 +1203,8 @@ def main():
         test_CONVERTED_a_negative_outcome_is_REFUSED_not_absorbed,
         test_negative_zero_is_accepted_and_that_is_unstated,
         test_FINDING_the_structural_argument_does_not_bound_what_it_claims,
+        test_the_binding_bound_and_its_four_dismissals,
+        test_FINDING_dismissals_are_line_anchored_and_rot,
         test_2f2_falsifier_is_hypothetical_today_not_live,
         test_FLAG_the_AOL_claim_is_an_interpretation_not_the_spec_text,
         test_WINDOW_boundary_is_structural_not_sampled,
@@ -1068,23 +1220,25 @@ def main():
     print("\n" + "=" * 78)
     print(f"  RESULT: {_passed} passed, {_failed} failed")
     print("=" * 78)
-    print("  TESTER VERDICT ON BRICK 2f-i — PASS (2026-07-27, re-verification)")
+    print("  TESTER VERDICT ON BRICK 2f-i — PASS  (2026-07-27, final)")
     print("=" * 78)
-    print("  BOTH CLOSURES VERIFIED. A negative outcome is REFUSED, the abs() is removed")
-    print("  rather than guarded, the store is byte-identical after a refused call, and")
-    print("  the conversion FAILS against 1065c43 where the abs() still lived. 2f-2's")
-    print("  falsifier is HYPOTHETICAL today, checked rather than assumed: no consumer of")
-    print("  CreditAssignment.eligibility or .gain exists anywhere outside the module.")
+    print("  2f-i IS DONE FROM THE TESTER SIDE. The refusal holds, the potentiation basis")
+    print("  is an ABSENCE that is machine-checked and bites, all four dismissals are")
+    print("  verified rather than read, and the three corrected reasons are the true ones.")
     print()
-    print("  0e WORKED IN THE WILD, first time. This suite ABORTED on the builder's fix,")
-    print("  and the runner NAMED it with exception and location instead of letting 131")
-    print("  assertions vanish from the total.")
+    print("  WRAPPED-STRING SWEEP: 0 vacuous across all four suites. The builder's was the")
+    print("  only instance and it is fixed. The generalisation is PARTLY true and the")
+    print("  difference matters: 0f, the mechanism-vs-negation scan and the wrapped string")
+    print("  are all substring matching on structured text, but they need THREE different")
+    print("  fixes — tokenisation, parsing, and whitespace normalisation. Normalising")
+    print("  everything closes one third of the class while looking like it closed all.")
     print()
-    print("  THREE FINDINGS, none blocking: 2f-3 the structural argument does not bound")
-    print("  what it claims — get_road(apply_decay=False) returns the LIVE road, so a")
-    print("  future edit could weaken one while leaving the AST assertion green; 2f-4 the")
-    print("  module's stated reason about AOL-2/3/4 is an interpretation, not the spec's")
-    print("  text; and -0.0 is right by accident of `< 0.0` rather than by decision.")
+    print("  0d SUITE CONVERTED after four aborted passes: 338 assertions, 0 failures.")
+    print("  Census 14/8 -> 15/9, each conversion failing against cce3dc5.")
+    print()
+    print("  ONE NEW FINDING, 2f-5, not blocking: bound_on_absence DISMISSALS are keyed")
+    print("  path:line and rot on any edit above them — one comment line fires a false")
+    print("  [C6]. It cost a real mis-measurement in this pass. Architect's to route.")
     print("=" * 78)
     if _findings:
         print("  FINDINGS")

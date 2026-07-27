@@ -211,6 +211,13 @@ HAND_CENSUS = {
     "src/nous_store.py:SubstrateStore.strengthen.road.charges":       False,
     "src/nous_workspace.py:Broadcast.total_strength_after.<return>":  True,
     "src/nous_workspace.py:select_winner.strength":                   True,
+    # CONVERTED 2026-07-27. Brick 2f-i added one accumulation and the census moved
+    # 14 -> 15 (8 -> 9 fsum). Derived by hand from src/nous_credit.py, exactly as the
+    # fourteen above were: `math.fsum(vs)` folds a road's eligibility over its
+    # occurrences in the window, which is a fold over a term set with no intrinsic
+    # order. Added, never re-derived from the scanner — a hand census that copies the
+    # scanner is not a second opinion.
+    "src/nous_credit.py:EpisodicTrace.eligible.<return>":             True,
 }
 
 
@@ -254,8 +261,11 @@ def test_F1_the_census_matches_a_hand_derived_census():
     for k, is_fsum in sorted(HAND_CENSUS.items()):
         check(got.get(k) is is_fsum,
               f"{k} classified {'fsum' if is_fsum else 'naive'} (got {got.get(k)!r})")
-    check(sum(1 for v in got.values() if v) == 8, "eight exactly-rounded sites")
-    check(sum(1 for v in got.values() if not v) == 6, "six naive sites")
+    check(sum(1 for v in got.values() if v) == 9,
+          "CONVERTED (was 8): NINE exactly-rounded sites — brick 2f-i added one fsum")
+    check(sum(1 for v in got.values() if not v) == 6,
+          "and still six naive sites: 2f-i introduced no new naive accumulation, which "
+          "is the substantive half of the change and the half worth asserting")
 
     section("F-1  a second, independent scanner corroborates the shape counts")
     tot_f = tot_n = 0
@@ -263,7 +273,10 @@ def test_F1_the_census_matches_a_hand_derived_census():
         f, n = independent_census(p)
         tot_f += f
         tot_n += n
-    check(tot_f == 8, f"independent fsum call count = 8, got {tot_f}")
+    check(tot_f == 9,
+          f"CONVERTED (was 8): the independent scanner counts NINE fsum calls, got "
+          f"{tot_f} — a second opinion on the same delta, derived without reading the "
+          f"registry")
     # the dumb scanner cannot see the one-hop-laundered charges site, so it finds 5 not 6
     check(tot_n == 5,
           f"independent naive count = 5 (it cannot follow the `prior` temporary into "
@@ -468,7 +481,8 @@ def test_F3_the_key_round_trips_through_the_registry():
                           "--root", str(ROOT), "--list-accumulations"],
                          capture_output=True, text=True).stdout
     keys = [ln.split()[-1] for ln in out.splitlines() if ln.startswith("src/")]
-    check(len(keys) == 14, f"the printed census names 14 keys, got {len(keys)}")
+    check(len(keys) == 15,
+          f"CONVERTED (was 14): the printed census names FIFTEEN keys, got {len(keys)}")
     built = {}
     for k in keys:
         verdict = "fsum" if HAND_CENSUS[k] else "registered"
