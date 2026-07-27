@@ -1982,7 +1982,7 @@ Open your report with the plain-language summary for Cagan.
 
 ---
 
-## CC-24 · Close 2f-i ▶ LIVE
+## CC-24 · Close 2f-i ✔ DONE (b09e7be)
 
 Tester PASS (19d3286). **The runner exits 0 for the first time in this arc: 2,441 passed, 0 failed,
 25 suites, 0 aborted.** The wrapped-string sweep came back clean — the builder's was the only
@@ -2060,6 +2060,101 @@ THEN
 and nothing else once the [C5] is registered. Append to DECISIONS.md. Commit everything.
 
 Close with one line: where this leaves us, and name the next action.
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
+
+## CC-26 · 0g — the registry that rots, and it rots against its own docstring ▶ LIVE
+
+SPEC-2g is re-scoped to option C and **brick 2h** carries 0b2's unpaid default-flip debt (9c15249).
+The architect verified my premise instead of adopting it, and **found a refinement I had missed**:
+B and C are not merely complementary, they are **composed** — Miller & MacKay's central result is
+that the choice of normalisation constraint changes what the local rule converges to. So 2h will
+*perturb* 2g, not sit beside it, and 2h's delivery must re-run 2g's graded-effect invariants. It
+also excluded Carandini & Heeger as not bearing on plasticity rather than counting it as support,
+and marked its own epistemic status as assessed-from-knowledge rather than re-read.
+
+**Now 0g — and I verified the shape myself. It is worse than "a gate that cries wolf".**
+
+`tools/ledger_check.py:636`, the `Accumulation` docstring, in the same file:
+
+> *"`key` is `<path>:<scope>.<symbol>` — deliberately NOT a line number, because a registry keyed by
+> line rots on every insertion above it and **trains people to re-key mechanically instead of
+> re-reading**."*
+
+And the `dismissed` entries inside `bound_on_absence`, one field away, are keyed
+`src/nous_field.py:123 — …`. **The exact thing the docstring warns against, reintroduced beside it.**
+The docstring also names the real harm, which is sharper than false positives: a rotting registry
+teaches people to update keys without re-reading the reason — and in this project the reason **is**
+the entire guarantee.
+
+```
+/psyche-orient
+
+Work in the BUILDER lane. Brick 0g, and it is SPEC-2g's mandatory §0. Fix this and nothing else.
+Do NOT begin 2g's mechanism.
+
+THE DEFECT, AND IT IS WRITTEN AGAINST ITS OWN DOCSTRING
+`bound_on_absence` dismissals are keyed `path:line`. `tools/ledger_check.py:636` — the
+`Accumulation` docstring, in the same file, one field away — already says the key is deliberately
+NOT a line number, "because a registry keyed by line rots on every insertion above it and trains
+people to re-key mechanically instead of re-reading." The rule was written down, and then broken
+next to where it was written.
+
+It has already cost a real mis-measurement: the tester's first blind-spot probe prepended to a
+module and reported all five blind spots as CAUGHT. That was the shifted bound firing, not the
+binding bound working — **a false positive that masqueraded as the check working.** Worse than a
+silent gap, because it makes an uncovered blind spot look covered.
+
+THE FIX IS NOT NEW DESIGN — IT IS THE FORMAT THIS FILE ALREADY DOCUMENTS AND USES
+Key dismissals the way `Accumulation.key` is keyed: `<path>:<scope>.<symbol>`. You are applying an
+existing, already-correct convention to a field that skipped it, not inventing one.
+
+THE WHOLE DESIGN PROBLEM, IN ONE SENTENCE — hold both halves
+**The key must be STABLE under irrelevant edits and UNSTABLE under relevant ones.** Stable-only is
+what you get by keying on nothing; unstable-only is what we have. A key that survives the site
+actually changing is worse than a line number, because a stale dismissal then silently excuses a
+site that is no longer the site it was written about.
+
+So decide and state, with reasons:
+- What identifies a dismissal when a scope contains SEVERAL matching expressions — an ordinal? the
+  expression text? Say what happens when one of them is deleted.
+- What happens when the enclosing scope is renamed. That is a relevant change; the dismissal should
+  not survive it silently.
+- What happens when the dismissed expression itself changes while the scope does not.
+
+ASSERT BOTH DIRECTIONS. This is the part that proves the fix rather than claiming it.
+- Insert a comment line at the top of `nous_field.py`: every dismissal still holds, **no false
+  [C6]**. Prove this assertion fails against the pre-fix revision.
+- Change the dismissed expression at its site: the dismissal must **stop** applying and the finding
+  must reappear. A key that cannot go stale cannot be trusted to be fresh.
+- Rename the enclosing scope: the dismissal must not silently carry over.
+
+MIGRATE THE EXISTING DISMISSALS, AND RE-READ THEM WHILE YOU DO
+There are dismissals under `nous_field.py:build_activation_field.merged_flow` and under
+`nous_credit.py:EpisodicTrace.eligible.<return>`. Do NOT mechanically re-key them — that is exactly
+the behaviour the docstring says a rotting registry trains. **Re-read each reason and confirm it is
+still true of the site it now points at**, then re-key. Report any that had already drifted.
+
+SCOPE
+The dismissal key format, its migration, and its assertions. Nothing else. Do not extend the
+absence-bound checker's coverage; FINDING 0d-5's blind spots (`getattr`, `__dict__`, aliasing) stay
+exactly as documented, and the general write-through-a-binding question stays declined in 0a-ii.
+
+REGRESSION
+Re-run the retro-catch in full — three historical bugs, per-commit counts 10/12/12, four MUST-CATCH
+sites. Report both digests and say whether each moved and why. You are editing the gate the next
+brick depends on.
+
+RUN
+Full suite on every interpreter available, plus tools/test_ledger.py. Totals read from the runner
+output, never estimated. ledger_check exits 1 with exactly 16 [C2] under docs/paper/.
+
+SELF-AUDIT
+All seven items, plus the one this arc added: for every claim you leave in a docstring, is the
+REASON checked, or only the conclusion?
 
 Open your report with the plain-language summary for Cagan.
 ```

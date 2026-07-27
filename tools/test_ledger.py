@@ -1363,6 +1363,117 @@ def run(tmp: Path) -> None:
     shutil.rmtree(old_dir, ignore_errors=True)
 
 
+    # ═══════════════════════════════════════════════════════════════════════════
+    # BRICK 0g — the dismissal key is stable under irrelevant edits, unstable
+    #            under relevant ones. Both halves asserted; neither assumed.
+    # ═══════════════════════════════════════════════════════════════════════════
+    section("0g  dismissal keys: STABLE under irrelevant edits, UNSTABLE under relevant")
+
+    def c6_on(mutate, use_rev=None):
+        """Run C6 over a copied tree, optionally with a tool recovered from `use_rev`."""
+        d = Path(tempfile.mkdtemp(prefix="0g-"))
+        shutil.copytree(REPO / "src", d / "src")
+        (d / "tools").mkdir()
+        shutil.copy(REPO / "tools" / "ledger.json", d / "tools" / "ledger.json")
+        mutate(d)
+        tool = str(REPO / "tools" / "ledger_check.py")
+        if use_rev:
+            g = subprocess.run(["git", "show", f"{use_rev}:tools/ledger_check.py"],
+                               cwd=str(REPO), capture_output=True, text=True)
+            if g.returncode != 0:
+                shutil.rmtree(d, ignore_errors=True)
+                return None
+            (d / "old_lc.py").write_text(g.stdout, encoding="utf-8")
+            tool = str(d / "old_lc.py")
+        r = subprocess.run([sys.executable, tool, "--root", str(d), "--only", "C6"],
+                           capture_output=True, text=True)
+        shutil.rmtree(d, ignore_errors=True)
+        return r
+
+    def add_comment(d):
+        f = d / "src" / "nous_field.py"
+        f.write_text("# a harmless comment\n" + f.read_text(encoding="utf-8"),
+                     encoding="utf-8")
+
+    # CONTROL FIRST. Without it every result below is unreadable.
+    base = c6_on(lambda d: None)
+    check(base.returncode == 0,
+          f"CONTROL: an unmutated tree is clean (exit {base.returncode}) — otherwise every "
+          f"mutation result below would be noise")
+
+    # DIRECTION 1 — irrelevant edit: dismissals must HOLD.
+    r = c6_on(add_comment)
+    check(r.returncode == 0 and "RESTS ON THE ABSENCE" not in r.stdout,
+          f"a comment inserted at the top of nous_field.py produces NO finding "
+          f"(exit {r.returncode}) — the key ignores line position, which is the whole "
+          f"defect this brick closes")
+    # RULE FOUR: the same edit against the pre-fix tool must go RED, or the assertion
+    # above is not evidence of anything.
+    old = c6_on(add_comment, use_rev="9c15249")
+    if old is None:
+        note("pre-fix tool unavailable from git; the two-sided proof was skipped")
+    else:
+        check(old.returncode == 1 and "RESTS ON THE ABSENCE" in old.stdout,
+              "LIVE: the SAME one-comment edit fires a false [C6] on the pre-fix tool "
+              "(9c15249). One comment line was the entire reproducer")
+
+    # DIRECTION 2 — the dismissed EXPRESSION changes: the dismissal must STOP applying.
+    def change_expr(d):
+        f = d / "src" / "nous_field.py"
+        t = f.read_text(encoding="utf-8")
+        f.write_text(t.replace("        for rid, fv in res.flow.items():",
+                               "        res_alias = res\n"
+                               "        for rid, fv in res_alias.flow.items():", 1),
+                     encoding="utf-8")
+    r = c6_on(change_expr)
+    check(r.returncode == 1 and "RESTS ON THE ABSENCE" in r.stdout,
+          "changing `res.flow` to `res_alias.flow` in the SAME scope makes the dismissal "
+          "stop applying and the finding return. A key that cannot go stale cannot be "
+          "trusted to be fresh")
+
+    # DIRECTION 3 — the enclosing SCOPE is renamed: must not silently carry over.
+    def rename_scope(d):
+        f = d / "src" / "nous_field.py"
+        f.write_text(f.read_text(encoding="utf-8").replace(
+            "def build_activation_field(", "def build_activation_field_v2(", 1),
+            encoding="utf-8")
+    r = c6_on(rename_scope)
+    check(r.returncode == 1,
+          "renaming build_activation_field turns the build RED — a rename is a RELEVANT "
+          "change and is not survived silently")
+    check("unregistered" in r.stdout and "build_activation_field_v2" in r.stdout,
+          "AND THE MECHANISM IS WORTH STATING PRECISELY, because it is not the one a "
+          "reader would assume: the finding is 'unregistered accumulation', not a revived "
+          "absence-bound. The REGISTRY's own key is scope-anchored too, so renaming the "
+          "scope unmatches the whole entry and the bound is never evaluated. The build "
+          "still goes red, which is the property that matters — but by the registration "
+          "path, not the dismissal path")
+
+    section("0g  the legacy line-number format is REFUSED, never silently ignored")
+    def legacy(d):
+        import json as _j
+        f = d / "tools" / "ledger.json"
+        led = _j.loads(f.read_text(encoding="utf-8"))
+        e = led["float_accumulations"]["src/nous_field.py:build_activation_field.merged_flow"]
+        e["bound_on_absence"][0]["dismissed"] = ["src/nous_field.py:123 — old format"]
+        f.write_text(_j.dumps(led, indent=2, ensure_ascii=False), encoding="utf-8")
+    r = c6_on(legacy)
+    check(r.returncode == 1 and "LINE-NUMBER format" in r.stdout,
+          "a dismissal still written as `path:NNN` is REFUSED with its own finding — a "
+          "half-migrated ledger cannot pass while its old entries silently excuse nothing")
+
+    section("0g  keys are whitespace-free, and that is a contract not a nicety")
+    for kind, sym in (("attribute_read", "ActivationField.flow"),
+                      ("call", "advance"), ("binding", "get_road")):
+        for rel, line, site in LC._absence_occurrences(REPO, kind, sym):
+            check(site == "".join(site.split()),
+                  f"key contains no whitespace: {site!r}")
+            check(site.split(" ", 1)[0] == site,
+                  f"and survives the `split(' ', 1)[0]` every dismissal is parsed with — "
+                  f"the first version of this brick produced `road = store.get_road`, "
+                  f"which truncated at the space and matched nothing: {site!r}")
+
+
 def main() -> int:
     print("=" * 70)
     print("  LEDGER TOOLS — TEST SUITE")

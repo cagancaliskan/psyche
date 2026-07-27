@@ -1154,7 +1154,82 @@ ABSENCE_KEY = "bound_on_absence"
 ABSENCE_KINDS = ("attribute_read", "call", "binding")
 
 
-def _absence_occurrences(root: Path, kind: str, symbol: str) -> List[Tuple[str, int]]:
+def _scoped_nodes(tree: ast.AST):
+    """Yield (node, dotted_scope) for every node, with the scope built from the enclosing
+    def/class chain — the same way `scan_source` derives `Accumulation.scope`."""
+    def walk(node, scope):
+        for child in ast.iter_child_nodes(node):
+            if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+                inner = scope + [child.name]
+                yield child, ".".join(scope)
+                yield from walk(child, inner)
+            else:
+                yield child, ".".join(scope)
+                yield from walk(child, scope)
+    yield from walk(tree, [])
+
+
+def _site_expression(node, kind: str) -> str:
+    """A SHORT, stable description of the occurrence — the part of the key that must change
+    when the site changes and must not change when a line above it does.
+
+    Deliberately not `ast.unparse(node)` in every case: a call's full source carries its
+    arguments, which are volatile text that has nothing to do with whether the bound holds.
+    What identifies the site is *what is being read or called*, not what it is called with."""
+    if kind == "attribute_read":
+        return ast.unparse(node)                       # e.g. `res.flow`
+    if kind == "call":
+        return (_dotted(node.func) or "?")             # e.g. `store.get_road`
+    if kind == "binding":
+        tgt = node.targets[0] if isinstance(node, ast.Assign) else node.target
+        fn = _dotted(node.value.func) or "?"
+        return f"{ast.unparse(tgt)}={fn}"              # e.g. `road=store.get_road`
+    return ast.unparse(node)
+
+
+def _dismissal_key(rel: str, scope: str, expr: str) -> str:
+    """`<path>:<scope>.<expr>` — the format `Accumulation.key` already uses, applied to the
+    field that skipped it (BRICK 0g).
+
+    THE WHOLE DESIGN PROBLEM IS ONE SENTENCE: **the key must be STABLE under irrelevant
+    edits and UNSTABLE under relevant ones.** A line number is unstable under both, which is
+    the defect. A key that never changes would be stable under both, which is worse — a
+    stale dismissal would silently excuse a site that is no longer the site the reason was
+    written about.
+
+    So the key carries exactly two things, and each is there for one half of that sentence:
+      - the enclosing SCOPE, so renaming the function breaks the dismissal. A rename is a
+        RELEVANT change: the reason was written about code in a named place, and the name is
+        part of what the reader was told.
+      - the SITE EXPRESSION, so changing what is read or called breaks the dismissal.
+    Everything else — line numbers, surrounding edits, comments, reformatting above — is
+    irrelevant and is deliberately not in the key.
+
+    WHAT IT CANNOT DISTINGUISH, stated rather than discovered later: two TEXTUALLY IDENTICAL
+    occurrences in one scope share a key, so one dismissal covers both, and deleting one
+    leaves the other correctly dismissed. That is the right default — the reason is about an
+    expression, and both instances *are* that expression — but it means a dismissal cannot
+    excuse one of two identical siblings while flagging the other. An ordinal (`#2`) was
+    rejected precisely because deleting an earlier occurrence would renumber the later one:
+    that is the line-number rot again, with a smaller blast radius and the same shape.
+
+    NOT COVERED, and it is benign: if a dismissed site is DELETED outright, its dismissal
+    goes unused and nothing says so. No finding is wrongly suppressed — there is nothing
+    left to suppress — so this is dead weight in the ledger rather than a false guarantee.
+    An unused-dismissal check is the natural next step and is deliberately not built here."""
+    # WHITESPACE-FREE BY CONSTRUCTION, and this is a contract rather than a nicety: a
+    # dismissal is stored as "<key> — <reason>" and parsed with split(" ", 1)[0], the
+    # convention every dismissal in this ledger already uses. A key containing a space
+    # would be silently TRUNCATED at the first one and would then match nothing — which is
+    # how the first version of this brick's own key format failed, caught here.
+    key = f"{rel}:{scope}.{expr}" if scope else f"{rel}:{expr}"
+    return "".join(key.split())
+
+
+_LEGACY_DISMISSAL = re.compile(r"^[^:]+\.py:\d+$")
+
+
+def _absence_occurrences(root: Path, kind: str, symbol: str) -> List[Tuple[str, int, str]]:
     """Every place in src/ where `symbol` appears, for a registry reason that rests on it
     NOT appearing.
 
@@ -1172,7 +1247,7 @@ def _absence_occurrences(root: Path, kind: str, symbol: str) -> List[Tuple[str, 
     the check.
     """
     leaf = symbol.rsplit(".", 1)[-1]
-    hits: List[Tuple[str, int]] = []
+    hits: List[Tuple[str, int, str]] = []
     src = root / SRC_REL
     if not src.is_dir():
         return hits
@@ -1185,15 +1260,18 @@ def _absence_occurrences(root: Path, kind: str, symbol: str) -> List[Tuple[str, 
         except (SyntaxError, ValueError, UnicodeDecodeError, OSError) as e:
             raise CensusUnreadable(f"{rel}: cannot read/parse while verifying an "
                                    f"absence bound ({type(e).__name__}).") from e
-        for node in ast.walk(tree):
+        for node, scope in _scoped_nodes(tree):
             if kind == "attribute_read":
                 if isinstance(node, ast.Attribute) and node.attr == leaf \
                         and isinstance(getattr(node, "ctx", None), ast.Load):
-                    hits.append((rel, node.lineno))
+                    hits.append((rel, node.lineno,
+                                 _dismissal_key(rel, scope, _site_expression(node, kind))))
             elif kind == "call":
                 if isinstance(node, ast.Call):
                     if (_dotted(node.func) or "").rsplit(".", 1)[-1] == leaf:
-                        hits.append((rel, node.lineno))
+                        hits.append((rel, node.lineno,
+                                     _dismissal_key(rel, scope,
+                                                    _site_expression(node, kind))))
             elif kind == "binding":
                 # A claim that rests on "no code BINDS the result of f() to a name" — the
                 # shape FINDING 2f-3 exposed: `store.get_road(rid, apply_decay=False)`
@@ -1215,7 +1293,9 @@ def _absence_occurrences(root: Path, kind: str, symbol: str) -> List[Tuple[str, 
                     val = node.value
                 if isinstance(val, ast.Call) \
                         and (_dotted(val.func) or "").rsplit(".", 1)[-1] == leaf:
-                    hits.append((rel, node.lineno))
+                    hits.append((rel, node.lineno,
+                                 _dismissal_key(rel, scope,
+                                                _site_expression(node, kind))))
     return hits
 
 
@@ -1239,13 +1319,28 @@ def _check_absence_bounds(root: Path, key: str, entry: dict) -> List[Finding]:
             continue
         kind, symbol = item["kind"], item["symbol"]
         dismissed = {str(d).split(" ", 1)[0] for d in (item.get("dismissed") or [])}
-        for rel, line in _absence_occurrences(root, kind, symbol):
-            if f"{rel}:{line}" in dismissed:
+        # BRICK 0g: a legacy `path:NNN` dismissal is REFUSED, never ignored. Silently
+        # accepting one would leave a half-migrated ledger passing while its old-format
+        # entries excused nothing — the quiet failure this whole brick is about.
+        legacy = sorted(x for x in dismissed if _LEGACY_DISMISSAL.match(x))
+        if legacy:
+            out.append(Finding(
+                "C6", LEDGER_REL.as_posix(), 0,
+                f"{key}: {len(legacy)} dismissal(s) still use the LINE-NUMBER format "
+                f"({', '.join(legacy)}). That format rots on any edit above the site "
+                f"(brick 0g) and is no longer accepted",
+                f"re-key each to <path>:<scope>.<expression> — and RE-READ its reason "
+                f"against the site it now names rather than re-keying mechanically, "
+                f"which is the behaviour a rotting registry trains"))
+            continue
+        for rel, line, site in _absence_occurrences(root, kind, symbol):
+            if site in dismissed:
                 continue
             out.append(Finding(
                 "C6", rel, line,
                 f"{key}: this entry's reason RESTS ON THE ABSENCE of {symbol} "
-                f"({kind}), and {symbol} now appears here — the reason is now FALSE",
+                f"({kind}), and {symbol} now appears here — the reason is now FALSE. "
+                f"Site key: {site}",
                 f"re-adjudicate {key}: either its bound no longer holds and the entry "
                 f"needs a new argument, or this occurrence is a different symbol and "
                 f"belongs in its 'dismissed' list with the reason it does not count"))
