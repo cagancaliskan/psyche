@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Optional
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from ledger_check import LEDGER_REL, CAPTURE_REL, parse_capture  # noqa: E402
+from ledger_check import CaptureMalformed, LEDGER_REL, CAPTURE_REL, parse_capture  # noqa: E402
 
 
 def sync(root: Path, mode: str) -> int:
@@ -33,7 +33,13 @@ def sync(root: Path, mode: str) -> int:
         print(f"ledger_sync: no ledger at {ledger_path}", file=sys.stderr)
         return 2
 
-    cap = parse_capture(root)
+    try:
+        cap = parse_capture(root)
+    except CaptureMalformed as e:
+        # BRICK 0e. ledger_sync WRITES the headline figure, so syncing from an
+        # incomplete capture is how a wrong number becomes canonical. Refuse.
+        print(f"ledger_sync: refusing to sync — {e}", file=sys.stderr)
+        return 2
     if cap is None:
         print(f"ledger_sync: no capture at {root / CAPTURE_REL}", file=sys.stderr)
         return 2

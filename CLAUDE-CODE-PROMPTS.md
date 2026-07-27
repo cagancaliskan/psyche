@@ -1362,7 +1362,7 @@ Open your report with the plain-language summary for Cagan.
 
 ---
 
-## CC-17 · Close step zero, recapture honestly, then 2f proper begins ▶ LIVE
+## CC-17 · Close step zero, recapture honestly, then 2f proper begins ✔ DONE (cce3dc5)
 
 Tester PASS. Step zero has taken **five passes** for a gate extension, and it produced real value —
 L3 detection, refusal visibility, a dedup correctness fix, two dead assertions found, and a
@@ -1468,6 +1468,94 @@ Open your report with the plain-language summary for Cagan.
 ```
 
 ---
+
+---
+
+## CC-18 · Fix 0e now — I am overriding my own schedule ▶ LIVE
+
+**0d passed its exam decisively.** C6 fired on the builder's *first save* of `nous_credit.py`,
+before a single test ran — `unregistered fsum accumulation: EpisodicTrace.eligible.<return>`. The
+gate did not agree with a hunt already done; it **front-ran the hunt.** That is the return on the
+entire foundation arc, and it is the answer to SPEC-2f §7.1.
+
+**And 0e happened a third time, worse.** `test_tester_0d_adversarial.py` raised, aborted at test 8
+of 27, printed no `RESULT:` line, and its **334 assertions silently left the total** — 2,078
+reported where ~2,412 exist. Found, again, only because someone ran the file directly.
+
+**I verified the mechanism, and it unifies two findings into one.** Both `tools/capture_run.py`
+and `tools/ledger_check.py` parse suites by pairing a `# test_x.py` header with a later
+`RESULT: N passed, M failed`. A suite that aborts emits the header and never the RESULT, so
+`current` stays set and the suite is **never added to `per_suite` at all.** It vanishes from the
+capture, from the ledger, from C1 and from C5 simultaneously — every one of them staying green.
+
+So the suite missing from the earlier capture was **not a capture bug. It was 0e.** CC-12 item 8
+and 0e are the same defect seen from two ends.
+
+**I am changing my own scheduling call and saying so.** I put 0e "before the paper capture" and
+declared gate work closed until CC-12. That was wrong on this item: three occurrences, escalating
+each time, and it is now actively obscuring the very next pass — the tester must distinguish five
+red-by-design assertions from one genuine crash, which is exactly what 0e hides. My standing bar
+for reopening is *the instrument is blind at the point of use and the point of use is now*, and
+this clears it. This is also not CC-12's kind of work: CC-12 is about check **coverage**; this is
+the runner **lying about its own totals**, which every number in the project rests on.
+
+Bounded to this one defect. Nothing else reopens.
+
+```
+/psyche-orient
+
+Work in the BUILDER lane. Fix brick 0e and nothing else. Do NOT touch the tester's file, do NOT
+continue 2f, do NOT widen into CC-12's block.
+
+THE DEFECT, VERIFIED MECHANICALLY
+Both tools/capture_run.py and tools/ledger_check.py pair a `# test_x.py` header with a later
+`RESULT: N passed, M failed`. A suite that raises mid-run emits the header and never the RESULT,
+so `current` stays set and that suite is NEVER ADDED to per_suite. It disappears from the capture,
+the ledger, C1 and C5 at once, and all of them stay green. Live right now:
+test_tester_0d_adversarial.py aborts at test 8 of 27 and its 334 assertions are simply absent —
+2,078 reported against roughly 2,412 real.
+
+This is the third occurrence. It has now hidden an unregistered suite, then a stale delta, then an
+entire 334-assertion file that is the primary evidence for 0d.
+
+WHAT DONE MEANS
+1. A suite that raises must appear BY NAME in the failure list, with the exception type and where
+   it died. Never silently absent.
+2. The totals must never be quietly lower because a suite died. "24 suites ran, 2 failed" and
+   "23 suites ran, 1 aborted" must be visibly different outcomes in the runner's own output.
+3. Decide and STATE the contract for an aborted suite's assertion count: reported as partial, or
+   marked unknown. Either is defensible; silently contributing zero is not. Write the choice down
+   with its reason.
+4. The parsers must not be able to lose a suite. A header with no RESULT is a MALFORMED CAPTURE,
+   and this project already has the right precedent for that shape: unparseable source exits 2,
+   "the tool could not run", never 0. Apply the same reasoning here and say whether it warrants
+   the same exit code or a finding.
+5. Assert the negative: a deliberately-raising fixture suite must produce a visible entry, and
+   its assertions must not vanish. That assertion must be shown capable of FAILING against the
+   current code — rule four, which is now doctrine.
+
+DO NOT FIX THE CRASH ITSELF
+tests/test_tester_0d_adversarial.py raises KeyError on the new census site because the census
+moved from 14/8 to 15/9. That file is the tester's and the tester converts it. Your job is that
+the runner TELLS THE TRUTH about the crash, not that the crash goes away. Use a synthetic raising
+suite as your fixture — if you fix the real crash to make your own work look green, you have
+removed the only live specimen of the defect you are fixing.
+
+SCOPE
+The runner and the two parsers. A runner/capture cross-check is defence in depth and stays in
+CC-12 — fixing the root here is what matters. Nothing else.
+
+RUN
+Full suite on every interpreter available, plus tools/test_ledger.py. Totals read from the runner
+output, never estimated. Report the interpreters swept, and report the run_tests.py totals BOTH
+before and after your fix, because the difference between them is the measurement of the defect
+and belongs in the record.
+
+SELF-AUDIT
+All seven items.
+
+Open your report with the plain-language summary for Cagan.
+```
 
 ---
 

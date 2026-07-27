@@ -66,19 +66,39 @@ def run_suite(interp: str, root: Path) -> Tuple[int, str]:
 
 
 def parse(out: str) -> Dict[str, int]:
-    """Map suite name -> passed count, in file order."""
+    """Map suite name -> passed count, in file order.
+
+    Thin wrapper kept for callers that only want the counts; `parse_full` is the one
+    that also reports which suites ABORTED, and no decision should be made on this
+    return value alone."""
+    return parse_full(out)[0]
+
+
+def parse_full(out: str) -> Tuple[Dict[str, int], List[str]]:
+    """(suite -> passed count, suites that emitted a header and never a RESULT).
+
+    BRICK 0e. The old parser set `current` on a header and cleared it only on a RESULT,
+    so a suite that raised was silently overwritten by the next header and vanished from
+    the capture, the ledger, C1 and C5 at once — with every one of them green. Two arms
+    are needed to see it: a header arriving while `current` is still set, and end-of-input
+    with `current` still set, which is the case no later header can reveal."""
     per: Dict[str, int] = {}
+    aborted: List[str] = []
     current: Optional[str] = None
     for line in out.splitlines():
         m = SUITE_RE.match(line)
         if m:
+            if current is not None:
+                aborted.append(current)
             current = m.group(1)
             continue
         m = RESULT_RE.search(line)
         if m and current:
             per[current] = int(m.group(1))
             current = None
-    return per
+    if current is not None:
+        aborted.append(current)
+    return per, aborted
 
 
 def totals(per: Dict[str, int]) -> Tuple[int, int]:
@@ -134,13 +154,31 @@ def main(argv: Optional[List[str]] = None) -> int:
     print(f"capture_run: primary (captured transcript): {primary}\n")
 
     outputs: Dict[str, Tuple[int, str, Dict[str, int]]] = {}
+    aborts: Dict[str, List[str]] = {}
     for interp in interps:
         code, out = run_suite(interp, root)
         per = parse(out)
+        per, aborted = parse_full(out)
         s, a = totals(per)
-        status = "PASS" if code == 0 else "FAIL"
-        print(f"  {interp:<14} {status}   {s} suites, {a} assertions")
+        status = "PASS" if code == 0 else ("ABORTED" if aborted else "FAIL")
+        note = f"  [{len(aborted)} ABORTED: {', '.join(aborted)}]" if aborted else ""
+        print(f"  {interp:<14} {status}   {s} suites, {a} assertions{note}")
         outputs[interp] = (code, out, per)
+        aborts[interp] = aborted
+
+    # BRICK 0e, checked BEFORE the agreement test on purpose: two interpreters that both
+    # abort the same suite AGREE on a total that omits it, so an agreement check alone
+    # would wave the incomplete capture through. Refusing here makes an aborted suite a
+    # capture-blocking condition rather than a silent subtraction.
+    aborting = {i: a for i, a in aborts.items() if a}
+    if aborting:
+        print("\ncapture_run: REFUSING to capture — suite(s) emitted a header and never")
+        print("  a RESULT line, so the totals above are INCOMPLETE by an unknown amount.")
+        for i, a in aborting.items():
+            print(f"    {i}: {', '.join(a)}")
+        print("  An aborted suite contributes UNKNOWN, never zero. Fix the suite so it")
+        print("  reports, then recapture.")
+        return 1
 
     # every interpreter must agree, and all must pass
     failures = [i for i, (c, _, _) in outputs.items() if c != 0]

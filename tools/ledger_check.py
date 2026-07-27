@@ -129,9 +129,15 @@ def parse_capture(root: Path) -> Optional[Dict[str, object]]:
     captured_python = ""
     captured_at = ""
 
+    aborted: List[str] = []
     for raw in p.read_text(encoding="utf-8", errors="replace").splitlines():
         m = suite_re.match(raw)
         if m:
+            # BRICK 0e: a header arriving while `current` is still set means the PREVIOUS
+            # suite never reported. The old parser just overwrote `current` here and the
+            # suite vanished — from the capture, the ledger, C1 and C5 at once, all green.
+            if current is not None:
+                aborted.append(current)
             current = m.group(1)
             continue
         m = result_re.match(raw)
@@ -139,7 +145,10 @@ def parse_capture(root: Path) -> Optional[Dict[str, object]]:
             passed, failed = int(m.group(1)), int(m.group(2))
             failures += failed
             if current:
-                # a suite may print RESULT more than once only if malformed; last wins
+                # A suite printing RESULT more than once is malformed. The FIRST
+                # one wins — `current` is cleared here, so later RESULT lines find
+                # no owner and are ignored. (This comment previously said 'last
+                # wins', which the code has never done.)
                 per_suite[current] = passed
                 current = None
             continue
@@ -150,6 +159,20 @@ def parse_capture(root: Path) -> Optional[Dict[str, object]]:
         m = gen_re.match(raw)
         if m and not captured_at:
             captured_at = m.group(1)
+
+    # End of file with `current` still set: the LAST suite never reported. This arm is
+    # not a special case bolted on — it is the same defect as the mid-file one, and it is
+    # the arm the loop above structurally cannot reach, because no later header arrives
+    # to notice the gap.
+    if current is not None:
+        aborted.append(current)
+
+    if aborted:
+        raise CaptureMalformed(
+            f"{CAPTURE_REL}: {len(aborted)} suite(s) emitted a header and never a RESULT "
+            f"line — {', '.join(aborted)}. The capture is incomplete: every total derived "
+            f"from it understates the repository by an unknown amount. Re-run "
+            f"tools/capture_run.py once the aborting suite reports.")
 
     return {
         "suites": len(per_suite),
@@ -577,6 +600,21 @@ class CensusUnreadable(Exception):
     source C6 could not read is the worst outcome this tool has, because it is
     indistinguishable from clean.** Exiting 1 is nearly as bad — it says the census ran and
     found a problem, when in fact the census did not run."""
+
+
+class CaptureMalformed(Exception):
+    """docs/TEST_OUTPUT.txt contains a suite header with no RESULT line — BRICK 0e.
+
+    Exit 2, NOT a finding, and the reasoning is `CensusUnreadable`'s exactly. A finding
+    (exit 1) means "the repository is inconsistent" and carries the implicit promise that
+    the tool's own numbers are trustworthy. Here the numbers are precisely what cannot be
+    trusted: a suite emitted a header, raised, and never reported, so every total derived
+    from this capture understates the repository by an unknown amount.
+
+    **Exit 0 was the old behaviour and it was the worst of the three**, because the parser
+    silently dropped the suite and the shortfall was indistinguishable from a clean run —
+    which is how this defect hid an unregistered suite, then a stale delta, then an entire
+    334-assertion file, with C1 and C5 green throughout."""
 
 
 SRC_REL = Path("src")
@@ -1334,6 +1372,12 @@ def main(argv: Optional[List[str]] = None) -> int:
         except CensusUnreadable as e:
             # NOT a finding, and never exit 0 or 1: "the tool could not run" is exit 2.
             print(f"ledger_check: the census could not run — {e}", file=sys.stderr)
+            return 2
+        except CaptureMalformed as e:
+            # BRICK 0e, and the same ruling for the same reason. A finding would claim
+            # the tool's numbers are sound and the repository is not; here the numbers
+            # themselves are unusable, so the honest exit is "could not run".
+            print(f"ledger_check: the capture is malformed — {e}", file=sys.stderr)
             return 2
         findings.extend(got)
         if not args.quiet:
