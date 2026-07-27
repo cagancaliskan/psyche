@@ -91,6 +91,11 @@ SUITES = [
     # correctly. ledger_check C5 fails if a suite on disk is neither registered here nor excused
     # in ledger.unregistered_suites.
     "test_tester_0c_adversarial.py",
+    # 2f-i credit assignment + the 0e runner fix — TESTER-authored adversarial verification,
+    # written from scratch. Registered by architect-pm (a fact-of-record change the lane hook
+    # blocks the tester from) AFTER its conversion landed: registering it while it still
+    # aborted would have added a second aborting suite to the canonical run.
+    "test_tester_2f_adversarial.py",
     # 2c interoception — TESTER-authored adversarial verification + pilot fairness audit.
     # Self-bootstraps src/ and experiments/ onto sys.path; DATA-FREE on the mechanism side
     # (synthetic adversarial topologies) and reads the ALREADY-FROZEN pilot trace artifact

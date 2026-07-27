@@ -1471,7 +1471,7 @@ Open your report with the plain-language summary for Cagan.
 
 ---
 
-## CC-18 · Fix 0e now — I am overriding my own schedule ▶ LIVE
+## CC-18 · Fix 0e now — I am overriding my own schedule ✔ DONE (d8debc2)
 
 **0d passed its exam decisively.** C6 fired on the builder's *first save* of `nous_credit.py`,
 before a single test ran — `unregistered fsum accumulation: EpisodicTrace.eligible.<return>`. The
@@ -1553,6 +1553,513 @@ and belongs in the record.
 
 SELF-AUDIT
 All seven items.
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
+
+## CC-19 · Verify 2f-i adversarially ✔ RUN (0e verified; FAIL on 2f-1, the sign)
+
+0e is fixed at the root (d8debc2) and the runner now tells the truth, which is the precondition
+for this pass: the tester can finally distinguish five red-by-design assertions from one genuine
+crash.
+
+**A fifth instance of the first aphorism, and this one scopes a paper claim.** The builder found
+that `capture_run` had to refuse *before* the interpreter-agreement test, because five interpreters
+that all abort the same suite **agree** on a total that omits it. The five-interpreter sweep — this
+project's flagship discipline — is structurally blind to any defect that behaves identically on all
+five. That is not a weakness to bury; it is a scoping sentence the paper needs, exactly like
+"a coverage axis is only evidence for the property it can perturb."
+
+```
+/psyche-orient
+
+Work in the TESTER lane. Two targets, in this order. 0e first because it is the instrument your own
+verdict is read from; then 2f-i, which is the real work.
+
+PART ONE — 0e, short
+The builder fixed the runner and both parsers (d8debc2). Verify independently:
+- A suite that raises is named, with exception and location, and its assertion count is UNKNOWN —
+  never zero, never reconstructed. Attack the reconstruction temptation: confirm no code path
+  invents a partial count from FAIL: lines.
+- The end-of-input arm: an aborted LAST suite has no following header to reveal the gap. Confirm
+  it is caught, and that your probe for it could actually have failed.
+- Exit 2, not 1, and `ledger_sync` refuses. Confirm the contract matches CensusUnreadable's.
+- The builder found three readers disagreeing — `classify` took the last RESULT, both parsers took
+  the first, and a comment claimed "last wins" when the code never did. Confirm all three now agree
+  and that the agreement is asserted, not merely true today.
+- Confirm the ordering the builder chose: refusal happens BEFORE the interpreter-agreement check.
+  Then state, for the record, which of YOUR OWN probes share that same blindness — a defect
+  identical on all five interpreters is invisible to a five-interpreter sweep, and that is now a
+  known limit of this project's flagship discipline.
+
+PART TWO — 2f-i, the eligibility trace. This is the pass that matters.
+
+FIRST, THE OVERLAY. If `off` is not byte-identical to previous behaviour, nothing else matters and
+the migration argument collapses. Attack that claim before anything else, ON A FROZEN CLOCK — a
+live clock manufactures a difference and this project has filed a false defect that way before.
+Measure the noise floor first: run two identical off-calls and confirm they agree, before
+concluding anything from an off-vs-on comparison.
+
+PARAMETER VALIDATION — this project's most expensive repeat offender. `decay` and `P_PRP` are
+numbers a caller supplies. DEFECT-C was `float('inf')` producing NaN that sailed through a floor
+guard because every NaN comparison is False. So: decay = 0, 1, >1, negative, NaN, inf, -inf;
+P_PRP the same; window = 0, 1, negative, larger than all history. For each, does it validate, or
+does it produce a well-formed wrong answer? A well-formed wrong answer is the worst outcome and it
+is the one this substrate keeps producing.
+
+THE WINDOW BOUNDARY. The claim is credit decays with distance and is EXACTLY zero past the window.
+Test the boundary itself, both sides, off-by-one in both directions — and remember the second
+aphorism: a boundary located by sampling is the last sample, not the boundary. Establish it
+structurally if you can, not by probing until it stops moving.
+
+EVERY CONTROL — CHECK IT CAN EXHIBIT A DIFFERENCE. The builder found its own shuffled-control test
+was VACUOUS: it compared road ids across two independently-built stores, so both arms measured zero
+and the control proved nothing while passing. That is the fourth instance of this failure class in
+a week. Audit every control in both suites, yours and the builder's, and for each state what result
+would have made it fail. A control that cannot fail is decoration.
+
+DOUBLE-COUNTING SEMANTICS. The builder asserts a road traversed three times in one cycle
+accumulates eligibility to exactly 3.0 but is written once. Verify the mechanical property. Then
+flag — do not decide — whether "three traversals earn triple credit" is a design choice that was
+made deliberately or fell out of the implementation. That distinction is the architect's to
+resolve, and it is exactly the kind of thing that silently becomes a claim.
+
+DETERMINISM, ON THE APPLICATION SIDE. The fold is fsum and registered. But the trace is keyed by
+road id, and road ids are uuids. Ask whether the ORDER in which credit is applied across roads can
+change any outcome — and if the answer is "no, each application is two-operand", prove that
+structurally rather than by observing it.
+
+LOOP-CLOSURE, HARDER THAN THE BUILDER DROVE IT. Multiple cycles, roads that repeat, roads that
+appear and vanish between cycles, an outcome with no preceding traversal, a trace longer than the
+window, an empty trace. All driven by real think() output, never values you chose.
+
+THE TWO ABSENCE BOUNDS — check independently, do not inherit. The builder says
+`ActivationField.flow` has no new reader and `advance()` has no new caller, and checked the
+`getattr`/`__dict__` routes the machine check is blind to. 2f is the brick most likely to fire
+both. Redo the search your own way.
+
+LANGUAGE — YOU ARE THE GATE HERE, BECAUSE THE REAL ONE IS BROKEN. 0f is registered and unfixed:
+C4 matches literal phrases, so any interpolated word evades it. Read every docstring, comment and
+identifier in the new module as a human. "Learns", "remembers", "wants", "understands" — and the
+adjectival forms that C4 cannot see. Report what you find, including nothing.
+
+VERDICT
+PASS only if the neutral value is byte-identical under attack, every parameter either validates or
+its failure mode is asserted, the window boundary is established rather than sampled, and every
+control can be shown capable of failing. Fix nothing outside your own test file.
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
+
+## CC-20 · The sign problem — 2f-i is half of credit assignment ✔ DONE (7886167)
+
+Tester FAIL on 2f-1, and it is the most consequential finding of the brick. `outcome_magnitude`
+takes `abs()`, so telling the system an outcome was **bad** strengthens the preceding roads exactly
+as much as telling it the outcome was **good**. `-1.0` and `+1.0` are byte-identical in effect.
+Nothing says so, and the builder's suite never tried a negative.
+
+**Ruling: refuse the negative at the boundary. Do not build the weakening path.** Reasoning below,
+in the prompt, because it is the part that must survive into the record.
+
+```
+/psyche-orient
+
+Work in the BUILDER lane. Two findings from the tester's verification of 2f-i. One is a fix, one is
+a recording. Neither expands the brick.
+
+FINDING 2f-1 — MY RULING, AND WHY IT IS NOT THE OBVIOUS ONE
+`outcome_magnitude` is abs()'d, so an adverse outcome reinforces exactly like a favourable one. The
+tester named two defensible options — refuse the negative, or honour it — and one indefensible one,
+which is what ships today.
+
+RULING: refuse a negative at the boundary. Do NOT build a weakening path in this pass.
+
+Why not honour it: honouring a negative requires a depression path that does not exist. Building
+one now means inventing its arithmetic and at least one uncalibrated constant, mid-verification, in
+a brick already under a FAIL. That is the exact pattern this project has spent a week learning to
+stop.
+
+Why refusing is not merely the cheap option: the refusal message states a TRUE thing about what is
+built. Write it so it says so — that this mechanism has no way to represent an adverse outcome, so
+passing its magnitude would silently reinforce what it was meant to discourage. An error that
+teaches is worth more than a branch that copes.
+
+Then assert it as an explicit negative in your own suite: the trace is POTENTIATION-ONLY; there is
+no depression path; a negative outcome is refused rather than absorbed.
+
+AND STATE THE CONSEQUENCE PLAINLY IN YOUR DELIVERY REPORT — this is the part that matters most
+A one-signed rule is not credit assignment in the sense the roadmap means. Everything that follows
+from it, you must write down rather than let a reader infer:
+
+- Every outcome, favourable or adverse, strengthens whatever preceded it. The graph moves in one
+  direction only, toward saturation. Nothing can be un-learned.
+- So the mechanism as built assigns ATTENTION, not CREDIT. Feedback without a sign is not feedback.
+- Therefore 2f-i does NOT satisfy Butlin AE-1 ("learning from feedback and selecting outputs so as
+  to pursue goals, especially where this involves flexible responsiveness to competing goals"), and
+  it does not move any of the five pre-registered AOL autonomy criteria. Say both, by name.
+
+This is not a hedge. It is the difference between a brick that is honestly half of a mechanism and
+a brick that quietly claims to be the whole one. The half we have is real and it is verified; the
+half we lack is the half that makes it learning.
+
+FINDING 2f-2 — RECORD IT AS DELIBERATE, DO NOT CAP IT
+Three traversals in one cycle earn exactly triple eligibility, linear and unbounded — 10,000
+repeats give 10000.0 — bounded only downstream by `strengthen`'s saturation. SPEC-2f specifies
+nothing, so today it is an implementation consequence, which is precisely the kind of thing that
+later gets cited as a design choice nobody made.
+
+RULING: leave it linear, and record it as a decision with its reason and its falsifier. Do not add
+a cap. A cap means inventing a constant with no calibration, and this project maintains an
+`uncalibrated_constants` list because that trap has been sprung before. The reason it is safe
+today: the downstream saturation in `strengthen` bounds the reachable effect, so unbounded
+eligibility is not reachable as unbounded strength.
+
+FALSIFIER, write it next to the decision: any path where an eligibility value reaches something
+that is NOT saturated downstream.
+
+SCOPE — AND THE THING YOU MUST NOT DO
+Do not build the depression path. Do not add a cap. Do not touch the tester's file. The weakening
+mechanism is a separate brick with its own spec, its own calibration decision and its own gate; the
+architect registers it. If while fixing this you find yourself designing how a road should weaken,
+stop — you have left the brick.
+
+RUN
+Full suite on every interpreter available, plus tools/test_ledger.py. Totals read from the runner
+output, never estimated. The runner now names an aborted suite and marks its count UNKNOWN, so read
+the outcome line as well as the totals. ledger_check exits 1 with exactly 16 [C2] findings under
+docs/paper/, plus a C5 finding for the tester's new unregistered file — that one is the architect's
+to register and is not yours to silence.
+
+SELF-AUDIT
+All seven items.
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
+
+## CC-21 · Close 2f-i — narrow verification ✔ RUN (PASS; findings 2f-3, 2f-4)
+
+Builder closed both findings (7886167). It removed `abs()` rather than guarding around it — leaving
+it would have kept saying "the sign does not matter here", which is the claim the guard denies. It
+kept `0.0` accepted and writing nothing, because an outcome of no size is not an adverse outcome.
+And it put the consequence in the module rather than the report.
+
+**A pattern worth naming, because it is now the third instance:** a text scan cannot tell a
+mechanism from its negation. It bit the `traversal_count` deadness check, it bit the builder's own
+potentiation check today (red on the module's docstring *saying no such path exists*), and it is
+exactly why C4 evades on an interpolated word (0f). Where the thing being checked is CODE, decide
+by AST. Where it is PROSE — C4 — no AST exists, so 0f's fix has to lean on negation cues and must
+not pretend to be structural. That belongs in CC-12's notes.
+
+```
+/psyche-orient
+
+Work in the TESTER lane. Narrow re-verification of 2f-i after the builder's fix (7886167). Convert
+your own suite, verify the two closures, hand back.
+
+FIRST — YOUR SUITE ABORTS, AND THAT IS 0e WORKING
+Your 2f-1 asserted-negative calls with -1.0, which now raises, so your suite aborts. Note for the
+record that 0e's fix NAMED it rather than letting its assertions vanish — that is the first time
+this defect has been caught in the wild by the mechanism built for it, and it is worth one line.
+
+Convert, never delete: the assertion moves from "a negative is silently absorbed" to "a negative is
+refused, and here is what the caller is told". Prove the conversion the only way that counts — show
+it FAILING against 1065c43, where the abs() still lived.
+
+VERIFY THE REFUSAL, NOT THE MESSAGE
+- `abs()` is removed, not merely guarded. Confirm structurally: no path can reach the arithmetic
+  with a sign-stripped value.
+- `0.0` is accepted and writes nothing. `-0.0` — decide what it does and confirm the code agrees
+  with whatever it claims. Python says `-0.0 >= 0` is True; is that the intended answer, or an
+  accident of the comparison? Flag it either way.
+- Purity under refusal: the store must be byte-identical after a refused call, meaning the guard
+  raises before any write. Verify independently, do not inherit.
+- The refusal message states a claim about the system ("no depression path exists"). Verify the
+  CLAIM, not the wording.
+
+THE STRUCTURAL ARGUMENT IS THE LOAD-BEARING ONE
+The builder now decides potentiation-only by AST call graph, asserting the store surface is exactly
+`get_road` + `strengthen`. That claim is what makes "nothing here can weaken a road" true rather
+than merely observed. Re-derive it yourself, your own way, and attack it: does any path reach the
+store other than through those two? `getattr`, aliasing, a held reference, a mutable returned
+object. This is the same blind spot FINDING 0d-5 named in the absence-bound checker.
+
+2f-2's FALSIFIER — is it live or hypothetical?
+The recorded falsifier is "any path where an eligibility value reaches something not saturated
+downstream — a consumer reading CreditAssignment.eligibility or .gain and acting on the raw
+magnitude." Check whether such a consumer exists TODAY. If one does, the recording is already
+false and that is a finding. If none does, say so and say what would create one.
+
+FLAG, DO NOT ADJUDICATE
+The module now asserts that AOL-2, AOL-3 and AOL-4 each require an outcome to be able to make an
+earlier action LESS likely. That is a claim about SPEC-2e, and claims about specs become citable.
+Check it against the actual text of those three criteria and report agreement or disagreement. Do
+not decide it — that is the architect's.
+
+RULE FOUR
+Every assertion you add or change in this pass must be shown capable of failing against 1065c43.
+That is doctrine now, not a request.
+
+SEQUENCING — read this before you finish
+`ledger_check` reports one [C5] for your unregistered file. Do NOT register it; that is a
+fact-of-record change and the architect's lane. But note in your hand-off that registration should
+happen AFTER your conversion lands, or the runner gains a second aborting suite.
+
+VERDICT
+PASS only if the conversion fails on 1065c43, the store surface is independently confirmed, and the
+2f-2 falsifier is shown live or hypothetical rather than assumed.
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
+
+## CC-22 · Right conclusion, wrong reason ✔ DONE (6411ef7; a third instance found by the builder)
+
+Tester PASS with two findings, and **both are the same class: the conclusion is correct and the
+stated reason is not.** 2f-i really is potentiation-only — but the argument given for it guarantees
+nothing. AOL-2/3/4 really are unmoved — but not for the reason written in the module.
+
+That class is more dangerous than being wrong outright, because it **survives review**: a reader
+checks the conclusion, finds it true, and inherits a false argument. It is the same thing F-6
+taught on the registry — *a gate can verify a reason EXISTS, never that it is TRUE* — arriving in
+prose instead. Standing form: **verify the reason, not just the conclusion.**
+
+```
+/psyche-orient
+
+Work in the BUILDER lane. Two findings from the tester (c23c591). Both are "right conclusion,
+wrong reason", both live in shipped code, and neither expands the brick. This is the last
+correctness pass on 2f-i.
+
+FINDING 2f-4 — a false justification in a shipped module. Fix the reason, keep the conclusion.
+Your module states that AOL-2, AOL-3 and AOL-4 "each need an outcome to be able to make an earlier
+action less likely." Checked against SPEC-2e's actual text: none of the three says that. AOL-2 is
+difficulty growth conjoined with capability growth; AOL-3 is goal generation adapting to a
+learning-progress signal; AOL-4 is skill retention grounded in catastrophic forgetting and BWT.
+
+Your conclusion is right and your reason is invented. Replace it with the true one, which the
+ledger already carries and which is STRONGER: D-023 — all five AOL criteria are MECHANISM ABSENT.
+2f-i does not move them because nothing in the system initiates, has goals, or has skills; not
+because of a property of the three criteria you inferred. Cite D-023 rather than restating it.
+
+Keep the AE-1 claim, which is correct on its own terms, and check its stated reason with the same
+suspicion.
+
+FINDING 2f-3 — the potentiation-only claim is TRUE; its stated basis does not establish it
+`store.get_road(rid, apply_decay=False)` returns the LIVE stored Road — two calls give the same
+object, and assigning `.strength` or mutating `.charges` through it reaches the store.
+`apply_decay=True` copies, and that asymmetry is what makes this easy to miss. So "the store
+surface is get_road + strengthen, and strengthen only increases" bounds nothing: a future edit that
+binds the returned road and halves its strength weakens a road AND leaves your AST assertion green.
+
+Today your module reads the attribute immediately and never binds it, so the brick is correct. Fix
+the ARGUMENT, in two steps:
+
+1. Restate the basis truthfully: the claim rests on **no code in `src/` binding a returned road and
+   writing through it** — an absence, not a structural impossibility. Say so in those terms.
+2. Make that absence machine-checked, using the pattern already built for 0d's
+   `bound_on_absence` — an absence a future brick can silently invalidate is precisely what that
+   machinery exists for. The cheap sound-ish form: flag any Assign whose value is a call to
+   `get_road`, and let a human dismiss each with a written reason. **Bias it toward
+   over-reporting** and document that, exactly as FINDING 0d-5's fix does — a false positive costs
+   one sentence, a false negative is a silently false guarantee.
+
+If a general "write-through-a-returned-object" check turns out to need real dataflow rather than a
+pattern match, DO NOT build it. Say so plainly, ship the narrow binding check, and hand the general
+case to the architect as its own brick. Do not let a guarantee-hardening turn into a static
+analyser.
+
+WHAT YOU MUST NOT DO
+Do not change `get_road` to copy, and do not freeze `Road`. Both are real options, both carry a
+re-validation cost against a PROVEN brick (0a), and neither is a 2f-i change. The architect
+registers the encapsulation question — 0a hands out a write-capable reference from a method
+documented as a pure read; purity is not violated, but there is no encapsulation.
+
+INHERIT THE WEAKNESS HONESTLY
+The absence-bound checker is blind to `getattr`, aliasing and `__dict__` (FINDING 0d-5). Your new
+bound inherits that. State it where the bound is recorded rather than letting a reader assume the
+check is complete.
+
+RULE FOUR
+Every assertion you add must be shown capable of failing against 7886167.
+
+RUN
+Full suite on every interpreter available, plus tools/test_ledger.py. Totals read from the runner
+output. The 0d tester suite still aborts and is the tester's to convert — the runner names it, so
+do not mistake it for a regression. ledger_check: 16 [C2] under docs/paper/, plus the [C5] for the
+tester's file which the architect registers next.
+
+SELF-AUDIT
+All seven items — and one extra this pass, given the finding: for every claim you leave in a
+docstring, is the REASON checked, or only the conclusion?
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
+
+## CC-23 · The wrapped-string sweep ✔ DONE (19d3286; PASS, 0 vacuous, runner exits 0)
+
+Builder corrected both false reasons (6411ef7), then **applied the same suspicion to AE-1 and found
+a third itself**: the stated reason addressed only the "especially" clause — the criterion's most
+conditional part — when AE-1 fails at its **first conjunct** (this module selects no outputs and
+pursues no goals). *The reason had picked the clause furthest from the actual failure.*
+
+**And it caught one of its own assertions being vacuous:** a string search spanning a docstring line
+wrap could never match. A passing assertion proving nothing.
+
+**That is a whole class, not one bug.** This repository hard-wraps prose everywhere, so *every*
+multi-word string assertion against a docstring, a spec or a ledger note is a candidate. It is also
+the same root as C4's interpolation blindness and the text-scan-vs-negation problem: **matching text
+that was never normalised.** Sharpened form of rule six: *normalise before matching text, and prove
+the matcher can find what it is looking for.*
+
+```
+/psyche-orient
+
+Work in the TESTER lane. Last verification pass on 2f-i (builder at 6411ef7). Three jobs, then
+hand to the architect.
+
+JOB ONE — THE WRAPPED-STRING SWEEP. This is the headline, not the cleanup.
+The builder found one of its own assertions vacuous: it searched for a string that spans a
+docstring line wrap, so it could never match, and it passed. This repository hard-wraps prose
+everywhere, which makes every multi-word string assertion against a docstring, spec, ledger note or
+comment a candidate for the same defect.
+
+Sweep BOTH suites — yours and the builder's — for every assertion that matches a multi-word string
+against wrapped prose. For each, do not eyeball it: run the search against text where the phrase is
+KNOWN to be present and confirm it is found. Any that cannot find its own target is vacuous; report
+the count honestly, including zero, and fix the ones in your file. The builder's are its own.
+
+This is the same root as two defects already registered — C4's interpolation blindness (0f) and the
+text-scan-that-cannot-tell-a-mechanism-from-its-negation. All three are matching text that was never
+normalised. If your sweep supports that generalisation, say so; if it does not, say that instead.
+
+JOB TWO — CONVERT THE 0d SUITE. It has aborted for four passes now.
+Five assertions pin the census at 14 sites / 8 fsum; it is now 15 / 9, plus the new `binding`
+absence kind. Convert, never delete. Each conversion proved by failing against the revision where
+the old value was correct.
+
+JOB THREE — ATTACK THE NEW BOUND, ESPECIALLY ITS DISMISSALS
+The potentiation-only claim now rests on a machine-checked absence: no code in `src/` binds a
+returned road and writes through it. The builder registered a `binding` kind, found four existing
+bindings, and dismissed each with a reason.
+
+- Verify each of the four dismissals YOURSELF. Three reportedly read only `source_id`/`target_id`;
+  one uses `apply_decay=True` and receives a copy. A dismissal is a written reason, and this project
+  has already failed a brick because two written reasons were false.
+- Confirm the bound bites: plant `road = get_road(...); road.strength *= 0.5` and confirm C6 goes
+  red. Then plant the forms the check CANNOT see — `getattr`, aliasing, a write through a container,
+  a road returned from a helper — and confirm each one slips through. That is not a failure; it is
+  the documented blind spot, and it must be asserted rather than assumed, so nobody later reads a
+  clean run as "no write path exists".
+- The general dataflow case was declined deliberately and handed to the architect. Confirm the
+  decline is recorded where a reader would look, not only in a report.
+
+VERIFY THE THREE CORRECTED REASONS, NOT THE CONCLUSIONS
+D-023 cited rather than restated; the invented AOL text absent under a NORMALISED match, not a raw
+one; AE-1's reason now naming the first conjunct. And check the remaining docstring claims the
+builder enumerated — not-RL, no behavioural tagging, not-a-synaptic-analogue, linear repeats — with
+the same question: is the reason checked, or only the conclusion?
+
+RULE FOUR, and it is exactly what failed here
+Every assertion you add or change must be shown capable of failing against 6411ef7 — and for string
+matches, that proof must use a normalised comparison, or you will reproduce the defect you are
+sweeping for.
+
+HAND-OFF
+Registration of your file is the architect's and is now unblocked. State clearly in your hand-off
+whether 2f-i is done from your side.
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
+
+## CC-24 · Close 2f-i ▶ LIVE
+
+Tester PASS (19d3286). **The runner exits 0 for the first time in this arc: 2,441 passed, 0 failed,
+25 suites, 0 aborted.** The wrapped-string sweep came back clean — the builder's was the only
+vacuous assertion and it was already fixed.
+
+**My generalisation was refused, and the refusal is right.** I proposed recording C4's interpolation
+blindness, the mechanism-vs-negation scan and the wrapped string as one class. The tester's
+objection: all three are substring matching on structured text, but they need **three different
+fixes** — tokenisation, parsing, whitespace normalisation. *"A single 'normalise everything' pass
+closes one third of the class while looking like it closed all of it."* That is this project's
+signature failure mode aimed at my own proposal. Not merged.
+
+**And the sweep produced a sharper rule than the one I gave it:** a positive `X in Y` that passes is
+live **by construction**; only a negative `X not in Y` can pass while the phrase could never match.
+That is the precise shape of the vacuous class, and it is checkable.
+
+```
+/psyche-orient
+
+Work in the ARCHITECT-PM lane. Both builder and tester have signed off on 2f-i. Close it out,
+recapture, register what is outstanding. Do NOT begin the next brick.
+
+RECAPTURE, AND VERIFY COMPLETENESS BY NAME
+The runner exits 0 at 2,441 passed / 25 suites / 0 aborted. Recapture across all five interpreters,
+then diff runner suite names against capture suite names and report the result AS A LIST, not as a
+reassurance. Read every total from the runner output; inherit no number from this brief.
+
+REGISTER THE TESTER'S FILE
+`tests/test_tester_2f_adversarial.py` is unregistered ([C5]) and now runs clean, so registering adds
+no aborting suite.
+
+2f-i's STATUS — decide and justify on BOTH axes, separately
+Build status: the mechanism is tester-verified. Meaning verdict: D-023 already holds that all five
+AOL criteria are MECHANISM ABSENT, and 2f-i does not satisfy Butlin AE-1. Do not collapse the two.
+Say what 2f-i IS — a verified eligibility trace — and in the same breath what it is NOT.
+
+**The sentence that must survive into the roadmap:** the mechanism assigns ATTENTION, not CREDIT.
+Every outcome it can express strengthens what preceded it; the graph moves one direction only.
+The half that exists is real and verified; the half that is missing is the half that would make it
+learning.
+
+REGISTER THREE THINGS AS THEIR OWN BRICKS
+1. **The depression path.** The missing half. Own spec, own calibration decision, own gate. Nothing
+   above it can be called learning until it exists. This is the headline item on the roadmap now.
+2. **Encapsulation / the general write-through case.** `get_road(apply_decay=False)` hands back the
+   live stored Road, so 0a gives out a write-capable reference from a method documented as a pure
+   read. Purity is not violated; encapsulation is absent. The general "does a write follow a
+   binding" question is dataflow and was deliberately declined. Record both halves and the two
+   options considered and rejected for now (copy on read; freeze `Road`), each with its
+   re-validation cost against a PROVEN brick.
+3. **2f-5 — the registry rots on line numbers.** `bound_on_absence` dismissals are keyed
+   `path:line` and shift on any edit above them: one inserted comment in `nous_field.py` fires a
+   false [C6]. It already cost a real mis-measurement — the tester's first blind-spot probe reported
+   all five blind spots as CAUGHT, which was the shifted bound firing, not the binding bound
+   working. **A false positive that masquerades as the check working is worse than a silent gap**,
+   and a gate that cries wolf gets ignored, which would waste the whole foundation arc.
+   **Schedule it as STEP ZERO of the next brick**, exactly as L3 was step zero of 2f — the next
+   brick edits `src/` and will trip it constantly. A content-anchored key closes it.
+
+RECORD FOUR THINGS IN DECISIONS.md
+- **My proposed generalisation was refused, and correctly.** Three substring-matching defects, three
+  different fixes; merging them would have produced a named class that looks closed while one third
+  is. Record the refusal, not just the outcome — a boss proposal overturned by evidence is the lane
+  discipline working, and it should be visible that it happened.
+- **The vacuous-assertion rule, in its sharp form:** a positive containment assertion that passes is
+  live by construction; only a negative containment assertion can pass vacuously. Add to
+  METHODOLOGY beside rule four and mark for the paper.
+- **A hand census that copies the scanner is not a second opinion.** The tester derived 0d's census
+  by hand rather than reading the tool. Small, load-bearing, easy to lose.
+- **"Six naive, unchanged" is the substantive half of the census claim** — 2f-i added no naive
+  accumulation. The count that did not move carried more information than the one that did.
+
+THEN
+`python3 tools/ledger_check.py` — expect exit 1 with exactly the 16 held [C2] under `docs/paper/`
+and nothing else once the [C5] is registered. Append to DECISIONS.md. Commit everything.
+
+Close with one line: where this leaves us, and name the next action.
 
 Open your report with the plain-language summary for Cagan.
 ```
