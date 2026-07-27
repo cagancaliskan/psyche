@@ -1571,3 +1571,90 @@ about, and it is asserted *because* it is unchanged.
 verified by a name-by-name diff of `run_tests.py` against the capture: zero missing, zero
 extra, order identical. `tests/test_tester_2f_adversarial.py` registered — after its
 conversion landed, so that registering added no aborting suite.
+
+---
+
+## D-028 — SPEC-2g is written; a stale status is corrected; nothing checks status against reality
+
+**Date:** 2026-07-27 · **Lane:** architect-pm · **Status:** spec written, **one decision open and it is Cagan's**
+
+### 1. Two ledger corrections, and the shape they share
+
+**`0e` read `DESIGNED` for two passes after it was fixed** at `d8debc2` and tester-verified
+at `c23c591`. Corrected to **`PROVEN`**, on 0d's precedent: it is a tool, so the meaning axis
+is vacuous and `BUILT-UNVALIDATED` would imply a validation that can never arrive. Its
+functional claim is verified the only way a refusal can be — a deliberately-raising fixture
+suite must be **named**.
+
+**Four newly registered bricks carried `name: null`** because I wrote a `title` key the
+schema does not use, and nothing objected. My error, from the previous pass.
+
+**THE SHAPE IS FAMILIAR AND IT IS C1'S.** `C3` verifies that a status label is a legal token
+and that documents agree with the ledger. **It never asks whether the ledger's status agrees
+with what the code does.** That is the same one-link-short chain C1 has — *ledger == capture*
+verified, *capture == reality* never — which is exactly how the capture came to omit an
+entire suite while C1 and C5 stayed green. Registered as **CC-12 item 3**.
+
+Both misses were found by a human reading the ledger, and that is the point: **a register
+nobody can check is a register that decays at the speed of attention.** Fix shape, not
+decided: require each non-`DESIGNED` brick to name the commit and the suite that carry it,
+and fail when the named suite is absent from the capture. *"Is this brick really built"* is
+not checkable; *"does the artifact it names exist"* is.
+
+*(A small confirmation while landing this: C3 flagged my own new sentence in
+PAPER_CLAIM_INVENTORY, because it put a brick id beside a status token. That is the one check
+in this family working as intended, and the sentence was rephrased rather than pragma'd.)*
+
+### 2. SPEC-2g — three options, and the decision is Cagan's
+
+This needs new arithmetic and at least one uncalibrated constant, so it goes to the human as
+options rather than as a decision I take.
+
+| | Mechanism | New constants | Prior art | Re-validation cost |
+|---|---|---|---|---|
+| **A** symmetric | sign carried through the same rule | **none** | delta rule; classical Rescorla–Wagner — but the literature **rejects** symmetry (Bouton 2004) | **lowest**, no coupling |
+| **B** competitive / shared budget | crediting one road implicitly weakens its siblings | **one** (competition sharpness) | Miller & MacKay 1994; Oja 1982; Turrigiano & Nelson 2004; Carandini & Heeger 2012 | **highest — couples independent roads** |
+| **C** asymmetric | own depression rate | **one** (depression gain) | **best supported** — Bouton 2004; Frank et al. 2007; Niv et al. 2012 | low, no coupling |
+
+**Recommendation: B — and explicitly not because it is cheap. It is the most expensive.** It
+is the only option that buys a **second** thing the project already knows it needs: **AOL-5's
+scarcity**, which exists precisely because this project's second wall (1e′) was caused by its
+absence — no budget, no competition, nothing to measure — and which is what stops AOL-1…4
+being satisfiable by mere enumeration. B delivers scarcity structurally and does it by
+extending **0b2's already-verified normalisation** rather than inventing a mechanism.
+*Reinvent the idea, borrow the scaffolding.*
+
+**The counter-argument is real and is recorded beside it.** B couples roads that four bricks
+proved correct *independently*: a normalising denominator is a fold the float registry must
+cover, sibling order becomes load-bearing where it was not, and 0a's integrity legs re-run
+because one `strengthen` would touch several roads. **A and C keep every proven property
+local.**
+
+> **The tradeoff, in one line:** A/C buy the missing half cheaply and leave scarcity for
+> later; **B buys the missing half *and* AOL-5's scarcity out of one mechanism, at the price
+> of coupling roads that are currently independent.**
+
+**Both pending constants are already on `uncalibrated_constants` with what would calibrate
+them — registered before any code exists.** This project has paid for inventing a constant to
+make a shape work; registering them ahead of the decision is the cheapest available guard.
+
+### 3. What 2g would NOT make true, answered in the spec rather than left to inference
+
+**It does not reach Butlin AE-1.** A signed rule makes "learning from feedback" arguable in
+the narrow arithmetic sense; the second conjunct — *selecting outputs so as to pursue goals* —
+**still fails outright**, because the system selects no outputs and has no goals. **2g moves
+AE-1 from failing at two conjuncts to failing at one.** That is progress on an architectural
+axis and it is not satisfaction of the indicator.
+
+**Four of five AOL criteria stay MECHANISM ABSENT regardless of which option is chosen**,
+because they need goal generation and skill representation and 2g is neither. **AOL-5 is the
+sole exception, and only under Option B.**
+
+### 4. Step zero is 0g and it is mandatory
+
+Written into SPEC-2g as **§0**. `bound_on_absence` dismissals are keyed `path:line`; one
+inserted comment fires a false `[C6]`. 2g edits `src/` and will trip it constantly. **A false
+positive that masquerades as the check working is worse than a silent gap** — it has already
+caused one real mis-measurement, and a gate that cries wolf gets ignored, which would waste
+the foundation arc that produced it. Same placement L3 had as 2f's step zero, for the same
+reason: ownership sits with the brick that needs the coverage.

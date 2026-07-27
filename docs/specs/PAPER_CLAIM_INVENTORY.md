@@ -419,6 +419,19 @@ note is not a gate:
      diff; **nothing prevents it recurring.**
   2. **Split the census digest from the listing digest in `ledger_check.py`** (see CC-11), so a report-format
      change cannot move a census invariant.
+  3. **Nothing checks a STATUS against reality**, and the shape is C1's exactly. C3 verifies that a status label
+     is a legal token and that documents agree with the ledger; it never asks whether the ledger's status agrees
+     with **what the code does**. That is the same one-link-short chain C1 has: *ledger == capture* is verified,
+     *capture == reality* never was — which is how `docs/TEST_OUTPUT.txt` came to omit an entire suite while C1
+     and C5 stayed green. Measured on 2026-07-27: brick **0e** was still carrying its pre-fix status for two
+     passes after it was fixed at `d8debc2` and tester-verified at `c23c591`, and four newly registered bricks
+     carried `name: null` because a wrong key was written and nothing objected. (Phrased without naming the stale
+     label, because C3 correctly reads a brick id beside a status token as a claim about the CURRENT status — it
+     caught this very sentence, which is the one check in this family working as intended.) Both were found by a human reading the ledger, which is the
+     failure mode: **a register nobody can check is a register that decays at the speed of attention.**
+     Fix shape (NOT decided): a status is only as good as an artifact it can be tied to, so require each
+     non-`DESIGNED` brick to name the commit and the suite that carry it, and fail when the named suite is absent
+     from the capture. That is checkable; "is this brick really built" is not.
 
 ---
 
