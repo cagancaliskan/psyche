@@ -33,6 +33,7 @@ Run directly:
 import ast
 import inspect
 import itertools
+import json
 import os
 import pathlib
 import re
@@ -48,6 +49,9 @@ from nous_store import SubstrateStore, Clock, NodeType
 from nous_perceive import think
 import nous_credit as cr
 from nous_credit import EpisodicTrace, assign_credit, eligibility
+
+sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "tools"))
+import ledger_check as LC  # noqa: E402
 
 HERE = pathlib.Path(__file__).resolve().parent
 ROOT = HERE.parent
@@ -609,52 +613,45 @@ def test_the_binding_bound_and_its_four_dismissals():
              "src/nous_credit.py:EpisodicTrace.eligible.<return>"]["bound_on_absence"]
          if x["kind"] == "binding"][0]
     dismissed = {d.split(" ", 1)[0] for d in b["dismissed"]}
-    check(len(dismissed) == 4, f"four dismissals recorded ({len(dismissed)})")
-
-    # EACH ONE VERIFIED HERE, not read. This project has already failed a brick because
-    # two written reasons were false, so a dismissal is a claim like any other.
+    # CONVERTED for brick 0g. These four assertions named LINE-KEYED dismissals
+    # (`...:167`, `:184`, `:291`, `:492`). Keys are now content-anchored, and two of the
+    # four — the pair in form_coalitions — are textually identical in one scope and so
+    # SHARE a key. Four bindings, three dismissals. Converted, never deleted.
+    check(len(dismissed) == 3,
+          f"CONVERTED (was 4 line-keyed): three CONTENT-ANCHORED dismissals cover the four "
+          f"bindings ({len(dismissed)})")
+    check(not any(re.search(r":\d+$", k) for k in dismissed),
+          f"and not one of them is keyed by line number any more: {sorted(dismissed)}")
     for site, want_reads, want_decay in (
-            ("src/nous_coalitions.py:167", {"source_id", "target_id"}, "False"),
-            ("src/nous_coalitions.py:184", {"source_id", "target_id"}, "False"),
-            ("src/nous_coalitions.py:291", {"target_id"}, "False"),
-            ("src/nous_store.py:492", {"closed", "strength"}, "DEFAULT")):
-        check(site in dismissed, f"{site} is dismissed")
-        fn, ln = site.rsplit(":", 1)
-        ln = int(ln)
+            ("src/nous_coalitions.py:form_coalitions.road=store.get_road",
+             {"source_id", "target_id"}, "False"),
+            ("src/nous_coalitions.py:form_coalitions_from_field.road=store.get_road",
+             {"target_id"}, "False"),
+            ("src/nous_store.py:SubstrateStore.quality_of.road=self.get_road",
+             {"closed", "strength"}, "DEFAULT")):
+        check(site in dismissed, f"CONVERTED: dismissed by content key — {site}")
+        fn, rest = site.split(":", 1)
+        scope = rest.rsplit(".road=", 1)[0]
         tree = ast.parse((ROOT / fn).read_text(encoding="utf-8"))
-        bound_name = None
-        decay = "DEFAULT"
-        for n in ast.walk(tree):
-            if isinstance(n, ast.Assign) and n.lineno == ln:
-                if isinstance(n.targets[0], ast.Name):
-                    bound_name = n.targets[0].id
-                if isinstance(n.value, ast.Call):
-                    kw = [k for k in n.value.keywords if k.arg == "apply_decay"]
-                    if kw:
-                        decay = ast.unparse(kw[0].value)
         owner = None
         for f in ast.walk(tree):
-            if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef)):
-                end = max((getattr(x, "lineno", f.lineno) for x in ast.walk(f)),
-                          default=f.lineno)
-                if f.lineno <= ln <= end and (owner is None or f.lineno > owner.lineno):
-                    owner = f
-        writes = []
+            if isinstance(f, (ast.FunctionDef, ast.AsyncFunctionDef)) \
+                    and scope.endswith(f.name):
+                owner = f
+        reads, writes = set(), []
         for n in ast.walk(owner):
             if isinstance(n, ast.Attribute) and isinstance(n.value, ast.Name) \
-                    and n.value.id == bound_name and not isinstance(n.ctx, ast.Load):
-                writes.append(f"{n.attr}@{n.lineno}")
-            if isinstance(n, ast.Subscript) and isinstance(n.value, ast.Attribute) \
-                    and isinstance(n.value.value, ast.Name) \
-                    and n.value.value.id == bound_name and not isinstance(n.ctx, ast.Load):
-                writes.append(f"{n.value.attr}[..]@{n.lineno}")
-        check(writes == [],
-              f"VERIFIED, not read: nothing is written through the road bound at {site} "
-              f"(writes found: {writes})")
-        check(decay == want_decay,
-              f"and its apply_decay is {want_decay} as the dismissal states (got {decay})"
-              + (" — so it receives a COPY and could not reach the store even if it wrote"
-                 if want_decay == "DEFAULT" else ""))
+                    and n.value.id == "road":
+                (reads.add(n.attr) if isinstance(n.ctx, ast.Load)
+                 else writes.append(f"{n.attr}@{n.lineno}"))
+        check(writes == [], f"no write through the bound road in {scope} ({writes})")
+        check(reads == want_reads,
+              f"THE MERGED REASON IS TRUE OF EVERY OCCURRENCE IT COVERS: {scope} reads "
+              f"{sorted(reads)}, and the dismissal claims {sorted(want_reads)}. For "
+              f"form_coalitions this is the load-bearing one — the SUPERSEDED reason said "
+              f"'solely road.target_id', true of the old line 167 alone and FALSE of the "
+              f"merged site, which also reads source_id at 187/189. Mechanical re-keying "
+              f"would have carried a false reason forward")
 
     section("2f-3  the bound BITES on the form it covers")
     check(_bound_probe("def p(store, rid):\n"
@@ -691,33 +688,105 @@ def test_the_binding_bound_and_its_four_dismissals():
           "in a delivery report")
 
 
-def test_FINDING_dismissals_are_line_anchored_and_rot():
-    section("2f-5  FINDING: a dismissal is anchored to path:line and rots on any shift")
-    d = Path(tempfile.mkdtemp(prefix="anchor-"))
-    shutil.copytree(ROOT / "src", d / "src")
-    (d / "tools").mkdir()
-    shutil.copy(ROOT / "tools" / "ledger.json", d / "tools" / "ledger.json")
-    f = d / "src" / "nous_field.py"
-    f.write_text("# a harmless comment\n" + f.read_text(encoding="utf-8"), encoding="utf-8")
-    r = subprocess.run([sys.executable, str(ROOT / "tools" / "ledger_check.py"),
-                        "--root", str(d), "--only", "C6"], capture_output=True, text=True)
-    shutil.rmtree(d, ignore_errors=True)
+def test_CONVERTED_2f5_dismissals_are_content_anchored():
+    section("2f-5 CONVERTED: a comment no longer rots a dismissal, and staleness still bites")
+    # WAS an asserted-negative holding the defect: one comment line fired a false [C6].
+    # Fixed at 5a1c385. The instability half is attacked hardest below, because a key that
+    # CANNOT go stale is worse than a line number — it silently excuses a site that is no
+    # longer the one its reason was written about.
+    def c6(mut):
+        d = Path(tempfile.mkdtemp(prefix="0gv-"))
+        shutil.copytree(ROOT / "src", d / "src")
+        (d / "tools").mkdir()
+        shutil.copy(ROOT / "tools" / "ledger.json", d / "tools" / "ledger.json")
+        mut(d)
+        r = subprocess.run([sys.executable, str(ROOT / "tools" / "ledger_check.py"),
+                            "--root", str(d), "--only", "C6"], capture_output=True, text=True)
+        shutil.rmtree(d, ignore_errors=True)
+        return r
+
+    def edit(a, bb):
+        def go(d):
+            f = d / "src" / "nous_field.py"
+            t = f.read_text(encoding="utf-8")
+            f.write_text(t.replace(a, bb, 1), encoding="utf-8")
+        return go
+    FLOW = "        for rid, fv in res.flow.items():"
+
+    check(c6(lambda d: None).returncode == 0,
+          "CONTROL: an unmutated tree is clean — without this every result below is noise")
+    r = c6(edit("", ""))
+    check(c6(lambda d: (d / "src" / "nous_field.py").write_text(
+              "# harmless\n" + (d / "src" / "nous_field.py").read_text(encoding="utf-8"),
+              encoding="utf-8")).returncode == 0,
+          "CONVERTED (was: one comment fired a false [C6]): a comment inserted above a "
+          "dismissed site now changes NOTHING")
+
+    section("2f-5  INSTABILITY — the direction that matters, attacked five ways")
+    r = c6(edit(FLOW, "        ra = res\n        for rid, fv in ra.flow.items():"))
     check(r.returncode == 1 and "RESTS ON THE ABSENCE" in r.stdout,
-          "inserting ONE COMMENT LINE above a dismissed occurrence turns C6 red, because "
-          "`dismissed` entries are keyed `path:line` and every line below shifts")
-    finding("2f-5", "bound_on_absence DISMISSALS are line-anchored and rot on any edit "
-                    "above them: adding a single comment to the top of nous_field.py "
-                    "fires a false [C6] against the ActivationField.flow bound. This is "
-                    "the exact failure the Accumulation dataclass docstring says it "
-                    "avoids — 'a registry keyed by line rots on every insertion above it "
-                    "and trains people to re-key mechanically instead of re-reading' — "
-                    "and the dismissal list reintroduces it one field away. It cost a real "
-                    "mis-measurement in this pass: my first blind-spot probe prepended to "
-                    "an existing module and reported all five blind spots as CAUGHT, which "
-                    "was the shifted bound firing, not the binding bound working. Not "
-                    "urgent and not 2f-i's: no dismissal is wrong today. Architect's to "
-                    "route — a content-anchored key (the source line's text, or an AST "
-                    "path) would close it.")
+          "EXPRESSION changed (res.flow -> ra.flow) in the same scope: the dismissal stops "
+          "applying and the bound is REVIVED. A key that cannot go stale cannot be fresh")
+    r = c6(edit("def build_activation_field(", "def build_activation_field_v2("))
+    check(r.returncode == 1, "SCOPE renamed: the build goes red")
+    check("unregistered" in r.stdout and "RESTS ON THE ABSENCE" not in r.stdout,
+          "AND THE MECHANISM IS CONFIRMED, NOT ASSUMED — the builder's stated reason is "
+          "right: the finding is 'unregistered accumulation', NOT a revived bound, because "
+          "the REGISTRY's own key is scope-anchored too, so the entry unmatches and the "
+          "bound is never evaluated. Red by a different path than a reader would assume")
+    def move(d):
+        f = d / "src" / "nous_field.py"
+        t = f.read_text(encoding="utf-8")
+        t = t.replace(FLOW + "\n            merged_flow[rid] = merged_flow.get(rid, 0.0) + fv",
+                      "        _hm(res, merged_flow)", 1)
+        t = t.replace("def build_activation_field(",
+                      "def _hm(res, merged_flow):\n    for rid, fv in res.flow.items():\n"
+                      "        merged_flow[rid] = merged_flow.get(rid, 0.0) + fv\n\n\n"
+                      "def build_activation_field(", 1)
+        f.write_text(t, encoding="utf-8")
+    check(c6(move).returncode == 1,
+          "site MOVED to a different scope: red — the scope is part of the key")
+    check(c6(edit(FLOW + "\n            merged_flow[rid] = merged_flow.get(rid, 0.0) + fv",
+                  "        pass")).returncode == 1,
+          "dismissed site DELETED: red — the registry entry is orphaned and says so")
+    check(c6(edit(FLOW, FLOW + "\n            pass\n" + FLOW)).returncode == 0,
+          "DUPLICATED in the same scope: CLEAN, and that is the DOCUMENTED LIMITATION "
+          "working exactly as written — two textually identical occurrences share a key, "
+          "so the one reason covers both. Asserted so the limitation is a decision on the "
+          "record rather than a surprise")
+
+    section("2f-5  the legacy format is refused, and a MIXED ledger fails")
+    def with_dismissals(vals):
+        def go(d):
+            L = json.loads((d / "tools" / "ledger.json").read_text(encoding="utf-8"))
+            k = "src/nous_field.py:build_activation_field.merged_flow"
+            L["float_accumulations"][k]["bound_on_absence"][0]["dismissed"] = vals
+            (d / "tools" / "ledger.json").write_text(
+                json.dumps(L, indent=2, ensure_ascii=False), encoding="utf-8")
+        return go
+    GOOD = "src/nous_field.py:build_activation_field.res.flow — ok"
+    r = c6(with_dismissals(["src/nous_field.py:123 — old"]))
+    check(r.returncode == 1 and "LINE-NUMBER format" in r.stdout,
+          "an all-legacy dismissal list is REFUSED with its own finding")
+    r = c6(with_dismissals([GOOD, "src/nous_coalitions.py:178 — old"]))
+    check(r.returncode == 1 and "LINE-NUMBER format" in r.stdout,
+          "and a MIXED list fails too rather than partially passing — a half-migrated "
+          "ledger cannot pass while its old entries excuse nothing")
+
+    section("2f-5  the key is whitespace-free: attack the parser directly")
+    for label, raw in (("tab", "a\tb"), ("nbsp", "a\u00a0b"), ("newline", "a\nb"),
+                       ("empty", ""), ("em-dash", "a\u2014b")):
+        k = LC._dismissal_key("p.py", "sc", raw)
+        check(k == "".join(k.split()) and k.split(" ", 1)[0] == k,
+              f"{label}: key {k!r} contains no whitespace and survives the "
+              f"split(' ', 1)[0] every dismissal is parsed with")
+    live = [site for kind, sym in (("attribute_read", "ActivationField.flow"),
+                                   ("binding", "get_road"))
+            for _, _, site in LC._absence_occurrences(ROOT, kind, sym)]
+    check(all(s2.split(" ", 1)[0] == s2 for s2 in live),
+          f"and every LIVE key survives it too ({len(live)} keys) — the builder's first "
+          f"format produced `road = store.get_road`, which truncated at the space and "
+          f"matched nothing")
 
 
 def test_2f2_falsifier_is_hypothetical_today_not_live():
@@ -1204,7 +1273,7 @@ def main():
         test_negative_zero_is_accepted_and_that_is_unstated,
         test_FINDING_the_structural_argument_does_not_bound_what_it_claims,
         test_the_binding_bound_and_its_four_dismissals,
-        test_FINDING_dismissals_are_line_anchored_and_rot,
+        test_CONVERTED_2f5_dismissals_are_content_anchored,
         test_2f2_falsifier_is_hypothetical_today_not_live,
         test_FLAG_the_AOL_claim_is_an_interpretation_not_the_spec_text,
         test_WINDOW_boundary_is_structural_not_sampled,
