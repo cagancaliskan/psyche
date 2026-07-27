@@ -1209,6 +1209,160 @@ def run(tmp: Path) -> None:
     check(cap["captured_python"] == "3.12.4", "python version parsed")
 
 
+    # ═══════════════════════════════════════════════════════════════════════════
+    # BRICK 0e — an aborted suite must be VISIBLE, and must never contribute zero
+    # ═══════════════════════════════════════════════════════════════════════════
+    section("0e  a suite that raises is named, and its count is UNKNOWN not zero")
+    import importlib.util
+    rt_spec = importlib.util.spec_from_file_location("runner_0e", REPO / "run_tests.py")
+    RT = importlib.util.module_from_spec(rt_spec)
+    sys.modules["runner_0e"] = RT
+    rt_spec.loader.exec_module(RT)
+
+    # THE FIXTURE: a synthetic suite that raises partway. Deliberately synthetic — the
+    # live specimen (the tester's 0d suite) is NOT repaired here, because repairing the
+    # only reproducer to make one's own work look green destroys the evidence.
+    fixture = tmp / "raising_suite.py"
+    fixture.write_text(
+        "print('  RESULT-ish noise that is not a RESULT line')\n"
+        "def a():\n    print('ok')\n"
+        "def b():\n    raise KeyError('planted')\n"
+        "a()\nb()\n"
+        "print('  RESULT: 99 passed, 0 failed')\n", encoding="utf-8")
+    r = subprocess.run([sys.executable, str(fixture)], capture_output=True, text=True)
+    transcript = (r.stdout or "") + (r.stderr or "")
+    v = RT.classify(transcript)
+    check(v["aborted"] is True,
+          "a suite that raises before printing RESULT is classified ABORTED")
+    check(v["passed"] is None and v["failed"] is None,
+          f"and its counts are None — UNKNOWN, never 0 "
+          f"(passed={v['passed']}, failed={v['failed']}). Zero is not a safe default: it "
+          f"is a wrong number that sums silently into the headline total, which is how "
+          f"this defect hid an entire 334-assertion file")
+    check("KeyError" in v["detail"],
+          f"the exception TYPE is named: {v['detail']!r}")
+    check("raising_suite.py" in v["detail"] and "in b" in v["detail"],
+          f"and where it died: {v['detail']!r}")
+
+    clean = RT.classify("stuff\n  RESULT: 12 passed, 3 failed\n")
+    check(clean["aborted"] is False and clean["passed"] == 12 and clean["failed"] == 3,
+          "a suite that DOES report is unaffected — passed/failed read as before")
+
+    section("0e  neither parser can lose a suite (both arms)")
+    GOOD = ("#" * 70 + "\n# test_a.py\n" + "#" * 70 + "\n  RESULT: 10 passed, 0 failed\n"
+            + "#" * 70 + "\n# test_b.py\n" + "#" * 70 + "\n  RESULT: 5 passed, 0 failed\n")
+    MID = ("#" * 70 + "\n# test_a.py\n" + "#" * 70 + "\nKeyError: boom\n"
+           + "#" * 70 + "\n# test_b.py\n" + "#" * 70 + "\n  RESULT: 5 passed, 0 failed\n")
+    LAST = ("#" * 70 + "\n# test_a.py\n" + "#" * 70 + "\n  RESULT: 10 passed, 0 failed\n"
+            + "#" * 70 + "\n# test_b.py\n" + "#" * 70 + "\nRuntimeError: died late\n")
+
+    import capture_run as CR
+    per, ab = CR.parse_full(GOOD)
+    check(per == {"test_a.py": 10, "test_b.py": 5} and ab == [],
+          "capture_run: a clean capture parses unchanged")
+    per, ab = CR.parse_full(MID)
+    check(ab == ["test_a.py"],
+          f"capture_run: a MID-FILE abort is reported, not overwritten by the next "
+          f"header (got {ab})")
+    per, ab = CR.parse_full(LAST)
+    check(ab == ["test_b.py"],
+          f"capture_run: a LAST-SUITE abort is reported too — the arm no later header "
+          f"can reveal, and the one a mid-file-only fix would still lose (got {ab})")
+
+    section("0e  a malformed capture is EXIT 2, not a finding and never exit 0")
+    def cap_root(text):
+        d = Path(tempfile.mkdtemp(prefix="cap0e-"))
+        (d / "docs").mkdir(); (d / "tools").mkdir()
+        (d / "docs" / "TEST_OUTPUT.txt").write_text(text, encoding="utf-8")
+        (d / "tools" / "ledger.json").write_text(json.dumps(
+            {"tests": {"suites": 2, "assertions": 15, "failures": 0,
+                       "per_suite": {"test_a.py": 10, "test_b.py": 5}}}), encoding="utf-8")
+        return d
+    ok = LC.parse_capture(cap_root(GOOD))
+    check(ok["suites"] == 2 and ok["assertions"] == 15,
+          "a clean capture still parses to the same numbers")
+    for label, text, missing in (("mid-file", MID, "test_a.py"), ("last", LAST, "test_b.py")):
+        try:
+            LC.parse_capture(cap_root(text))
+            check(False, f"{label} abort should raise CaptureMalformed")
+        except LC.CaptureMalformed as e:
+            check(missing in str(e),
+                  f"{label} abort raises CaptureMalformed naming {missing}")
+    # and the exit code, end to end through the CLI
+    d = cap_root(MID)
+    rc = subprocess.run([sys.executable, str(REPO / "tools" / "ledger_check.py"),
+                         "--root", str(d), "--only", "C1"],
+                        capture_output=True, text=True)
+    check(rc.returncode == 2,
+          f"ledger_check exits 2 on a malformed capture (got {rc.returncode}) — the "
+          f"CensusUnreadable ruling, for the same reason: a finding would claim the "
+          f"tool's numbers are sound and the repo is not, but here the NUMBERS are what "
+          f"cannot be trusted. Exit 0 was the old behaviour and was the worst of the three")
+    check("malformed" in (rc.stderr or "").lower(), "and says so on stderr")
+    rs = subprocess.run([sys.executable, str(REPO / "tools" / "ledger_sync.py"),
+                         "--root", str(d)], capture_output=True, text=True)
+    check(rs.returncode == 2,
+          f"ledger_sync REFUSES too (got {rs.returncode}) — it writes the headline "
+          f"figure, so syncing from an incomplete capture is how a wrong number becomes "
+          f"canonical")
+
+    section("0e  all THREE readers of the format agree on the same line")
+    # A runner that summed the last RESULT while the capture parser summed the first
+    # would disagree only on malformed input — precisely the case nobody exercises, and
+    # precisely the input this brick is about. Pinned so they cannot drift apart.
+    twice = ("#" * 70 + "\n# test_a.py\n" + "#" * 70
+             + "\n  RESULT: 3 passed, 0 failed\n  RESULT: 7 passed, 0 failed\n")
+    check(RT.classify(twice)["passed"] == 3, "run_tests.classify takes the FIRST RESULT")
+    check(CR.parse_full(twice)[0] == {"test_a.py": 3},
+          "capture_run.parse_full takes the FIRST RESULT")
+    d2 = cap_root(twice)
+    check(LC.parse_capture(d2)["assertions"] == 3,
+          "ledger_check.parse_capture takes the FIRST RESULT — all three agree, so no "
+          "malformed input can make the runner and the capture disagree on a count")
+
+    section("0e  RULE FOUR: every assertion above FAILS against the pre-fix code")
+    # An assertion that passes on both sides of a fix is evidence for nothing. Each claim
+    # is re-run against the tools as they stood at HEAD~ (the commit before this fix) and
+    # is required to fail there.
+    old_dir = Path(tempfile.mkdtemp(prefix="prefix0e-"))
+    got_old = {}
+    for name in ("run_tests.py", "tools/capture_run.py", "tools/ledger_check.py"):
+        g = subprocess.run(["git", "show", f"1065c43:{name}"], cwd=str(REPO),
+                           capture_output=True, text=True)
+        if g.returncode == 0:
+            (old_dir / Path(name).name).write_text(g.stdout, encoding="utf-8")
+            got_old[Path(name).name] = True
+    if len(got_old) == 3:
+        def load_old(fname, modname):
+            sp = importlib.util.spec_from_file_location(modname, old_dir / fname)
+            m = importlib.util.module_from_spec(sp); sys.modules[modname] = m
+            sp.loader.exec_module(m); return m
+        old_rt = load_old("run_tests.py", "old_rt_0e")
+        check(not hasattr(old_rt, "classify"),
+              "LIVE: the pre-fix runner has no classify() at all — an aborted suite was "
+              "never classified, only silently skipped")
+        old_cr = load_old("capture_run.py", "old_cr_0e")
+        check(not hasattr(old_cr, "parse_full"),
+              "LIVE: the pre-fix capture_run has no parse_full()")
+        check(old_cr.parse(MID) == {"test_b.py": 5},
+              f"LIVE: and its parse() SILENTLY DROPS the aborted suite — "
+              f"{old_cr.parse(MID)}, with test_a.py simply gone and no error")
+        check(old_cr.parse(LAST) == {"test_a.py": 10},
+              "LIVE: the last-suite arm is lost too, with nothing to notice it")
+        old_lc = load_old("ledger_check.py", "old_lc_0e")
+        check(not hasattr(old_lc, "CaptureMalformed"),
+              "LIVE: the pre-fix ledger_check has no CaptureMalformed")
+        old_cap = old_lc.parse_capture(cap_root(MID))
+        check(old_cap["suites"] == 1 and old_cap["assertions"] == 5,
+              f"LIVE, AND THIS IS THE DEFECT ITSELF: the pre-fix parser returns "
+              f"{old_cap['suites']} suite / {old_cap['assertions']} assertions for a "
+              f"capture that names two — a clean, confident, WRONG number, with no error "
+              f"and no way for any caller to tell")
+    else:
+        check(False, "could not recover the pre-fix tools from git for the two-sided proof")
+    shutil.rmtree(old_dir, ignore_errors=True)
+
+
 def main() -> int:
     print("=" * 70)
     print("  LEDGER TOOLS — TEST SUITE")

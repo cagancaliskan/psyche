@@ -24,6 +24,7 @@ Exit code is 0 only if every suite reported 0 failures.
 """
 
 import os
+import re
 import sys
 import subprocess
 
@@ -111,6 +112,53 @@ EXPERIMENT_SUITES = [
 ]
 
 
+RESULT_RE = re.compile(r"^\s*RESULT:\s+(\d+)\s+passed,\s+(\d+)\s+failed\s*$", re.M)
+
+
+def classify(output: str) -> dict:
+    """Decide what a suite's transcript actually says — BRICK 0e.
+
+    Three outcomes, and the third is the one that used to be invisible:
+
+      passed  — a RESULT line with zero failures
+      failed  — a RESULT line with failures
+      ABORTED — NO RESULT line at all, because the suite raised and died partway
+
+    An aborted suite's assertion count is reported as **UNKNOWN, never zero**. That
+    choice is deliberate and this is the reason: the count lives in the RESULT line the
+    suite never printed, so any number produced here would be invented. Zero is not a
+    safe default — it is a wrong number that SUMS SILENTLY into the headline total, which
+    is exactly how this defect hid an entire 334-assertion file three times. A partial
+    count reconstructed from the `FAIL:` lines was considered and rejected: it would
+    report a figure the suite never asserted, and would understate by exactly the amount
+    nobody can see.
+    """
+    # FIRST RESULT wins, matching capture_run.parse_full and ledger_check.parse_capture
+    # exactly. A suite printing two RESULT lines is malformed either way; what matters is
+    # that all three readers of this format agree on which one counts, because a runner
+    # that summed the last while the capture parser summed the first would disagree only
+    # on malformed input — the case nobody tests.
+    m = RESULT_RE.search(output)
+    if m is not None:
+        return {"aborted": False, "passed": int(m.group(1)), "failed": int(m.group(2)),
+                "detail": ""}
+    # No RESULT: reconstruct what killed it, so the failure list can name it.
+    exc, where = "no RESULT line", ""
+    lines = [ln for ln in output.splitlines() if ln.strip()]
+    for ln in reversed(lines):
+        s = ln.strip()
+        if re.match(r"^[A-Za-z_][A-Za-z0-9_.]*(Error|Exception|Exit|Interrupt)\b", s):
+            exc = s
+            break
+    for ln in reversed(lines):
+        m2 = re.match(r'^\s*File "(.+)", line (\d+), in (\S+)', ln)
+        if m2:
+            where = f"{os.path.basename(m2.group(1))}:{m2.group(2)} in {m2.group(3)}"
+            break
+    return {"aborted": True, "passed": None, "failed": None,
+            "detail": f"{exc}" + (f"  [{where}]" if where else "")}
+
+
 def main() -> int:
     env = dict(os.environ)
     # absolute paths so inherited subprocess probes resolve imports regardless of cwd.
@@ -120,28 +168,61 @@ def main() -> int:
     env["PYTHONPATH"] = extra + (os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
 
     failed_suites = []
+    aborted_suites = []          # BRICK 0e: raised and never reported — count UNKNOWN
     all_suites = [(TESTS, s) for s in SUITES] + [(EXPERIMENTS, s) for s in EXPERIMENT_SUITES]
     for directory, suite in all_suites:
         path = os.path.join(directory, suite)
         print("#" * 70)
         print(f"# {suite}")
         print("#" * 70)
-        # Flush our own buffered output before handing the shared stdout fd to the
-        # child, so headers stay correctly ordered even when stdout is redirected to
-        # a file (block-buffered) rather than a terminal (line-buffered).
+        # Flush our own buffered output before emitting the child's, so headers stay
+        # correctly ordered even when stdout is redirected to a file (block-buffered)
+        # rather than a terminal (line-buffered).
         sys.stdout.flush()
-        result = subprocess.run([sys.executable, path], env=env)
-        if result.returncode != 0:
+        # stderr is MERGED into stdout rather than inherited. A suite that dies writes
+        # its traceback to stderr, and with stderr inherited that traceback reached the
+        # terminal but never the captured transcript — so the capture recorded a suite
+        # that simply stopped, with no evidence of why. The traceback belongs in the
+        # record, because it is the whole explanation for a missing RESULT line.
+        result = subprocess.run([sys.executable, path], env=env,
+                                stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                text=True)
+        out = result.stdout or ""
+        sys.stdout.write(out)
+        verdict = classify(out)
+        if verdict["aborted"]:
+            aborted_suites.append((suite, verdict["detail"]))
+            # Stated in the transcript itself, not only in the summary, so a reader
+            # scrolling the capture cannot mistake the gap for a suite that ran clean.
+            print(f"\n  ABORTED: {suite} raised and never reported a RESULT line.")
+            print(f"           {verdict['detail']}")
+            print(f"           Assertion count for this suite is UNKNOWN, not zero — "
+                  f"it is excluded from the total rather than summed as 0.")
+        elif result.returncode != 0 or verdict["failed"]:
             failed_suites.append(suite)
         print()
         sys.stdout.flush()
 
+    ran = len(all_suites)
     print("=" * 70)
-    if failed_suites:
-        print(f"  OVERALL: FAILED — {len(failed_suites)} suite(s): {', '.join(failed_suites)}")
+    if aborted_suites or failed_suites:
+        # "N suites ran, M failed" and "N suites ran, M aborted" are DIFFERENT outcomes
+        # and are printed differently. An aborted suite is not a failing suite: a failing
+        # suite reported a number and the number was bad; an aborted suite reported no
+        # number at all, so the total below is INCOMPLETE and says so.
+        print(f"  OVERALL: FAILED — {ran} suite(s) ran, "
+              f"{len(failed_suites)} failed, {len(aborted_suites)} ABORTED")
+        if failed_suites:
+            print(f"    failed : {', '.join(failed_suites)}")
+        for suite, detail in aborted_suites:
+            print(f"    ABORTED: {suite} — {detail}")
+        if aborted_suites:
+            print(f"  THE TOTAL IS INCOMPLETE: {len(aborted_suites)} suite(s) contributed "
+                  f"no assertion count. Any figure derived from this run understates the "
+                  f"repository by an unknown amount (brick 0e).")
         print("=" * 70)
         return 1
-    print(f"  OVERALL: all {len(all_suites)} suites passed (0 failures)")
+    print(f"  OVERALL: all {ran} suites passed (0 failures, 0 aborted)")
     print("=" * 70)
     return 0
 
