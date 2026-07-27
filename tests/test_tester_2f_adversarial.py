@@ -3,11 +3,12 @@
 TESTER-authored adversarial verification of brick 2f-i (SPEC-2f Design C) and of the
 0e runner/parser fix, written from scratch rather than adapted from the builder's suite.
 
-VERDICT: FAIL on one criterion. `outcome_magnitude` is neither validated nor asserted:
-a NEGATIVE outcome is accepted and strengthens the road byte-identically to a positive
-one of the same size, because the gain takes `abs()`. Everything else holds, including
-the neutral byte-identity gate measured against the real pre-2f engine recovered from
-git rather than against a transcription.
+VERDICT (re-verification after 7886167): PASS on the two closures. The 2f-1 refusal
+holds and its conversion FAILS against 1065c43, where the abs() still lived. Three
+findings are recorded, none of which blocks the brick: the structural ARGUMENT for
+potentiation-only does not bound what it claims (2f-3), the AOL reason stated in the
+module is an over-read of SPEC-2e (2f-4, flagged for the architect), and -0.0 is correct
+by accident of the comparison rather than by a stated decision.
 
 WHAT THIS FILE VERIFIES
   - 0e: an aborted suite is named with its exception and location; its count is UNKNOWN
@@ -429,38 +430,227 @@ def test_PARAM_the_hostile_matrix():
                         f"backwards, and k must be an integer cycle distance")
 
 
-def test_FINDING_negative_outcome_is_a_well_formed_wrong_answer():
-    section("2f  FINDING 2f-1: a NEGATIVE outcome strengthens exactly like a positive one")
+def test_CONVERTED_a_negative_outcome_is_REFUSED_not_absorbed():
+    section("2f-1 CONVERTED: an adverse outcome is refused, and the caller is told why")
+    # WAS: an asserted-negative holding the defect in place — `-1.0` strengthened
+    # byte-identically to `+1.0` because the gain took abs(). The builder closed it by
+    # refusal (7886167). Converted, never deleted.
+    #
+    # NOTE FOR THE RECORD: this suite ABORTED on that fix, because the old assertion
+    # called with -1.0 and the new guard raises. 0e's fix NAMED the abort with its
+    # exception and location instead of letting the file's assertions vanish from the
+    # total. That is the FIRST time brick 0e's defect has been caught in the wild by the
+    # mechanism built for it, rather than by someone running the file by hand.
+    s, r = one_road()
+    t = EpisodicTrace()
+    t.record([r])
+    for bad in (-1.0, -0.5, -1e-300, -1e9):
+        try:
+            assign_credit(s, t, outcome_magnitude=bad, p_prp=1.0)
+            check(False, f"outcome_magnitude={bad} must be REFUSED, not absorbed")
+        except ValueError as e:
+            check("POTENTIATION-ONLY" in str(e) and "no depression path" in str(e),
+                  f"{bad} is refused, and the message states the REASON — that no "
+                  f"depression path exists — rather than naming a range")
 
-    def run(mag):
-        s, r = one_road()
-        t = EpisodicTrace()
-        t.record([r])
-        assign_credit(s, t, outcome_magnitude=mag, p_prp=1.0)
-        return s.get_road(r, apply_decay=False).strength
-    pos, neg = run(1.0), run(-1.0)
-    check(bits(pos) == bits(neg),
-          f"ASSERTED-NEGATIVE: outcome_magnitude=-1.0 and +1.0 produce a BYTE-IDENTICAL "
-          f"result ({pos:.6f}). The gain takes abs(), so the sign is discarded silently")
-    check("abs(outcome_magnitude)" in inspect.getsource(cr.assign_credit),
-          "the discard is structural: the gain expression takes abs()")
-    doc = (cr.assign_credit.__doc__ or "") + (cr.__doc__ or "")
-    check("negative" not in doc.lower(),
-          "and NOTHING in the module documents that a negative outcome is treated as "
-          "positive — so a caller signalling an adverse outcome silently reinforces")
-    suite = (HERE / "test_nous_credit.py").read_text(encoding="utf-8")
-    check("outcome_magnitude=-" not in suite,
-          "the builder's own suite never exercises a negative outcome, which is why this "
-          "survived to delivery")
-    finding("2f-1", "outcome_magnitude is neither validated for sign nor documented as "
-                    "unsigned: -1.0 strengthens byte-identically to +1.0 because the gain "
-                    "takes abs(). This is a WELL-FORMED WRONG ANSWER of DEFECT-C's class "
-                    "— no crash, no warning, a plausible result. Two defensible fixes and "
-                    "the choice is the architect's: refuse a negative at the boundary "
-                    "(sign carries no meaning), or honour the sign (which needs a "
-                    "weakening path that does not exist and would not be a 2f-i change). "
-                    "Silently treating adverse as favourable is the one option that is "
-                    "not defensible.")
+    # THE CLAIM, verified rather than the wording. "No depression path exists" is a
+    # statement about the system; it is true only if nothing in the module can lower a
+    # road's strength.
+    src = inspect.getsource(cr)
+    tree = ast.parse(src)
+    absc = [ast.unparse(n) for n in ast.walk(tree)
+            if isinstance(n, ast.Call) and isinstance(n.func, ast.Name) and n.func.id == "abs"]
+    check(absc == [],
+          f"abs() is REMOVED from the module, not merely guarded ({absc}) — so no "
+          f"sign-stripped value can reach the arithmetic by any route")
+    gains = [ast.unparse(n.value) for n in ast.walk(tree)
+             if isinstance(n, ast.Assign) and ast.unparse(n.targets[0]) == "g"]
+    check(gains == ["base_gain * p_prp * e * outcome_magnitude"],
+          f"and the gain expression carries the sign through unmodified: {gains}")
+
+    # PURITY UNDER REFUSAL: the guard must raise BEFORE any write.
+    s2, r2 = one_road()
+    t2 = EpisodicTrace()
+    t2.record([r2, r2])
+    b2 = snap(s2)
+    try:
+        assign_credit(s2, t2, outcome_magnitude=-5.0, p_prp=1.0)
+    except ValueError:
+        pass
+    check(snap(s2) == b2,
+          "the store is BYTE-IDENTICAL after a refused call — the guard raises before the "
+          "application loop, so a rejected outcome cannot half-apply")
+    s2.check_integrity()
+
+    # the legitimate zero is untouched by the fix
+    s3, r3 = one_road()
+    t3 = EpisodicTrace()
+    t3.record([r3])
+    b3 = snap(s3)
+    res = assign_credit(s3, t3, outcome_magnitude=0.0, p_prp=1.0)
+    check(snap(s3) == b3 and res.road_ids == [],
+          "0.0 is still ACCEPTED and writes nothing — an outcome of no size is not an "
+          "adverse outcome, and refusing it would have been a second defect")
+
+
+def test_negative_zero_is_accepted_and_that_is_unstated():
+    section("2f  -0.0: the outcome is right, the reasoning is nowhere written down")
+    s, r = one_road()
+    t = EpisodicTrace()
+    t.record([r])
+    b = snap(s)
+    try:
+        res = assign_credit(s, t, outcome_magnitude=-0.0, p_prp=1.0)
+        accepted = True
+    except ValueError:
+        accepted, res = False, None
+    check(accepted and snap(s) == b,
+          "-0.0 is ACCEPTED and writes nothing, which is the correct answer: negative "
+          "zero IS zero, not an adverse outcome")
+    check((-0.0 < 0.0) is False,
+          "and it reaches the accept branch because IEEE says -0.0 < 0.0 is False — the "
+          "guard is `outcome_magnitude < 0.0`, so the sign bit never enters the decision")
+    check("-0.0" not in inspect.getsource(cr.assign_credit),
+          "NOTHING in the code mentions -0.0. The behaviour is correct BY ACCIDENT of the "
+          "comparison rather than by a stated decision — benign today, and recorded here "
+          "so that a future author who changes the guard to `copysign` or `<=` learns "
+          "that this case was considered rather than discovering it")
+
+
+def test_FINDING_the_structural_argument_does_not_bound_what_it_claims():
+    section("2f  ATTACK on the load-bearing claim: the store surface is not a boundary")
+    # The builder decides potentiation-only by AST call graph: the module's whole store
+    # surface is get_road + strengthen, and strengthen cannot decrease strength. The
+    # CONCLUSION is true today. The ARGUMENT is not sound, and this is why.
+    s = frozen()
+    a = s.add_node("a", NodeType.CONCEPT)
+    b = s.add_node("b", NodeType.CONCEPT)
+    r = s.add_road(a, b)
+    s.strengthen(r, {"calm": 0.4})
+
+    v1 = s.get_road(r, apply_decay=False)
+    v2 = s.get_road(r, apply_decay=False)
+    check(v1 is v2,
+          "get_road(apply_decay=False) returns the SAME object on two calls — it is the "
+          "stored road, not a view")
+    before = bits(s.get_road(r, apply_decay=False).strength)
+    v1.strength = 0.999
+    check(bits(s.get_road(r, apply_decay=False).strength) != before,
+          "and assigning to its .strength REACHES THE STORE — so get_road(False) is a "
+          "write-capable handle, reachable through a call the AST check counts as a read")
+    cb = bits(s.get_road(r, apply_decay=False).charges.get("calm", 0.0))
+    v1.charges["calm"] = -0.99
+    check(bits(s.get_road(r, apply_decay=False).charges.get("calm", 0.0)) != cb,
+          "the charges dict is shared too — the classic aliasing hole, not merely the "
+          "scalar")
+    w = s.get_road(r, apply_decay=True)
+    wb = bits(s.get_road(r, apply_decay=False).strength)
+    w.strength = 0.001
+    check(bits(s.get_road(r, apply_decay=False).strength) == wb,
+          "apply_decay=True DOES return a copy, so the two paths differ — which is "
+          "exactly what makes this easy to miss")
+
+    # the conclusion still holds TODAY, and that is a separate check
+    tree = ast.parse(inspect.getsource(cr))
+    uses = sorted({ast.unparse(n) for n in ast.walk(tree)
+                   if isinstance(n, ast.Attribute) and n.attr == "strength"})
+    check(uses == ["store.get_road(rid, apply_decay=False).strength"],
+          f"TODAY the module never binds the returned road to a name: its only .strength "
+          f"expression is an immediate attribute read ({uses}). So the BEHAVIOUR is "
+          f"potentiation-only and the delivered brick is correct")
+    stores = sorted({n.func.attr for n in ast.walk(tree)
+                     if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
+                     and isinstance(n.func.value, ast.Name) and n.func.value.id == "store"})
+    check(stores == ["get_road", "strengthen"],
+          f"and the store surface is what the builder says it is: {stores}")
+    finding("2f-3", "the STRUCTURAL ARGUMENT for potentiation-only is incomplete, though "
+                    "its conclusion is true today. `store.get_road(rid, apply_decay=False)` "
+                    "returns the LIVE stored Road, not a copy: assigning to `.strength` or "
+                    "mutating `.charges` through it reaches the store (verified; "
+                    "apply_decay=True does copy, which is what makes the asymmetry easy to "
+                    "miss). So 'the store surface is get_road + strengthen, and strengthen "
+                    "only increases' does NOT bound what can happen — a future edit like "
+                    "`road = store.get_road(rid, apply_decay=False); road.strength *= 0.5` "
+                    "would weaken a road AND leave the builder's AST assertion green, "
+                    "because the store surface would be unchanged. Today nothing does this "
+                    "and the module reads the attribute immediately, so the brick is "
+                    "correct. This is a finding against the ARGUMENT, and separately a note "
+                    "that 0a hands out a write-capable reference from a method documented "
+                    "as a PURE READ — 0a's own purity claim ('a read changes nothing') is "
+                    "not violated, since the read itself mutates nothing; what is absent is "
+                    "encapsulation. The architect owns whether that is 0a's to close.")
+
+
+def test_2f2_falsifier_is_hypothetical_today_not_live():
+    section("2f-2  is the recorded falsifier live or hypothetical? — checked, not assumed")
+    # Recorded falsifier: "any path where an eligibility value reaches something NOT
+    # saturated downstream — a consumer reading CreditAssignment.eligibility or .gain and
+    # acting on the raw magnitude, or a write path that does not go through strengthen()."
+    consumers = []
+    for d in ("src", "experiments", "tools"):
+        base = ROOT / d
+        if not base.is_dir():
+            continue
+        for f in sorted(base.rglob("*.py")):
+            if f.name == "nous_credit.py":
+                continue
+            txt = f.read_text(encoding="utf-8", errors="replace")
+            for probe in (".eligibility", "CreditAssignment", "assign_credit("):
+                if probe in txt:
+                    consumers.append(f"{f.relative_to(ROOT)}:{probe}")
+    check(consumers == [],
+          f"NO consumer of CreditAssignment.eligibility or .gain exists anywhere outside "
+          f"the module itself ({consumers}) — so the falsifier is HYPOTHETICAL today and "
+          f"the recording is accurate rather than already false")
+    perceive = (ROOT / "src" / "nous_perceive.py").read_text(encoding="utf-8")
+    check("EpisodicTrace" in perceive and "assign_credit" not in perceive.replace(
+              "nous_credit.assign_credit remains", ""),
+          "the only in-src consumer, nous_perceive, imports EpisodicTrace and calls "
+          "record() alone — it never applies credit, so no eligibility value leaves the "
+          "module through it")
+    note("WHAT WOULD MAKE IT LIVE, so the falsifier is watchable rather than decorative: "
+         "(a) any caller that reads .eligibility or .gain and acts on the raw magnitude — "
+         "a threshold, a log that triggers something, or a future NEUROMODULATION "
+         "publisher scaling P_PRP by observed eligibility; (b) any write path that does "
+         "not go through strengthen(), which today includes the live-reference route "
+         "FINDING 2f-3 describes. Note that 2f-3 makes (b) reachable in principle already.")
+
+
+def test_FLAG_the_AOL_claim_is_an_interpretation_not_the_spec_text():
+    section("2f  FLAGGED, not adjudicated: the module's claim about AOL-2/3/4")
+    spec = (ROOT / "docs" / "specs" / "SPEC-2e-autonomy-criteria.md").read_text(encoding="utf-8")
+    mod = inspect.getsource(cr)
+    check("AOL-2, AOL-3 and AOL-4" in mod or "AOL-2" in mod,
+          "the module states a claim about which AOL criteria 2f-i cannot move")
+    # the module's stated REASON is that each of the three requires making an earlier
+    # action LESS likely. Check that against what the three criteria actually say.
+    for crit, words in (("AOL-2", ("less likely", "decrease", "weaken", "unlearn")),
+                        ("AOL-3", ("less likely", "decrease", "weaken", "unlearn")),
+                        ("AOL-4", ("less likely", "decrease", "weaken", "unlearn"))):
+        i = spec.find(f"### {crit}")
+        block = spec[i:i + 1800].lower() if i >= 0 else ""
+        present = [w for w in words if w in block]
+        check(present == [],
+              f"{crit}'s own text does NOT state a requirement to make an earlier action "
+              f"less likely (matched: {present}) — so the module's stated REASON is an "
+              f"interpretation, not a restatement of the criterion")
+    check("catastrophic-forgetting" in spec.lower() or "forgetting" in spec.lower(),
+          "AOL-4 is grounded in the catastrophic-forgetting literature (BWT, Forgetting "
+          "Measure), which is about RETAINING skills rather than about a sign on feedback")
+    finding("2f-4", "FLAGGED FOR THE ARCHITECT, not adjudicated. The module now states "
+                    "that AOL-2, AOL-3 and AOL-4 'each need an outcome to be able to make "
+                    "an earlier action LESS likely'. Checked against SPEC-2e's actual "
+                    "text: none of the three says that. AOL-2 is the CONJUNCTION of "
+                    "difficulty growth and capability growth; AOL-3 is goal generation "
+                    "adapting to a learning-progress signal; AOL-4 is dropping goals while "
+                    "RETAINING skills, grounded in catastrophic forgetting (BWT). The "
+                    "CONCLUSION — that 2f-i moves none of them — is almost certainly right, "
+                    "but the stated reason is an over-read of the spec, and the ledger "
+                    "already carries a stronger one (D-023): all five are MECHANISM "
+                    "ABSENT, needing goal generation, skill representation and a "
+                    "learning-progress signal, none of which exist. That reason does not "
+                    "depend on sign at all. Claims about specs become citable, which is "
+                    "why this is raised rather than left.")
 
 
 def test_WINDOW_boundary_is_structural_not_sampled():
@@ -763,14 +953,44 @@ def test_LANGUAGE_read_as_a_human_because_C4_is_broken():
             ln = low[:m.start()].count("\n")
             text = lines[ln].strip()
             # a NEGATION or a mechanical use is not a claim
-            negated = any(w in text.lower() for w in
+            low_text = text.lower()
+            negated = any(w in low_text for w in
                           ("not ", "no ", "never", "must not", "nothing", "neither"))
-            if not negated:
+            # VALUE-PROVENANCE IDIOM, excluded deliberately and with its reason. "the
+            # value is already known non-negative" is ordinary programming English about
+            # a variable, not a claim that the SYSTEM knows anything. Excluding it is a
+            # PRECISION fix of the same kind 0f needs — substring matching is the wrong
+            # tool — and the refinement is proved below to still catch the real thing,
+            # rather than being a hole opened to make the suite green.
+            idiom = re.search(r"\bknown\s+(non-?\w+|to\s+be|at\s+)", low_text) is not None
+            if not negated and not idiom:
                 claims.append(f"L{ln+1} [{label}]: {text[:78]}")
     check(claims == [],
           f"no docstring, comment or identifier asserts acquisition, retention, "
           f"preference or comprehension in ANY inflected or adjectival form — including "
           f"the interpolated shapes C4 cannot match today. Unnegated uses: {claims}")
+    # THE REFINEMENT MUST STILL BITE. If the idiom exclusion above had been widened
+    # into a hole, these planted sentences would slip through it.
+    # <!-- ledger:allow-claim --> reason: the four strings below are DELIBERATE NEGATIVE
+    # FIXTURES for this suite's own claim-matcher — sentences that MUST be flagged, not
+    # sentences the project asserts. C4 correctly caught the fourth one, which is C4
+    # working on a form it CAN see; brick 0f is about the interpolated forms it cannot.
+    # The pragma records that this is a fixture rather than silencing a real finding.
+    for planted in ("the system knows which road to pick",       # ledger:allow-claim
+                    "the trace knows what happened",             # ledger:allow-claim
+                    "this module learns from outcomes",          # ledger:allow-claim
+                    "the graph is aware of the outcome"):        # ledger:allow-claim
+        hit = False
+        for label, pat in pats.items():
+            for m in re.finditer(pat, planted):
+                lt = planted.lower()
+                neg = any(w in lt for w in ("not ", "no ", "never", "must not",
+                                            "nothing", "neither"))
+                idm = re.search(r"\bknown\s+(non-?\w+|to\s+be|at\s+)", lt) is not None
+                if not neg and not idm:
+                    hit = True
+        check(hit, f"the refined matcher still flags a genuine claim: {planted!r}")
+
     names = [n for n in dir(cr) if not n.startswith("_")]
     bad = [n for n in names if any(w in n.lower() for w in
                                    ("learn", "want", "know", "understand", "aware"))]
@@ -830,7 +1050,11 @@ def main():
         test_I1_neutral_is_byte_identical_to_the_REAL_pre_2f_engine,
         test_I1_neutral_p_prp_does_not_call_strengthen_at_all,
         test_PARAM_the_hostile_matrix,
-        test_FINDING_negative_outcome_is_a_well_formed_wrong_answer,
+        test_CONVERTED_a_negative_outcome_is_REFUSED_not_absorbed,
+        test_negative_zero_is_accepted_and_that_is_unstated,
+        test_FINDING_the_structural_argument_does_not_bound_what_it_claims,
+        test_2f2_falsifier_is_hypothetical_today_not_live,
+        test_FLAG_the_AOL_claim_is_an_interpretation_not_the_spec_text,
         test_WINDOW_boundary_is_structural_not_sampled,
         test_CONTROLS_can_each_exhibit_a_difference,
         test_REPEATS_mechanical_property_and_the_design_question,
@@ -844,20 +1068,23 @@ def main():
     print("\n" + "=" * 78)
     print(f"  RESULT: {_passed} passed, {_failed} failed")
     print("=" * 78)
-    print("  TESTER VERDICT ON BRICK 2f-i — FAIL (2026-07-27)")
+    print("  TESTER VERDICT ON BRICK 2f-i — PASS (2026-07-27, re-verification)")
     print("=" * 78)
-    print("  The overlay GATE holds: neutral 2f is byte-identical to the pre-2f engine")
-    print("  recovered from git across 8 scenarios, and the probe is proven able to see a")
-    print("  1e-10 perturbation. The window edge is STRUCTURAL — `k > window` returning a")
-    print("  literal 0.0 under an integer test — not a boundary located by sampling.")
-    print("  Application order is provably irrelevant from the code, and 120/120")
-    print("  permutations confirm it. Every control is shown capable of failing.")
+    print("  BOTH CLOSURES VERIFIED. A negative outcome is REFUSED, the abs() is removed")
+    print("  rather than guarded, the store is byte-identical after a refused call, and")
+    print("  the conversion FAILS against 1065c43 where the abs() still lived. 2f-2's")
+    print("  falsifier is HYPOTHETICAL today, checked rather than assumed: no consumer of")
+    print("  CreditAssignment.eligibility or .gain exists anywhere outside the module.")
     print()
-    print("  WHY FAIL, on one criterion: outcome_magnitude is neither validated nor")
-    print("  asserted. A NEGATIVE outcome is accepted and strengthens byte-identically to")
-    print("  a positive one, because the gain takes abs(). No crash, no warning, a")
-    print("  plausible number — DEFECT-C's class exactly. Nothing documents it and the")
-    print("  builder's suite never exercises it.")
+    print("  0e WORKED IN THE WILD, first time. This suite ABORTED on the builder's fix,")
+    print("  and the runner NAMED it with exception and location instead of letting 131")
+    print("  assertions vanish from the total.")
+    print()
+    print("  THREE FINDINGS, none blocking: 2f-3 the structural argument does not bound")
+    print("  what it claims — get_road(apply_decay=False) returns the LIVE road, so a")
+    print("  future edit could weaken one while leaving the AST assertion green; 2f-4 the")
+    print("  module's stated reason about AOL-2/3/4 is an interpretation, not the spec's")
+    print("  text; and -0.0 is right by accident of `< 0.0` rather than by decision.")
     print("=" * 78)
     if _findings:
         print("  FINDINGS")
