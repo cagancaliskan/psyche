@@ -411,9 +411,17 @@ def test_2f3_the_potentiation_basis_is_an_ABSENCE_and_it_is_machine_checked():
           and "dataflow" in binding[0]["_inherited_weakness"].lower(),
           "and the bound records its own blind spots — a reader cannot mistake a clean "
           "run for proof that no write-through is possible by any route")
-    check(len(binding[0].get("dismissed") or []) == 4,
-          f"the four bindings that exist today are dismissed individually with written "
-          f"reasons ({len(binding[0].get('dismissed') or [])})")
+    dismissed = binding[0].get("dismissed") or []
+    check(len(dismissed) == 3,
+          f"CONVERTED for brick 0g (was 4): the four BINDINGS in src/ are covered by THREE "
+          f"dismissals ({len(dismissed)}), because two of them — the pair in "
+          f"form_coalitions — are textually identical in one scope and therefore share a "
+          f"content-anchored key. One reason covers both, and it was rewritten to describe "
+          f"both rather than carried forward from one")
+    check(all(":" in x and ".py:" in x and not x.split(" ", 1)[0][-4:].isdigit()
+              for x in dismissed),
+          f"and every key is content-anchored, not a line number: "
+          f"{[x.split(' ', 1)[0] for x in dismissed]}")
 
     # THE LIVE-REFERENCE FACT, asserted here rather than taken on trust — it is the whole
     # reason the basis had to change.
