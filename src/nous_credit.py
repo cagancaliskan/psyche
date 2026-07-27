@@ -10,8 +10,9 @@ The answer is bookkeeping over a bounded history. An `EpisodicTrace` holds a fix
 window of `(cycle_index, road_id)` entries. `assign_credit` computes an eligibility
 weight per entry from the integer cycle distance `k`, sums a road's eligibility over
 its occurrences in the window, and applies the result through the existing, already
-verified `SubstrateStore.strengthen()` — the store's only write path, which this module
-does not modify or bypass.
+verified `SubstrateStore.strengthen()` and, for an adverse outcome, its 2g mirror
+`SubstrateStore.weaken()`. Both are sanctioned store methods; this module bypasses
+neither and reaches no road object directly.
 
 WHAT THIS MODULE DOES NOT DO — stated first, because the vocabulary invites over-reading
 ------------------------------------------------------------------------------------
@@ -22,35 +23,42 @@ subject of a multiplication; that is the whole of it.
 
 Specifically, and asserted in the suite rather than merely written here:
 
-  - **POTENTIATION-ONLY, and this is the largest limitation in the file.** There is no
-    depression path. Credit is applied through `strengthen()`, which only increases
-    strength, so every outcome this mechanism can express moves a road in ONE direction:
-    toward saturation. A negative `outcome_magnitude` is REFUSED at the boundary rather
-    than absorbed, because absorbing it would silently reinforce whatever an adverse
-    outcome was meant to discourage.
+  - **SIGNED, as of brick 2g — and the superseded claim is recorded, not deleted.**
+    Until 2g this paragraph read *"POTENTIATION-ONLY … there is no depression path"*, and
+    every clause of it was true when written. All of it is now false: `store.weaken` exists
+    and an adverse outcome is honoured rather than refused. The old text is named here
+    because a deleted claim leaves no trace that the limit ever existed, and the record of
+    a limit is what lets a reader tell a decision from an oversight.
 
-    **WHAT THAT CLAIM RESTS ON — corrected, because the first version of this paragraph
-    claimed more than it established (FINDING 2f-3).** It said the store surface here is
-    exactly `get_road` + `strengthen`, and `strengthen` only increases, therefore nothing
-    can weaken a road. That argument does not hold: `store.get_road(rid,
-    apply_decay=False)` returns the **live stored `Road`**, not a copy, so binding it and
-    assigning `.strength` — or mutating `.charges` — reaches the store while every
-    call-graph check still shows only a read. (`apply_decay=True` *does* copy, and that
-    asymmetry is what made this easy to miss.)
+    **What is true now, and it is much narrower than the sentence a reader will be
+    tempted to write.**
+    A positive outcome strengthens what preceded it; a negative outcome weakens it, at an
+    **independent rate** (`depression_gain`) that the caller sets and whose default is
+    `0.0`. So an adverse outcome is *expressible* — the graph can move both ways — and at
+    the default rate it moves zero. "This mechanism has no rate for that yet" is a
+    different statement from "this mechanism cannot express that", and only the second was
+    true before 2g.
 
-    So the honest basis is an **ABSENCE, not a structural impossibility**: *no code in
-    `src/` binds a returned road and writes through it.* That is a fact about the code as
-    it stands, which a future brick could invalidate silently — which is exactly what 0d's
-    `bound_on_absence` machinery exists for, so the absence is registered there and
-    machine-checked on every run. The check is narrow and biased toward over-reporting,
-    and its blind spots are recorded with it; a clean run proves no *binding* exists
-    outside the dismissed sites, not that no write-through is possible by any route.
+    **THE RATE IS UNCALIBRATED, and that is the honest limit of this brick.** The
+    acquisition/extinction asymmetry is documented (Bouton 2004; Frank et al. 2007; Niv et
+    al. 2012), but the ratio is task- and species-specific and no published value
+    transfers. `depression_gain` is on the project's `uncalibrated_constants` list with
+    what would calibrate it, registered before this code existed. **A number chosen to make
+    a shape work is not a measurement**, and none was chosen here.
 
-    The consequence, stated rather than left to be inferred: **what is built assigns
-    attention, not credit.** It marks which roads preceded a designated outcome and
-    strengthens them in proportion to how recently. It cannot distinguish an outcome
-    worth repeating from one worth avoiding, because feedback with no sign is not
-    feedback. Nothing here can be undone by anything here.
+  - **What the `binding` absence bound guards has CHANGED, and it is re-scoped rather than
+    left passing under a purpose that no longer exists.** That bound — no code in `src/`
+    binds a returned road and writes through it — was registered to support the
+    potentiation-only claim, which 2g deliberately makes false. **The bound still passes**,
+    because this brick's weakening goes through `store.weaken`, a sanctioned method, not
+    through a handed-out reference. A check that stays green while the thing it protected
+    is gone is worse than one that fails, because nothing turns red to say so.
+
+    So it now guards a **different and still-true** property: *every write to a road's
+    strength goes through a sanctioned store method* — `strengthen` or `weaken` — **rather
+    than through a reference handed out by a read**. That is an encapsulation guarantee, it
+    is what the check actually tests, and it survives 2g intact. The registry entry says so
+    in its own words rather than relying on this paragraph.
 
   - **This is a bounded window over a single trace.** No multi-step return estimation,
     no discounting across episodes, no propagation through a learned value estimate.
@@ -77,6 +85,15 @@ Specifically, and asserted in the suite rather than merely written here:
     and Backward Transfer. The conclusion was right and the reason was reasoning backwards
     from this module's own limitation to a property of the criteria. D-023's reason is
     both true and stronger, because it does not depend on the sign at all.
+
+  - **2g moves Butlin AE-1 from failing at TWO conjuncts to failing at ONE, and the
+    remaining failure is outright.** With a signed rule the first conjunct — *learning from
+    feedback* — becomes arguable in the narrow arithmetic sense that feedback now carries a
+    sign. **The second does not move at all**: the system selects no outputs and pursues no
+    goals, because it has none. There is no action, no goal representation, and no rule
+    selecting among them. Progress on an architectural axis is not satisfaction of the indicator,
+    and a reader must not be able to take the missing half being filled as the picture
+    being complete.
 
   - **It does not satisfy Butlin et al.'s AE-1** — *"learning from feedback and selecting
     outputs so as to pursue goals, especially where this involves flexible responsiveness
@@ -143,6 +160,13 @@ NEUTRAL_P_PRP: float = 0.0
 
 # Passed through to strengthen() as its base gain, scaled by budget x eligibility.
 DEFAULT_CREDIT_GAIN: float = 0.13
+
+# BRICK 2g: the rate at which an ADVERSE outcome weakens, independent of `base_gain`.
+# NEUTRAL AT 0.0 — at which a negative outcome writes nothing and the module reduces
+# exactly to 2f-i. UNCALIBRATED and registered as such before this code existed: the
+# acquisition/extinction asymmetry is documented (Bouton 2004; Frank et al. 2007; Niv et
+# al. 2012) but the RATIO is task- and species-specific, so no published value transfers.
+DEFAULT_DEPRESSION_GAIN: float = 0.0
 
 
 def _require_finite(name: str, x: float) -> float:
@@ -279,6 +303,7 @@ class CreditAssignment:
     road_ids: List[RoadID]
     eligibility: Dict[RoadID, float]
     gain: Dict[RoadID, float]
+    loss: Dict[RoadID, float]
     before: Dict[RoadID, float]
     after: Dict[RoadID, float]
     order_key: Dict[RoadID, int]
@@ -296,6 +321,7 @@ def assign_credit(
     window: Optional[int] = None,
     credited_road_ids: Optional[Sequence[RoadID]] = None,
     base_gain: float = DEFAULT_CREDIT_GAIN,
+    depression_gain: float = DEFAULT_DEPRESSION_GAIN,
     charge: Optional[Dict[str, float]] = None,
 ) -> CreditAssignment:
     """Apply credit for one designated outcome, through `store.strengthen`.
@@ -321,19 +347,28 @@ def assign_credit(
     _require_finite("outcome_magnitude", outcome_magnitude)
     _require_finite("p_prp", p_prp)
     _require_finite("base_gain", base_gain)
-    if outcome_magnitude < 0.0:
-        # FINDING 2f-1 (tester). Until this guard, a negative was silently abs()'d, so an
-        # adverse outcome strengthened a road byte-identically to a favourable one of the
-        # same size. The message states the true reason rather than naming a range,
-        # because the range is a symptom and the absence is the fact.
+    _require_finite("depression_gain", depression_gain)
+    if depression_gain < 0.0:
         raise ValueError(
-            f"outcome_magnitude must be >= 0, got {outcome_magnitude}. This mechanism is "
-            f"POTENTIATION-ONLY: it has no way to represent an adverse outcome, because no "
-            f"depression path exists — credit is applied through strengthen(), which only "
-            f"increases strength. Passing the magnitude of an adverse outcome would "
-            f"silently reinforce exactly what it was meant to discourage. Pass the "
-            f"magnitude of a FAVOURABLE outcome, or do not call assign_credit at all. "
-            f"Weakening is a separate mechanism that is not built.")
+            f"depression_gain must be >= 0, got {depression_gain}. It is the RATE at which "
+            f"an adverse outcome weakens, and a rate has no sign — the sign lives on "
+            f"`outcome_magnitude`. A negative rate here would make an adverse outcome "
+            f"strengthen, which is the defect this brick exists to remove.")
+    # CONVERTED, BRICK 2g. A negative `outcome_magnitude` is now ACCEPTED.
+    #
+    # THE SUPERSEDED REFUSAL, recorded rather than deleted so the limit leaves a trace:
+    # until 2g this raised, with the message "This mechanism is POTENTIATION-ONLY: it has
+    # no way to represent an adverse outcome, because no depression path exists — credit is
+    # applied through strengthen(), which only increases strength." Every clause of that
+    # was TRUE WHEN WRITTEN and every clause is now FALSE: a depression path exists
+    # (`store.weaken`), and credit is no longer applied through `strengthen` alone.
+    #
+    # WHAT REPLACES IT, and it is a narrower claim rather than no claim: an adverse outcome
+    # is honoured at a rate the caller sets, and at `depression_gain = 0.0` — the DEFAULT —
+    # it is honoured as zero, which is not the same as being refused. A caller who passes a
+    # negative outcome and leaves the rate at its neutral value gets no write and no error,
+    # because "this mechanism has no rate for that yet" is a different statement from "this
+    # mechanism cannot express that".
     if p_prp < 0.0:
         raise ValueError(f"p_prp must be >= 0, got {p_prp}")
     w = trace.window if window is None else window
@@ -372,21 +407,39 @@ def assign_credit(
     #   .gain directly and acts on the raw magnitude, or a future write path that does
     #   not go through strengthen(). Either makes the missing cap reachable.
     gains: Dict[RoadID, float] = {}
+    losses: Dict[RoadID, float] = {}
     for rid, e in elig.items():
         if allowed is not None and rid not in allowed:
             continue
-        g = base_gain * p_prp * e * outcome_magnitude
-        if g > 0.0:
-            gains[rid] = g
+        # THE SIGN IS READ HERE AND NOWHERE EARLIER. `elig` was computed with no knowledge
+        # of the outcome at all (D-7): it is a function of integer cycle distance only, so
+        # a positive and a negative outcome of the same magnitude produce byte-identical
+        # eligibility. That is the anti-readback guarantee — the trace records WHICH roads
+        # preceded an outcome and must never encode WHAT the outcome was, or anything
+        # reading it downstream reads back the answer it was meant to derive.
+        if outcome_magnitude > 0.0:
+            g = base_gain * p_prp * e * outcome_magnitude
+            if g > 0.0:
+                gains[rid] = g
+        elif outcome_magnitude < 0.0:
+            loss = depression_gain * p_prp * e * -outcome_magnitude
+            if loss > 0.0:
+                losses[rid] = loss
 
-    applied = sorted(gains, key=lambda r: order[r])
+    # One road cannot be both strengthened and weakened by ONE outcome: the sign is a
+    # property of the outcome, not of the road, so `gains` and `losses` are disjoint by
+    # construction. Ordered on the same intrinsic integer as before.
+    applied = sorted(set(gains) | set(losses), key=lambda r: order[r])
 
     before: Dict[RoadID, float] = {}
     after: Dict[RoadID, float] = {}
     for rid in applied:
         before[rid] = store.get_road(rid, apply_decay=False).strength
     for rid in applied:
-        store.strengthen(rid, charge, base_gain=gains[rid])
+        if rid in gains:
+            store.strengthen(rid, charge, base_gain=gains[rid])
+        else:
+            store.weaken(rid, base_loss=losses[rid])
     for rid in applied:
         after[rid] = store.get_road(rid, apply_decay=False).strength
 
@@ -394,6 +447,7 @@ def assign_credit(
         road_ids=applied,
         eligibility={r: elig[r] for r in applied} if applied else dict(elig),
         gain=gains,
+        loss=losses,
         before=before,
         after=after,
         order_key={r: order[r] for r in elig},

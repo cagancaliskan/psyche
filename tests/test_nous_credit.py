@@ -335,174 +335,137 @@ def test_I2_credit_decays_with_k_on_the_real_store():
 # I-5  The three asserted-negatives of §7
 # ─────────────────────────────────────────────────────────────────────────────
 
-def test_ASSERTED_NEGATIVE_the_trace_is_potentiation_only():
-    section("2f-1  ASSERTED NEGATIVE: POTENTIATION-ONLY — no depression path exists")
-    # The tester found that a negative outcome_magnitude was abs()'d and reinforced
-    # byte-identically to a positive one. Ruled: refuse it at the boundary, and do NOT
-    # build a weakening path in this pass. These assertions pin the refusal AND the
-    # absence, so that "we chose not to build it" cannot decay into "we forgot".
-    s, rp, _ = matched_pair_store()
-    trace = EpisodicTrace()
-    trace.record([rp])
-    for bad in (-1.0, -0.5, -1e-12, -1e9):
+def test_D7_ANTI_READBACK_eligibility_is_SIGN_BLIND():
+    section("2g  D-7 FIRST: eligibility is SIGN-BLIND — the anti-readback guarantee")
+    # Asserted before anything else in this brick, and directly rather than as a corollary.
+    # The trace records WHICH roads preceded an outcome; it must never encode WHAT the
+    # outcome was. If eligibility became sign-dependent, anything reading it downstream
+    # would read back the answer it was meant to derive — the 1e failure, inside the
+    # learner.
+    for mag in (1.0, 0.5, 1e-9, 7.25):
+        s_pos, rp, _ = matched_pair_store()
+        t = EpisodicTrace(); t.record([rp]); t.record([rp])
+        e_pos = assign_credit(s_pos, t, outcome_magnitude=mag, p_prp=1.0).eligibility
+        s_neg, rn, _ = matched_pair_store()
+        t2 = EpisodicTrace(); t2.record([rn]); t2.record([rn])
+        e_neg = assign_credit(s_neg, t2, outcome_magnitude=-mag, p_prp=1.0,
+                              depression_gain=0.5).eligibility
+        check(bits(e_pos[rp]) == bits(e_neg[rn]),
+              f"eligibility for +{mag} and -{mag} is BYTE-IDENTICAL "
+              f"({e_pos[rp]!r} vs {e_neg[rn]!r}) — the sign cannot reach it")
+    # STRUCTURAL, not merely observed: the eligibility path cannot see the outcome at all.
+    import inspect
+    path = inspect.getsource(cr.eligibility) + inspect.getsource(cr.EpisodicTrace.eligible)
+    # STRUCTURAL, decided by the SIGNATURE rather than by searching text. The first
+    # version of this check searched for the word "outcome" and went red on
+    # `eligible(outcome_cycle, ...)` — a CYCLE INDEX, not the outcome. A text scan cannot
+    # tell a parameter name from a data dependency, which is the same lesson the
+    # mechanism-versus-negation scan taught.
+    import ast as _ast
+    params = set(inspect.signature(cr.EpisodicTrace.eligible).parameters)
+    check("outcome_magnitude" not in params and "depression_gain" not in params,
+          f"EpisodicTrace.eligible cannot SEE the outcome's value or the rate — its "
+          f"parameters are {sorted(params - {'self'})}, all of them time or constants. The "
+          f"guarantee is structural: no future edit can make eligibility sign-dependent "
+          f"without first widening this signature")
+    check(list(inspect.signature(cr.eligibility).parameters) == ["k", "decay", "window"],
+          "eligibility takes an integer cycle distance and two constants: TIME ONLY")
+
+
+def test_CONVERTED_a_negative_outcome_is_HONOURED_not_refused():
+    section("2g  CONVERTED: an adverse outcome is honoured at its own rate")
+    # WAS an asserted-negative holding the refusal in place: `-1.0` raised, with a message
+    # stating that no depression path exists. Both are now false, by design.
+    s, rp, ru = matched_pair_store()
+    t = EpisodicTrace(); t.record([rp, ru])
+    before_p, before_u = strength_of(s, rp), strength_of(s, ru)
+    res = assign_credit(s, t, outcome_magnitude=-1.0, p_prp=1.0, depression_gain=0.5,
+                        credited_road_ids=[rp])
+    after_p, after_u = strength_of(s, rp), strength_of(s, ru)
+    check(after_p < before_p,
+          f"CONVERTED (was: ValueError): a NEGATIVE outcome WEAKENS the paired road "
+          f"({before_p:.6f} -> {after_p:.6f})")
+    check(bits(after_u) == bits(before_u),
+          "and the MATCHED control — same construction, same cycle, no outcome — is "
+          "byte-identical, so the decrease is attributable to the pairing")
+    check(res.loss.get(rp, 0.0) > 0.0 and rp not in res.gain,
+          "it is recorded as a LOSS, not a gain: the two are disjoint by construction "
+          "because the sign is a property of the outcome, not of the road")
+
+    # the asymmetry must be MEASURABLE, or the constant is a knob that does nothing
+    def move(mag, dg):
+        st, r, _ = matched_pair_store()
+        tt = EpisodicTrace(); tt.record([r])
+        b = strength_of(st, r)
+        assign_credit(st, tt, outcome_magnitude=mag, p_prp=1.0, depression_gain=dg)
+        return strength_of(st, r) - b
+    up, down_half, down_full = move(1.0, 0.0), move(-1.0, 0.5), move(-1.0, 1.0)
+    check(up > 0.0 > down_half > down_full,
+          f"the rate is MEASURABLE and monotone: +1.0 -> {up:+.6f}, -1.0@0.5 -> "
+          f"{down_half:+.6f}, -1.0@1.0 -> {down_full:+.6f}")
+    check(bits(abs(down_half)) != bits(up),
+          "and the asymmetry is real rather than nominal — the same magnitude does NOT "
+          "produce the mirror effect, which is what an independent rate is for")
+
+    section("2g  the NEUTRAL rate: expressible, and honoured as zero")
+    s2, r2, _ = matched_pair_store()
+    t2 = EpisodicTrace(); t2.record([r2])
+    b2 = snapshot(s2)
+    r = assign_credit(s2, t2, outcome_magnitude=-1.0, p_prp=1.0)   # default gain = 0.0
+    check(snapshot(s2) == b2 and r.road_ids == [],
+          "at the DEFAULT depression_gain=0.0 a negative outcome writes NOTHING and raises "
+          "nothing — 'no rate for that yet' is a different statement from 'cannot express "
+          "that', and only the second was true before 2g")
+    check(cr.DEFAULT_DEPRESSION_GAIN == 0.0,
+          "the neutral value is 0.0, stated explicitly")
+
+    section("2g  bounds: omega stays in [0,1] under any signed sequence")
+    s3, r3, _ = matched_pair_store()
+    t3 = EpisodicTrace()
+    for i in range(200):
+        t3.record([r3])
+        assign_credit(s3, t3, outcome_magnitude=(1.0 if i % 2 else -1.0), p_prp=1.0,
+                      depression_gain=0.9)
+        w = strength_of(s3, r3)
+        if not (0.0 <= w <= 1.0):
+            break
+    check(0.0 <= strength_of(s3, r3) <= 1.0,
+          f"200 alternating signed outcomes leave omega in [0,1] "
+          f"({strength_of(s3, r3):.9f}) — both saturations are structural, not clamps")
+    s4, r4, _ = matched_pair_store()
+    t4 = EpisodicTrace(); t4.record([r4])
+    for _ in range(500):
+        assign_credit(s4, t4, outcome_magnitude=-1.0, p_prp=1.0, depression_gain=1.0)
+    check(strength_of(s4, r4) >= 0.0,
+          f"and 500 consecutive adverse outcomes converge toward the floor without passing "
+          f"it ({strength_of(s4, r4):.12f}) — the decrement is proportional to what is "
+          f"there, so it saturates the way potentiation does at the ceiling")
+
+    section("2g  the rate is validated at the boundary (DEFECT-C's class)")
+    import math as _m
+    for bad in (-1.0, float("nan"), float("inf"), float("-inf")):
         try:
-            assign_credit(s, trace, outcome_magnitude=bad, p_prp=1.0)
-            check(False, f"outcome_magnitude={bad} must be REFUSED, not absorbed")
-        except ValueError as e:
-            check("POTENTIATION-ONLY" in str(e),
-                  f"outcome_magnitude={bad} is refused, and the message states WHY rather "
-                  f"than naming a range: {str(e)[:70]}...")
-    # the refusal must not have cost the legitimate zero, which is a real no-op
-    before = snapshot(s)
-    r0 = assign_credit(s, trace, outcome_magnitude=0.0, p_prp=1.0)
-    check(snapshot(s) == before and r0.road_ids == [],
-          "outcome_magnitude=0.0 is still ACCEPTED and writes nothing — an outcome of no "
-          "size is not an adverse outcome, and conflating them would be a second defect")
+            st, r5, _ = matched_pair_store()
+            tt = EpisodicTrace(); tt.record([r5])
+            assign_credit(st, tt, outcome_magnitude=-1.0, p_prp=1.0, depression_gain=bad)
+            check(False, f"depression_gain={bad} must be refused")
+        except ValueError:
+            check(True, f"depression_gain={bad} refused at the boundary")
 
-    # THE ABSENCE ITSELF, asserted structurally. If a weakening path is ever added, these
-    # go red and force the author to re-read this block rather than discover it.
-    import ast
-    import inspect
-    src = inspect.getsource(cr)
-    check("abs(outcome_magnitude)" not in src,
-          "the abs() that caused FINDING 2f-1 is GONE, not merely guarded — leaving it "
-          "would keep saying 'the sign does not matter here'")
-    # Decided by the AST, not by searching text. The first version of this check looked
-    # for the WORDS "weaken"/"depress" and went red on the module's own docstring, which
-    # uses them to state that no such path exists. A text scan cannot tell a mechanism
-    # from its negation; only the call graph can.
-    tree = ast.parse(src)
-    store_calls = sorted({n.func.attr for n in ast.walk(tree)
-                          if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
-                          and isinstance(n.func.value, ast.Name)
-                          and n.func.value.id == "store"})
-    check(store_calls == ["get_road", "strengthen"],
-          f"the module's ENTIRE store surface is {store_calls} — one read and one write, "
-          f"and the write is strengthen(), which cannot decrease strength. The "
-          f"one-directional bound is structural, not a documentation promise")
-    defs = sorted(n.name for n in ast.walk(tree)
-                  if isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef)))
-    check(not any(w in d.lower() for d in defs
-                  for w in ("weaken", "depress", "decrement", "punish")),
-          f"and no function in the module implements one: {defs}")
-    note("CONSEQUENCE, recorded here because a reader of this suite is exactly who needs "
-         "it: every outcome this mechanism can express STRENGTHENS what preceded it, so "
-         "the graph moves one way only, toward saturation. Nothing can be undone. What is "
-         "built assigns ATTENTION, not credit — it marks which roads preceded an outcome, "
-         "not whether that outcome was worth repeating. 2f-i therefore does NOT satisfy "
-         "Butlin AE-1 and moves NONE of SPEC-2e's five AOL criteria.")
-
-
-def test_2f3_the_potentiation_basis_is_an_ABSENCE_and_it_is_machine_checked():
-    section("2f-3  the potentiation basis is an ABSENCE, registered and enforced")
-    # FINDING 2f-3: the original basis ("the store surface is get_road + strengthen")
-    # did not establish the claim, because get_road(apply_decay=False) hands back the
-    # LIVE stored Road. The claim is true; its basis is now stated as what it is.
-    import json
-    import subprocess
-    reg = json.loads((ROOT / "tools" / "ledger.json").read_text(encoding="utf-8"))
-    entry = reg["float_accumulations"]["src/nous_credit.py:EpisodicTrace.eligible.<return>"]
-    bounds = entry.get("bound_on_absence") or []
-    binding = [b for b in bounds if b.get("kind") == "binding"]
-    check(len(binding) == 1 and binding[0]["symbol"] == "get_road",
-          "the absence is REGISTERED as a machine-checked bound on binding get_road, so "
-          "a future brick cannot invalidate it silently")
-    check("_inherited_weakness" in binding[0]
-          and "dataflow" in binding[0]["_inherited_weakness"].lower(),
-          "and the bound records its own blind spots — a reader cannot mistake a clean "
-          "run for proof that no write-through is possible by any route")
-    dismissed = binding[0].get("dismissed") or []
-    check(len(dismissed) == 3,
-          f"CONVERTED for brick 0g (was 4): the four BINDINGS in src/ are covered by THREE "
-          f"dismissals ({len(dismissed)}), because two of them — the pair in "
-          f"form_coalitions — are textually identical in one scope and therefore share a "
-          f"content-anchored key. One reason covers both, and it was rewritten to describe "
-          f"both rather than carried forward from one")
-    check(all(":" in x and ".py:" in x and not x.split(" ", 1)[0][-4:].isdigit()
-              for x in dismissed),
-          f"and every key is content-anchored, not a line number: "
-          f"{[x.split(' ', 1)[0] for x in dismissed]}")
-
-    # THE LIVE-REFERENCE FACT, asserted here rather than taken on trust — it is the whole
-    # reason the basis had to change.
-    s = frozen_store()
-    a = s.add_node("a", NodeType.CONCEPT)
-    b = s.add_node("b", NodeType.CONCEPT)
-    r = s.add_road(a, b)
-    s.strengthen(r)
-    v1 = s.get_road(r, apply_decay=False)
-    check(v1 is s.get_road(r, apply_decay=False),
-          "get_road(apply_decay=False) returns the SAME object twice — it is the stored "
-          "road, which is why binding it is a write-capable handle")
-    w = s.get_road(r, apply_decay=True)
-    check(w is not s.get_road(r, apply_decay=True),
-          "while apply_decay=True returns a fresh copy each call — the asymmetry that "
-          "made this easy to miss, pinned so it cannot silently change")
-
-    # THE BOUND MUST BITE. Plant an undismissed binding-with-write and require C6 red.
-    tmp = Path(tempfile.mkdtemp(prefix="bind-"))
-    shutil.copytree(ROOT / "src", tmp / "src")
-    (tmp / "tools").mkdir()
-    shutil.copy(ROOT / "tools" / "ledger.json", tmp / "tools" / "ledger.json")
-    planted = tmp / "src" / "nous_field.py"
-    planted.write_text(
-        "def _planted(store, rid):\n"
-        "    road = store.get_road(rid, apply_decay=False)\n"
-        "    road.strength *= 0.5\n"
-        "    return road\n\n" + planted.read_text(encoding="utf-8"), encoding="utf-8")
-    rc = subprocess.run([sys.executable, str(ROOT / "tools" / "ledger_check.py"),
-                         "--root", str(tmp), "--only", "C6"],
-                        capture_output=True, text=True)
-    check(rc.returncode == 1 and "RESTS ON THE ABSENCE" in rc.stdout,
-          f"a planted `road = get_road(...); road.strength *= 0.5` turns C6 RED "
-          f"(exit {rc.returncode}) — the bound is enforced, not decorative")
-    shutil.rmtree(tmp, ignore_errors=True)
-    note("DECLINED DELIBERATELY: the general 'write through a returned object' question "
-         "needs real dataflow — passing the road to a function, storing it in a "
-         "container, returning it upward. That is not built, was not attempted badly, "
-         "and is handed to architect-pm as its own brick. This check covers BINDING only.")
-
-
-def test_2f4_the_AOL_and_AE1_reasons_are_the_true_ones():
-    section("2f-4  the stated REASONS are checked, not only the conclusions")
-    import inspect
-    doc = inspect.getsource(cr)
-    check("D-023" in doc,
-          "the AOL paragraph now cites D-023 — mechanism absence — as its reason")
-    check("was invented" in doc or "and it was invented" in doc,
-          "and the superseded reason is recorded as wrong rather than quietly deleted, so "
-          "a reader who remembers it finds the retraction")
-    # The false reason must be GONE as an assertion, not merely contradicted elsewhere.
-    # WHITESPACE-NORMALISED, because the docstring wraps: the first version of this check
-    # searched for a string that spans a line break and therefore could never match — a
-    # vacuous assertion of exactly the kind this project keeps finding. Normalising makes
-    # it able to fail, and the two-sided check below proves it does.
-    import re as _re
-    norm = lambda t: _re.sub(r"\s+", " ", t)
-    bad = ("each of AOL-2, AOL-3 and AOL-4 needs an outcome to be able to make some "
-           "earlier action LESS likely")
-    check(bad not in norm(doc),
-          "the invented claim about what AOL-2/3/4 require is no longer asserted")
-    # RULE FOUR for this assertion specifically: it must FAIL against 7886167.
-    import subprocess as _sp
-    old_mod = _sp.run(["git", "show", "7886167:src/nous_credit.py"], cwd=str(ROOT),
-                      capture_output=True, text=True)
-    if old_mod.returncode == 0:
-        check(bad in norm(old_mod.stdout),
-              "and the SAME normalised check finds it in 7886167 — so the assertion above "
-              "is live, not a string that could never match")
-    check("first" in doc and "conjunct" in doc,
-          "and AE-1's reason is corrected too: it fails at the FIRST conjunct (no outputs "
-          "selected, no goals) rather than only at the 'especially' clause — the same "
-          "backwards move, caught by applying the same suspicion")
-    # THE PROPERTY, not the wording: every AOL/AE claim in the module must be a NEGATIVE
-    for line in doc.splitlines():
-        if "AOL-" in line or "AE-1" in line:
-            low = line.lower()
-            if "satisf" in low:
-                check(("not satisf" in low or "zero of" in low or "does not" in low
-                       or "prerequisite" in low),
-                      f"every satisfaction claim about a criterion is a NEGATIVE: {line.strip()[:76]}")
+    section("2g  the store's mirror is one-directional too")
+    st, r6, _ = matched_pair_store()
+    for bad in (-0.5, float("nan"), float("inf")):
+        try:
+            st.weaken(r6, base_loss=bad)
+            check(False, f"weaken(base_loss={bad}) must be refused")
+        except ValueError:
+            check(True, f"weaken(base_loss={bad}) refused — a rate has no sign, and "
+                        f"a negative one would strengthen through the weakening method")
+    bt = st.get_road(r6, apply_decay=False).traversal_count
+    st.weaken(r6, base_loss=0.3)
+    check(st.get_road(r6, apply_decay=False).traversal_count == bt,
+          "weaken does NOT advance traversal_count — an outcome arriving later is not a "
+          "crossing, and conflating them would make one field count two things")
 
 
 def test_I5_empty_trace_changes_nothing():
@@ -947,9 +910,8 @@ def main():
         test_I2_paired_road_gains_more_than_a_matched_unpaired_road,
         test_I2_the_bar_is_the_shuffled_control_not_zero,
         test_I2_credit_decays_with_k_on_the_real_store,
-        test_ASSERTED_NEGATIVE_the_trace_is_potentiation_only,
-        test_2f3_the_potentiation_basis_is_an_ABSENCE_and_it_is_machine_checked,
-        test_2f4_the_AOL_and_AE1_reasons_are_the_true_ones,
+        test_D7_ANTI_READBACK_eligibility_is_SIGN_BLIND,
+        test_CONVERTED_a_negative_outcome_is_HONOURED_not_refused,
         test_I5_empty_trace_changes_nothing,
         test_I5_never_traversed_roads_are_never_credited,
         test_I5_ANTI_READBACK_outcome_is_never_derived_from_strength,

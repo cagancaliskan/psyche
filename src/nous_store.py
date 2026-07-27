@@ -384,6 +384,47 @@ class SubstrateStore:
         # closure is re-evaluated ONLY here, on an active crossing — never on a read
         _open_close_on_crossing(road, one_shot_trauma=(peak >= 0.85 and road.valence < 0))
 
+    def weaken(self, road_id: RoadID, base_loss: float = 0.0) -> None:
+        """Lower an EXISTING road's strength — BRICK 2g, the mirror of `strengthen`.
+
+        `loss = base_loss * road.strength`, so the decrement is proportional to what is
+        there, exactly as `strengthen`'s gain is proportional to `(1 - strength)`. The
+        effect therefore saturates at the FLOOR the same way potentiation saturates at
+        the ceiling, and the bound is structural rather than a clamp bolted on: a road
+        approaching 0.0 loses geometrically less, so repeated weakening converges toward
+        0.0 and never passes it.
+
+        WHAT THIS DELIBERATELY DOES NOT DO, and each omission is the mirror of something
+        `strengthen` does for a reason:
+          - it does NOT touch `charges`. Weakening a path's conductance is not the same
+            event as changing what it feels like, and conflating them would make one
+            constant do two jobs.
+          - it does NOT advance `traversal_count`. That field counts crossings, and an
+            outcome arriving later is not a crossing.
+          - it does NOT re-evaluate closure. Closure is sticky and changes only on an
+            active crossing (`_open_close_on_crossing`); a road must not be closed by
+            bookkeeping that no traversal caused.
+        Lazy decay IS applied first, exactly as `strengthen` does, so the road is current
+        before the decrement lands.
+
+        `base_loss = 0.0` is a no-op that still persists decay — the same shape
+        `strengthen(base_gain=0.0)` has, and callers wanting byte-identity must skip the
+        call rather than pass zero."""
+        road = self._roads.get(road_id)
+        if road is None:
+            raise NotFound(f"road {road_id}")
+        if not math.isfinite(base_loss):
+            raise ValueError(f"base_loss must be finite, got {base_loss!r}")
+        if base_loss < 0.0:
+            raise ValueError(
+                f"base_loss must be >= 0, got {base_loss}. `weaken` takes the MAGNITUDE of "
+                f"the decrement; a negative would strengthen, and strengthening has its "
+                f"own method with its own saturation. One direction per method.")
+        now = self.clock.now()
+        _persist_decay(road, now)
+        road.strength = max(0.0, road.strength - base_loss * road.strength)
+        road.last_touched = now
+
     # ── WRITE: convenience (biology lives here, not in the primitives) ─────────
 
     def traverse(self, source_id: NodeID, target_id: NodeID,

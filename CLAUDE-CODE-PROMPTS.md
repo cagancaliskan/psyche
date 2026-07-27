@@ -2066,7 +2066,7 @@ Open your report with the plain-language summary for Cagan.
 
 ---
 
-## CC-26 · 0g — the registry that rots, and it rots against its own docstring ▶ LIVE
+## CC-26 · 0g — the registry that rots ✔ DONE (5a1c385, b2f71f6)
 
 SPEC-2g is re-scoped to option C and **brick 2h** carries 0b2's unpaid default-flip debt (9c15249).
 The architect verified my premise instead of adopting it, and **found a refinement I had missed**:
@@ -2155,6 +2155,203 @@ output, never estimated. ledger_check exits 1 with exactly 16 [C2] under docs/pa
 SELF-AUDIT
 All seven items, plus the one this arc added: for every claim you leave in a docstring, is the
 REASON checked, or only the conclusion?
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
+
+## CC-27 · Verify 0g ✔ DONE (401f7ee; PASS; census 11 of 22)
+
+0g is fixed (`5a1c385`, `b2f71f6`). Key is now `<path>:<scope>.<expression>` — the format
+`Accumulation.key` already documented, applied to the field that skipped it. **Both directions
+asserted**, the no-false-alarm half proved by showing one comment line still fires a false [C6] on
+the pre-fix tool. An ordinal was rejected with the right reason: deleting an earlier occurrence
+renumbers the later one — line-number rot again, smaller blast radius, same shape. **A stale reason
+was found by re-reading**, exactly as the docstring predicted mechanical re-keying would preserve.
+
+**And the finding that matters most has nothing to do with 0g.** Both recorded digests had been
+**stale since `1065c43`** — four passes — because 2f-i added the fifteenth site and nothing checked
+them. The builder proved its own change moved neither, by running both tools against both trees.
+
+**That is the fourth instance of one shape, and it deserves a name.** C1 verifies ledger == capture,
+never capture == reality — which is how a whole suite vanished. C3 verifies a status is a legal
+token, never that it matches what the code does — which is how `0e` read `DESIGNED` for two passes
+after being fixed. And now the digests: recorded so nobody would re-derive them, and therefore
+never re-derived.
+
+> **Rule 12 — a fact recorded to avoid re-derivation must have exactly one thing that re-derives
+> it.** Otherwise the record is a claim with no falsifier, and the ledger's entire design — record
+> it once so nobody recomputes it — becomes a machine for manufacturing confident stale numbers.
+
+The three are **one family and get one check**, in CC-12, built together rather than patched
+separately. Until then the digests are recorded-but-unchecked and must say so where they are
+recorded.
+
+```
+/psyche-orient
+
+Work in the TESTER lane. Verify 0g (5a1c385, b2f71f6), convert your six red assertions, hand back.
+This is the last pass before 2g's mechanism.
+
+JOB ONE — CONVERT YOUR SIX
+Six assertions in tests/test_tester_2f_adversarial.py are red by design: they assert the old
+line-keyed dismissals, plus FINDING 2f-5's asserted-negative, which correctly flips now the defect
+is fixed. Convert, never delete, each proved by failing against b09e7be.
+
+JOB TWO — THE INSTABILITY DIRECTION IS THE ONE THAT MATTERS
+Stability is easy to get by keying on nothing. **A key that cannot go stale is worse than a line
+number**, because a dismissal that survives its site changing silently excuses a site that is no
+longer the one it was written about. So attack instability hardest:
+- Change the dismissed expression: the dismissal must stop applying and the finding must return.
+- Rename the enclosing scope: the build must go red. **And verify the MECHANISM, not the colour** —
+  the builder says the finding is "unregistered accumulation", not a revived bound, because the
+  registry's own key is scope-anchored too, so the entry unmatches and the bound is never
+  evaluated. Red by a different path than a reader would assume. That is a reason, and this arc has
+  taught that reasons are where the errors live. Confirm it or refute it.
+- Move a dismissed site to a different scope entirely. Delete it. Duplicate it.
+
+JOB THREE — THE DOCUMENTED LIMITATION, AND WHETHER ITS MERGED REASON IS TRUE
+Two textually identical occurrences in one scope share a key, so one reason covers both. The
+builder found this the hard way: the old 167 entry read "used solely for road.target_id" — true of
+that line, false of the merged site, and mechanical re-keying would have carried it forward.
+Verify the merged reason is now true of BOTH occurrences, not just the one someone was looking at.
+Then test the limitation's edges: what happens when the two diverge, and when one is deleted?
+
+JOB FOUR — THE REFUSALS AND CONTRACTS
+- A legacy `path:NNN` dismissal gets its own finding, so a half-migrated ledger cannot pass while
+  its old entries excuse nothing. Confirm, and confirm a MIXED ledger fails rather than partially
+  passing.
+- Keys are whitespace-free by construction, asserted as a contract — the builder's first format
+  produced `road = store.get_road`, which `split(" ", 1)[0]` truncated to nothing. Attack the
+  parser directly: tabs, unicode spaces, an empty key, a key containing the delimiter.
+
+JOB FIVE — RE-DERIVE THE DIGESTS YOURSELF, AND CONFIRM THE STALENESS ACCOUNT
+The builder reports both digests were stale since 1065c43 and that its own change moved neither,
+proved by running both tools against both trees. Do not inherit that. Re-derive independently, and
+confirm the corrected values are right rather than merely new.
+
+Then answer one question for the record: **how many other recorded values in tools/ledger.json have
+nothing that re-derives them?** Enumerate them. Do not fix any — this is a census, and it is the
+evidence for Rule 12: *a fact recorded to avoid re-derivation must have exactly one thing that
+re-derives it.* C1 (ledger vs capture, never capture vs reality), C3 (status token valid, never
+status vs code) and the digests are three instances; your census tells us whether there are more.
+
+REGRESSION
+Retro-catch in full — 10/12/12, all three historical bugs, four MUST-CATCH sites.
+
+RULE FOUR
+Every assertion added or changed shown capable of failing against b09e7be. For string matches use a
+normalised comparison — rule 4a: only a negative containment assertion can pass vacuously.
+
+VERDICT
+PASS only if the instability direction holds on every attack, the merged reason is true of both
+occurrences, and your digest re-derivation is independent of the builder's.
+
+Open your report with the plain-language summary for Cagan.
+```
+
+---
+
+## CC-28 · 2g — the missing half ▶ LIVE
+
+0g closed (`401f7ee`), step zero satisfied, runner green at 26 suites / 2,608 / 0 failed / 0 aborted.
+The tester attacked instability six ways and it held; it confirmed the builder's *mechanism* claim
+rather than its colour; and it re-derived the digests independently, **correcting the account** —
+the recorded value was two revisions behind, not one.
+
+**The Rule-12 census came back 11 of 22, not 3 of 3.** So the rule as I stated it is wrong for a
+whole class and must be split:
+
+- **Machine-derivable** (digests, `captured_at`/`captured_python`, status-vs-code, capture-vs-reality):
+  Rule 12 applies as written — one re-deriver each, built as ONE check in CC-12, not patched
+  separately.
+- **Consumed but never validated** (`claim_quarantine_paths`, `count_quarantine_paths`): validate
+  that each path still exists and is still needed. Cheap; CC-12.
+- **Unfalsifiable by construction** — every `float_accumulations[*].reason`, brick names and notes,
+  `uncalibrated_constants` descriptions, `meaning_bar`. **No checker can ever cover these**, and they
+  are what the whole registry rests on. Rule 12 cannot apply; **Rule 9 already does** — a registry's
+  reasons need a human adversary on every pass. What the census adds is that this is not a special
+  case, it is *half the ledger*.
+
+> **Rule 12, corrected:** a recorded fact must have either a re-deriver, or a named human obligation
+> that re-reads it on a stated cadence. **A fact with neither should not be recorded as a fact.**
+
+```
+/psyche-orient
+
+Work in the BUILDER lane. Brick 2g — asymmetric depression with its own rate, SPEC-2g Option C.
+Step zero (0g) is closed. Follow the spec; do not re-design it. If the spec is ambiguous, or
+finishing would force you to GUESS at a goal or a claim, stop and hand back.
+
+THE INVARIANT TO WATCH HARDEST — D-7, ANTI-READBACK
+Eligibility must stay SIGN-BLIND: byte-identical for a positive and a negative outcome of the same
+magnitude. The trace records WHICH roads preceded an outcome; it must not encode WHAT the outcome
+was. If eligibility becomes sign-dependent, the trace carries the answer and anything downstream
+reading it is reading back what it was supposed to derive — this project's oldest failure mode
+(1e), arriving inside the learner. Assert it directly and early, not as a corollary.
+
+THE TRAP THIS BRICK SETS — a guarantee that outlives its purpose
+2f-i's docstring claims POTENTIATION-ONLY, and that claim rests on a machine-checked absence bound
+(`binding` on `get_road`), which exists to support "nothing in src/ can lower a road's strength".
+**2g deliberately makes that false.** But the bound may well keep PASSING, because your weakening
+will go through a sanctioned path rather than through a bound road reference.
+
+So: a check that still goes green while the thing it was protecting is gone. That is
+"right conclusion, wrong reason" inverted, and it is worse, because nothing turns red to tell you.
+Handle it explicitly — re-scope the bound to what it now guards, or retire it with its reason
+recorded. **Silently leaving a passing bound whose purpose has been deleted is the one outcome that
+is not acceptable.** Say in your report which you did and why.
+
+CONVERT, NEVER DELETE — the refusal becomes an acceptance
+A negative `outcome_magnitude` is currently REFUSED, with an asserted-negative and a message
+stating that no depression path exists. Both become false. Convert both: the assertion becomes the
+positive case, and the message's claim is replaced rather than removed. The superseded text is
+recorded as superseded, not deleted — a deleted claim leaves no trace that the limit ever existed.
+
+THE OVERLAY, AND MEASURE THE NOISE FLOOR FIRST
+Default-off, neutral value byte-identical, proven under attack **on a frozen clock**. Run two
+identical off-calls and confirm they agree BEFORE concluding anything from an off-vs-on comparison —
+a live clock manufactures differences and this project has filed a false defect that way.
+
+THE CONSTANT
+`depression_gain` is already on `uncalibrated_constants` with what would calibrate it, registered
+before any code existed. Do not add a second constant. If the mechanism seems to need one, stop and
+hand back — inventing a constant to make a shape work is a trap this project has already sprung.
+
+STATE WHAT 2g DOES NOT MAKE TRUE, IN THE MODULE, NOT THE REPORT
+- Butlin AE-1 moves from failing at TWO conjuncts to failing at ONE. The second — selecting outputs
+  so as to pursue goals — still fails outright: the system selects no outputs and has no goals.
+- Four of the five AOL criteria stay MECHANISM ABSENT regardless, for D-023's reason. AOL-5 is the
+  sole exception and only under 2h.
+- Cite D-023 rather than restating it, and check the REASON of every claim you leave, not just its
+  conclusion. Four instances of right-conclusion-wrong-reason were found in 2f-i.
+
+LANGUAGE — THIS IS THE MOST DANGEROUS BRICK YET FOR IT
+0f is unfixed: C4 matches literal phrases and any interpolated word evades it. And with a signed
+rule, "the system learns from consequences" stops being obviously false and becomes *almost* true —
+which is exactly when an overclaim slips through review. A docstring may say the mechanism is
+*inspired by* three-factor plasticity. It may not say the code learns, wants, remembers or
+understands. You are the gate here.
+
+LOOP-CLOSURE AND THE FLOAT RULE
+Drive it with activations produced by the real pipeline, never values you chose: adverse outcomes
+after multi-cycle traces, alternating signs, a negative with no preceding traversal, magnitudes at
+the window edge. `math.fsum` for every float fold; every comparison resolves on an intrinsic integer
+before it resolves on a float.
+
+0d's EXAM AGAIN — report it either way
+Did C6 catch an accumulation you would otherwise have shipped, or did it stay green while you wrote
+new float arithmetic? Both answers are publishable; the second is more interesting. Do not omit it.
+
+RUN
+Full suite on every interpreter available, plus tools/test_ledger.py. Totals read from the runner
+output, never estimated. Report both digests and whether each moved, and why. ledger_check exits 1
+with exactly 16 [C2] under docs/paper/.
+
+SELF-AUDIT
+All seven items, plus: for every claim you leave in a docstring, is the REASON checked or only the
+conclusion?
 
 Open your report with the plain-language summary for Cagan.
 ```
