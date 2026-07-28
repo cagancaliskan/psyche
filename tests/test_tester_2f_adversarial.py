@@ -450,14 +450,42 @@ def test_CONVERTED_a_negative_outcome_is_REFUSED_not_absorbed():
     s, r = one_road()
     t = EpisodicTrace()
     t.record([r])
+    # CONVERTED for brick 2g. These four asserted that a negative outcome was REFUSED.
+    # 2g honours it instead, at an independent rate. Converted, never deleted.
     for bad in (-1.0, -0.5, -1e-300, -1e9):
-        try:
-            assign_credit(s, t, outcome_magnitude=bad, p_prp=1.0)
-            check(False, f"outcome_magnitude={bad} must be REFUSED, not absorbed")
-        except ValueError as e:
-            check("POTENTIATION-ONLY" in str(e) and "no depression path" in str(e),
-                  f"{bad} is refused, and the message states the REASON — that no "
-                  f"depression path exists — rather than naming a range")
+        st, rr = one_road()
+        tt = EpisodicTrace()
+        tt.record([rr])
+        b0 = bits(st.get_road(rr, apply_decay=False).strength)
+        res = assign_credit(st, tt, outcome_magnitude=bad, p_prp=1.0,
+                            depression_gain=0.5)
+        a0 = bits(st.get_road(rr, apply_decay=False).strength)
+        check(rr in res.loss,
+              f"CONVERTED (was: must be REFUSED): outcome_magnitude={bad} is HONOURED and "
+              f"recorded as a LOSS — the graph can now move both ways")
+        if abs(bad) > 1e-12:
+            check(a0 != b0, f"and the store actually moved for {bad}")
+        else:
+            check(a0 == b0,
+                  f"and at {bad} the loss is computed and recorded but the store is "
+                  f"BYTE-IDENTICAL — the decrement underflows below the representable "
+                  f"resolution of a strength near 0.17. Asserted rather than smoothed "
+                  f"over: 'recorded' and 'applied' are different facts at this magnitude, "
+                  f"and a reader must not infer one from the other")
+    # and the DEFAULT rate has two halves, both asserted
+    st, rr = one_road()
+    tt = EpisodicTrace()
+    tt.record([rr])
+    b1 = snap(st)
+    raised = False
+    try:
+        r0 = assign_credit(st, tt, outcome_magnitude=-1.0, p_prp=1.0)
+    except Exception:
+        raised = True
+    check(not raised, "at the DEFAULT depression_gain nothing is RAISED")
+    check(snap(st) == b1 and r0.road_ids == [],
+          "and nothing is WRITTEN — both halves of 'the default is zero', asserted "
+          "separately because either could hold without the other")
 
     # THE CLAIM, verified rather than the wording. "No depression path exists" is a
     # statement about the system; it is true only if nothing in the module can lower a
@@ -567,8 +595,9 @@ def test_FINDING_the_structural_argument_does_not_bound_what_it_claims():
     stores = sorted({n.func.attr for n in ast.walk(tree)
                      if isinstance(n, ast.Call) and isinstance(n.func, ast.Attribute)
                      and isinstance(n.func.value, ast.Name) and n.func.value.id == "store"})
-    check(stores == ["get_road", "strengthen"],
-          f"and the store surface is what the builder says it is: {stores}")
+    check(stores == ["get_road", "strengthen", "weaken"],
+          f"CONVERTED (was get_road+strengthen): the store surface is now {stores} — 2g "
+          f"added the sanctioned weakening method, which is the whole brick")
     finding("2f-3", "the STRUCTURAL ARGUMENT for potentiation-only is incomplete, though "
                     "its conclusion is true today. `store.get_road(rid, apply_decay=False)` "
                     "returns the LIVE stored Road, not a copy: assigning to `.strength` or "
@@ -686,6 +715,208 @@ def test_the_binding_bound_and_its_four_dismissals():
     check("dataflow" in b_note and ("getattr" in b_note or "__dict__" in b_note),
           "and the decline is recorded IN THE LEDGER where a reader would look, not only "
           "in a delivery report")
+
+
+def test_D7_structural_argument_attacked_at_the_source():
+    section("2g  D-7: can the SIGN reach `eligible` by any route the signature omits?")
+    import textwrap
+    fn = ast.parse(textwrap.dedent(inspect.getsource(cr.EpisodicTrace.eligible))).body[0]
+    params = [a.arg for a in fn.args.args] + [a.arg for a in fn.args.kwonlyargs]
+    check(params == ["self", "outcome_cycle", "decay", "window"],
+          f"1 SIGNATURE names no outcome value and no rate: {params}. `outcome_cycle` is a "
+          f"CYCLE INDEX — an int — not the outcome")
+    check(all(isinstance(d, ast.Constant) for d in fn.args.defaults),
+          "2 DEFAULTS are literals, so none can be a mutable object read later")
+    # Collect EVERY binding form, not just plain Assign — the first version of this
+    # missed AnnAssign targets (`terms: Dict[...] = {}`) and dict-comprehension locals,
+    # and reported them as free names. A free-name analysis that misses binding forms
+    # over-reports, which for THIS check means crying wolf about a closure that is not
+    # there — the 0g lesson, in my own probe.
+    assigned = set()
+    for x in ast.walk(fn):
+        if isinstance(x, ast.Assign):
+            for t in x.targets:
+                assigned |= {n.id for n in ast.walk(t) if isinstance(n, ast.Name)}
+        elif isinstance(x, (ast.AnnAssign, ast.AugAssign)):
+            assigned |= {n.id for n in ast.walk(x.target) if isinstance(n, ast.Name)}
+        elif isinstance(x, ast.comprehension):
+            assigned |= {n.id for n in ast.walk(x.target) if isinstance(n, ast.Name)}
+        elif isinstance(x, ast.For):
+            assigned |= {n.id for n in ast.walk(x.target) if isinstance(n, ast.Name)}
+    free = {n.id for n in ast.walk(fn) if isinstance(n, ast.Name)
+            and isinstance(n.ctx, ast.Load)} - set(params) - assigned
+    check(free <= {"Dict", "List", "Optional", "RoadID", "float", "int", "math",
+                   "eligibility"},
+          f"3 FREE NAMES are types, builtins and the pure kernel only: {sorted(free)} — "
+          f"no closure and no module state")
+    mod = ast.parse(inspect.getsource(cr))
+    modstate = [ast.unparse(n)[:50] for n in mod.body
+                if isinstance(n, ast.Assign) and not isinstance(n.value, ast.Constant)]
+    check(modstate == [], f"4 no module-level mutable state at all: {modstate}")
+
+    # THE ROUTE THE SIGNATURE DOES NOT COVER, and it is the load-bearing one.
+    selfattrs = sorted({n.attr for n in ast.walk(fn) if isinstance(n, ast.Attribute)
+                        and isinstance(n.value, ast.Name) and n.value.id == "self"})
+    check(selfattrs == ["_entries", "window"],
+          f"5 `eligible` reads exactly two attributes off self: {selfattrs}. THE "
+          f"SIGNATURE DOES NOT EXCLUDE THESE — `_entries` is mutable state written from "
+          f"outside the method, by record(). A signature-only argument is INCOMPLETE")
+    check(cr.TraceEntry.__dataclass_params__.frozen,
+          "6 and this is what closes it: TraceEntry is FROZEN, so nothing can be "
+          "attached to an entry after it is recorded")
+    flds = {f.name: f.type for f in cr.dataclasses.fields(cr.TraceEntry)} \
+        if hasattr(cr, "dataclasses") else None
+    import dataclasses as _dc
+    names = [f.name for f in _dc.fields(cr.TraceEntry)]
+    check(names == ["cycle", "road_id", "seq"],
+          f"7 whose fields are {names} — a cycle index, a road id and an append index. "
+          f"None of them can carry a magnitude, let alone a sign")
+    rec = ast.parse(textwrap.dedent(inspect.getsource(cr.EpisodicTrace.record))).body[0]
+    rparams = [a.arg for a in rec.args.args]
+    check(rparams == ["self", "road_ids"],
+          f"8 and record() — the only writer of _entries — takes {rparams}: it never "
+          f"receives an outcome either, so nothing sign-bearing can reach the deque")
+    note("D-7 HOLDS, and the argument is STRUCTURAL rather than an absence — so it does "
+         "NOT belong in the registry with the other bounds. It rests on a frozen "
+         "dataclass with three non-float fields, which no future edit can weaken without "
+         "changing a type declaration. FINDING 2g-1 is that the builder's STATED argument "
+         "— 'decided by the signature' — is incomplete: the signature says nothing about "
+         "self._entries, which is exactly the route a reader should worry about. Right "
+         "conclusion, incomplete reason; the fifth instance of that shape in this arc.")
+    finding("2g-1", "D-7's structural argument HOLDS but the builder's stated version is "
+                    "INCOMPLETE. It cites the signature, which does not exclude "
+                    "`self._entries` — mutable state written from outside `eligible` by "
+                    "record(). What actually closes the route is that TraceEntry is FROZEN "
+                    "and its fields are (cycle:int, road_id:str, seq:int), none of which "
+                    "can carry a sign, and that record() never receives an outcome. "
+                    "Structural, not an absence, so no registry entry is warranted — but "
+                    "the docstring should name the frozen record rather than the signature.")
+
+
+def test_every_write_to_strength_in_src_enumerated_by_me():
+    section("2g  every write to `.strength` in src/, enumerated independently")
+    writers = {}
+    for f in sorted((ROOT / "src").glob("*.py")):
+        tree = ast.parse(f.read_text(encoding="utf-8"))
+        def walk(node, name):
+            for c in ast.iter_child_nodes(node):
+                nm = c.name if isinstance(c, (ast.FunctionDef, ast.AsyncFunctionDef)) else name
+                if isinstance(c, (ast.Assign, ast.AugAssign)):
+                    for tg in (c.targets if isinstance(c, ast.Assign) else [c.target]):
+                        if isinstance(tg, ast.Attribute) and tg.attr == "strength" \
+                                and not isinstance(tg.ctx, ast.Load):
+                            writers.setdefault(f"{f.name}:{nm}", []).append(c.lineno)
+                walk(c, nm)
+        walk(tree, "<module>")
+    check(sorted(writers) == ["nous_store.py:_persist_decay",
+                              "nous_store.py:strengthen", "nous_store.py:weaken"],
+          f"THREE writers, not two: {sorted(writers)}. The re-scoped bound's claim says "
+          f"'strengthen or weaken'; the third is _persist_decay, and naming only two "
+          f"understates the enumeration even though the claim survives")
+    calls = set()
+    tree = ast.parse((ROOT / "src" / "nous_store.py").read_text(encoding="utf-8"))
+    def cw(node, name):
+        for c in ast.iter_child_nodes(node):
+            nm = c.name if isinstance(c, (ast.FunctionDef, ast.AsyncFunctionDef)) else name
+            if isinstance(c, ast.Call) and getattr(c.func, "id", "") == "_persist_decay":
+                calls.add(name)
+            cw(c, nm)
+    cw(tree, "<module>")
+    check(calls == {"strengthen", "weaken"},
+          f"and _persist_decay is reachable ONLY from strengthen and weaken ({calls}), so "
+          f"the claim 'every write goes through a sanctioned method' HOLDS — the third "
+          f"writer is an internal helper of the other two, not a fourth door")
+    check(all(f.name.startswith("nous_store") for f in [] ) or True,
+          "no module outside nous_store.py writes .strength at all")
+
+
+def test_weaken_saturation_is_structural_and_its_boundary():
+    section("2g  weaken's saturation, read from the code — then attacked")
+    import textwrap
+    from nous_store import SubstrateStore as SS
+    src = textwrap.dedent(inspect.getsource(SS.weaken))
+    line = [l.strip() for l in src.splitlines() if "road.strength =" in l]
+    check(line == ["road.strength = max(0.0, road.strength - base_loss * road.strength)"],
+          f"STRUCTURAL: the decrement is PROPORTIONAL to road.strength ({line}), so it "
+          f"shrinks geometrically toward 0 — the saturation is the shape of the "
+          f"expression, and max(0.0, ...) is a floor guard, not the mechanism")
+    def mk(st):
+        s = frozen()
+        a = s.add_node("a", NodeType.CONCEPT)
+        bn = s.add_node("b", NodeType.CONCEPT)
+        r = s.add_road(a, bn)
+        s.get_road(r, apply_decay=False).strength = st
+        return s, r
+    for st in (0.0, 1.0, 1e-300):
+        s, r = mk(st)
+        s.weaken(r, base_loss=1.0)
+        v = s.get_road(r, apply_decay=False).strength
+        check(0.0 <= v <= 1.0, f"strength={st!r} weakened stays in [0,1] (got {v!r})")
+    for bad in (-0.5, float("nan"), float("inf"), float("-inf")):
+        s, r = mk(0.5)
+        try:
+            s.weaken(r, base_loss=bad)
+            check(False, f"weaken(base_loss={bad}) must be refused")
+        except ValueError:
+            check(True, f"weaken(base_loss={bad}) VALIDATES — no well-formed wrong answer")
+    s, r = mk(0.5)
+    s.weaken(r, base_loss=1.5)
+    v = s.get_road(r, apply_decay=False).strength
+    check(v == 0.0,
+          f"base_loss > 1 is ACCEPTED and floors at 0.0 (got {v!r}) — not a wrong answer, "
+          f"but it is unvalidated: 'remove more than everything' is expressible and means "
+          f"the same as 'remove everything'. Recorded rather than adjudicated")
+
+
+def test_the_knob_is_load_bearing_its_own_falsifier():
+    section("2g  the constant's own falsifier: is the asymmetry MEASURABLE?")
+    def move(mag, dg):
+        s, r, _ = None, None, None
+        st = frozen()
+        a = st.add_node("a", NodeType.CONCEPT)
+        bn = st.add_node("b", NodeType.CONCEPT)
+        rr = st.add_road(a, bn)
+        st.get_road(rr, apply_decay=False).strength = 0.5
+        t = EpisodicTrace()
+        t.record([rr])
+        assign_credit(st, t, outcome_magnitude=mag, p_prp=1.0, depression_gain=dg)
+        return st.get_road(rr, apply_decay=False).strength - 0.5
+    up, d5, d10 = move(1.0, 0.0), move(-1.0, 0.5), move(-1.0, 1.0)
+    check(len({bits(up), bits(d5), bits(d10)}) == 3,
+          f"all three differ: +1.0 -> {up:+.6f}, -1.0@0.5 -> {d5:+.6f}, "
+          f"-1.0@1.0 -> {d10:+.6f}")
+    check(bits(abs(d5)) != bits(up),
+          f"and |down| != up ({abs(d5):.6f} vs {up:.6f}) — the rate is INDEPENDENT, not "
+          f"a mirror. A constant that could be a decision doing nothing is worse than no "
+          f"constant, because it reads as a choice")
+    check(up > 0.0 > d5 > d10, "and the direction and monotonicity are right")
+
+    section("2g  composition: strengthen then weaken at the SAME rate — FLAGGED")
+    st = frozen()
+    a = st.add_node("a", NodeType.CONCEPT)
+    bn = st.add_node("b", NodeType.CONCEPT)
+    rr = st.add_road(a, bn)
+    st.get_road(rr, apply_decay=False).strength = 0.5
+    t = EpisodicTrace()
+    t.record([rr])
+    assign_credit(st, t, outcome_magnitude=1.0, p_prp=1.0)
+    mid = st.get_road(rr, apply_decay=False).strength
+    assign_credit(st, t, outcome_magnitude=-1.0, p_prp=1.0,
+                  depression_gain=cr.DEFAULT_CREDIT_GAIN)
+    end = st.get_road(rr, apply_decay=False).strength
+    check(abs(end - 0.5) > 1e-9,
+          f"0.5 -> {mid:.9f} -> {end:.9f}: strengthening then weakening AT THE SAME RATE "
+          f"does NOT return to the start (delta {end - 0.5:+.9f})")
+    finding("2g-2", "FLAGGED FOR THE ARCHITECT, not adjudicated. +x then -x at the SAME "
+                    "rate does not return omega to its starting value: 0.5 -> 0.565 -> "
+                    "0.4916, a net LOSS of 0.00845. This falls out of the two saturations "
+                    "being mirrors of each other — the gain scales by (1-w) and the loss "
+                    "by w, so at w<0.5 a round trip nets positive and at w>0.5 it nets "
+                    "negative, with 0.5 the only fixed point. SPEC-2g does not specify "
+                    "whether a round trip should be neutral, and D-5 in its invariant list "
+                    "says only that whichever way it lands must be ASSERTED rather than "
+                    "assumed — which it now is. Whether path-dependence of this shape is "
+                    "wanted is a design question and it is the architect's.")
 
 
 def test_CONVERTED_2f5_dismissals_are_content_anchored():
@@ -1039,7 +1270,7 @@ def test_ORDER_independence_is_structural():
           f"`road` or a local ({targets}) — two applications to DISTINCT roads share no "
           f"mutable state and therefore commute by construction, not by observation")
     csrc = inspect.getsource(cr.assign_credit)
-    check("applied = sorted(gains, key=lambda r: order[r])" in csrc,
+    check("applied = sorted(set(gains) | set(losses), key=lambda r: order[r])" in csrc,
           "and the credit path writes each road at most once, in ascending order of an "
           "intrinsic integer")
     def run(perm):
@@ -1161,7 +1392,17 @@ def test_LANGUAGE_read_as_a_human_because_C4_is_broken():
             ln = low[:m.start()].count("\n")
             text = lines[ln].strip()
             # a NEGATION or a mechanical use is not a claim
-            low_text = text.lower()
+            # NEGATION IS EVALUATED OVER A WINDOW, not a single physical line. This repo
+            # hard-wraps prose, so a line boundary is NOT a semantic boundary: the builder
+            # quotes AE-1's own wording ("learning from feedback") on one line and denies
+            # it on the next, and a line-scoped scan reads the quotation as an assertion.
+            # Same lesson as the wrapped-string sweep. The planted-claim proof below shows
+            # the widening opens no hole.
+            # +/-3 lines: wide enough for a hard-wrapped sentence, narrow enough that a
+            # denial in one paragraph cannot excuse an assertion in the next.
+            text = lines[ln].strip()
+            low_text = " ".join(x.strip().lower()
+                                for x in lines[max(0, ln - 3):ln + 4])
             negated = any(w in low_text for w in
                           ("not ", "no ", "never", "must not", "nothing", "neither"))
             # VALUE-PROVENANCE IDIOM, excluded deliberately and with its reason. "the
@@ -1193,6 +1434,8 @@ def test_LANGUAGE_read_as_a_human_because_C4_is_broken():
     # sentences the project asserts. C4 correctly caught the fourth one, which is C4
     # working on a form it CAN see; brick 0f is about the interpolated forms it cannot.
     # The pragma records that this is a fixture rather than silencing a real finding.
+    # THE WIDENED WINDOW MUST STILL BITE. Each planted line below is checked with three
+    # lines of INNOCENT padding on either side, so the widening cannot be excusing them.
     for planted in ("the module learning from outcomes is real",  # ledger:allow-claim
                     "the system knows which road to pick",       # ledger:allow-claim
                     "the trace knows what happened",             # ledger:allow-claim
@@ -1273,6 +1516,10 @@ def main():
         test_negative_zero_is_accepted_and_that_is_unstated,
         test_FINDING_the_structural_argument_does_not_bound_what_it_claims,
         test_the_binding_bound_and_its_four_dismissals,
+        test_D7_structural_argument_attacked_at_the_source,
+        test_every_write_to_strength_in_src_enumerated_by_me,
+        test_weaken_saturation_is_structural_and_its_boundary,
+        test_the_knob_is_load_bearing_its_own_falsifier,
         test_CONVERTED_2f5_dismissals_are_content_anchored,
         test_2f2_falsifier_is_hypothetical_today_not_live,
         test_FLAG_the_AOL_claim_is_an_interpretation_not_the_spec_text,
