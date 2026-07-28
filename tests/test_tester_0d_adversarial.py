@@ -218,6 +218,13 @@ HAND_CENSUS = {
     # order. Added, never re-derived from the scanner — a hand census that copies the
     # scanner is not a second opinion.
     "src/nous_credit.py:EpisodicTrace.eligible.<return>":             True,
+    # CONVERTED 2026-07-28. Brick 2g added the depression path, and with it one naive
+    # accumulation: `road.strength = max(0.0, road.strength - base_loss * road.strength)`.
+    # Derived by hand from src/nous_store.py, exactly as the fifteen above were — a hand
+    # census that reads the scanner is not a second opinion. Naive, not fsum, and that is
+    # correct: it is a single-term decrement per call, registered with the same bound its
+    # mirror `strengthen.road.strength` carries.
+    "src/nous_store.py:SubstrateStore.weaken.road.strength":           False,
 }
 
 
@@ -262,10 +269,13 @@ def test_F1_the_census_matches_a_hand_derived_census():
         check(got.get(k) is is_fsum,
               f"{k} classified {'fsum' if is_fsum else 'naive'} (got {got.get(k)!r})")
     check(sum(1 for v in got.values() if v) == 9,
-          "CONVERTED (was 8): NINE exactly-rounded sites — brick 2f-i added one fsum")
-    check(sum(1 for v in got.values() if not v) == 6,
-          "and still six naive sites: 2f-i introduced no new naive accumulation, which "
-          "is the substantive half of the change and the half worth asserting")
+          "still NINE exactly-rounded sites — 2g added no fold, so the fsum count is "
+          "UNCHANGED, and that is the half worth asserting about a brick that only "
+          "writes single terms")
+    check(sum(1 for v in got.values() if not v) == 7,
+          "CONVERTED (was 6): SEVEN naive sites — 2g's weaken.road.strength is the "
+          "seventh, registered with a single-term bound rather than converted to fsum "
+          "because there is no collection to fold")
 
     section("F-1  a second, independent scanner corroborates the shape counts")
     tot_f = tot_n = 0
@@ -279,8 +289,14 @@ def test_F1_the_census_matches_a_hand_derived_census():
           f"registry")
     # the dumb scanner cannot see the one-hop-laundered charges site, so it finds 5 not 6
     check(tot_n == 5,
-          f"independent naive count = 5 (it cannot follow the `prior` temporary into "
-          f"road.charges, which is the sixth), got {tot_n}")
+          f"independent naive count is STILL 5 while the census now has 7, and the gap has "
+          f"grown from one cause to TWO — this is the corroboration getting WEAKER and it "
+          f"is asserted rather than smoothed over. (i) it cannot follow the `prior` "
+          f"temporary into road.charges, as before; (ii) NEW with 2g — its rule requires "
+          f"`+` in the value, and weaken is SUBTRACTIVE "
+          f"(`max(0.0, road.strength - base_loss * road.strength)`), so a second scanner "
+          f"built when every naive site was additive no longer covers the shape class. "
+          f"Got {tot_n}")
     note("the sixth naive site (road.charges) is only visible with one-hop alias "
          "tracking; the second scanner not seeing it is the expected difference, and it "
          "is why the corroboration is a cross-check and not a duplicate")
@@ -481,8 +497,8 @@ def test_F3_the_key_round_trips_through_the_registry():
                           "--root", str(ROOT), "--list-accumulations"],
                          capture_output=True, text=True).stdout
     keys = [ln.split()[-1] for ln in out.splitlines() if ln.startswith("src/")]
-    check(len(keys) == 15,
-          f"CONVERTED (was 14): the printed census names FIFTEEN keys, got {len(keys)}")
+    check(len(keys) == 16,
+          f"CONVERTED (was 15): the printed census names SIXTEEN keys, got {len(keys)}")
     built = {}
     for k in keys:
         verdict = "fsum" if HAND_CENSUS[k] else "registered"
@@ -938,7 +954,9 @@ def test_F6_every_entry_is_structurally_well_formed():
     # falsifier is not applicable because nothing is being claimed.
     naive = {k: (e.get("reason") or "") for k, e in reg.items()
              if isinstance(e, dict) and e.get("verdict") == "registered"}
-    check(len(naive) == 6, f"six naive entries (got {len(naive)})")
+    check(len(naive) == 7,
+          f"CONVERTED (was 6): SEVEN naive entries — 2g registered "
+          f"weaken.road.strength with a single-term bound (got {len(naive)})")
     bounded = {k for k, r in naive.items() if "FALSIFIER" in r.upper()}
     confirmed = {k for k, r in naive.items() if "CONFIRMED ORDER-DEPENDENT" in r.upper()}
     check(bounded | confirmed == set(naive),
@@ -979,7 +997,12 @@ def test_F6_every_entry_is_structurally_well_formed():
         bd = {k for k, v in nv.items() if "FALSIFIER" in v.upper()}
         cf = {k for k, v in nv.items() if "CONFIRMED ORDER-DEPENDENT" in v.upper()}
         return (  # (OLD_A, OLD_B, NEW_A, NEW_B)
-            len(bd) == 5 and len(cf) == 2,
+            # The OLD assertion pinned a COMPOSITION. It was `bounded == 5` when there
+            # were six naive entries; with seven the equivalent stale pin is one fewer
+            # than the live count, which is what "an improvement and a regression
+            # cancelling" produces. Kept parameterised so the discriminator keeps biting
+            # as the registry grows, rather than being re-pinned by hand each brick.
+            len(bd) == len(nv) - 1 and len(cf) == 2,
             sorted(set(nv) - bd) == ["src/nous_field.py:build_activation_field.total"],
             (set(nv) - cf) <= bd,
             (set(nv) - bd) <= cf)
