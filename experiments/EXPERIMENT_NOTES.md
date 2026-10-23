@@ -13,7 +13,7 @@ receives less as the source acquires more out-edges — or does each out-road *i
 transmit `energy × strength × decay`, with no regard to how many siblings it has?
 
 **Answer (from reading the frozen engine).** No normalization. In
-`src/nous_activation.py`, inside `spread_activation`, each out-road is fed the source
+`src/psyche_activation.py`, inside `spread_activation`, each out-road is fed the source
 node's **full** activation:
 
 ```python
@@ -47,7 +47,7 @@ normalized by out-degree, a fan manipulation that varies *only connectivity* whi
 edge strength equal will produce a **FLAT** curve: a target's activation depends on its own
 incoming edge strength and distance, not on how many siblings its source has. So under the
 human-fan-effect direction ("more associations on a cue ⇒ weaker/slower retrieval of any
-one of them"), Nous is **expected to show NO fan effect**.
+one of them"), Psyche is **expected to show NO fan effect**.
 
 Per the project's discipline this flat/null outcome is the **honest, informative result** —
 not a defect to engineer around. The engine is correct and will not be modified to

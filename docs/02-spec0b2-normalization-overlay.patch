@@ -1,0 +1,52 @@
+--- /tmp/psyche_activation.py.bak	2026-07-25 15:32:46.707673438 +0000
++++ src/psyche_activation.py	2026-07-25 15:29:23.385369683 +0000
+@@ -69,6 +69,7 @@
+ 
+ import itertools
+ from dataclasses import dataclass, field
++import math
+ from typing import Dict, List, Optional
+ 
+ from psyche_store import SubstrateStore, NotFound
+@@ -163,6 +164,7 @@
+     decay_per_hop: float = DEFAULT_DECAY_PER_HOP,
+     floor: float = DEFAULT_FLOOR,
+     hop_budget: int = DEFAULT_HOP_BUDGET,
++    normalization_sigma: Optional[float] = None,
+ ) -> ActivationResult:
+     """Radiate activation outward from `seed_node`. Pure read — mutates nothing.
+ 
+@@ -242,6 +244,15 @@
+             if hop >= hop_budget:
+                 continue  # locality guard: settle but do not expand past the budget
+ 
++            # SPEC-0b2 overlay: total outgoing conductance of this source, used only when
++            # normalization is enabled. math.fsum so the sum is exactly rounded and
++            # therefore order-independent (no ULP leak from container iteration order).
++            out_total = 0.0
++            if normalization_sigma is not None:
++                out_total = math.fsum(
++                    store.get_road(r).strength for r in store.roads_from(node)
++                )
++
+             for road_id in store.roads_from(node):
+                 road = store.get_road(road_id)  # pure decayed VIEW; nothing mutated
+ 
+@@ -257,6 +268,17 @@
+                 #   edge conductance (road.strength) — property of the connection
+                 #   global distance penalty (decay_per_hop) — property of the spread
+                 transmitted = outgoing * road.strength * decay_per_hop
++                if normalization_sigma is not None:
++                    # Divisive normalization (Carandini & Heeger canonical form):
++                    # this road's drive is divided by sigma plus the COMPETING
++                    # conductance out of the same source. sigma -> inf recovers the
++                    # unnormalized engine exactly; a lone out-road is never attenuated
++                    # (competing == 0 => factor 1.0) at any sigma.
++                    competing = out_total - road.strength
++                    if competing > 0.0:
++                        transmitted *= normalization_sigma / (
++                            normalization_sigma + competing
++                        )
+                 if transmitted < floor:
+                     continue  # too faint to matter (also aids locality)
+ 

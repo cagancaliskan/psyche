@@ -1,4 +1,4 @@
-%% Nous: evolution of the cognitive (coalition) layer and its dead-ends.
+%% Psyche: evolution of the cognitive (coalition) layer and its dead-ends.
 %% See docs/METHODOLOGY.md findings (e) and (f). Each arrow is "what broke -> what was learned".
 flowchart TD
     A["Approach 1: connectivity binding<br/>connected components of the co-activated subgraph"]
@@ -9,7 +9,7 @@ flowchart TD
     C_ok["Recovers the two communities on the adversarial<br/>bridge graph, but sources were HAND-PLACED<br/>(one per community): the answer was in the input"]
     D["Close the loop: real perception<br/>text = perceive() = input-derived sources = field = coalitions"]
     D_known["KNOWN LIMITATION (asserted in a test):<br/>on clustered real input, basins collapse: <br/>the 'thought' over-swallows; siblings strand as singletons"]
-    next["Next step: validate against a MEASURABLE effect<br/>(e.g. semantic priming) whose direction is known<br/>independently of Nous"]
+    next["Next step: validate against a MEASURABLE effect<br/>(e.g. semantic priming) whose direction is known<br/>independently of Psyche"]
 
     A --> A_fail -->|"subdivide instead of find one component"| B
     B --> B_part -->|"the fix is upstream of the algorithm"| C

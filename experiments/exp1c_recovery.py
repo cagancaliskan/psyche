@@ -1,7 +1,7 @@
 """
 EXP-1c — SWOW community-structure recovery  (§6.2 MEANING bar for step 1c).
 
-Grades whether the 1c source-clustering (src/nous_source_clustering.py, cluster_sources) agrees
+Grades whether the 1c source-clustering (src/psyche_source_clustering.py, cluster_sources) agrees
 with an EXTERNAL community partition of the SWOW graph BETTER than the spec's no-clustering
 control, on blindly-selected probe source-sets, by Adjusted Rand Index (Hubert & Arabie 1985).
 
@@ -12,17 +12,17 @@ ORDER OF OPERATIONS (anti-circularity — do not reorder):
   2. This script LOADS that frozen file, verifies its SHA-256 against the value passed in
      (EXP1C_EXPECTED_SHA256 env or --sha argument), and REFUSES to run if it does not match —
      so the labels cannot have been silently regenerated after seeing a result.
-  3. Probe sets are selected BLIND from topology + the frozen labels only (never from any Nous
+  3. Probe sets are selected BLIND from topology + the frozen labels only (never from any Psyche
      output). Only THEN is cluster_sources called and ARI computed.
 
-This script DOES import the method under test (src/nous_source_clustering.cluster_sources) and
+This script DOES import the method under test (src/psyche_source_clustering.cluster_sources) and
 the harness (build_graph_from_spec) — that is correct: it is the grader, run after the labels
 are frozen. It never modifies src/. Pure reads on the store.
 
 USAGE (after pasting the frozen hash into the pre-registration):
     EXP1C_EXPECTED_SHA256=<hash from generator> python3 experiments/exp1c_recovery.py
   (optional fast smoke, NON-canonical:
-    NOUS_EXP1C_MAXROWS=200000 EXP1C_PARTITION=results/exp1c_external_partition_SMOKE.tsv \
+    PSYCHE_EXP1C_MAXROWS=200000 EXP1C_PARTITION=results/exp1c_external_partition_SMOKE.tsv \
     EXP1C_EXPECTED_SHA256=<smoke hash> python3 experiments/exp1c_recovery.py)
 """
 
@@ -43,7 +43,7 @@ from harness import build_graph_from_spec, SRC_DIR  # noqa: E402
 
 # the method under test (the grader is ALLOWED to import it; labels are already frozen)
 sys.path.insert(0, SRC_DIR)
-from nous_source_clustering import cluster_sources  # noqa: E402
+from psyche_source_clustering import cluster_sources  # noqa: E402
 
 # ── pre-registered constants (frozen; see docs/experiments/EXP-1c-swow-recovery.md) ──────
 SEED = 20250620
@@ -285,7 +285,7 @@ def main() -> int:
     partition_path = os.environ.get("EXP1C_PARTITION", DEFAULT_PARTITION)
     if not os.path.isabs(partition_path):
         partition_path = os.path.join(_HERE, partition_path)
-    maxrows_env = os.environ.get("NOUS_EXP1C_MAXROWS")
+    maxrows_env = os.environ.get("PSYCHE_EXP1C_MAXROWS")
 
     print("=" * 72)
     print("EXP-1c — SWOW community recovery (MEANING bar, §6.2)")

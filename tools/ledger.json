@@ -1,0 +1,483 @@
+{
+  "_README": [
+    "THE LEDGER — the single source of truth for every fact this project quotes.",
+    "",
+    "Rule: prose cites the ledger; the ledger never cites prose. If a number, a status",
+    "label, or a constant appears in a Markdown file, it must agree with this file, and",
+    "tools/ledger_check.py enforces that. This exists because the project has already",
+    "shipped four different assertion counts across five documents.",
+    "",
+    "Fields marked GENERATED are derived from docs/TEST_OUTPUT.txt by tools/ledger_sync.py.",
+    "Never hand-edit them; re-run the sync after capturing a test run.",
+    "Everything else is hand-maintained and should change only via a DECISIONS.md entry."
+  ],
+  "schema_version": 1,
+  "project": {
+    "paper_name": "Psyche",
+    "codebase_name": "Psyche",
+    "author": "Cagan Caliskan",
+    "orcid": "0009-0000-2993-1421",
+    "doi": "10.5281/zenodo.20474613",
+    "repo": "github.com/cagancaliskan/psyche"
+  },
+  "tests": {
+    "_GENERATED": "by tools/ledger_sync.py from docs/TEST_OUTPUT.txt — do not hand-edit",
+    "suites": 26,
+    "assertions": 2645,
+    "failures": 0,
+    "captured_at": "2026-10-23 12:26:52 +0300",
+    "captured_python": "3.14.4",
+    "per_suite": {
+      "test_psyche_store.py": 67,
+      "test_psyche_activation.py": 102,
+      "test_psyche_coalitions.py": 19,
+      "test_psyche_field.py": 13,
+      "test_psyche_source_clustering.py": 49,
+      "test_psyche_workspace.py": 96,
+      "test_psyche_workspace_broadcast.py": 63,
+      "test_psyche_perceive.py": 19,
+      "test_psyche_bodysensor.py": 49,
+      "test_psyche_credit.py": 133,
+      "test_tester_1c_adversarial.py": 73,
+      "test_tester_1c_mutation_battery.py": 5,
+      "test_tester_1d_i_adversarial.py": 107,
+      "test_tester_1d_ii_adversarial.py": 110,
+      "test_tester_1e_selector_adversarial.py": 92,
+      "test_tester_1e_instrument_adversarial.py": 76,
+      "test_tester_1e_loopclosed.py": 58,
+      "test_tester_0b2_adversarial.py": 104,
+      "test_tester_0d_adversarial.py": 342,
+      "test_tester_0b2_reverify.py": 246,
+      "test_tester_0c_adversarial.py": 150,
+      "test_tester_2f_adversarial.py": 196,
+      "test_tester_2c_adversarial.py": 350,
+      "test_harness.py": 17,
+      "test_priming_instrument.py": 42,
+      "test_priming_1e.py": 67
+    }
+  },
+  "determinism": {
+    "hash_seeds": [
+      0,
+      1,
+      2,
+      3,
+      7,
+      42
+    ],
+    "interpreters_swept": [
+      "3.10",
+      "3.11",
+      "3.12",
+      "3.13",
+      "3.14"
+    ],
+    "interpreters_required": [
+      "3.10",
+      "3.11",
+      "3.12",
+      "3.13",
+      "3.14"
+    ],
+    "_note": "interpreters_swept must cover interpreters_required or the claim is scoped down to what was swept. RAISED to five versions on 2026-07-25 (D-010). SEPARATELY, D-012 records that seed-sweeping ALONE cannot establish determinism for this substrate: iteration order derives from uuid4 values, which differ per process regardless of PYTHONHASHSEED. Determinism must be established by REMOVING order dependence, not by sweeping an axis that does not control it.",
+    "captured_platform": "Darwin 24.5.0 arm64",
+    "census_digest": "99d22f4f7063c8b7",
+    "listing_digest": "357ca856b1ebd1d5",
+    "_digest_note": "TWO NAMED VALUES, and the distinction is the point. census_digest covers ONLY the census rows of `ledger_check.py --list-accumulations` (the lines beginning `src/` — 14 sites, 8 fsum, 6 naive). listing_digest covers the FULL stdout of that command. Across SPEC-2f step zero the listing digest MOVED (25ff712c9002fa91 -> a2f7ed1d67f53fbe) because two REFUSED rows and a summary suffix were added to the report, while the census digest did NOT move — the census itself was unchanged, verified by re-deriving both sides from git at 656c38a and 044008c. IN THE TOOL THESE ARE STILL ONE VALUE: the determinism probe hashes whole stdout, so a report-format change moves an invariant the census never moved. Two consecutive passes spent real effort proving such a change benign; recording census_digest as a citable value removes that cost without touching the tool. Separating them IN the tool is registered as CC-12 and is NOT done. Both values verified identical on all five CPython minors on 2026-07-26. STALE-VALUE CORRECTION 2026-07-28 (brick 0g). Both values had been WRONG since 1065c43, when 2f-i added the fifteenth census site; nothing checked them and nobody noticed for four passes. Measured now: census b11fd55a71d900ee -> 99d22f4f7063c8b7, listing a2f7ed1d67f53fbe -> 357ca856b1ebd1d5. THE 0g CHANGE MOVED NEITHER: the pre-0g tool and the post-0g tool produce the IDENTICAL census digest on the current tree, and the old recorded value reproduces EXACTLY when the current tool is run against the cce3dc5 tree it was taken from — so the digest is a faithful function of the tree and the key-format change is output-neutral. THIS IS CC-12 ITEM 3's SHAPE AGAIN: a value recorded so nobody would have to re-derive it, with nothing checking it against reality. The two digests are exactly the kind of fact a check could verify cheaply, and none does."
+  },
+  "bricks": {
+    "0a": {
+      "name": "substrate store",
+      "status": "PROVEN",
+      "note": "RESTORED 2026-07-25 (D-016) after 0c. Determinism is now structural — no order dependence to perturb — not sampled. Verified across five CPython versions."
+    },
+    "0b": {
+      "name": "spreading activation",
+      "status": "PROVEN",
+      "note": "RESTORED 2026-07-25 (D-016) after 0c. The flow accumulator is retained naive and PROVED structurally single-term rather than converted; that bound is registered."
+    },
+    "0b1": {
+      "name": "coalition strength determinism fix",
+      "status": "PROVEN",
+      "note": "Property claim held and holds. Its ENUMERATION was incomplete — a third Coalition construction site in psyche_workspace.py was missed; corrected in place. Labels track properties, not report quality (D-016)."
+    },
+    "0b2": {
+      "name": "conserved activation (overlay, default-off)",
+      "status": "BUILT-UNVALIDATED",
+      "note": "MECHANISM BAR CLOSED 2026-07-26 (D-017): tester verdict on SPEC-0b2 section 6 is PASS, all nine invariants N-1..N-9, suite tests/test_tester_0b2_reverify.py written from scratch, swept 5 CPython minors x 6 hash seeds x 2 reps. The 2026-07-25 FAIL is preserved in section 8 as the record it was. All three defects closed: DEFECT-A by 0c, DEFECT-B by the single-read materialisation, DEFECT-C by sigma then energy validation. STAYS BUILT-UNVALIDATED: mechanism verified, NO cognitive claim. Still open and NOT closed by this: the section 5 default-flip decision, and D-008 (the floor's SCALE-INVARIANCE), which is what blocks the flip. D-008 is INDEPENDENT of brick 0c-ii (the floor's FINITENESS) despite the shared constant — fixing either does nothing for the other."
+    },
+    "0c": {
+      "name": "deterministic road ordering + fsum",
+      "status": "PROVEN",
+      "note": "Tester PASS 18/18. Restores Phase 0. Does NOT close the order-dependent-aggregate class — see 0d."
+    },
+    "0d": {
+      "name": "float-accumulation detector + registry (a TOOL, not a substrate brick)",
+      "status": "PROVEN",
+      "note": "SPEC-0d. Tester PASS on re-verification 2026-07-26 (D-022), 289 assertions on five interpreters x six hash seeds. STATUS RATIONALE, because the two axes do not fit a tool cleanly and forcing the fit would be the dishonest option: BUILT-UNVALIDATED means 'mechanism built, meaning not yet graded', and for a gate there is NO meaning claim that will ever be graded — the label would imply a pending validation that can never arrive. PROVEN means the substrate bar: determinism (one census digest across 5 interpreters x 6 seeds), purity (ledger byte-identical after repeated runs), integrity (no analogue — a scanner holds no indices). Its FUNCTIONAL claim is verified the only way a refusal can be: F-1 retro-catch on three pre-fix git trees catches all three historical bugs on the tree each lived in, and F-3 injection makes the build go red on three distinct planted shapes. So PROVEN — but PROVEN WITHIN A STATED SCOPE, and the scope is THIRTEEN documented limitations L1-L13 (ten at the 2026-07-26 close-out, plus L11-L13 opened by 2f's step zero), each with a falsifier and an asserted negative. One of them, L3 (tuple-target accumulation), is KNOWN to miss the shape brick 2f will most plausibly write; that is not a hidden weakness but a scheduled one, owned by 2f as its STEP ZERO. The meaning axis is VACUOUS for this brick and that vacuity is recorded here rather than papered over with a status that implies otherwise. STEP-ZERO UPDATE 2026-07-26 (D-026), and it is the record of the gate being EXTENDED by the brick that needed it rather than narrowed by neglect: L3 (tuple-target accumulation) is CLOSED. Ownership sat with 2f by D-022 and that placement did its job — 2f's first act was to pay the gate's extension cost, which is the demonstration that extending a gate is a normal cost of building on it. THE HONEST BOOKKEEPING: closing L3 cost THREE narrower limitations, so the count went 10 -> 13, and it is reported as three rather than as one net win. L11 starred element, L12 nested target, L13 non-literal right-hand side — pairing is positional and sound only for literal sequences of equal length. An arity mismatch is refused as a RUNTIME ERROR, not registered as a limitation; that distinction is deliberate and asserted. REFUSALS ARE NOW VISIBLE, which was a tester FAIL before it was a fix: the line held is 'anything the scanner KNOWINGLY DECLINES is recorded; anything it NEVER MATCHED stays a documented limitation'. L1's multiplicative shape never matches and reports nothing; L11-L13 surface in --list-accumulations with file, line and rule. A refusal is NOT a finding, never fails the build, and exit 2 still means only 'the tool could not run at all'. TWO REFUSALS ARE VISIBLE IN src/ TODAY and they are NOT NOISE: both sit on `new_strength, new_charges = _compute_decay(road, ...)` in psyche_store.py, which is the ONE place in the substrate where a tuple-returning float computation actually occurs — L13 declines at exactly the interesting spot. WHAT WOULD MAKE THEM DANGEROUS RATHER THAN MERELY PRESENT, named so it can be watched for: today _compute_decay returns two INDEPENDENT single-term values, so there is no fold to miss and the refusal costs nothing. It becomes dangerous the moment either returned value is itself an ACCUMULATION OVER A COLLECTION — a sum over charges, a fold over roads — because the gate would then be declining to look at precisely the site it exists for, and would do so silently but for the refusal record. FALSIFIER: any change making _compute_decay aggregate over more than one term per returned value."
+    },
+    "0e": {
+      "name": "abort-hides-tests: a raising test is invisible to the failure list",
+      "status": "PROVEN",
+      "note": "FIXED 2026-07-27 at d8debc2 and tester-verified at c23c591 — the status below was STALE for two passes and is corrected here (D-028). STATUS RATIONALE, following 0d's precedent exactly: this is a TOOL, so the meaning axis is vacuous and BUILT-UNVALIDATED would imply a validation that can never arrive. PROVEN means the substrate bar as it applies to a runner: deterministic (identical outcome on five interpreters), pure (capture and ledger byte-identical after a full run), and functionally verified the only way a refusal can be — by planting a deliberately-raising fixture suite and requiring it to be NAMED. WHAT WAS FIXED. Both parsers set `current` on a `# suite.py` header and cleared it only on a RESULT line, so a suite that raised was overwritten by the next header and vanished from the capture, the ledger, C1 and C5 at once — all green. The end-of-input arm was worse: a LAST suite that aborted was dropped with nothing able to notice. THE CONTRACT: an aborted suite's assertion count is UNKNOWN, never zero and never reconstructed from FAIL lines; a header with no RESULT is a MALFORMED CAPTURE and exits 2 on CensusUnreadable's reasoning; capture_run refuses BEFORE the interpreter-agreement check, because five interpreters that all abort the same suite AGREE on a total that omits it. IT WORKED IN THE WILD on its first real occasion: the tester's 2f suite aborted on a builder fix and the runner NAMED it with exception and location instead of letting 153 assertions vanish. Every prior occurrence was found by someone running a file by hand."
+    },
+    "0f": {
+      "name": "C4 forbidden-claim matcher evades on any interpolated word",
+      "status": "DESIGNED",
+      "note": "CONFIRMED DEFECT, measured by perturbation and reproduced independently 2026-07-26 (D-024). SCHEDULED BEFORE THE PAPER CAPTURE alongside 0e. C4 matches forbidden_claim_terms as LITERAL SUBSTRINGS via str.find(), so any interpolated word breaks the match: 'Psyche is conscious.' -> 1 finding; 'Psyche is a mind.' -> 1; but 'Psyche is a conscious mind.' -> 0, 'Psyche is clearly conscious.' -> 0, 'Psyche is, in every sense, a mind.' -> 0, 'Psyche is undeniably sentient.' -> 0, and 'This is, by any measure, an AGI.' -> 0. THE EVADING FORMS ARE PRECISELY THE SENTENCES SOMEONE WRITES WHEN OVERCLAIMING — an unhedged assertion attracts an intensifier. C4 guards CONTRIBUTING.md rule 1, the rule this project's credibility rests on, so every 'C4 passes' in the record has covered less than it appeared to. NOT a reason to distrust the existing record: no forbidden claim has been found by any other means either. Fix shape (NOT decided): match on a normalised token sequence, or a regex permitting bounded filler between the copula and the noun, WITHOUT breaking the negation-cue logic that keeps disclaimers from being flagged. That constraint is the hard part and the reason this is a brick rather than an edit. ACCEPTANCE: the table above must go from 5 evasions to 0, the existing disclaimer-heavy documents must still pass, and docs/CONSCIOUSNESS-YARDSTICK.md must be re-checked under the widened matcher."
+    },
+    "1a": {
+      "name": "multi-source field",
+      "status": "BUILT-UNVALIDATED"
+    },
+    "1b": {
+      "name": "coalition formation",
+      "status": "BUILT-UNVALIDATED"
+    },
+    "1c": {
+      "name": "source clustering",
+      "status": "BUILT-UNVALIDATED"
+    },
+    "1d-i": {
+      "name": "competition + pruning",
+      "status": "BUILT-UNVALIDATED"
+    },
+    "1d-ii": {
+      "name": "bounded broadcast",
+      "status": "BUILT-UNVALIDATED"
+    },
+    "1e": {
+      "name": "semantic priming",
+      "status": "NO-GO"
+    },
+    "1e-prime": {
+      "name": "fan effect",
+      "status": "NO-GO"
+    },
+    "2c": {
+      "name": "interoception",
+      "status": "BUILT-UNVALIDATED",
+      "note": "mechanism tester-PASS; timing-pair meaning yardstick NOT-YET"
+    },
+    "2a": {
+      "name": "memory hierarchy",
+      "status": "DESIGNED"
+    },
+    "2b": {
+      "name": "sleep / consolidation",
+      "status": "DESIGNED"
+    },
+    "2d": {
+      "name": "emotional regulation",
+      "status": "DESIGNED"
+    },
+    "2e": {
+      "name": "motivation architecture (+ the AOL autonomy criteria, SPEC-2e)",
+      "status": "DESIGNED",
+      "note": "SPEC-2e now exists and holds the project's first PRE-REGISTERED acceptance criteria: AOL-1..AOL-5, AUTONOMY AND OPEN-ENDED LEARNING. NOT consciousness tests and must never be labelled as such in any document — a system could satisfy all five and possess nothing any such theory points at; they measure what the system DOES, never what it is. Butlin et al.'s indicator properties remain the ORTHOGONAL architectural axis (Cagan's standing assessment: 0/14, 1 partial — recorded in docs/CONSCIOUSNESS-YARDSTICK.md as of 2026-07-26 (D-024). STANDING RULE: that figure is cited BY REFERENCE to that file and nowhere else — not in this ledger, the roadmap, the paper, or conversation. Its scope is fixed: verified against arXiv:2308.08708 Table 1 ONLY; the published TiCS version could not be reached at verification time, and it must NOT be upgraded to 'verified' until someone reads the published version). All five are MECHANISM ABSENT today: a DATE, not a rejection, unlike 1e/1e-prime/2c. AOL-2 was UPGRADED before adoption — difficulty growth alone is passable by a system that improves at nothing, so the criterion is the CONJUNCTION of difficulty growth AND capability growth, with difficulty measured externally. AOL-3 carries a HARD CLAUSE (selection signal and scoring signal from independent named sources) and is recorded as PRE-REGISTERED BUT NOT RUNNABLE, because the two sources cannot be named today. AOL-5 was ADDED by architect-pm and is load-bearing: without scarcity a system passes AOL-1..4 by mere ENUMERATION, which is exactly how 1e-prime died. Frozen on adoption; amendment only before any bearing number exists, never toward an easier result."
+    },
+    "2f": {
+      "name": "temporal credit assignment",
+      "status": "DESIGNED",
+      "note": "STEP ZERO COMPLETE 2026-07-26 (D-026); CREDIT ASSIGNMENT NOT STARTED. SPEC-2f section 0.5 is marked DONE: builder 044008c, tester PASS 9c26356. The gate now sees the line this brick will write, verified as an EQUIVALENCE rather than a count — over 84 generated accumulation pairs the tuple spelling and the split spelling report the same sites, and the pre-fix tool disagrees on all 84. THE OBSOLETE CONSTRAINT IS STRUCK: SPEC-2f formerly instructed 'write the trace update on its own line'; that was true only while L3 was open and MUST NOT BE CITED. 2f may write the idiomatic tuple form. Struck visibly rather than deleted so anyone who remembers it finds the retraction. THE NEXT ACTION IS SECTION 1 ONWARD — the eligibility trace — NOT another gate pass. SPEC-2f. All three calls CLOSED by D-020. DESIGN C: episodic trace outside the store, eligibility computed from timestamps, credit applied through the existing PROVEN strengthen(). Chosen not for cheapness but because (i) the biological-fidelity counter-argument asks the project to pay Tier-1 re-validation for a claim CONTRIBUTING.md rule 1 forbids asserting, and (ii) computing from timestamps rather than storing is psyche_store's OWN existing move with lazy decay — so C is idiomatic, not expedient. P_PRP is a CALLER-SUPPLIED SCALAR (holdable fixed, which is required to separate 2f's effect from arousal's and which no published-state design permits); NEUROMODULATION becomes its publisher later. traversal_count stays, is documented at the declaration as written-never-read and NOT the plasticity signal, and is ASSERTED DEAD — it already caused a real documentation error by misleading the commissioning of this very brick. 0d SHIPS FIRST and is a prerequisite: 2f is the first brick built after the detector exists, which makes it the test of whether 0d does its only job. MECHANISM bar only — no cognitive claim. AOL ROUTING (D-023): 2f satisfies ZERO of SPEC-2e's five autonomy criteria and is a PREREQUISITE for three (AOL-2/3/4). Being a prerequisite is not partial credit, and adopting a yardstick is not adopting a roadmap."
+    },
+    "2f-ii": {
+      "name": "synaptic tag and capture (behavioural tagging)",
+      "status": "DESIGNED",
+      "note": "SPEC-2f §3.1, deferred by D-020 and NOT foreclosed. Full tag/capture: tau as a field on Road, global P_PRP, capture sweep. It is the only design that delivers BEHAVIOURAL TAGGING — a weak trace preserved because an unrelated strong event flooded the system in the same window. TRIGGER, named so it cannot drift: build this when a BEHAVIOURAL need arrives, never because a stored timestamp would be tidier. Cost is a new mutable float on Road in Tier 1 plus a global sweep, i.e. a full 0a re-verification."
+    },
+    "3a": {
+      "name": "abstraction engine",
+      "status": "DESIGNED"
+    },
+    "3b": {
+      "name": "self model",
+      "status": "DESIGNED"
+    },
+    "3c": {
+      "name": "grounded language",
+      "status": "DESIGNED"
+    },
+    "0c-ii": {
+      "name": "boundary hygiene",
+      "status": "DESIGNED",
+      "note": "SPEC-0c-ii. RE-SCOPED 2026-07-26 (D-020) from 'the floor thing' to the CLASS: a boundary silently accepting a value it should refuse, so the caller gets a well-formed wrong result instead of a right error. Two items. (1) floor=NaN SILENTLY disables the locality guard (3 nodes reached vs 6, no error, identical to floor=-inf), changing coalition membership and the competition. (2) spread_activation accepts a RoadID as seed — store.exists() is True for roads — and at hop_budget=0 returns a well-formed result seeded on a road; at the default budget it raises NotFound from INSIDE the expansion, so the SILENT window is hop_budget=0 specifically. Verified identical on the pre-overlay engine: pre-existing, 0a/0b's, not any overlay's. decay_per_hop is deliberately NOT validated — it refuses LOUDLY via the backstop guard, and silence-not-wrongness is the scoping rule for this brick. Blocks nothing. Does NOT unblock the 0b2 default flip: that is D-008 (the floor's SCALE-INVARIANCE), an independent question about the constant's semantics."
+    },
+    "2f-i": {
+      "status": "BUILT-UNVALIDATED",
+      "note": "TWO AXES, DECIDED SEPARATELY AND NOT COLLAPSED (D-027). BUILD STATUS: the mechanism is TESTER-VERIFIED. builder 1065c43 / 7886167 / 6411ef7, tester PASS 19d3286. What 2f-i IS: a verified eligibility trace. An outcome at cycle t+k moves a weight at t in a bounded, decaying, reproducible way — neutral value byte-identical to the pre-2f engine recovered from git across 8 scenarios (probe proven able to see a 1e-10 perturbation); the window edge STRUCTURAL, `k > window` returning a literal 0.0 under an integer test, enumerated 2000 values past the edge and enforced twice; application order provably irrelevant from the code and 120/120 by permutation; every caller-supplied number refused at the boundary when non-finite or out of range; every control shown capable of failing; loop-closed on roads think() actually produced. MEANING VERDICT: NOT-YET, and it does not become YET by any amount of further mechanism work of this shape. THE SENTENCE THAT GOVERNS EVERY CITATION OF THIS BRICK: **the mechanism assigns ATTENTION, not CREDIT.** Every outcome it can express STRENGTHENS what preceded it; the graph moves one direction only, toward saturation; nothing here can be undone by anything here. It marks which roads preceded a designated outcome and how recently — never whether that outcome was worth repeating. Feedback with no sign is not feedback. The half that exists is real and verified; the half that is missing is the half that would make it learning, and that half is brick 2g. WHAT IT DOES NOT SATISFY, by name: ZERO of SPEC-2e's five AOL criteria, for D-023's reason — all five are MECHANISM ABSENT, nothing initiates, holds a goal, or has a skill — NOT for any property of the criteria inferred from this module's own limitation (that inference was made, shipped, caught by the tester and corrected; see D-027). And NOT Butlin AE-1, which it fails at its FIRST conjunct: it selects no outputs and pursues no goals. SCOPE, asserted rather than assumed: potentiation-only, a bounded window over a single trace, no behavioural tagging (that is 2f-ii), and the trace is not a synaptic analogue — it lives outside the substrate and nothing in the store holds it. REPEATS ARE LINEAR AND UNCAPPED by decision, not by accident: three traversals in one cycle earn exactly triple eligibility. A cap would mean inventing an uncalibrated constant; the reachable effect is bounded by strengthen()'s saturation instead. FALSIFIER: any path where an eligibility value reaches something NOT saturated downstream. Checked at close-out: HYPOTHETICAL, no consumer of CreditAssignment.eligibility or .gain exists outside the module.",
+      "name": "temporal credit assignment — the eligibility trace (SPEC-2f Design C)"
+    },
+    "2g": {
+      "status": "DESIGNED",
+      "note": "DECIDED 2026-07-27 (D-029): OPTION C — asymmetric depression with its own rate. SPEC-2g re-scoped from three options to one; ready for the builder. STEP ZERO IS 0g and is mandatory before any 2g code. THE SPEC'S FIRST REVISION CARRIED A FRAMING ERROR, corrected in §1 and kept visible: it presented the competitive/shared-budget mechanism and the asymmetric rule as MUTUALLY EXCLUSIVE. They are not. C is a LOCAL rule (per-road, fast); the competitive form is a GLOBAL constraint (across siblings, slow), and the cited literature treats them as COMPOSED — Turrigiano & Nelson frame homeostatic scaling as a complement to Hebbian plasticity precisely because Hebbian rules are destabilising; Oja fuses both in one equation; Miller & MacKay's whole subject is the interaction. So sequencing them is coherent. ONE REFINEMENT, and it is 2h's cost not 2g's: they are composed, NOT independent — Miller & MacKay show the choice of constraint changes what the local rule CONVERGES TO, so 2h will perturb 2g rather than merely sit beside it, and 2g's graded invariants must be re-run when 2h lands. EPISTEMIC STATUS, stated in the spec and not assumed: assessed from knowledge of these sources, NOT re-read at verification time, on the same discipline the Butlin figure carries; the spec names what would confirm and what would falsify it. Not load-bearing for 2g, which is buildable either way. OPTION A (symmetric, no new constant) is RECORDED AS REJECTED AND NOT DELETED: symmetry is empirically rejected — extinction is not the reverse of acquisition (Bouton 2004) — and A KNOWN-WRONG MECHANISM IS NOT MADE ACCEPTABLE BY BEING FREE. ONE NEW CONSTANT, depression_gain, already on uncalibrated_constants with what would calibrate it. Its falsifier is the sharpest in the spec: a constant with no measurable effect on any reachable input is a knob that looks like a decision and does nothing. RE-VALIDATION: the 0a write path only. NO COUPLING between roads — every proven single-road property stays a single-road property, which is why C is buildable now. WHAT 2g DOES NOT MAKE TRUE: it moves Butlin AE-1 from failing at TWO conjuncts to failing at ONE — the system still selects no outputs and pursues no goals — and it moves NO AOL criterion. AOL-5 is reachable only through 2h.",
+      "name": "the depression path — the missing half of credit assignment"
+    },
+    "0a-ii": {
+      "status": "DESIGNED",
+      "note": "REGISTERED 2026-07-27 (D-027) from tester FINDING 2f-3. TWO HALVES, recorded separately. HALF ONE, CONFIRMED: `store.get_road(rid, apply_decay=False)` returns the LIVE stored Road — two calls return the same object, and assigning `.strength` or mutating `.charges` through it reaches the store. `apply_decay=True` DOES return a copy, and that asymmetry is what makes it easy to miss. 0a's PURITY CLAIM IS NOT VIOLATED — the read itself mutates nothing, which is what purity asserts. What is absent is ENCAPSULATION: a method documented as a pure read hands back a handle that can write. HALF TWO, DECLINED DELIBERATELY: whether a write FOLLOWS a binding — through a call, a container, a return, getattr or __dict__ — is a DATAFLOW question. It was not attempted badly; it was declined and routed here. Today 2f-i's potentiation claim rests instead on a machine-checked ABSENCE (no code in src/ binds a returned road and writes through it), with four dismissals verified by the tester and all five blind spots asserted as negatives so nobody reads a clean run as 'no write path exists'. TWO OPTIONS CONSIDERED AND REJECTED FOR NOW, with their costs: (1) COPY ON READ — make apply_decay=False return a copy like the other path. Cost: a Tier-1 change to 0a PROVEN, re-verifying purity, integrity, determinism and every internal caller that relies on getting the live object, which includes the store's own mutation paths. (2) FREEZE Road — a frozen dataclass. Cost: strictly larger; every internal mutation site (_persist_decay, _open_close_on_crossing, strengthen) rewrites to construct rather than assign, i.e. a full 0a re-verification plus a rewrite of the write path. NEITHER IS 2f-i's TO PAY. Both are real; the decision is Cagan's and is not urgent, because no write-through exists today and the absence is now enforced.",
+      "name": "encapsulation: get_road hands out a live write-capable reference"
+    },
+    "0g": {
+      "status": "DESIGNED",
+      "note": "CONFIRMED DEFECT, registered 2026-07-27 (D-027) from tester FINDING 2f-5. SCHEDULED AS **STEP ZERO OF THE NEXT BRICK**, exactly as L3 was step zero of 2f — the next brick edits src/ and will trip this constantly. THE DEFECT: `bound_on_absence` dismissals are keyed `path:line`. Inserting ONE COMMENT LINE at the top of psyche_field.py shifts every line below it and fires a FALSE [C6] against the ActivationField.flow bound. THIS IS THE EXACT FAILURE THE Accumulation DATACLASS SAYS IT AVOIDS — its docstring reads 'a registry keyed by line rots on every insertion above it and trains people to re-key mechanically instead of re-reading' — reintroduced one field away, in the dismissal list, by the same brick. IT HAS ALREADY COST A REAL MIS-MEASUREMENT. The tester's first blind-spot probe prepended to an existing module and reported ALL FIVE blind spots as CAUGHT. That was the shifted bound firing, not the binding bound working. The correct measurement (plant in a NEW module) showed all five slip through, as documented. WHY IT OUTRANKS A SILENT GAP, and this is the reason for the scheduling: **a false positive that masquerades as the check working is worse than a silent gap.** A silent gap is a known unknown; a lying gate teaches people to re-key mechanically instead of re-reading, and a gate that cries wolf gets ignored — which would waste the entire foundation arc that produced it. FIX SHAPE (not decided): a CONTENT-ANCHORED key — the text of the source line, or an AST path — instead of a line number. ACCEPTANCE: inserting a comment anywhere in src/ changes no finding, and every existing dismissal still resolves.",
+      "name": "bound_on_absence dismissals are line-anchored and rot on any edit above them"
+    },
+    "2h": {
+      "status": "DESIGNED",
+      "name": "competitive plasticity: a shared budget over a node's out-roads",
+      "note": "REGISTERED 2026-07-27 (D-029) as its own brick, after 2g. Crediting one out-road draws from a budget shared with its siblings, so strengthening one implicitly weakens the others — the same divisive-normalisation shape as 0b2, applied to PLASTICITY (what gets written) instead of TRANSMISSION (what gets read). IT IS THE ONLY ROUTE TO AOL-5, and AOL-5 is load-bearing: it asks whether choosing COSTS anything, and it is what stops AOL-1..4 being satisfiable by mere ENUMERATION. The evidence that scarcity is required is this project's own second wall — 1e-prime died because spread_activation gave every out-road the source's full activation, so the fan curve was flat to the last digit: no budget, no competition, nothing to measure. IT CARRIES 0b2's UNPAID DEFAULT-FLIP RE-VALIDATION DEBT, EXPLICITLY. A shared budget over out-roads and 0b2's conserved-activation overlay are THE SAME COUPLING QUESTION asked at two layers, and 0b2's section-5 default flip has never been paid for — it is blocked on D-008 (the floor's SCALE-INVARIANCE), which is a question about a constant's semantics and is INDEPENDENT of brick 0c-ii despite the shared constant. THE WHOLE POINT OF SEPARATING 2h FROM 2g IS THAT THIS DEBT GETS PAID ONCE, PROPERLY, BY THE BRICK SCOPED TO PAY IT — rather than being ridden on by a brick commissioned to fix the sign. COST, and it is the highest of anything currently registered: it COUPLES ROADS THAT FOUR BRICKS PROVED CORRECT INDEPENDENTLY. A normalising denominator is a fold over a collection — exactly 0d's L1 blind spot and exactly why the registry exists — so it is fsum-and-registered from the first commit. Sibling iteration order becomes load-bearing where it was not (0c's insertion-ordered _out makes this tractable but it must be RE-PROVED, not assumed). 0a's integrity legs re-run because one strengthen() would touch several roads. 1b/1d re-verify at the flipped default, since coalition strength and workspace competition read the strengths this moves. IT WILL PERTURB 2g, NOT MERELY EXTEND IT. Miller & MacKay (1994) show the choice of normalisation constraint changes what the local rule CONVERGES TO — subtractive drives winner-take-all, multiplicative gives graded outcomes. So 2h's delivery must RE-RUN 2g's graded-effect invariants under the new constraint and show they still hold. That cost belongs to 2h and is recorded here so it cannot be discovered late. ONE CONSTANT: a competition sharpness, already on uncalibrated_constants with what would calibrate it. Its neutral value must reduce to today's behaviour exactly, as 0b2's normalization_sigma=None does. PRIOR ART: Miller & MacKay 1994 (Neural Computation 6:100); Oja 1982 (J. Math. Biol. 15:267); Turrigiano & Nelson 2004 (Nat. Rev. Neurosci. 5:97); Carandini & Heeger 2012 (Nat. Rev. Neurosci. 13:51), which is the citation 0b2 already rests on. TRIGGER: build this when 2g is tester-verified AND the 0b2 default-flip question is ready to be paid — never because a shared denominator would be tidier."
+    }
+  },
+  "valid_statuses": [
+    "PROVEN",
+    "BUILT-UNVALIDATED",
+    "DESIGNED",
+    "HORIZON",
+    "NO-GO",
+    "NOT-YET",
+    "FIXED-UNCOMMITTED",
+    "PRE-CHECK-GO-DECISION-OPEN"
+  ],
+  "results": {
+    "1c_ari_mean": 0.228,
+    "1c_ari_bar": 0.3,
+    "1c_lift": 0.223,
+    "1c_lift_bar": 0.15,
+    "1c_sign_test": "170/200",
+    "1c_p": "6.2e-25",
+    "1e_n_s0": 7,
+    "1e_n_s0_bar": 30,
+    "1e_n_s_plus": 296,
+    "1e_r_w": 0.97,
+    "1e_arm_n": 300,
+    "2c_pilot_flip_rate": 0.85,
+    "2c_pilot_flips": "34/40",
+    "2c_pilot_floor": 0.3,
+    "2c_friction_band_realistic": [
+      0.79,
+      0.93
+    ],
+    "fan_flat_value": 0.2433743975,
+    "swow_edges": 1388741,
+    "swow_nodes": 133763,
+    "swow_cues": 12217
+  },
+  "uncalibrated_constants": {
+    "DEFAULT_FLOOR": "0.02 — uncalibrated, and UNVALIDATED for finiteness pending 0c-ii",
+    "DEFAULT_DECAY_PER_HOP": 0.65,
+    "DEFAULT_SEED_ENERGY": 1.0,
+    "DEFAULT_HOP_BUDGET": 6,
+    "DEFAULT_PROXIMITY_FRACTION": 0.35,
+    "DEFAULT_MIN_SIZE_GUARD": 3,
+    "MODULATION_SPAN": 0.6,
+    "broadcast_gain": "inherited from strengthen() default; not tuned",
+    "normalization_sigma": "1.0 — fixed on principle per D-008, not fitted; default None (off). UNVALIDATED: non-finite and non-positive values are not rejected (DEFECT-C).",
+    "_2g_PENDING_depression_gain": "NOT YET INTRODUCED. SPEC-2g ADDS (decided D-029, Option C) an independent depression rate. WHAT WOULD CALIBRATE IT: the acquisition/extinction asymmetry is empirically documented (Bouton 2004; Frank et al. 2007) but the RATIO is task- and species-specific, so no published value transfers. Its own falsifier is the sharpest of the three: a constant with no measurable effect on any reachable input is a knob that looks like a decision and does nothing.",
+    "_2h_PENDING_competition_sharpness": "NOT YET INTRODUCED — registered ahead of the code, deliberately. SPEC-2h (brick 2h, registered D-029) would add ONE constant: how hard the sibling normalisation concentrates on the credited road. WHAT WOULD CALIBRATE IT: nothing internal can — it must be fixed by a measured external quantity or held at a neutral value that reduces to today's behaviour, exactly as 0b2's normalization_sigma=None does. Registered now so that choosing Option B cannot quietly introduce it as an implementation detail."
+  },
+  "forbidden_claim_terms": [
+    "is conscious",
+    "is sentient",
+    "is a mind",
+    "is an AGI",
+    "achieves AGI",
+    "is aware",
+    "genuinely understands",
+    "truly understands",
+    "validated cognitive model",
+    "proves cognition",
+    "reproduces cognition",
+    "the system feels",
+    "it feels",
+    "subjective experience",
+    "phenomenal"
+  ],
+  "claim_quarantine_paths": [
+    "docs/design/",
+    "docs/specs/PAPER_CLAIM_INVENTORY.md",
+    "docs/specs/SPEC-2c-interoception.md",
+    "docs/experiments/EXP-2c-interoception.md",
+    "DECISIONS.md",
+    "tools/ledger.json",
+    "tools/ledger_check.py",
+    "docs/CONSCIOUSNESS-YARDSTICK.md"
+  ],
+  "count_quarantine_paths": [
+    "docs/experiments/",
+    "docs/specs/PAPER_CLAIM_INVENTORY.md",
+    "WORKING-NOTES.md",
+    "docs/report/"
+  ],
+  "unregistered_suites": {
+    "test_priming.py": "data-dependent 2B experiment result script; needs the uncommitted ~53 MB SWOW file and makes a meaning claim. Validator-run, deliberately out of the canonical runner.",
+    "test_exp1c.py": "same: data-dependent experiment result script for the 1c SWOW recovery run.",
+    "test_exp2c_capture.py": "parked, uncommitted per D-005 — stimulus construction for a graded run that is not happening.",
+    "test_tester_exp2c_capture_adversarial.py": "parked with the above; reusable if a 2c re-spec earns its own pre-check."
+  },
+  "_float_accumulations_README": [
+    "THE FLOAT-ACCUMULATION REGISTRY (brick 0d, SPEC-0d §2.3). Enforced by ledger_check C6.",
+    "",
+    "Every additive float accumulation in src/ must appear here exactly once, keyed",
+    "<path>:<scope>.<symbol> — never by line number, which rots on the first insertion",
+    "above the site. Two verdicts and no third:",
+    "",
+    "  fsum       the site IS math.fsum. C6 checks this against the AST, so the verdict",
+    "             cannot drift away from the code without the build going red.",
+    "  registered the site is naive and has been adjudicated. The reason is the artifact.",
+    "",
+    "A reason should EXPLAIN, not assert. The standard is the flow entry: it states the",
+    "structural bound that makes the site safe, and names what would falsify it. 'Registered",
+    "because it is fine' is an entry that trains people to skim, and a registry nobody reads",
+    "is worse than no check.",
+    "",
+    "This registry does NOT record that a site is safe, and 0d fixed nothing. Two entries",
+    "record a site that is order-dependent today and left that way on purpose.",
+    "bound_on_absence (D-021): when an entry's REASON rests on something NOT existing, list it here and C6 enforces it — the entry fails the build the moment the symbol appears in src/. Biased toward OVER-REPORTING on purpose: an attribute read cannot be resolved to a type without inference, so every matching read is flagged and a human dismisses the ones that are a different type, IN WRITING, in 'dismissed'. A false positive costs one sentence; a false negative is a silently false registry reason — the failure that made 0d FAIL."
+  ],
+  "float_accumulations": {
+    "src/psyche_activation.py:spread_activation.flow": {
+      "verdict": "registered",
+      "reason": "THE MODEL ENTRY (SPEC-0d §3.1). Registered with a BOUND rather than converted: under hop-layered single expansion a road's source expands exactly once per spread, so a road transmits exactly once and the add's second operand cannot exist. Measured by the 0c tester — 574 spreads across 60 hostile graphs (cycles, self-loops, high-degree fans), no road read twice in any spread. A bound is stronger than a conversion because it says WHY the site cannot break, which a later reader can check; a conversion would have hidden the reasoning behind an idiom. FALSIFIER: any spread that writes the same road id twice."
+    },
+    "src/psyche_activation.py:spread_activation.frozen": {
+      "verdict": "fsum",
+      "reason": "Hop-layer boundary reduction over each node's whole contribution list. Exactly rounded, so the value a node expands from is a function of the contribution MULTISET alone and not of arrival order (SPEC-0c, DEFECT-A)."
+    },
+    "src/psyche_activation.py:spread_activation.out_total": {
+      "verdict": "fsum",
+      "reason": "SPEC-0b2 overlay: total outgoing conductance of one source. Exactly rounded, so no ULP asymmetry from road iteration order reaches the divisive-normalization factor."
+    },
+    "src/psyche_activation.py:spread_activation.activation": {
+      "verdict": "fsum",
+      "reason": "The final reduction over each node's contribution list. Exactly rounded, so the returned activation map depends on the multiset of contributions and not on the order they converged in (SPEC-0c, DEFECT-A)."
+    },
+    "src/psyche_coalitions.py:form_coalitions.strength": {
+      "verdict": "fsum",
+      "reason": "BUG-0b1's site. Coalition strength was summed over a uuid4-keyed member dict, so two mathematically identical coalitions differed by one ULP depending on iteration order and that resolved the comparison before the creation_seq tie-break ever ran. fsum makes strength a function of the member multiset, which is what makes the tie-break reachable."
+    },
+    "src/psyche_coalitions.py:form_coalitions_from_field.strength": {
+      "verdict": "fsum",
+      "reason": "The second Coalition construction site, converted with the first by BUG-0b1's fix. Same argument: strength decides an ordering, so it must not depend on member iteration order."
+    },
+    "src/psyche_field.py:build_activation_field.merged_flow": {
+      "verdict": "registered",
+      "reason": "CONFIRMED ORDER-DEPENDENT, order-pinned. CORRECTED 2026-07-26 (D-021): this entry previously read 'shape present, symptom unreproduced'. That was FALSE. The clearing probe — four sources converging on one node — was STRUCTURALLY INCAPABLE of exhibiting the symptom: at hop 1 each road is traversed by exactly one source's spread, so every merged_flow value is single-term there. A shared road DOWNSTREAM of the convergence is multi-term, and then it moves: measured 2 distinct bit patterns over 4! source orders on a 4-sources -> hub -> tail store (0.4325968097408329 vs 0.43259680974083287), and on 40 of 40 randomly generated convergent stores. BOUND (verified, and this is what the entry actually rests on): ActivationField.flow has NO READER in src/. form_coalitions_from_field reads only field_.total, field_.broke_through and field_.dominant; the .flow read in form_coalitions is ActivationResult.flow from a single spread, and form_coalitions has no caller in src/. So the moving bits reach no decision today. FALSIFIER: any consumer that starts reading ActivationField.flow kills this bound.",
+      "bound_on_absence": [
+        {
+          "kind": "attribute_read",
+          "symbol": "ActivationField.flow",
+          "dismissed": [
+            "src/psyche_field.py:build_activation_field.res.flow — RE-READ 2026-07-28 and still true of the site it now names: `for rid, fv in res.flow.items()` reads the PER-SOURCE ActivationResult.flow to build merged_flow. It is not a read of the merged field this bound is about.",
+            "src/psyche_coalitions.py:form_coalitions.result.flow — RE-READ 2026-07-28 and still true: `flow = result.flow` is ActivationResult.flow from a single spread, a different object; and form_coalitions has no caller in src/ (the second bound on this entry)."
+          ]
+        },
+        {
+          "kind": "call",
+          "symbol": "form_coalitions",
+          "dismissed": []
+        }
+      ]
+    },
+    "src/psyche_field.py:build_activation_field.total": {
+      "verdict": "registered",
+      "reason": "CONFIRMED ORDER-DEPENDENT and deliberately left naive (SPEC-0d §3.2). field.total takes two distinct bit patterns over the 3! source-order permutations and the difference reaches Coalition.strength. It is order-PINNED — source order is program order — so it is reproducible across processes and interpreters and falsifies nothing brick 0c claims; what is absent is the weaker property, order-INDEPENDENCE. 0d fixes nothing here on purpose: the gate is the deliverable, and a brick that also cleared the backlog would let the empty backlog be read as the deliverable. A later brick that converts this site re-verifies at this entry. FALSIFIER, added 2026-07-26 (D-022) — five of six entries named one and this did not, and five-of-six is a convention a reader generalises: the 'order-PINNED' half rests on `sources` arriving in program order, and it does NOT rest on build_activation_field, which merely dedups preserving the order it is given. The live caller passes list(clustering.group_seeds.keys()), and group_seeds is built in creation_seq order by cluster_sources. So the pinning rests on THAT ordering. It is falsified by: any caller deriving `sources` from an unordered container (a set, or the keys of a uuid-keyed map built without an explicit order), or any change to cluster_sources that stops ordering group_seeds by creation_seq."
+    },
+    "src/psyche_store.py:Clock.advance._t": {
+      "verdict": "registered",
+      "reason": "CORRECTED 2026-07-26 (D-021): this entry previously claimed 'there is no term SET that could be permuted — no alternative order a correct program could produce'. The second clause is FALSE and it was the half a reader relies on: permuting a multiset of dt values DOES move _t — measured 2.402012593713817 vs 2.4020125937138173 over 4! orders on the first multiset tried. What is TRUE and mechanical: exactly one AugAssign to _t per advance() call, so a single call is two-operand, and src/ contains NO CALLER of advance() at all (it is simulated-clock test scaffolding). What actually protects the site is that time order is SEMANTICALLY FIXED — a real but weaker argument than the one first written, and it is stated here as the weaker one. FALSIFIER: a src/ caller of advance(), or any path that applies elapsed deltas in a caller-chosen order.",
+      "bound_on_absence": [
+        {
+          "kind": "call",
+          "symbol": "advance",
+          "dismissed": []
+        }
+      ]
+    },
+    "src/psyche_store.py:Road.valence.<return>": {
+      "verdict": "fsum",
+      "reason": "SPEC-0c §2.5 site 3. This aggregate decides a CATEGORY — whether a road is closed or reopened, against _CLOSURE_THRESHOLD — so it is exactly the comparison the float rule forbids resolving on an independently-accumulated float. fsum makes valence a function of the charge multiset alone."
+    },
+    "src/psyche_store.py:SubstrateStore.strengthen.road.strength": {
+      "verdict": "registered",
+      "reason": "Two-operand update, not a fold: min(1.0, road.strength + gain) adds exactly one term per crossing and both operands are fixed by the expression, so no container is iterated and there is no ordering for fsum to make irrelevant. Across crossings the order is caller program order, as for Clock.advance. FALSIFIER: a version that gathers several gains from a collection and folds them in one call."
+    },
+    "src/psyche_store.py:SubstrateStore.strengthen.road.charges": {
+      "verdict": "registered",
+      "reason": "EMA blend, detected only because C6 follows the one-hop temporary `prior` back to road.charges.get(feeling, 0.0). (1.0 - blend) * prior + blend * intensity is a two-term add with both operands fixed by the expression, applied per feeling key, so no key's value is folded over an unordered collection; the order across crossings is caller program order. FALSIFIER: any change that sums several intensities for one feeling inside a single call."
+    },
+    "src/psyche_workspace.py:Broadcast.total_strength_after.<return>": {
+      "verdict": "fsum",
+      "reason": "SPEC-0c §2.5 site 2. This statistic is what the no-divergence test asserts convergence on, and a convergence test whose statistic moves with road iteration order or with the CPython minor version is a weak test. Exactly rounded, it is a function of the strength multiset."
+    },
+    "src/psyche_workspace.py:select_winner.strength": {
+      "verdict": "fsum",
+      "reason": "SPEC-0c §2.5 site 1 — the THIRD Coalition construction site, which BUG-0b1's report claimed did not exist. For a month the pruned winner's strength, the value _competition_key compares, was computed by the naive rule on the very path BUG-0b1's flip occurred on. Members inherit their order from a set of uuid4 NodeIDs, which the store's ordering contract does not reach, so this had to be fixed at the arithmetic."
+    },
+    "src/psyche_credit.py:EpisodicTrace.eligible.<return>": {
+      "verdict": "fsum",
+      "reason": "Brick 2f-i. Per-road eligibility summed over that road's occurrences inside the window. A road traversed on several cycles contributes one term per occurrence, and the term set has NO intrinsic order — trace insertion order is an artefact of which cycle recorded first, not a property of the quantity being computed. Exactly rounded, so the eligibility a road receives is a function of the occurrence MULTISET alone. This is the site C6 flagged on the FIRST write of 2f's float arithmetic, before any test ran (SPEC-2f §7.1).",
+      "bound_on_absence": [
+        {
+          "kind": "binding",
+          "symbol": "get_road",
+          "_what_this_bound_is_for": "RE-SCOPED 2026-07-28 BY BRICK 2g, because its original purpose was deleted and it kept passing anyway. IT WAS registered to support 2f-i's POTENTIATION-ONLY claim — that nothing in src/ can lower a road's strength. 2g makes that claim FALSE on purpose: store.weaken exists. The bound still PASSES, because 2g's weakening goes through a sanctioned store method rather than through a bound road reference — which is exactly the dangerous outcome, a green check whose purpose is gone and nothing turning red to say so. IT NOW GUARDS a different and still-true property: EVERY WRITE TO A ROAD'S STRENGTH GOES THROUGH A SANCTIONED STORE METHOD (strengthen or weaken) RATHER THAN THROUGH A REFERENCE HANDED OUT BY A READ. That is an encapsulation guarantee, it is what the check has always actually tested, and it survives 2g intact. The original purpose is recorded here rather than overwritten so that a reader can see the bound outlived one claim and was re-pointed rather than quietly retained. NOT the fsum reason above. This entry is brick 2f-i's registry record, and this bound carries 2f-i's POTENTIATION-ONLY claim — that nothing in src/ can lower a road's strength. FINDING 2f-3 (tester, c23c591) showed the original basis for that claim did not establish it: `store.get_road(rid, apply_decay=False)` returns the LIVE stored Road, not a copy, so assigning `.strength` or mutating `.charges` through it reaches the store, while every call-graph check still reports only a read. `apply_decay=True` DOES copy, and that asymmetry is what made it easy to miss. So the claim rests on an ABSENCE — no code in src/ binds a returned road and writes through it — not on a structural impossibility. This bound is what makes that absence checkable instead of assumed.",
+          "_inherited_weakness": "This bound inherits FINDING 0d-5 in full and then some. The checker sees a name being bound to a get_road() call (assignment, annotated assignment, walrus). It does NOT see the returned road passed to another function, stored in a container, returned upward, or reached through getattr / __dict__ / an alias. Deciding whether a write follows a binding is a DATAFLOW question and no dataflow analysis is built here — that was declined deliberately rather than attempted badly, and the general write-through-a-returned-object case is handed to architect-pm as its own brick. A reader must not treat a clean run of this bound as proof that no write-through exists; it is proof only that no BINDING exists outside the four dismissed below.",
+          "dismissed": [
+            "src/psyche_coalitions.py:form_coalitions.road=store.get_road — RE-READ AND REWRITTEN 2026-07-28. This ONE key now covers what were TWO line-keyed dismissals (former lines 167 and 184): both are `road=store.get_road(road_id, apply_decay=False)` in the same scope, so they are textually identical and share a key by design. The merged reason must therefore describe BOTH, and it does: across form_coalitions the bound `road` is read-only, used for `road.target_id` in the breakthrough scan and for `road.source_id`/`road.target_id` in the binding-graph build. Verified by AST: no assignment target in this module begins with `road.`. NOTE: the former 167 entry said 'used solely for road.target_id', which was true of that line alone and is NOT true of the merged site — carrying it forward unchanged would have been exactly the mechanical re-keying this brick exists to prevent.",
+            "src/psyche_coalitions.py:form_coalitions_from_field.road=store.get_road — RE-READ 2026-07-28 and still true: same shape in form_coalitions_from_field's breakthrough scan; reads `road.target_id` only, no writes.",
+            "src/psyche_store.py:SubstrateStore.quality_of.road=self.get_road — RE-READ 2026-07-28 and still true: `road = self.get_road(road_id)` reads `road.closed` and `road.strength` only, AND takes the default apply_decay=True, so it receives a COPY and could not reach the stored object even if it did write. Dismissed twice over."
+          ],
+          "_key_format": "BRICK 0g: dismissals are keyed <path>:<scope>.<expression>, the format Accumulation.key already uses. STABLE under irrelevant edits (a comment inserted above changes nothing) and UNSTABLE under relevant ones (renaming the scope, or changing what is read or called, breaks the dismissal and the finding returns). Two textually identical occurrences in one scope share a key and one reason covers both."
+        }
+      ]
+    },
+    "src/psyche_store.py:SubstrateStore.weaken.road.strength": {
+      "verdict": "registered",
+      "reason": "Brick 2g, the mirror of SubstrateStore.strengthen.road.strength and registered on the same argument. STRUCTURALLY SINGLE-TERM: `weaken` applies ONE decrement per call, computed from this road's own current strength and one caller-supplied magnitude. There is no collection to fold and therefore no term set whose order could change the answer — a sequence of calls applies one factor per call in caller program order, which is the caller's sequence, not an iteration order the substrate chose. FALSIFIER: a version that gathers several losses from a collection and folds them in one call, or any path that applies elapsed decrements in an order the caller did not fix. Caught by C6 on the FIRST write of this brick's float arithmetic, before any test ran (SPEC-2f §7.1's criterion, second brick running)."
+    }
+  },
+  "meaning_bar": {
+    "status": "OPEN",
+    "attempts": [
+      {
+        "id": "1e",
+        "wall": "circular",
+        "date": "2026-06-21"
+      },
+      {
+        "id": "1e-prime",
+        "wall": "mechanism-absent",
+        "date": "2026-06-21"
+      },
+      {
+        "id": "2c",
+        "wall": "signal-flat",
+        "date": "2026-06-21"
+      }
+    ],
+    "next_candidate": "brick 3 — learn the graph from an external corpus, grade the LEARNED structure against SWOW, with a co-occurrence/PMI baseline as the anti-circularity gate"
+  },
+  "_count_quarantine_reasons": {
+    "docs/experiments/": "frozen pre-registrations — a pre-registration edited after the fact is not one",
+    "docs/specs/PAPER_CLAIM_INVENTORY.md": "the document whose job is to adjudicate historical figures",
+    "WORKING-NOTES.md": "working notes quoting figures as illustration",
+    "docs/report/": "PUBLISHED under DOI 10.5281/zenodo.20474613 on 2026-05-31. Its 130/56/5 figures are correct for what was published and are immutable by definition. Never 'corrected'. (D-012)",
+    "docs/CONSCIOUSNESS-YARDSTICK.md": "REFUSED 2026-07-26 (D-024) — deliberately NOT added to count_quarantine_paths. C2's regex requires a number followed by assertions/suites/checks-passed/passed; '256 participants', '655 electrodes', '0 of 14' and '1 partial' are STRUCTURALLY out of its reach, verified by running COUNT_RE against each. A quarantine is refused here because it would be granted against a gate that cannot fire, which is exactly the convenience-grant this project treats as how a gate rots. The distinction from the C4 grant is the point: C4's is a property of the SUBJECT, C2's would be a property of a RUN."
+  },
+  "_claim_quarantine_reasons": {
+    "docs/CONSCIOUSNESS-YARDSTICK.md": [
+      "GRANTED 2026-07-26 (D-024) on SUBJECT MATTER, and the distinction matters: this is the one document whose subject IS the claim and whose entire content is the argument for why the project must never make it. Same class as PAPER_CLAIM_INVENTORY.md. NOT granted on the strength of C4 currently passing on the file — that silence is uninformative, because brick 0f records C4 as matching forbidden terms by literal substring, so it is weaker than a clean pass makes it look. The file does contain 'is conscious' and 'validated cognitive model'; both are negated and C4's negation logic correctly skips them TODAY. When 0f widens the matcher, C4 will see more of this file, and without the quarantine someone would 'fix' the one document whose job is to make the argument. RE-CHECK THIS FILE when 0f lands — it is an explicit 0f acceptance item."
+    ],
+    "_NOTE": "The other eight entries in claim_quarantine_paths carry NO recorded reason. That is the same failure this entry was required to avoid, and on the MORE important of the two gates — count_quarantine_paths has had a reasons field all along, claim_quarantine_paths has not. FLAGGED 2026-07-26, not retro-filled: writing reasons for exemptions granted by someone else, after the fact, would manufacture provenance rather than record it. Each should gain its reason the next time it is touched."
+  },
+  "_limitations": {
+    "listing-summary-contains-src": {
+      "surface": "tools/ledger_check.py --list-accumulations (stdout)",
+      "registered": "2026-07-26 (D-026)",
+      "severity": "latent; no current consumer is affected",
+      "statement": "The listing's summary line — '14 site(s) in src/ (8 fsum, 6 naive), 2 refusal(s)' — CONTAINS the string 'src/'. Every consumer today matches on the PREFIX (ln.startswith('src/')) and is therefore correct, but a consumer matching on CONTAINMENT would capture the summary line and take its last token as a census key. This stdout is a CONSUMED INTERFACE, not merely a report: three programmatic consumers exist with different sensitivities — the loop-closed key parser (prefix-sensitive), the determinism digest (every byte), and the purity check (content-blind). The builder's first refusal-visibility fix printed refusal lines beginning with the path and would have fed the key parser two phantom keys; it was caught only by the tester's loop-closed test, and nothing in the builder's own file covered the contract. Recorded rather than fixed: changing the summary's wording is cheap but would move the listing digest again for no measured benefit.",
+      "falsifier": "Any consumer of --list-accumulations that selects lines by containment of 'src/' rather than by prefix, or any change placing a census key anywhere but the last whitespace-separated token of a src/-prefixed line."
+    }
+  }
+}

@@ -1,6 +1,6 @@
-# Nous: a one-page summary
+# Psyche: a one-page summary
 
-**What it is:** Nous is a dependency-free Python prototype of a memory-and-activation substrate
+**What it is:** Psyche is a dependency-free Python prototype of a memory-and-activation substrate
 for a cognitive architecture, presented as much as a software-testing-methodology case study as an
 engineering artifact: a small system built test-first, in which adversarial testing caught a
 sequence of real structural bugs. It is not a mind, a consciousness, an AGI, or a validated
@@ -22,8 +22,8 @@ three properties. *Determinism:* identical results across process runs, includin
 hash seeds checked in fresh subprocesses. *Integrity:* graph indices and adjacency stay mutually
 consistent across every mutation. *Purity:* reads never mutate stored state. These are claims about
 mechanism. The upper two layers (the field and the "thought") run and are deterministic, but their
-*cognitive meaningfulness is explicitly not claimed.* The full suite is **130 assertions across 56
-test functions, all passing** (per suite: 45, 35, 19, 13, 18).
+*cognitive meaningfulness is explicitly not claimed.* The full suite is **2,645 assertions across
+26 suites, all passing**, including the independent tester-authored adversarial suites.
 
 **The central methodology finding:** One failure mode recurred at every layer. A component would
 *pass on a friendly, hand-built input* and break only under adversarial testing, or once the loop
@@ -38,7 +38,7 @@ strand alone, and the resulting "thought" is incoherent. This is not hidden. It 
 known-limitation test that flips to green only if the underlying problem is solved.
 
 **The next step:** Stop validating the cognitive layer against hand-built inputs, and instead test
-it against a *measurable* cognitive effect whose direction is known independently of Nous, for
+it against a *measurable* cognitive effect whose direction is known independently of Psyche, for
 example **semantic priming** [10, 11]: does pre-activating a related concept measurably raise a
 target's activation?
 

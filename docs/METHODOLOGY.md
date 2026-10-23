@@ -1,4 +1,4 @@
-# Nous: Methodology: adversarial testing caught structural bugs
+# Psyche: Methodology: adversarial testing caught structural bugs
 
 This is the most transferable part of the project, and the one whose claims are easiest to
 check, so it is written to be checkable. **Every factual claim below is traceable to the code
@@ -41,6 +41,15 @@ one.
   `0,1,3,7,42`), `test_determinism_adversarial_across_hash_seeds` (coalitions, 8 seeds),
   `test_field_determinism_adversarial_across_hash_seeds` (field, 8 seeds),
   `test_slice_determinism_across_hash_seeds` (slice, 6 seeds).
+  > **Amended 2026-07-25 — two limits of this practice, both found by adversarial testing of it.**
+  > (i) **Sweeping hash seeds is not sufficient here.** uuid4 ids differ per *process*, so pinning
+  > `PYTHONHASHSEED` does not pin set-iteration order; a real defect (DEFECT-A, BUG-0b1 §8) varies
+  > at a *fixed* seed. Fresh processes are what catches it, and the seed sweep is a weaker
+  > guarantee than it reads as. (ii) **Comparing `round(x, 9)` cannot see the bug this project
+  > actually has.** Every pre-existing determinism probe rounds; both real determinism defects found
+  > so far were 1 ULP, at the 16th significant figure. A probe's *resolution* is part of its
+  > coverage. The tester's 0b2 suite compares bit patterns throughout, and that is the change that
+  > surfaced DEFECT-A.
 - **Adversarial inputs, not friendly ones:** The clustering and field acceptance tests use a
   two-dense-communities-joined-by-a-thin-bridge graph built specifically to defeat distance-based
   segmentation (`test_acceptance_multisource_recovers_communities`,
@@ -62,7 +71,7 @@ re-evaluated closure, repeated reads over time could let a *closed* (traumatic) 
 open, with no crossing ever having reopened it.
 **Root cause:** conflating "compute the current value" with "persist the current value," and
 letting a passive read touch a state (`closed`) that should only change on an active event.
-**The fix (in `nous_store.py`):** decay is split into a pure view and a persisting write.
+**The fix (in `psyche_store.py`):** decay is split into a pure view and a persisting write.
 `_compute_decay(road, now)` returns decayed `(strength, charges)` **without mutating**;
 `get_road(apply_decay=True)` returns a **copy** carrying those values (docstring: *"a decayed
 VIEW: a copy, so the read does not persist anything"*). Only `_persist_decay` mutates, and it is
@@ -81,7 +90,7 @@ node is then re-expanded as later paths raise its value, everything downstream o
 point is counted multiple times.
 **Root cause (named in the code):** importing **Dijkstra's "first-pop-final" intuition** into an
 algorithm where activation *accumulates* rather than being a shortest-path minimum. The
-`nous_activation.py` docstring calls the earlier draft's structure out directly.
+`psyche_activation.py` docstring calls the earlier draft's structure out directly.
 **The fix:** **bounded single-expansion**, hop-layered: each node expands exactly once, at the
 first hop it is reached, carrying the full sum of all paths of length ≤ that hop. Equal-length
 convergence is therefore **exact** (not a coincidence of edge strengths).
@@ -148,7 +157,7 @@ preserved while genuine internal edges are cut).
 segmentation rule applied to it keys off distance, not community structure.
 **The fix:** keep flow-cut as the single-seed segmenter (it does satisfy the "more than one
 coalition" property), but recognize the real problem is **upstream** of the algorithm and reframe
-to a **multi-source field** (`nous_field.py`): multiple sources → multiple genuine peaks → basins
+to a **multi-source field** (`psyche_field.py`): multiple sources → multiple genuine peaks → basins
 around peaks, where a node bridging two concerns goes to whichever pulls it harder, so seams fall
 *between* centers.
 **Locked by:** `test_single_seed_spread_yields_multiple_coalitions` (flow-cut yields > 1 coalition
@@ -167,7 +176,7 @@ visible in the artifact itself: `test_acceptance_multisource_recovers_communitie
 source per community by hand. It is honest as a *mechanism* test and dishonest if read as evidence
 the system finds communities on its own.)
 **Root cause:** validating a stage against inputs invented to produce the desired output.
-**The fix:** **close the loop** with the thinnest real vertical slice (`nous_perceive.py`):
+**The fix:** **close the loop** with the thinnest real vertical slice (`psyche_perceive.py`):
 `text → perceive() → sources → field → coalitions → thought`, where *which* nodes become sources is
 decided by the input matched against the substrate, **not** chosen by the test. Run on real
 clustered input, the field then produces an **incoherent** "thought": basins collapse, one source
@@ -201,6 +210,12 @@ The honest boundary that falls out of this:
 
 > **Proven:** the substrate store and the spreading-activation engine are **deterministic**,
 > **integrity-preserving**, and **pure** (verified, including across process hash seeds).
+> **Amended 2026-07-25:** the determinism half of that sentence is **contested for the activation
+> engine**. Convergent accumulation is an order-dependent float sum, so on graphs where three or
+> more contributions reach one node, fresh processes disagree in the last place at library
+> defaults (DEFECT-A, `docs/BUG-0b1-coalition-strength-determinism.md` §8). The store is not
+> affected. Whether the engine keeps the `PROVEN` label is an open decision (D-011) and is
+> deliberately not settled inside a methodology document.
 >
 > **Tester-verified mechanism:** the field, coalitions, source-clustering, and workspace layers
 > make the cognitive cycle **close end-to-end** and are independently, adversarially verified for
@@ -213,7 +228,7 @@ The honest boundary that falls out of this:
 "The mechanism is correct and deterministic" and "the mechanism reproduces a cognitive phenomenon"
 are different claims. This project earns the first and explicitly does not claim the second. The
 natural next step is to test the cognitive layer against a **measurable** effect whose direction is
-known independently of Nous (for example **semantic priming**, graded against human association
+known independently of Psyche (for example **semantic priming**, graded against human association
 norms), so that, as with the substrate, the input is no longer chosen to make the answer come out
 right. That result has not yet been produced; it is the open frontier.
 
@@ -302,3 +317,137 @@ inputs. They establish **no cognitive claim**: the winner is a selected informat
 the broadcast is a bounded conduction bias. The line the original six findings drew is unchanged —
 mechanism is verified, meaning is not — and the next step is exactly what the method recommends:
 an externally-graded behavioral effect, run through the now-closed loop.
+
+---
+
+## Four rules the substrate-repair sequence paid for
+
+Each was bought with a defect that shipped, sat undetected, and was then found by accident.
+They are stated here as rules because in each case the project already *had* a probe for the
+property and the probe could not see it.
+
+### 1. A coverage axis is only evidence for the property it can perturb
+
+This project swept `PYTHONHASHSEED` for a month against a nondeterminism that **uuid4**
+caused. Iteration order derived from uuid values, which are freshly random in every process,
+so the defect varied at a *fixed* seed and no seed could have found it. The axis being swept
+did not control the mechanism, and sweeping it produced confidence without evidence — which
+is worse than no probe, because a swept axis is read as a guarantee.
+
+The interpreter axis survives this test and the seed axis does not, for a concrete reason:
+CPython 3.12 changed the builtin `sum()` to Neumaier compensated summation, so identical code
+computes different floats on 3.11 and 3.12. That is a property of the environment, and the
+interpreter sweep can perturb it. Determinism, by contrast, is now established by **removing**
+the order dependence rather than by sampling an axis that never controlled it.
+
+**Corollary: prefer removing a dependence to sampling it.** An axis you have eliminated needs
+no coverage argument.
+
+### 2. A boundary located by sampling is the last sample, not the boundary
+
+The activation-silencing cliff under normalization was recorded three times, by three
+different measurements, as three different numbers: **16**, then **24**, then — by exhaustive
+search — **31**. None of the three was a wrong *observation*. Each was the largest value that
+measurement happened to test, mistaken for the edge.
+
+A sampled boundary reports the resolution of the sample. If a spec states an edge, the edge
+must be found by search or by proof, and a probe that samples must say so in the number it
+reports.
+
+*(Both rules are enforced in practice rather than remembered: bit-exact comparison replaces
+`round(x, 9)` in every determinism probe, and `ledger_check` C5/C6 fail the build on the
+classes that were previously caught by looking.)*
+
+### 3. A site can have the shape, have the symptom, and still clear a probe a competent person designed to find it
+
+> **Therefore reproduction cannot be the gate. Only enumeration can.**
+
+This is the generalisation of the most expensive defect in the sequence, and it was bought at
+the highest price of the three: **it occurred inside the brick built to stop that very class,
+and it was written into that brick's spec as its headline argument.**
+
+The registry entry for `psyche_field.py`'s merged-flow accumulator read *"shape present, symptom
+unreproduced"* — a site that looked dangerous, probed, and cleared. The probe put four sources
+onto **one node**. At the first hop each road is traversed by exactly one source's spread, so
+every value there is **single-term**, and a single-term sum cannot vary by reordering. The
+probe was **structurally incapable** of exhibiting the symptom it was run to find. Move the
+shared road one hop downstream and the site moves — two distinct bit patterns over the source
+orders, on 40 of 40 randomly generated graphs.
+
+Nobody was careless. The probe was designed by someone who understood the defect, aimed at the
+right site, and reported truthfully what it saw. **That is what makes the lesson general**: the
+failure was not in the observation but in treating a negative observation as evidence of
+absence.
+
+The operational form, and the reason this project's float gate is a *census* rather than a
+hunt: **a clearing probe must be shown capable of failing before its silence counts as
+evidence.** Ask of any probe that found nothing — *could this have produced the symptom at
+all?* If the answer is no, the result is not a clean bill; it is no measurement.
+
+*Marked for the paper's methodology section, alongside the other two.*
+
+### 4. An assertion must be shown capable of failing against the code it was written against
+
+Rule 3 says a *probe* must be able to fail. This is its enforced form, and it is stronger
+for one reason: **it runs.**
+
+Rule 3 was carried as a habit for three bricks, and a habit does not survive a green suite.
+The failure it was supposed to prevent then occurred in the file whose whole purpose is to
+prevent it. Verifying SPEC-2f step zero, the tester audited every assertion it had written
+for the brick against the tool **as it stood before the fix** — and <!-- ledger:allow-count
+reason: "2 of 12" is the audit ratio for ONE brick's assertions (twelve claims examined
+two-sidedly, two found dead), not a suite count and not the captured total. C2 correctly
+cannot tell these apart; the number must not be updated to the ledger total. -->**2 of 12
+passed on both sides**. One of the two asserted that `scan_source` returns `[]` for a
+declined fold and `[]`
+for an empty file: perfectly true, and true before the fix as well, because the fix
+deliberately left that signature alone and added a separate entry point. It named a defect it
+could no longer perturb. The second was found by the same audit and had never had the power
+it claimed: it was written to prove two code paths were mutually exclusive, and its input
+produced one finding either way.
+
+Neither assertion was wrong. Both were **evidence for nothing**, which is harder to notice,
+because a passing assertion reads as verification and a green suite reads as a result.
+
+**The rule, and it is mechanical:** a suite that verifies a fix loads the pre-fix revision —
+`git show <rev>:<path>` — and requires each of its claims to **fail** there and pass on
+current. A claim that survives the old code is reported as dead rather than counted. This now
+runs as a test (`test_the_repointed_assertions_can_actually_fail`), so the next dead assertion
+turns the suite red instead of padding the count.
+
+Two corollaries worth stating, because both were paid for here:
+
+- **Convert, never delete.** An asserted-negative that goes red because the defect was fixed
+  becomes a positive assertion of the capability gained. A deleted negative leaves no trace
+  that the limit ever existed; a converted one goes red again on regression.
+- **A dead assertion is kept and labelled, not removed.** The `scan_source` one is retained
+  in the suite as the standing example, with its status recorded. Deleting it would destroy
+  the only evidence that the failure mode is real.
+
+*Marked for the paper's methodology section. It is the operational form of rule 3 and the
+first of the four that is enforced by execution rather than by review.*
+
+#### 4a. Only a NEGATIVE containment assertion can pass vacuously
+
+Rule 4's sharp form, and it narrows the search enormously.
+
+A **positive** containment assertion — `check("X" in Y)` — that passes is **live by
+construction**: it passed *because* the matcher found X. It cannot be vacuous.
+
+A **negative** one — `check("X" not in Y)` — passes whenever X is absent, and X is absent
+both when the code is correct **and when X could never have matched at all**. Those two are
+indistinguishable from the result. That is the whole failure mode.
+
+It was found in this repository the expensive way: an assertion that a superseded claim was
+gone searched for a phrase spanning a hard-wrapped docstring line, so it could never match,
+and it passed. A whitespace-normalised comparison fixed it, and a two-sided check — the same
+matcher, run against the revision where the phrase *was* present — proved the fix live.
+
+**The rule:** for every negative containment assertion, produce a **witness** — text where
+the phrase IS findable by the same matcher. No witness, no assertion. A sweep of all four
+suites on this basis found the one instance and zero others, and it also found two ways to
+run the sweep wrongly: searching a source blob flags a *live* assertion matching a
+runtime-assembled string, and requiring a string literal on the left misses the very shape
+that caused the defect, a phrase held in a variable.
+
+*Marked for the paper, beside rule 4.*

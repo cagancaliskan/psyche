@@ -1,8 +1,8 @@
 # Graded Semantic Priming on SWOW-EN (Phase 2B)
 
-A pre-registered test of whether Nous's spreading-activation engine reproduces **graded
+A pre-registered test of whether Psyche's spreading-activation engine reproduces **graded
 semantic priming** on real human association norms (Small World of Words, English). The
-contrast direction is known independently of Nous, so this is a genuine prediction, not a
+contrast direction is known independently of Psyche, so this is a genuine prediction, not a
 demonstration tuned after the fact.
 
 All numbers below are copied verbatim from
@@ -105,13 +105,13 @@ VERDICTS (computed from the data above):
   UNRELATED (0.000000). On the pre-stated menu this reads as *graded priming reproduced*.
 - **Primary cognitive contrast (MEDIATED vs UNRELATED): positive.** A real 2-step associative
   path delivered more activation than an unrelated node in **185/300 primes (61.7%)**, none in
-  the opposite direction; the other 115 were ties at zero. So Nous shows **mediated priming**,
+  the opposite direction; the other 115 were ties at zero. So Psyche shows **mediated priming**,
   not only direct priming.
 
 ### What this does and does not establish
 
 **Does:** On real human association norms, with conditions chosen blind from topology before
-any activation was computed, and on a frozen unmodified engine, Nous produces the expected
+any activation was computed, and on a frozen unmodified engine, Psyche produces the expected
 priming *ordering* — including a non-trivial mediated effect — deterministically and
 reproducibly (byte-identical across 8 `PYTHONHASHSEED`s, `test_priming.py`).
 
@@ -134,7 +134,7 @@ human-like effect size, for three honest reasons.
    normalized readout layered in the measurement code (never in the engine) — left to future
    work.
 
-**Bottom line:** Nous reproduces the *direction* of graded semantic priming on real norms
+**Bottom line:** Psyche reproduces the *direction* of graded semantic priming on real norms
 (direct and, more interestingly, mediated > unrelated), as an honest, pre-registered,
 reproducible result — while the magnitude and the competition question remain open and are
 explicitly not claimed.

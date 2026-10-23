@@ -9,7 +9,7 @@ These tests guard the properties the experiments DEPEND ON:
     unchanged afterwards (no persisted decay, no reopened closure, no strength drift).
   - ADVERSARIAL cross-process determinism: the FULL fan_effect result is byte-identical
     across PYTHONHASHSEED in fresh subprocesses. This reuses the pattern from
-    tests/test_nous_field.py — the natural implementations leak set-iteration order over
+    tests/test_psyche_field.py — the natural implementations leak set-iteration order over
     uuid4 keys into results, so this is the test that would catch it.
 
 Uses the project's tiny built-in harness (print + count, exit nonzero), NOT pytest — same
@@ -130,17 +130,17 @@ def test_retrieval_strength_is_pure_read():
 def _hash_seed_probe(seed: str) -> str:
     """Run a fresh interpreter under a fixed PYTHONHASHSEED that runs the WHOLE fan_effect
     experiment and returns its stdout. Determinism means: identical bytes across seeds.
-    Mirrors tests/test_nous_field.py's adversarial probe."""
+    Mirrors tests/test_psyche_field.py's adversarial probe."""
     code = r'''
 import os, sys
-sys.path.insert(0, os.environ["NOUS_SRC"])   # frozen library (bare-name imports)
-sys.path.insert(0, os.environ["NOUS_EXP"])   # experiments package (harness, fan_effect)
+sys.path.insert(0, os.environ["PSYCHE_SRC"])   # frozen library (bare-name imports)
+sys.path.insert(0, os.environ["PSYCHE_EXP"])   # experiments package (harness, fan_effect)
 import fan_effect
 raise SystemExit(fan_effect.main())
 '''
     env = dict(os.environ)
-    env["NOUS_SRC"] = SRC_DIR
-    env["NOUS_EXP"] = _HERE
+    env["PSYCHE_SRC"] = SRC_DIR
+    env["PSYCHE_EXP"] = _HERE
     env["PYTHONHASHSEED"] = seed
     out = subprocess.run([sys.executable, "-c", code], env=env,
                          capture_output=True, text=True)

@@ -43,8 +43,8 @@ imported unchanged; nothing here modifies it. Verdicts are computed from the dat
 Run:
     python3 experiments/priming.py
 Optional env (used by the determinism test for a reduced-but-faithful run):
-    NOUS_PRIMING_MAXROWS=<int>   cap edges loaded (default: all)
-    NOUS_PRIMING_NPRIMES=<int>   number of primes (default: 300)
+    PSYCHE_PRIMING_MAXROWS=<int>   cap edges loaded (default: all)
+    PSYCHE_PRIMING_NPRIMES=<int>   number of primes (default: 300)
 """
 
 from __future__ import annotations
@@ -60,10 +60,10 @@ import swow
 from harness import build_graph_from_spec, read_targets
 
 # ── pre-registered run parameters (locked) ───────────────────────────────────────────
-N_PRIMES = int(os.environ.get("NOUS_PRIMING_NPRIMES", "300"))
+N_PRIMES = int(os.environ.get("PSYCHE_PRIMING_NPRIMES", "300"))
 SELECTION_SEED = 20250531          # fixed; selection is deterministic given this
 K_UNRELATED = swow.PRIMING_K_UNRELATED   # = 4 (no path within 4 hops)
-MAXROWS = os.environ.get("NOUS_PRIMING_MAXROWS")  # None unless reduced run
+MAXROWS = os.environ.get("PSYCHE_PRIMING_MAXROWS")  # None unless reduced run
 MAXROWS = int(MAXROWS) if MAXROWS else None
 
 EPS = 1e-9

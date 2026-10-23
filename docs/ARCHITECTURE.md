@@ -1,11 +1,11 @@
-# Nous: Architecture (as built)
+# Psyche: Architecture (as built)
 
 This is the **as-built** technical reference for the code in `src/`. It describes what the
-seven modules actually do, the data model, the public surfaces and their invariants, and the
+eight modules actually do, the data model, the public surfaces and their invariants, and the
 key design decisions and *why* they were made. Claims here are traceable to the code and its
 docstrings; design rationale draws on the two implementation-plan documents,
-[`design/nous_plan_layer0_topology.md`](design/nous_plan_layer0_topology.md) and
-[`design/nous_plan_layer1_substrate_store.md`](design/nous_plan_layer1_substrate_store.md),
+[`design/psyche_plan_layer0_topology.md`](design/psyche_plan_layer0_topology.md) and
+[`design/psyche_plan_layer1_substrate_store.md`](design/psyche_plan_layer1_substrate_store.md),
 and on the specs in [`specs/`](specs/).
 
 Where a component is exploratory, or where a property is mechanism-verified but its *cognitive
@@ -15,43 +15,50 @@ decisions (the bugs found and fixed) is a separate document: [METHODOLOGY.md](ME
 **Assurance, in one line:** the substrate store and spreading-activation engine are `PROVEN`
 (determinism, integrity, purity); the field, coalitions, source-clustering, and workspace are
 **tester-verified mechanism** that make the cognitive cycle *close end-to-end* — a mechanism
-result, with **no cognitive claim**. The first behavioral cognitive claim (semantic priming
-against human norms) has not been run.
+result, with **no cognitive claim**. The body-state sensor (2c) is likewise tester-verified
+mechanism, shipped default-off. The first behavioral cognitive claim has been attempted three
+times and refused three times before any graded number existed; the meaning bar is open.
 
 ## Layering
 
 ```
 text ─► perceive() ─► cluster_sources() ─► build_activation_field() ─► form_coalitions_from_field()
                             │                       │                          │
-   nous_perceive.py         │  nous_source_         │   nous_field.py          │  nous_coalitions.py
+   psyche_perceive.py         │  psyche_source_         │   psyche_field.py          │  psyche_coalitions.py
                             │  clustering.py         ▼                          ▼
                             │              spread_activation()  ◄── reads ──  SubstrateStore
-                            │              nous_activation.py                 nous_store.py
+                            │              psyche_activation.py                 psyche_store.py
                             ▼                                                       ▲
                      select_winner() ─► prune ─► broadcast()  ── single bounded write ──┘
-                     nous_workspace.py                          (biases the next cycle; closes the loop)
+                     psyche_workspace.py                          (biases the next cycle; closes the loop)
 ```
 
-- **`nous_store.py`: SubstrateStore (Layer 1):** Holds the graph; the only component that
+- **`psyche_store.py`: SubstrateStore (Layer 1):** Holds the graph; the only component that
   mutates. Contains no "cognitive" logic. **`PROVEN`: determinism, integrity, purity.**
-- **`nous_activation.py`: spreading activation:** The first operation that *reads across* the
+- **`psyche_activation.py`: spreading activation:** The first operation that *reads across* the
   graph. Pure read. **`PROVEN`: determinism, purity; principled approximation.**
-- **`nous_field.py`: multi-source field:** Composes per-source spreads into basins.
+- **`psyche_field.py`: multi-source field:** Composes per-source spreads into basins.
   Deterministic, pure. *Tester-verified mechanism; no cognitive claim.*
-- **`nous_coalitions.py`: coalition formation:** Groups co-activated nodes. Deterministic,
+- **`psyche_coalitions.py`: coalition formation:** Groups co-activated nodes. Deterministic,
   pure. *Tester-verified mechanism; no cognitive claim.*
-- **`nous_source_clustering.py`: source-clustering (1c):** A pure-read pre-stage between
+- **`psyche_source_clustering.py`: source-clustering (1c):** A pure-read pre-stage between
   perception and the field that groups nearby perceived sources and seeds the field from one
   representative per group. Deterministic, pure, integrity-preserving. *Tester-verified
   mechanism; no cognitive claim.*
-- **`nous_workspace.py`: workspace (1d):** One competition among coalitions (1d-i), pruning of
+- **`psyche_workspace.py`: workspace (1d):** One competition among coalitions (1d-i), pruning of
   the bridged unperceived material from the winner (1d-i), and a single bounded broadcast back
   onto the substrate that biases the next cycle (1d-ii). Selection is a pure read; the broadcast
   is the one explicit write. *Tester-verified mechanism — including no-divergence and
   no-lock-in stability of the write; no cognitive claim.*
-- **`nous_perceive.py`: perception + the closed cycle:** Turns text into sources and runs the
+- **`psyche_perceive.py`: perception + the closed cycle:** Turns text into sources and runs the
   whole loop. `think(..., broadcast=False)` (the default) is a pure read; `broadcast=True`
   performs the single feedback write. *Tester-verified mechanism; the loop closes.*
+- **`psyche_bodysensor.py`: body-state sensor + modulation hook (2c):** Derives a scalar from
+  live process telemetry and, when enabled, scales the global `decay_per_hop`. Two modes:
+  deterministic **replay** over a frozen hashed trace (the entire test surface) and **live**
+  (the single isolated boundary, production only). **Default-off**: with no sensor supplied,
+  `think()` is byte-identical to 1c/1d. *Tester-verified mechanism; the meaning claim is a
+  recorded NOT-YET.*
 
 Everything is pure-Python standard library. Each layer reads the one below it through its
 public surface only.
@@ -60,7 +67,7 @@ public surface only.
 
 ## 1. Data model
 
-### Node: `nous_store.Node`
+### Node: `psyche_store.Node`
 The atomic unit of information; **always emotionally neutral** (emotion lives on roads, never
 on nodes).
 
@@ -74,7 +81,7 @@ on nodes).
 | `last_accessed` | `float` | updated by `traverse()` (touch) |
 | `access_count` | `int` | how often the node was touched |
 
-### Road: `nous_store.Road`
+### Road: `psyche_store.Road`
 A **directed** connection `source → target`. Carries access quality (via `strength`) and a
 **multi-valued emotional life** (via `charges`). Decay is lazy.
 
@@ -341,7 +348,7 @@ disciplined-exploratory tier, not here, and does not move this layer out of `BUI
 
 ## 7. The workspace: competition, pruning, and bounded broadcast (1d)
 
-`nous_workspace.py` is what the old "strongest coalition = the thought" placeholder stood in
+`psyche_workspace.py` is what the old "strongest coalition = the thought" placeholder stood in
 for. It is built as two bricks.
 
 ### 7.1 Competition + pruning (1d-i) — a pure read
@@ -441,6 +448,75 @@ residual corner case (§7.1) shipped as an asserted-negative.
 
 ---
 
+## 9. Body-state sensor and the modulation hook (2c)
+
+`psyche_bodysensor.py`. Interoception in the only sense this codebase permits the word: **a scalar
+computed from live OS/process telemetry, injected at a defined point in the cycle, which
+causally changes what the cycle does.** It is not a claim that the system feels anything, has a
+body, or is aware of its own state; the vision document this descends from
+([`design/psyche_the_bodys_voice.md`](design/psyche_the_bodys_voice.md)) is quarantined as vision,
+and SPEC-2c §0.1 states that firewall as an acceptance condition.
+
+### 9.1 The signal
+
+```
+friction = clamp(1 - cpu_dt/wall_dt, 0, 1)          # compute_friction()
+```
+
+`cpu_dt` from `time.process_time()`, `wall_dt` from `time.perf_counter()`. The quantity is a
+**stall fraction**: ≈ 0 when the process runs flat-out (`wall ≈ cpu`), rising only as the process
+waits **off-CPU**. Load average and RSS growth are specified as secondary robustness signals and
+must each come from their own named OS call — a signal re-derived from graph state (for example
+"memory pressure := active-node-count") is a graph-internal quantity in a telemetry costume and
+is forbidden.
+
+### 9.2 The coupling
+
+```
+decay_factor = 1 - MODULATION_SPAN * friction       # MODULATION_SPAN = 0.6
+effective_decay = decay_per_hop * decay_factor      # modulated_decay_per_hop()
+```
+
+As friction goes 0 → 1 the factor falls 1.0 → 0.4. Because the engine's transmission line is
+`transmitted = outgoing * road.strength * decay_per_hop`, a **lower** `decay_per_hop` means less
+activation survives each hop, so the spread becomes **more local**. The pre-registered direction
+is therefore *higher friction → more local spread*, fixed against Easterbrook's cue-utilization
+narrowing. This is a diffuse global gain change that names no node and no coalition — the
+design's analogue of a neuromodulator, and at most the *shadow* of a neuromodulatory-gain or
+somatic-marker bias.
+
+### 9.3 The two-mode determinism design (binding)
+
+- **Replay** — a frozen, SHA-256-hashed telemetry trace. Identical replayed input must yield
+  byte-identical output across separate processes and across every swept hash seed. **All**
+  tester-grade verification runs here; a mechanism test that reads live telemetry is not a valid
+  mechanism test and is rejected.
+- **Live** — read **only at the boundary**, production only, and explicitly *not* part of the
+  deterministic test surface. This mirrors `Clock(simulated=...)`.
+
+Both guards hold simultaneously and neither is relaxed for the other: a result must be **emergent**
+(a categorical winner-flip, never a scalar echo of the injected number) **and** reproducible from
+the frozen trace. Reproducible-but-echo is VOID for circularity; flips-but-unrepeatable is VOID
+for non-determinism.
+
+### 9.4 Status
+
+Mechanism is tester-verified: default-off byte-identity under attack, replay determinism in fresh
+processes, live telemetry proven off the deterministic surface (timers monkeypatched to detonate),
+and the anti-circularity guard that two distinct frictions mapping to the same effective decay
+produce the *same* winner. A couplability pilot cleared its pre-fixed floor, establishing that the
+loop genuinely can be moved by this channel.
+
+**The meaning claim is a recorded NOT-YET, and the reason is the yardstick, not the loop.** On a
+realistic `think()` workload the friction signal does not vary meaningfully from real machine
+contention: `think()` is CPU-bound, so `wall ≈ cpu`; the signal is a ratio and therefore
+scale-invariant in work magnitude; and CPython's collector runs in-thread and counts as CPU time,
+so garbage collection makes `think()` slower without raising friction. Any band wide enough to
+grade would have to be **manufactured** by an injected sleep, a forced swap, or core saturation —
+which the anti-manufacture guard forbids. This is recorded as the finding rather than rescued.
+
+---
+
 ## Cross-cutting design principles
 
 - **Activation and consolidation are different events:** Spreading activation is a *pure read*
@@ -464,5 +540,5 @@ residual corner case (§7.1) shipped as an asserted-negative.
     loop, graded against human SWOW norms) has **not** been run. No cognitive meaning is claimed
     by any layer above.
 
-  See [METHODOLOGY.md](METHODOLOGY.md), [`nous_roadmap.md`](nous_roadmap.md), and the README's
+  See [METHODOLOGY.md](METHODOLOGY.md), [`psyche_roadmap.md`](psyche_roadmap.md), and the README's
   scope statement.
