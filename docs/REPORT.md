@@ -64,7 +64,7 @@ caught it: **adversarial/property-based testing** and **loop-closure** (driving 
 system-generated rather than hand-placed inputs). Together they exposed **six distinct structural
 bugs** in the substrate/activation layers, and the same discipline — now split across an
 independent builder and an independent adversarial tester — governed the three later bricks that
-closed the cycle. The artifact's verified totals: **2,594 assertions across 26 test suites, all
+closed the cycle. The artifact's verified totals: **2,645 assertions across 26 test suites, all
 passing.** The first *behavioral* cognitive claim has been attempted three times and refused
 three times, each before any graded number existed and each for a structurally distinct reason
 (semantic priming: circular; the fan effect: generating mechanism absent; interoception: signal
@@ -596,16 +596,16 @@ builder suites.
 
 | Suite | Layer / role | Checks passed |
 |---|---|---:|
-| `test_psyche_store.py` | substrate store | 45 |
-| `test_psyche_activation.py` | spreading activation | 35 |
+| `test_psyche_store.py` | substrate store | 67 |
+| `test_psyche_activation.py` | spreading activation | 102 |
 | `test_psyche_coalitions.py` | coalition formation | 19 |
 | `test_psyche_field.py` | multi-source field | 13 |
 | `test_psyche_source_clustering.py` | source-clustering (1c) | 49 |
-| `test_psyche_workspace.py` | workspace competition + pruning (1d-i) | 83 |
+| `test_psyche_workspace.py` | workspace competition + pruning (1d-i) | 96 |
 | `test_psyche_workspace_broadcast.py` | bounded broadcast + feedback (1d-ii) | 63 |
 | `test_psyche_perceive.py` | perception + closed end-to-end cycle | 19 |
 | `test_psyche_bodysensor.py` | body-state sensor + modulation hook (2c) | 49 |
-| `test_tester_0b2_adversarial.py` | tester: adversarial 0b2 normalization overlay | 83 |
+| `test_psyche_credit.py` | temporal credit assignment + depression path (2f-i, 2g) | 133 |
 | `test_tester_1c_adversarial.py` | tester: adversarial 1c | 73 |
 | `test_tester_1c_mutation_battery.py` | tester: 1c randomized mutation battery | 5 |
 | `test_tester_1d_i_adversarial.py` | tester: adversarial 1d-i | 107 |
@@ -613,23 +613,31 @@ builder suites.
 | `test_tester_1e_selector_adversarial.py` | tester: 1e blind selector | 92 |
 | `test_tester_1e_instrument_adversarial.py` | tester: 1e broadcast-Δ instrument | 76 |
 | `test_tester_1e_loopclosed.py` | tester: 1e loop-closure | 58 |
+| `test_tester_0b2_adversarial.py` | tester: adversarial 0b2 normalization overlay | 104 |
+| `test_tester_0d_adversarial.py` | tester: adversarial 0d float-accumulation detector | 342 |
+| `test_tester_0b2_reverify.py` | tester: independent 0b2 re-verification | 246 |
+| `test_tester_0c_adversarial.py` | tester: adversarial 0c road ordering + fsum | 150 |
+| `test_tester_2f_adversarial.py` | tester: adversarial 2f-i, 0e, 0g and 2g | 196 |
 | `test_tester_2c_adversarial.py` | tester: adversarial 2c interoception | 350 |
 | `test_harness.py` | experiment harness mechanism | 17 |
 | `test_priming_instrument.py` | priming instrument mechanism | 42 |
 | `test_priming_1e.py` | blind three-arm selector mechanism | 67 |
-| **Total** | **26 suites** | **2,594 passed, 0 failed** |
+| **Total** | **26 suites** | **2,645 passed, 0 failed** |
 
-The total is **2,594 assertions across 26 suites, 0 failures**, including the cross-process
+The total is **2,645 assertions across 26 suites, 0 failures**, including the cross-process
 determinism checks, randomized mutation batteries, the no-divergence / no-lock-in stability checks
 on the broadcast write, and the resolved over-swallow case now driven through the live cycle. The
 verbatim run is reproduced in Appendix A.
 
-**A passing count is not a verdict.** The newest suite in the table above,
-`test_tester_0b2_adversarial.py`, illustrates the distinction the whole report rests on: its 83
-checks all pass, and the tester's verdict on the brick it examines is nevertheless **FAIL** — three
-of its checks are *asserted negatives* that pass precisely because a defect is present and will turn
-red the moment it is fixed. The defects and their scope are recorded in
-`docs/specs/SPEC-0b2-conserved-activation.md` §6. Read the verdict, not the count.
+**A passing count is not a verdict.** `test_tester_0b2_adversarial.py`, in the table above,
+illustrates the distinction the whole report rests on. When it first ran (2026-07-25), its 83 checks
+all passed, and the tester's verdict on the brick it examines was nevertheless **FAIL** — its three
+defects were recorded as *asserted negatives*, checks that passed precisely because the defect was
+present and would turn red the moment it was fixed. The defects and their scope are recorded in
+`docs/specs/SPEC-0b2-conserved-activation.md` §6. All three were later closed (DEFECT-A by brick 0c,
+the other two by follow-up fixes); those checks now assert the fix, the suite now has 104, and a
+second, independent pass, `test_tester_0b2_reverify.py`, returned **PASS** on all nine invariants on
+2026-07-26 (§9 of the same spec). Read the verdict, not the count.
 
 ![Figure 12: passing assertions per suite](diagrams/rendered/test_suite_bars.png)
 
@@ -887,30 +895,33 @@ The following is the captured run from `docs/TEST_OUTPUT.txt` (per-suite result 
 of the totals in §7.2).
 
 ```
-test_psyche_store.py                      → RESULT:  67 passed, 0 failed
-test_psyche_activation.py                 → RESULT: 102 passed, 0 failed
-test_psyche_coalitions.py                 → RESULT:  19 passed, 0 failed
-test_psyche_field.py                      → RESULT:  13 passed, 0 failed
-test_psyche_source_clustering.py          → RESULT:  49 passed, 0 failed
-test_psyche_workspace.py                  → RESULT:  96 passed, 0 failed
-test_psyche_workspace_broadcast.py        → RESULT:  63 passed, 0 failed
-test_psyche_perceive.py                   → RESULT:  19 passed, 0 failed
-test_psyche_bodysensor.py                 → RESULT:  49 passed, 0 failed
-test_tester_1c_adversarial.py           → RESULT:  73 passed, 0 failed
-test_tester_1c_mutation_battery.py      → RESULT:   5 passed, 0 failed
-test_tester_1d_i_adversarial.py         → RESULT: 107 passed, 0 failed
-test_tester_1d_ii_adversarial.py        → RESULT: 110 passed, 0 failed
-test_tester_1e_selector_adversarial.py  → RESULT:  92 passed, 0 failed
-test_tester_1e_instrument_adversarial.py→ RESULT:  76 passed, 0 failed
-test_tester_1e_loopclosed.py            → RESULT:  58 passed, 0 failed
-test_tester_0b2_adversarial.py          → RESULT: 104 passed, 0 failed   (0b2 original pass — see §7.2)
-test_tester_0b2_reverify.py             → RESULT: 246 passed, 0 failed   (0b2 re-verification: PASS)
-test_tester_0c_adversarial.py           → RESULT: 150 passed, 0 failed   (0c verification — see §7.2)
-test_tester_2c_adversarial.py           → RESULT: 350 passed, 0 failed
-test_harness.py                         → RESULT:  17 passed, 0 failed
-test_priming_instrument.py              → RESULT:  42 passed, 0 failed
-test_priming_1e.py                      → RESULT:  67 passed, 0 failed
-                                           OVERALL: all 26 suites passed (0 failures); 2,594 assertions
+test_psyche_store.py                     → RESULT:  67 passed, 0 failed
+test_psyche_activation.py                → RESULT: 102 passed, 0 failed
+test_psyche_coalitions.py                → RESULT:  19 passed, 0 failed
+test_psyche_field.py                     → RESULT:  13 passed, 0 failed
+test_psyche_source_clustering.py         → RESULT:  49 passed, 0 failed
+test_psyche_workspace.py                 → RESULT:  96 passed, 0 failed
+test_psyche_workspace_broadcast.py       → RESULT:  63 passed, 0 failed
+test_psyche_perceive.py                  → RESULT:  19 passed, 0 failed
+test_psyche_bodysensor.py                → RESULT:  49 passed, 0 failed
+test_psyche_credit.py                    → RESULT: 133 passed, 0 failed
+test_tester_1c_adversarial.py            → RESULT:  73 passed, 0 failed
+test_tester_1c_mutation_battery.py       → RESULT:   5 passed, 0 failed
+test_tester_1d_i_adversarial.py          → RESULT: 107 passed, 0 failed
+test_tester_1d_ii_adversarial.py         → RESULT: 110 passed, 0 failed
+test_tester_1e_selector_adversarial.py   → RESULT:  92 passed, 0 failed
+test_tester_1e_instrument_adversarial.py → RESULT:  76 passed, 0 failed
+test_tester_1e_loopclosed.py             → RESULT:  58 passed, 0 failed
+test_tester_0b2_adversarial.py           → RESULT: 104 passed, 0 failed   (0b2 original pass — see §7.2)
+test_tester_0d_adversarial.py            → RESULT: 342 passed, 0 failed
+test_tester_0b2_reverify.py              → RESULT: 246 passed, 0 failed   (0b2 re-verification: PASS)
+test_tester_0c_adversarial.py            → RESULT: 150 passed, 0 failed   (0c verification — see §7.2)
+test_tester_2f_adversarial.py            → RESULT: 196 passed, 0 failed
+test_tester_2c_adversarial.py            → RESULT: 350 passed, 0 failed
+test_harness.py                          → RESULT:  17 passed, 0 failed
+test_priming_instrument.py               → RESULT:  42 passed, 0 failed
+test_priming_1e.py                       → RESULT:  67 passed, 0 failed
+                                           OVERALL: all 26 suites passed (0 failures); 2,645 assertions
 ```
 
 The complete, unabridged capture (including every individual check label and the asserted-negative

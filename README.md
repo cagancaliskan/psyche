@@ -181,30 +181,35 @@ with it.
 
 | Suite | Layer / role | Checks passed |
 |---|---|---:|
-| `test_psyche_store.py` | substrate store | **45** |
-| `test_psyche_activation.py` | spreading activation | **35** |
+| `test_psyche_store.py` | substrate store | **67** |
+| `test_psyche_activation.py` | spreading activation | **102** |
 | `test_psyche_coalitions.py` | coalition formation | **19** |
 | `test_psyche_field.py` | multi-source field | **13** |
 | `test_psyche_source_clustering.py` | source-clustering (1c) | **49** |
-| `test_psyche_workspace.py` | workspace competition + pruning (1d-i) | **83** |
+| `test_psyche_workspace.py` | workspace competition + pruning (1d-i) | **96** |
 | `test_psyche_workspace_broadcast.py` | bounded broadcast + feedback (1d-ii) | **63** |
 | `test_psyche_perceive.py` | perception + closed end-to-end cycle | **19** |
 | `test_psyche_bodysensor.py` | body-state sensor + modulation hook (2c) | **49** |
-| `test_tester_0b2_adversarial.py` | tester: adversarial 0b2 normalization overlay | **83** |
+| `test_psyche_credit.py` | temporal credit assignment + depression path (2f-i, 2g) | **133** |
 | `test_tester_1c_adversarial.py` | tester: adversarial 1c | **73** |
 | `test_tester_1c_mutation_battery.py` | tester: 1c randomized mutation battery | **5** |
 | `test_tester_1d_i_adversarial.py` | tester: adversarial 1d-i | **107** |
 | `test_tester_1d_ii_adversarial.py` | tester: adversarial 1d-ii | **110** |
-| `test_tester_2c_adversarial.py` | tester: adversarial 2c interoception | **350** |
 | `test_tester_1e_selector_adversarial.py` | tester: 1e blind selector | **92** |
 | `test_tester_1e_instrument_adversarial.py` | tester: 1e broadcast-Δ instrument | **76** |
 | `test_tester_1e_loopclosed.py` | tester: 1e loop-closure | **58** |
+| `test_tester_0b2_adversarial.py` | tester: adversarial 0b2 normalization overlay | **104** |
+| `test_tester_0d_adversarial.py` | tester: adversarial 0d float-accumulation detector | **342** |
+| `test_tester_0b2_reverify.py` | tester: independent 0b2 re-verification | **246** |
+| `test_tester_0c_adversarial.py` | tester: adversarial 0c road ordering + fsum | **150** |
+| `test_tester_2f_adversarial.py` | tester: adversarial 2f-i, 0e, 0g and 2g | **196** |
+| `test_tester_2c_adversarial.py` | tester: adversarial 2c interoception | **350** |
 | `test_harness.py` | experiment harness mechanism | **17** |
 | `test_priming_instrument.py` | priming instrument mechanism | **42** |
 | `test_priming_1e.py` | blind three-arm selector mechanism | **67** |
-| **Total** | **26 suites** | **2,594 passed, 0 failed** |
+| **Total** | **26 suites** | **2,645 passed, 0 failed** |
 
-That total is **2,594 assertions across 26 suites, 0 failures**, including the builder suites
+That total is **2,645 assertions across 26 suites, 0 failures**, including the builder suites
 above and the **independent tester-authored adversarial suites** (`test_tester_*`), which add
 hostile and loop-closed checks: cross-process determinism in fresh interpreters under
 `PYTHONHASHSEED ∈ {0,1,2,3,7,42}`, randomized mutation batteries interleaved with integrity
@@ -212,13 +217,17 @@ scans, no-divergence / no-lock-in stability of the broadcast write, and the reso
 over-swallow case now driven through the live cycle (formerly an asserted-negative limitation,
 now a real pass).
 
-**A passing count is not a verdict.** `test_tester_0b2_adversarial.py` above has 83 passing checks
-and the tester's verdict on the brick it examines is **FAIL**: seven of nine specified invariants
-hold and two do not. Three of its checks are *asserted negatives* — they pass because a defect is
-present and are designed to turn red the moment it is fixed, so that a fix has to come back through
-the same suite. The defects, their scope, and which of them the change introduced versus inherited
-are recorded in [docs/specs/SPEC-0b2-conserved-activation.md](docs/specs/SPEC-0b2-conserved-activation.md)
-§6. Read the verdict, not the count.
+**A passing count is not a verdict.** When `test_tester_0b2_adversarial.py` first ran (2026-07-25),
+it had 83 passing checks and the tester's verdict on the brick it examines was **FAIL**: seven of
+nine specified invariants held and two did not. Its three defects were recorded as *asserted
+negatives* — checks that passed because the defect was present and were designed to turn red the
+moment it was fixed, so that a fix had to come back through the same suite. The defects, their
+scope, and which of them the change introduced versus inherited are recorded in
+[docs/specs/SPEC-0b2-conserved-activation.md](docs/specs/SPEC-0b2-conserved-activation.md) §6. All
+three were later closed (DEFECT-A by brick 0c, the other two by follow-up fixes); those checks now
+assert the fix, the suite now has 104, and a second, independent pass, `test_tester_0b2_reverify.py`,
+returned **PASS** on all nine invariants on 2026-07-26 (§9 of the same spec). Read the verdict, not
+the count.
 
 **Determinism is scoped to the interpreters it was swept on.** A cross-process determinism
 failure lived undetected in `Coalition.strength` for a month because the suite was only ever
