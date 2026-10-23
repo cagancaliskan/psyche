@@ -15,8 +15,8 @@ For: the human (a direction decision) and, if the recommendation is accepted, th
 artifact. It is `DESIGNED`-tier analysis only.
 Depends on (read): Phase 2A fan-effect characterization (`experiments/fan_effect.py`, `experiments/FAN_EFFECT.md`,
 `experiments/EXPERIMENT_NOTES.md` STEP 0 — all tier-3 disciplined-exploratory, captured verbatim in
-`experiments/results/`); the closed loop `select_winner` / `broadcast` (`src/nous_workspace.py`); the frozen
-spreading-activation engine (`src/nous_activation.py`); the 1e NO-GO (`docs/specs/SPEC-1e-priming.md` §14,
+`experiments/results/`); the closed loop `select_winner` / `broadcast` (`src/psyche_workspace.py`); the frozen
+spreading-activation engine (`src/psyche_activation.py`); the 1e NO-GO (`docs/specs/SPEC-1e-priming.md` §14,
 `docs/experiments/EXP-1e-priming.md` §15).
 
 > **Scope discipline (CLAUDE.md rules 1–5).** This is **description and analysis, not a result.** `PROVEN` and
@@ -70,7 +70,7 @@ each association receives a **smaller share** → lower activation at any one ta
 fan effect is, mechanistically, a *capacity-division / normalization* effect: it exists only because the source
 activation is a shared, conserved quantity split across out-edges.**
 
-**Prior art (cited; this is the phenomenon and the mechanism, NOT evidence Nous reproduces it):**
+**Prior art (cited; this is the phenomenon and the mechanism, NOT evidence Psyche reproduces it):**
 - **Anderson, J. R. (1974).** "Retrieval of propositional information from long-term memory." *Cognitive
   Psychology* 6(4), 451–474. — the original fan effect. *Establishes:* the human **direction** (higher fan →
   slower retrieval).
@@ -81,16 +81,16 @@ activation is a shared, conserved quantity split across out-edges.**
 - **Anderson, J. R., & Lebiere, C. (1998).** *The Atomic Components of Thought* (ACT-R). — *Establishes:* the
   formal `S_ji ≈ S − ln(fan)` association-strength equation that makes the fan effect a **normalization**
   effect by construction.
-- **(Bridge / boundary)** the human effect is a **latency** (reaction-time) effect; Nous has no latency, only
+- **(Bridge / boundary)** the human effect is a **latency** (reaction-time) effect; Psyche has no latency, only
   activation magnitude. The Phase 2A study fixed the bridge in advance (`FAN_EFFECT.md`): **higher activation =
-  faster/stronger retrieval**, so the human "slower with higher fan" maps to the Nous prediction **"lower
+  faster/stronger retrieval**, so the human "slower with higher fan" maps to the Psyche prediction **"lower
   activation with higher fan."** This bridge is an assumption, stated so it can be challenged.
 
-**What the literature establishes vs. what Nous would be testing.** The literature establishes that *humans*
-show a fan effect and that its mechanism is **division of a shared activation source across associations.** Nous
+**What the literature establishes vs. what Psyche would be testing.** The literature establishes that *humans*
+show a fan effect and that its mechanism is **division of a shared activation source across associations.** Psyche
 would be testing only whether *its* activation magnitude **decreases** as a source's out-degree (fan) rises,
 under matched edge strength and distance — the magnitude analogue of the human latency direction. A match would
-be "the direction is reproduced," never "Nous retrieves the way a person does."
+be "the direction is reproduced," never "Psyche retrieves the way a person does."
 
 ### 1.2 Part 2 — Is there a clean, well-populated stratum separating the fan prediction from a mechanical readback? (assessed BOTH ways, honestly)
 
@@ -110,7 +110,7 @@ and this is the load-bearing finding. **The fan effect's generating mechanism �
 activation across out-edges — is PROVABLY ABSENT from this engine.** This is not a conjecture; it is the
 **Phase 2A result, already run, captured verbatim, and explained mechanistically:**
 
-- `src/nous_activation.py`, inside `spread_activation`, feeds **each** out-road the source's **FULL** activation:
+- `src/psyche_activation.py`, inside `spread_activation`, feeds **each** out-road the source's **FULL** activation:
   `outgoing = node_act`, then `transmitted = outgoing × road.strength × decay_per_hop`. There is **no
   `/ len(out_roads)`**, no per-source energy budget, no division of the source's activation among its out-edges
   (`EXPERIMENT_NOTES.md` STEP 0, reading the frozen engine).
@@ -179,7 +179,7 @@ The directive asks specifically about the fan effect **through the closed loop**
 study used. I checked whether 1d-i competition or 1d-ii broadcast introduces any out-degree sensitivity the bare
 engine lacks. **They do not:**
 
-- **1d-i competition** (`src/nous_workspace.py`, `_density_score`) scores coalitions by
+- **1d-i competition** (`src/psyche_workspace.py`, `_density_score`) scores coalitions by
   **`total activation / max(coalition_size, guard)`** — normalization by **coalition SIZE**, not by source
   **out-degree/fan**. Fan does not enter the competition key. A target's activation, which feeds coalition
   strength, is still the fan-independent value from the bare engine.

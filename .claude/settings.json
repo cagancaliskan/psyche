@@ -1,0 +1,66 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+
+  "permissions": {
+    "allow": [
+      "Bash(python3 run_tests.py)",
+      "Bash(python3.11 run_tests.py)",
+      "Bash(python3.12 run_tests.py)",
+      "Bash(python3.13 run_tests.py)",
+      "Bash(python3 tools/ledger_check.py:*)",
+      "Bash(python3 tools/ledger_sync.py:*)",
+      "Bash(python3 tools/test_ledger.py)",
+      "Bash(git status:*)",
+      "Bash(git log:*)",
+      "Bash(git diff:*)",
+      "Bash(git branch:*)",
+      "Bash(git show:*)"
+    ],
+    "deny": [
+      "Bash(git push:*)",
+      "Bash(git reset --hard:*)",
+      "Bash(git clean:*)",
+      "Read(./.env)",
+      "Read(./.env.*)"
+    ]
+  },
+
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PROJECT_DIR}/tools/hooks/session_start_ledger.py",
+            "timeout": 30
+          }
+        ]
+      }
+    ],
+
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ${CLAUDE_PROJECT_DIR}/tools/hooks/post_edit_ledger.py",
+            "timeout": 40
+          }
+        ]
+      }
+    ],
+
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd ${CLAUDE_PROJECT_DIR} && python3 tools/ledger_check.py --quiet 2>&1 | head -3 || true",
+            "timeout": 40
+          }
+        ]
+      }
+    ]
+  }
+}

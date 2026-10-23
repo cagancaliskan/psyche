@@ -1,7 +1,7 @@
 # Fan-Effect Characterization (Phase 2A)
 
 A pre-registered, deterministic measurement of how a target node's activation depends on
-the **fan** (out-degree) of its source in Nous, compared to the human fan effect. This is
+the **fan** (out-degree) of its source in Psyche, compared to the human fan effect. This is
 the warm-up study for the empirical-validation phase: its primary deliverable is a reusable,
 honest measurement harness and a characterized result — including the possibility (here,
 the reality) of a **null**.
@@ -23,12 +23,12 @@ computed (`print_preregistration`, called first in `main`).
 
 ## Bridge assumption
 
-The human fan effect is measured as retrieval **latency** (reaction time). Nous has no
+The human fan effect is measured as retrieval **latency** (reaction time). Psyche has no
 latency — it produces an **activation magnitude**. We bridge the two by mapping:
 
 > **higher activation = faster / stronger retrieval.**
 
-Under this mapping, the human "slower retrieval at higher fan" becomes the Nous prediction
+Under this mapping, the human "slower retrieval at higher fan" becomes the Psyche prediction
 "**lower activation at higher fan**." This bridge is an assumption, stated explicitly so it
 can be challenged; it is the only way a magnitude model can be compared to a latency effect.
 
@@ -111,7 +111,7 @@ distance, and is completely independent of how many siblings its source has.
 The `1-vs-8` probe confirmed this directly (both `0.2433743975`), and the full sweep
 confirms it across `{1,2,4,8,16}`. The human fan effect arises precisely from a *capacity /
 normalization* assumption (a fixed activation source shared among more associations, or
-competition at retrieval). Nous's spreading activation makes no such assumption, so under an
+competition at retrieval). Psyche's spreading activation makes no such assumption, so under an
 equal-strength, connectivity-only manipulation it **cannot** produce a fan effect. The
 engine was not modified to manufacture one.
 
@@ -128,7 +128,7 @@ associations), two consequences follow for designing the semantic-priming study:
 
 1. **A connectivity-only contrast will register, but a competition/fan contrast will not.**
    "Connected vs unconnected" (does a cue raise a target's activation above zero?) is a
-   contrast Nous *can* show, because reachability and edge strength drive the readout. But
+   contrast Psyche *can* show, because reachability and edge strength drive the readout. But
    anything that depends on associations *competing* for a shared activation budget (fan,
    interference) will read flat under the current engine.
 
@@ -149,7 +149,7 @@ associations), two consequences follow for designing the semantic-priming study:
 activation." Both are legitimate instruments, but they license *different* effects, so the
 priming study must commit to one **in advance, on the record, before any priming run:**
 - **Raw activation (as-is):** the contrast is **presence/absence** — a related (reachable)
-  target lights up; an unrelated (unreachable) target does not. This is the effect Nous can
+  target lights up; an unrelated (unreachable) target does not. This is the effect Psyche can
   show with the current engine and readout, and it is what 2B should pre-register if it keeps
   this instrument.
 - **Normalized / graded readout (added in the measurement layer):** relatedness *strength*

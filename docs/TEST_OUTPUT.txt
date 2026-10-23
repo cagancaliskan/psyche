@@ -1,23 +1,22 @@
 ======================================================================
-  NOUS — CAPTURED TEST OUTPUT (verbatim)
+  PSYCHE — CAPTURED TEST OUTPUT (verbatim)
 ======================================================================
-Generated : 2026-06-21 18:39:11 +0300
-Machine   : Darwin 24.5.0 x86_64
-Python    : Python 3.12.4
-Command   : python3 run_tests.py   (one block per suite; PYTHONPATH=src:experiments)
-Note      : Built-in harness (not pytest); each suite prints RESULT: N passed, M failed
-            and exits non-zero on any failure. Includes builder + tester-authored
-            adversarial suites (test_tester_*). State: 1c + 1d-i + 1d-ii tester-verified;
-            1e priming + fan-effect meaning-bars NO-GO; 2c interoception (BodySensor +
-            default-off decay modulation) built and tester-verified, pilot GO 85%
-            (feasibility); meaning UNVALIDATED (validator graded run pending).
+Generated : 2026-10-23 12:26:52 +0300
+Machine   : Darwin 24.5.0 arm64
+Python    : Python 3.14.4   (primary — this transcript)
+Swept     : python3.10 (3.10.17), python3.11 (3.11.15), python3.12 (3.12.4), python3.13 (3.13.14), python3.14 (3.14.4)
+Hash seeds: [0, 1, 2, 3, 7, 42]  (per-suite determinism probes, fresh interpreters)
+Command   : python3 tools/capture_run.py   (wraps run_tests.py per interpreter)
+Note      : Built-in harness (not pytest); each suite prints RESULT: N passed,
+            M failed and exits non-zero on any failure. Every interpreter above
+            produced identical per-suite counts; a disagreement refuses capture.
+            Totals: 26 suites, 2645 assertions, 0 failures.
 ======================================================================
-
 ######################################################################
-# test_nous_store.py
+# test_psyche_store.py
 ######################################################################
 ======================================================================
-  NOUS SUBSTRATE STORE — TEST SUITE (Layer 1)
+  PSYCHE SUBSTRATE STORE — TEST SUITE (Layer 1)
 ======================================================================
 
 identity & creation order
@@ -50,15 +49,34 @@ self-region: unowned designated subgraph, separate set
 
 integrity scan passes on a healthy graph of moderate size
 
+0c: roads_from / roads_into yield in road-creation order (creation_seq)
+
+0c: order survives add/remove/re-add batteries (indices stay consistent)
+
+0c: add_road on an existing pair returns it and does NOT move it
+
+0c: remove + re-add yields a NEW road, which sorts last
+
+0c: iteration order is a pure read and is identical in fresh processes
+
+0c/§2.5 site 3: Road.valence — and therefore closure — depends on the charge MULTISET, never on the order the feelings were recorded in
+
+0c/§2.5 site 3: the same charges give the same valence bits on every CPython on this machine
+    python3.10   000000000000e8bf True
+    python3.11   000000000000e8bf True
+    python3.12   000000000000e8bf True
+    python3.13   000000000000e8bf True
+    python3.14   000000000000e8bf True
+
 ======================================================================
-  RESULT: 45 passed, 0 failed
+  RESULT: 67 passed, 0 failed
 ======================================================================
 
 ######################################################################
-# test_nous_activation.py
+# test_psyche_activation.py
 ######################################################################
 ======================================================================
-  NOUS SPREADING ACTIVATION — TEST SUITE
+  PSYCHE SPREADING ACTIVATION — TEST SUITE
 ======================================================================
 
 a missing seed raises NotFound
@@ -91,15 +109,53 @@ closed road in a spread: blocks a weak cue, leaks a strong one
 
 flow records which edges actually carried activation (and respects closure)
 
+0c: convergent accumulation is ORDER-INDEPENDENT, not merely order-pinned
+    activation[T] = 0d7ceee443f9b93f = 0.10145973529004966
+
+0c: activation[T] is the EXACTLY ROUNDED sum of the flows into T
+    naive fold in creation order = 0d7ceee443f9b93f, fsum = 0d7ceee443f9b93f, distinct naive results over 3! = 2
+
+0c: a 12-way convergent fan is order-independent under shuffled expansion
+
+0c: the DEFECT-A reproduction yields ONE bit pattern in fresh processes
+    0d7ceee443f9b93f  = 0.10145973529004966  (30 of 30)
+
+0c: the same graph gives the same bits on every CPython on this machine
+    python3.10   0d7ceee443f9b93f
+    python3.11   0d7ceee443f9b93f
+    python3.12   0d7ceee443f9b93f
+    python3.13   0d7ceee443f9b93f
+    python3.14   0d7ceee443f9b93f
+
+0c/DEFECT-B: each road is read exactly ONCE per expansion, at every sigma
+
+0c/DEFECT-B: a lone out-road is unattenuated on a MOVING clock (factor 1.0)
+
+0c/DEFECT-B: a one-out-road chain is byte-identical on/off on a MOVING clock
+
+0c/DEFECT-C: non-finite and non-positive sigma raise ValueError, naming it
+
+0c/DEFECT-C part 3 (D-015): non-finite ENERGY is refused at the boundary, on every graph shape
+
+0c/DEFECT-C part 2: the BACKSTOP guard — a non-finite transmitted value can never pass the floor test, driven from below the boundary
+
+0c KNOWN LIMITATION, asserted (SPEC-0c §2.8): extreme-but-FINITE energy overflows out of math.fsum as OverflowError, not as the engine's ValueError
+
+0c: the deferred-accumulation restructure is still a PURE read
+
+0c DESIGN DECISION (D-014): activation energy has no signed zero — -0.0 normalises to +0.0
+
+0c ASSERTED-NEGATIVE (known limitation): the guarantee is per construction program, NOT per isomorphism class
+
 ======================================================================
-  RESULT: 35 passed, 0 failed
+  RESULT: 102 passed, 0 failed
 ======================================================================
 
 ######################################################################
-# test_nous_coalitions.py
+# test_psyche_coalitions.py
 ######################################################################
 ======================================================================
-  NOUS COALITION FORMATION — TEST SUITE
+  PSYCHE COALITION FORMATION — TEST SUITE
 ======================================================================
 
 no coalitions when nothing clears the coherence floor
@@ -131,10 +187,10 @@ ADVERSARIAL determinism: clustering identical across hash seeds
 ======================================================================
 
 ######################################################################
-# test_nous_field.py
+# test_psyche_field.py
 ######################################################################
 ======================================================================
-  NOUS MULTI-SOURCE FIELD + FIELD COALITIONS — TEST SUITE
+  PSYCHE MULTI-SOURCE FIELD + FIELD COALITIONS — TEST SUITE
 ======================================================================
 
 field: total activation sums across sources at a shared node
@@ -154,10 +210,10 @@ ADVERSARIAL determinism: field coalitions identical across hash seeds
 ======================================================================
 
 ######################################################################
-# test_nous_source_clustering.py
+# test_psyche_source_clustering.py
 ######################################################################
 ======================================================================
-  NOUS SOURCE-CLUSTERING (1c) — TEST SUITE
+  PSYCHE SOURCE-CLUSTERING (1c) — TEST SUITE
 ======================================================================
 
 LOOP-CLOSED: three same-domain perceived sources merge into ONE group
@@ -199,10 +255,10 @@ ASSERTED-NEGATIVE #6: the relative threshold is an uncalibrated design constant
 ======================================================================
 
 ######################################################################
-# test_nous_workspace.py
+# test_psyche_workspace.py
 ######################################################################
 ======================================================================
-  NOUS WORKSPACE SELECTION (1d-i) — TEST SUITE
+  PSYCHE WORKSPACE SELECTION (1d-i) — TEST SUITE
 ======================================================================
 
 §6.1 ACCEPTANCE (loop-closed): the winning thought excludes the bridged, unperceived work/code domain
@@ -220,6 +276,22 @@ safety: pruning never empties the winner (asserted-negative for over-pruning)
 §6.4 integrity: the store's integrity scan is unchanged before/after selection
 
 §6.4 cross-process determinism: winner + pruned_members + ranked order identical across 6 hash seeds (fresh interpreters)
+
+0c/§1 case 2: think() on the eight-node two-domain graph yields ONE bit pattern for the winner's strength across fresh processes
+    ('3e71cc2431921040', ('coffee', 'kitchen', 'morning', 'mug', 'toast'))   (30 of 30)
+
+0c/§1 case 2: the same think() graph gives the same winner bits on every CPython on this machine
+    python3.10   ('3e71cc2431921040', ('coffee', 'kitchen', 'morning', 'mug', 'toast'))
+    python3.11   ('3e71cc2431921040', ('coffee', 'kitchen', 'morning', 'mug', 'toast'))
+    python3.12   ('3e71cc2431921040', ('coffee', 'kitchen', 'morning', 'mug', 'toast'))
+    python3.13   ('3e71cc2431921040', ('coffee', 'kitchen', 'morning', 'mug', 'toast'))
+    python3.14   ('3e71cc2431921040', ('coffee', 'kitchen', 'morning', 'mug', 'toast'))
+
+0c/§2.5 site 1: the PRUNED winner's strength is a function of the surviving members' activations, never of their insertion order
+
+0c/§2.5 site 1: the prune site's strength rule is the SAME rule coalition formation uses — asserted, not asserted-in-a-comment
+
+0c/§2.5 site 2: Broadcast.total_strength_after() is a function of the strength multiset, never of road insertion order
 
 scale-invariance (selection layer, isolated): scaling coalition activations by ANY positive constant keeps the winner + pruning
 
@@ -254,14 +326,14 @@ ASSERTED-NEGATIVE #7: end-to-end selection is NOT invariant when DOWN-scaling pu
 KNOWN LIMITATION (asserted-negative): 1d-i pruning is a parameter-free cohesion-valley / relative-attachment watershed, NOT pure domain-membership. An UNNAMED domain bridged into the named region AT LEAST AS STRONGLY AS its own internal cohesion has NO valley and is therefore KEPT — over-swallow RECURS in that topology. Accepted design (2026-06-20); the divergence is always SAFE (a perceived member is never pruned).
 
 ======================================================================
-  RESULT: 83 passed, 0 failed
+  RESULT: 96 passed, 0 failed
 ======================================================================
 
 ######################################################################
-# test_nous_workspace_broadcast.py
+# test_psyche_workspace_broadcast.py
 ######################################################################
 ======================================================================
-  NOUS WORKSPACE BROADCAST (1d-ii) — TEST SUITE
+  PSYCHE WORKSPACE BROADCAST (1d-ii) — TEST SUITE
 ======================================================================
 
 §6.2 explicit-write: think(broadcast=True) changes EXACTLY the roads in the returned Broadcast and NOTHING else (no other road, no node touched)
@@ -315,10 +387,10 @@ ASSERTED-NEGATIVE: broadcast writes ONLY the winner's internal roads — it neve
 ======================================================================
 
 ######################################################################
-# test_nous_perceive.py
+# test_psyche_perceive.py
 ######################################################################
 ======================================================================
-  NOUS PERCEPTION + END-TO-END SLICE — TEST SUITE
+  PSYCHE PERCEPTION + END-TO-END SLICE — TEST SUITE
 ======================================================================
 
 tokenize: lowercases, keeps content words, drops short ones
@@ -344,10 +416,10 @@ ADVERSARIAL determinism: end-to-end result identical across hash seeds
 ======================================================================
 
 ######################################################################
-# test_nous_bodysensor.py
+# test_psyche_bodysensor.py
 ######################################################################
 ======================================================================
-  NOUS BODYSENSOR + 2c MODULATION HOOK — TEST SUITE (mechanism, replay)
+  PSYCHE BODYSENSOR + 2c MODULATION HOOK — TEST SUITE (mechanism, replay)
 ======================================================================
 
 compute_friction = 1 - cpu/wall (the stall fraction), bounded to [0,1]
@@ -386,12 +458,87 @@ PURITY (sensor): a sensor read mutates ONLY the sensor's cursor, never the store
 
 ASSERTED-NEGATIVE (soft-Wall-1 guard): the BodySensor takes NO store/graph and computes friction ONLY from the telemetry pair — it CANNOT re-derive from substrate
 
-ASSERTED-NEGATIVE (honest framing): no public name in nous_bodysensor encodes a feeling/emotion/awareness/consciousness claim — the headline is 'friction', a derived telemetry signal
+ASSERTED-NEGATIVE (honest framing): no public name in psyche_bodysensor encodes a feeling/emotion/awareness/consciousness claim — the headline is 'friction', a derived telemetry signal
 
 KNOWN LIMITATION (asserted-negative): this suite proves the modulation is a REAL causal effect (winner-flip) and DETERMINISTIC — it does NOT establish that the flip tracks the telemetry in a validator-pre-registered direction, nor that it MEANS anything. That is the validator's graded run, gated by the populability pilot.
 
 ======================================================================
   RESULT: 49 passed, 0 failed
+======================================================================
+
+######################################################################
+# test_psyche_credit.py
+######################################################################
+======================================================================
+  PSYCHE CREDIT — BRICK 2f-i TEST SUITE (mechanism, SPEC-2f Design C)
+======================================================================
+
+I-1  neutral P_PRP leaves the store byte-identical (THE GATE)
+
+I-1  at neutral, strengthen is not CALLED — not called with zero gain
+
+I-1  think(credit_trace=None) is byte-identical to the pre-2f engine
+
+I-3  eligibility: monotone non-increasing in k, EXACTLY zero past L
+
+I-3  an outcome BEFORE the traversal is refused, not credited
+
+I-2  paired > matched-unpaired, with the control built by construction
+
+I-4  the effect must beat a shuffle preserving both marginals
+
+I-2/I-3  the applied credit decreases as the outcome moves later
+
+2g  D-7 FIRST: eligibility is SIGN-BLIND — the anti-readback guarantee
+
+2g  CONVERTED: an adverse outcome is honoured at its own rate
+
+2g  the NEUTRAL rate: expressible, and honoured as zero
+
+2g  bounds: omega stays in [0,1] under any signed sequence
+
+2g  the rate is validated at the boundary (DEFECT-C's class)
+
+2g  the store's mirror is one-directional too
+
+I-5  ASSERTED NEGATIVE: an outcome with no preceding traversal does nothing
+
+I-5  ASSERTED NEGATIVE: untraversed roads, including ADJACENT ones
+
+I-5  ASSERTED NEGATIVE: the outcome cannot be a readback of omega
+
+SELF-AUDIT 2  a repeated road accumulates eligibility, writes once
+
+SELF-AUDIT 5  the eligibility path cannot see the store AT ALL
+
+I-7  building and reading the trace mutates NOTHING in the store
+
+I-8  memory is bounded by L regardless of run length (long run)
+
+I-8  malformed window / decay are refused at the boundary
+
+I-11  LOOP-CLOSED: the trace is filled by think(), not by hand
+
+I-11  LOOP-CLOSED: an outcome after several think() cycles decays with k
+
+I-6  determinism: bit patterns across 6 hash seeds, fresh processes
+
+I-6  replay: same trace + same outcome => byte-identical omega
+
+I-6  the application order resolves on an intrinsic INTEGER
+
+I-9  2c × 2f factorial: the two overlays are independent axes
+
+§2.3  ASSERTED NEGATIVE: traversal_count is still written-never-read
+
+I-12  ASSERTED NEGATIVE: scope — bounded window, single trace
+
+HONEST FRAMING  no public name or docstring asserts a cognitive result
+
+LIMITATION  no behavioural tagging (Design C gives it up, on purpose)
+
+======================================================================
+  RESULT: 133 passed, 0 failed
 ======================================================================
 
 ######################################################################
@@ -739,6 +886,784 @@ RESULT: 58 passed, 0 failed
 ============================================================
 
 ######################################################################
+# test_tester_0b2_adversarial.py
+######################################################################
+======================================================================
+  TESTER — SPEC-0b2 divisive normalization overlay, adversarial verification
+  Independent suite. src/ is untouched. Mechanism only, no meaning claim.
+======================================================================
+
+N-1/O-8 byte-identity vs the ACTUAL pre-change engine, inside its real boundary
+  (2728 comparisons against the real pre-change engine inside its boundary, 0 mismatches)
+
+N-1/O-8 byte-identity vs the RE-BASED independent reference (unbounded)
+  (15554 comparisons against an independent implementation, 0 mismatches)
+
+N-1/O-8 the re-base is REAL: the oracle changed, and it is not a copy of src/
+  NOTE: reference/engine shared 8-token runs: 19. Inspected: every one is an equation SPEC-0b2/0c states verbatim (`transmitted = outgoing * road.strength * decay_per_hop`, `competing = out_total - road.strength`, the sigma validation predicate). Any correct implementation must contain these, so the overlap is evidence of a shared SPECIFICATION, not of transcription. Provenance and review are the real control here, and this is said plainly rather than dressed up as a passing assertion.
+
+N-1 the DEFAULT argument is the neutral value (not merely an explicit None)
+
+N-1/O-8 LOOP-CLOSED: identity on a substrate the system's own pipeline built
+
+N-2 determinism: bit-exact across 6 hash seeds x every CPython on this machine
+  interpreters swept: python3.10, python3.11, python3.12, python3.13, python3.14
+
+O-6 order-perturbation invariance: permuting roads_from leaves the bits alone
+    0d7ceee443f9b93f  = 0.10145973529004966   from 6 of 6 orders
+
+O-6 order-independence on both paths: sigma=None AND sigma=1.0
+  NOTE: Order-independence is asserted on the normalized path too, not just the neutral one: the overlay multiplies transmitted by sigma/(sigma+competing), and competing is derived from an fsum over the SAME roads whose order is being permuted. A fix that only reached the accumulator would fail here.
+
+O-4 the DEFECT-A reproduction now gives ONE bit pattern in fresh processes
+    0d7ceee443f9b93f  = 0.10145973529004966   (48 of 48 runs)
+  NOTE: What changed is the GUARANTEE, not just the number. Before 0c this varied at a FIXED PYTHONHASHSEED, because uuid4 ids differ per process and the seed axis never controlled the order. After 0c there is no order left for any axis to perturb: iteration is creation-ordered and the reduction is exactly rounded (SPEC-0c §5.2). The property is structural now, not sampled.
+
+N-3 purity: the substrate is byte-identical after normalized spreads
+
+N-3 purity: the engine never calls a mutating store method (structural)
+
+N-3 purity: _persist_decay is never entered (last_touched is the witness)
+
+N-3 purity: repeated identical calls return identical bits
+
+N-4 sensitivity: a naive fold over these strengths IS order-dependent (else N-4 is vacuous)
+    fixture: 5 out-roads worn (1, 2, 3, 4, 5) times
+    naive left-fold: 2 distinct totals over 120 orders; math.fsum: 1
+    predicted transmitted values under a naive S_out: 2 distinct
+
+N-4 S_out order-independence: shuffle the out-roads, require identical bits
+
+N-4 S_out order-independence on random high-degree fans (property-based)
+
+N-4 S_out equals math.fsum of the out-road strengths, to the bit
+
+N-5 limiting case: every source has one out-road -> identical at every sigma
+
+N-5 lone out-road: factor exactly 1.0 (frozen clock)
+
+O-10 a lone out-road transmits with factor EXACTLY 1.0 on a MOVING clock
+    the single strength read      = 0.37442215
+    unattenuated transmission     = 0.2433743975
+    actual transmission           = 0.2433743975
+  NOTE: Before 0c this same fixture gave competing = 1.7265900376095544e-09 and a factor of 0.99999999827341 — an elapsed-time residue masquerading as conductance. The residue is not merely small now, it is structurally absent: there is only one read, so there is no second instant for it to come from.
+
+O-9 each road is read exactly once per expansion (structural, then textual)
+
+N-6 transmitted activation is strictly decreasing in competing conductance
+
+N-6 transmitted activation is strictly increasing in sigma
+
+N-6 monotonicity, property-based over random adversarial graphs
+
+N-7 the gap to the unnormalized engine shrinks monotonically as sigma grows
+
+N-7 at a large finite sigma the result is byte-identical to sigma=None
+
+O-11 non-finite sigma is REFUSED at the boundary (was the DEFECT-C negative)
+  NOTE: SPEC-0b2 §2 called sigma -> infinity 'the value that analytically recovers the current engine'. It is true in the limit and catastrophic at the literal value. The neutral value is None; large finite sigma is the way to approach it, and test_N7_large_finite_sigma_recovers_the_unnormalized_engine_exactly shows it does so byte-for-byte at 1e300.
+
+O-11 sigma <= 0 is REFUSED, and the negative-activation route is closed
+
+N-8 a closed road still counts as competing conductance
+
+N-8 a closed road that transmits NOTHING still competes (the sharpest case)
+
+N-8 a closed road that breaks through is normalized like any other road
+
+N-8 observability wart: broke_through may list a road absent from flow
+
+N-9 a source whose out-degree drives every target under the floor goes observably empty
+
+N-9 the same graph is NOT silent unnormalized — the horizon change is visible
+
+N-9 the horizon closes monotonically as out-degree grows
+    (out_degree, reached): [(1, 1), (2, 2), (4, 4), (8, 8), (16, 16), (32, 0), (64, 0), (128, 0), (200, 0)]
+  NOTE: the horizon does not taper, it CLIFFS: every target survives up to out-degree 16 and none survives from 32 onward (sigma=1.0, floor=0.02). All roads here are equal-strength, so they cross the floor together. SPEC-0b2 §5 predicts degree-dependent censoring on SWOW's ~114 mean out-degree; this is that effect, and it is a step, not a gradient.
+
+N-9 silencing raises nothing and leaves the substrate intact
+
+R1 adversarial battery with normalization on: integrity, finiteness, sanity
+
+R2 edge cases: missing seed, isolated node, self-loop-only, empty graph
+
+S1 structural: the overlay is not plumbed past spread_activation
+  NOTE: This is consistent with default-off, and it bounds the blast radius of DEFECT-B and DEFECT-C to direct spread_activation callers. It also means the §5 default flip is not a one-line change: it needs plumbing through the field builder, which is a re-validation surface for 1a/1b/1c/1d.
+
+S2 structural: the parameter is keyword-only and defaults to None
+
+======================================================================
+  RESULT: 104 passed, 0 failed
+======================================================================
+  TESTER VERDICT ON SPEC-0b2 §6, RE-ADJUDICATED AFTER 0c:  all 9 hold
+======================================================================
+    N-1 HOLDS   neutral byte-identity, on a RE-BASED oracle (SPEC-0c O-8).
+                Oracle 1 (git) is bounded to in-degree <= 2, the region where
+                the pre-change engine had a single well-defined answer at all.
+    N-2 HOLDS   was DEFECT-A. The accumulator is now order-INDEPENDENT, not
+                merely order-pinned: creation-ordered iteration at the store
+                (SPEC-0c §2.2) plus an exactly-rounded reduction (§2.3).
+    N-3 HOLDS   N-4 HOLDS   N-6 HOLDS   N-8 HOLDS   N-9 HOLDS
+    N-5 HOLDS   was DEFECT-B. One road read per expansion (§3), so a lone
+                out-road transmits with factor exactly 1.0 on a MOVING clock.
+    N-7 HOLDS   was DEFECT-C. sigma is validated at the boundary and non-finite
+                transmission is refused on its own terms (§4).
+
+  THE ACCEPTANCE SIGNAL FOR 0c WAS INVERTED, and this file is where it landed.
+  Ten tests in it went red on a correct fix. Each has been converted from
+  'the defect is present' into the positive property it certifies, so the
+  suite now asserts the fix rather than the bug. The six asserted-negatives
+  SPEC-0c §6.1 enumerated are retired; the four the spec did not anticipate
+  are rewritten with them. Nothing was deleted without a replacement.
+
+  Mechanism only. No cognitive claim is made or approached here.
+======================================================================
+
+######################################################################
+# test_tester_0d_adversarial.py
+######################################################################
+==============================================================================
+  TESTER — brick 0d, the float-accumulation detector (SPEC-0d §4, F-1..F-8)
+==============================================================================
+
+F-1  the census agrees with a census derived by hand from src/
+
+F-1  a second, independent scanner corroborates the shape counts
+  NOTE: the sixth naive site (road.charges) is only visible with one-hop alias tracking; the second scanner not seeing it is the expected difference, and it is why the corroboration is a cross-check and not a duplicate
+
+F-1  LOOP-CLOSED: run the census on the project's OWN pre-fix trees
+    5d29071 initial commit                     10 sites, all naive
+    d51b1e5 the parent of fix(0b1)             12 sites, all naive
+    e4df7df 1d-ii, before 0c converted three sums 12 sites, all naive
+
+F-2  the populated registry leaves zero unregistered candidates
+
+F-2  and the scratch copy is clean too, so the fixture proves nothing by luck
+
+F-2  registry/census BIJECTION — no orphan on either side
+
+F-3  ACCEPTANCE — twelve planted accumulations, each in a scratch copy
+    caught  SPEC shape 1/3  += into a dict
+    caught  SPEC shape 2/3  a running local
+    caught  SPEC shape 3/3  the builtin sum
+    caught  tester  class-attribute fold
+    caught  tester  += into a subscript
+    caught  tester  setdefault chain
+    caught  tester  defaultdict(float) +=
+    caught  tester  dict-comprehension fold
+    caught  tester  ternary fold
+    caught  tester  nested subscript grid[i][j]
+    caught  tester  module-scope accumulation
+    caught  tester  self-attribute accumulator
+
+F-3  a brand-new module in a src/ SUBDIRECTORY is not out of reach
+
+F-3  twelve at once are twelve findings, not one
+
+F-3  removing the registry entirely reports every site, not zero
+
+F-3  LOOP-CLOSED: the census's own --list-accumulations output, fed back as the registry, is accepted; dropping one key is rejected
+
+F-3  ASSERTED NEGATIVE: the DOCUMENTED gaps are real
+  NOTE: each of the five is named in ledger_check's own SCOPE comment, so a reader is warned before trusting the gate
+
+F-3  CONVERTED: FOUR gaps CLOSED — the capability is asserted positively
+
+F-3  L3 in depth — the SUBSCRIPT form, which is what 2f will actually write
+
+F-3  L3 double-counting — the risk the builder named, attacked with my inputs
+
+F-3  the dedup key is STRUCTURAL — the property, tested generatively
+  NOTE: DEFECT 0d-2 is RESOLVED for these three. The remaining shapes are no longer undocumented either — they are L2-L13 in ledger_check's scope block, each with a falsifier — so 0d-2 as originally written (undetected AND undocumented) no longer describes anything.
+
+F-3  ASSERTED NEGATIVE: the remaining gaps, now DOCUMENTED as L2-L13
+
+F-3  CONVERTED: the scope comment no longer promises coverage it lacks
+    witness: [0.6229016948897019, 0.7417869892607294, 0.7951935655656966, 0.9424502837770503] -> 2 bit patterns ['365c25b893d108c0', '375c25b893d108c0']
+  NOTE: DEFECT 0d-2's wording half is RESOLVED: the phrase that mis-promised coverage is gone and the capability behind it exists.
+
+F-3  the `match` gap is a TRAVERSAL blind spot, not a shape gap
+  NOTE: DEFECT 0d-2's traversal half is RESOLVED. Verified independently: nested match two levels deep, guarded mapping patterns, and a subtractive fold inside a case are all reached. This mattered on a deadline — 2f is written next and the gate now stands before that traffic rather than after it.
+
+F-4  the integer counters LIVING IN src/ are absent from the census
+
+F-4  planted integer tallies produce no finding
+
+F-4  the exemption is STRUCTURAL — a float named like a counter is caught
+
+F-4  the false positives that DO exist are candidates, not verdicts
+  NOTE: SPEC-0d §2.2 says the detector reports CANDIDATES for adjudication, so these are not defects. §6's falsifier is a LARGE number of legitimately-exempt candidates; src/ currently yields 14, all legitimate. The bound is not near.
+
+F-5  a registry rot battery, written from the invariant not from the code
+
+F-5  a registry that is not an object at all
+
+F-5  a right-looking key under the WRONG path does not cover the site
+
+F-5  ASSERTED NEGATIVE: reason-level rot is NOT machine-detectable
+  NOTE: this is a correct scope boundary for a machine check, not a defect in it — but it means 'C6 green' says nothing about whether the registry is TRUE
+
+F-6  every entry names a real site and carries a non-decorative reason
+  NOTE: both mutations are measured here, not argued. An assertion that no registry state can falsify is surrender wearing a test's clothes; these two have witnesses.
+  NOTE: this is the strongest property a machine can check about a reason. That the bound is STATED is checkable; that it is TRUE is F-6, and is measured below — where one of the five bounds turns out to be false.
+
+F-6  DEFECT 0d-1 — run the merged_flow entry's OWN stated falsifier
+    road 7ff806aa..  terms=4  patterns=['e726f9cbd519d83f', 'e826f9cbd519d83f']  fsum=e726f9cbd519d83f
+  NOTE: scope of the consequence: ActivationField.flow has NO reader anywhere in src/ today, so the moving bits reach no decision. That is a bound worth writing into the entry — it is not a reason to call the symptom unreproduced.
+
+F-6  entry 1/6 flow — re-measure the model entry's single-term bound
+
+F-6  entry 1/6 flow — and run the falsifier DIRECTLY, not by proxy
+    905 spreads, 5850 flow writes, 0 with a repeated road id, 655 self-loop roads carried flow
+
+F-6  entry 3/6 total — 'CONFIRMED ORDER-DEPENDENT' is TRUE
+    3 sources: order-dependent in 13/30 generated graphs
+    4 sources: order-dependent in 18/30 generated graphs
+
+F-6  entry 4/6 Clock.advance._t — FINDING 0d-3, the reason overstates
+    dt = [0.4523795535098186, 0.559772386080496, 0.9242105840237294, 0.4656500700997733]
+    _t bit patterns over 4! orders: ['d8a5f46052370340', 'd9a5f46052370340']
+
+F-6  entry 5/6 road.strength — 'exactly one term per crossing' is TRUE
+
+F-6  entry 6/6 road.charges — the per-key bound, measured over 6! orders
+
+F-7  ASSERTED NEGATIVE: psyche_field's two sites are STILL naive after 0d
+
+F-7  ASSERTED NEGATIVE: SCOPE — 0d touched no production module
+
+F-7  LOOP-CLOSED: the order dependence still reaches Coalition.strength
+  NOTE: this block goes RED when a later brick converts the psyche_field sites. That is the correct signal: the brick that converts them re-verifies here.
+
+F-8  ASSERTED NEGATIVE: nothing outside src/ is claimed
+
+F-8  the real repository HAS such accumulations outside src/
+    ungated  tools/capture_run.py:105  builtin-sum
+    ungated  tools/hooks/session_start_ledger.py:69  aug-add
+    ungated  tools/hooks/session_start_ledger.py:75  aug-add
+    ungated  tools/ledger_check.py:89  aug-add
+    ungated  tools/ledger_check.py:146  aug-add
+    ungated  tools/ledger_check.py:179  builtin-sum
+  NOTE: this is SPEC-0d's decided scope, not a defect. It is asserted here so 'C6 green' is never read as a whole-repository guarantee.
+
+DETERMINISM  one census, five CPython minor versions x six hash seeds
+    30 processes, digest 1882c82aaf9abd44
+
+DETERMINISM  the in-process census is order-stable, not merely set-stable
+
+PURITY  running the gate mutates neither the ledger nor src/
+
+PURITY  an injection into a scratch tree never touches the real one
+
+F-6  FINDING 0d-5 — the absence bound under-reports on dynamic access
+  FINDING [0d-5]: bound_on_absence's docstring promises to flag EVERY matching read and under-reports on getattr, __dict__ and aliased calls. Narrow the wording or widen the mechanism; the bounds are true today and the realistic path is covered, so this does not block the brick.
+
+F-8  CONVERTED: L3 is CLOSED, and the compounding with L7 is what remains
+  NOTE: SPEC-2f's recorded warning — 'write the trace update on its own line' — is now OBSOLETE as a requirement and should be struck by architect-pm. It is not the tester's file to edit; recorded here so the instruction does not outlive its reason and get cited as a live constraint.
+
+2f  every re-pointed assertion FAILS against the pre-fix tool (656c38a)
+  NOTE: a second dead assertion was found by the same audit and is marked CONVERTED at its site: `a = a, = (a + x,)` reports 1 on both tools, so it never tested the path-exclusivity it claimed to. 2 of 12 for this brick; both now named.
+
+2f  --list-accumulations is a CONSUMED interface, attacked as one
+  NOTE: FUTURE-PROOFING, measured not assumed: adding a refusal RULE changes CONSUMER 2's digest and nothing else; adding a refusal ROW changes CONSUMER 2 and the summary count. Neither can reach CONSUMER 1 while refusals stay out of the `src/` prefix. That invariant is now asserted above rather than left as a convention.
+
+2f  the refusal machinery: reachability, attribution, and exit neutrality
+  NOTE: worth naming: the two refusals in src/ are not noise. `_compute_decay` returns two floats that are unpacked, so L13 is declining at the one place in the substrate where a tuple-returning float computation actually occurs.
+
+ROBUSTNESS  CONVERTED: unreadable source is exit 2, never 0, never a finding
+
+ROBUSTNESS  CONVERTED: the NUL byte no longer diverges by interpreter
+    python3.10: exit 2
+    python3.11: exit 2
+    python3.12: exit 2
+    python3.13: exit 2
+    python3.14: exit 2
+  NOTE: FINDING 0d-4 is RESOLVED on both halves — the exit-code contract and the interpreter divergence.
+
+==============================================================================
+  RESULT: 342 passed, 0 failed
+==============================================================================
+  TESTER VERDICT ON SPEC-2f STEP ZERO — PASS  (2026-07-26, re-verification)
+  Both findings fixed in 044008c and verified against the PRE-FIX tool,
+  not merely against the current one. SPEC-0d §4 continues to hold in full.
+==============================================================================
+    F-1  HOLDS       RE-RUN after the builder touched the fold a second time:
+                     all three historical bugs still caught on the pre-fix trees
+                     they lived in, per-commit counts identical at 10/12/12.
+                     The LISTING digest moved (25ff712c -> a2f7ed1d) because two
+                     REFUSED rows and a summary suffix were added to stdout; the
+                     census rows are byte-identical at b11fd55a on both sides,
+                     re-derived here from git rather than taken from the builder.
+    F-2  HOLDS       zero unregistered; registry and census in bijection
+    F-3  HOLDS       FOUR gaps now CLOSED and CONVERTED — L3 joins the three
+                     from last cycle. Limitations went 10 -> 13: closing L3 cost
+                     three narrower ones (L11-L13), reported as three.
+    F-4  HOLDS       no false positive on any integer tally in src/
+    F-5  HOLDS       rot shapes caught; reason-TRUTH is out of machine reach
+    F-6  HOLDS       all SIX reasons survived their OWN falsifiers, run rather
+                     than admired. Its two count assertions are DE-BRITTLED to
+                     the debt relation SPEC-0d §3.1 actually states.
+    F-7  HOLDS       both psyche_field sites still naive; src/ has zero diff
+    F-8  HOLDS       CONVERTED: the tuple and split spellings now report the
+                     SAME sites, which is what L3 being load-bearing meant.
+==============================================================================
+  2f-0-1 CONVERTED  the fold deduplicates on the target's STRUCTURE, so repeated
+                    names fold once while d[i], d[j] stay two. Verified as an
+                    EQUIVALENCE over 84 generated pairs — the tuple spelling and
+                    the split spelling agree in every case — not as a count.
+  2f-0-2 RE-POINTED the old assertion named scan_source and passed on BOTH tools:
+                    it could not perturb its own property. Re-pointed at the
+                    refusal record and the listing, and PROVED live by failing
+                    against 656c38a. 2 of 12 assertions for this brick were dead;
+                    both are named, neither is deleted.
+==============================================================================
+  ROUTED TO ARCHITECT, not fixed here: the census digest and the LISTING digest
+  are one value, so a report-format change moves an invariant that the census
+  itself never moved. Two passes have now spent real effort proving a digest
+  change benign. Recommend separating them.
+==============================================================================
+==============================================================================
+  FINDINGS (asserted negatives — they PASS while the defect is present)
+    [0d-5] bound_on_absence's docstring promises to flag EVERY matching read and under-reports on getattr, __dict__ and aliased calls. Narrow the wording or widen the mechanism; the bounds are true today and the realistic path is covered, so this does not block the brick.
+==============================================================================
+
+######################################################################
+# test_tester_0b2_reverify.py
+######################################################################
+==========================================================================
+  TESTER — SPEC-0b2 §6 RE-ADJUDICATION (N-1 … N-9), independent second pass
+  src/ untouched. Mechanism only; no cognitive claim is made or approached.
+==========================================================================
+
+P-0 noise floor: on a LIVE clock, identical sigma=None calls DISAGREE
+  live-clock spread over 60 identical calls: 1.8756877251391302e-07  (7.707e-07 relative, ~6757877232 ULP)
+  NOTE: N-5 and all byte-identity claims below run on Clock(simulated=True). This is a property of 0a's lazy decay, not of the 0b2 overlay.
+
+N-1a the neutral value is byte-identical to omitting the parameter (exception path included)
+  compared 1989; 0 of them exercised the EXCEPTION path
+
+N-1b byte-identity vs the ACTUAL pre-overlay engine recovered from git
+  recovered pre-overlay engine at 5d2907102216
+  compared 2298, of which 351 at the 2-contribution boundary; 692 skipped as outside the oracle's valid region
+
+N-1i exhaustive: every divergence from the pre-overlay engine is one of four DECIDED 0c changes — none is the overlay's
+  4600 comparisons; 2959 byte-identical; divergences by class: {'energy_finiteness_D015': 690, 'transmitted_backstop_D015': 346, 'signed_zero_D014': 230, 'fsum_accumulation_D013': 375}
+
+N-1c byte-identity vs the independent oracle (no in-degree bound)
+
+N-1d the oracle is not a mirror: seven deliberate mutations, all caught
+  mutations caught: 7/7
+
+N-1e LOOP-CLOSED: seeds from perceive(), then from the previous spread's own ranking
+
+N-1f LOOP-CLOSED through build_activation_field(): the consumer's results equal explicit sigma=None
+
+N-1g the neutrality lives in the SIGNATURE, not only at a call site
+
+N-1h the neutral path reads the store exactly as the omitted parameter does — and the overlay ON adds no reads either
+
+N-2a determinism: one bit pattern across 6 hash seeds x every CPython minor version present, overlay OFF and ON, on the shape that broke
+    3.10.11    /usr/local/bin/python3.10
+    3.10.15    /opt/local/bin/python3.10
+    3.10.17    /opt/homebrew/bin/python3.10
+    3.11.10    /opt/local/bin/python3.11
+    3.11.15    /opt/homebrew/bin/python3.11
+    3.12.4     /opt/anaconda3/bin/python3.12
+    3.12.7     /opt/local/bin/python3.12
+    3.13.14    /opt/homebrew/bin/python3.13
+    3.14.4     /Users/cagancaliskan/.local/bin/python3.14
+    3.14.5     /opt/homebrew/bin/python3.14
+  digest: 98485e011330daf74e24d70f7738b220a31b80c66bac1e2fa92fb8da849499e8
+
+N-2b order-INDEPENDENCE: permuting out-road iteration changes no value
+
+N-2c repeated identical calls in one process are bit-identical (overlay ON, frozen clock)
+
+N-3a purity: the stored substrate is byte-identical after normalized spreads over 40 hostile graphs
+
+N-3b purity: structurally, the engine never calls a mutating method
+
+N-3c purity: _persist_decay is never entered, on a clock that advances
+
+N-3d integrity: indices stay mutually consistent through a randomized mutation battery interleaved with normalized spreads
+
+N-4a sensitivity: a left fold over these out-road strengths IS order-dependent (else N-4 is vacuous)
+  traverse counts (1, 4, 4) -> creation-order fold 1.0849945410000001 vs fsum 1.084994541; 2 distinct fold totals across orders, 1 distinct fsum totals
+
+N-4b S_out equals math.fsum of the out-road strengths, to the bit, and is NOT the left-fold value
+
+N-4c S_out order-independence on random high-degree fans (property-based, shuffled through a proxy)
+
+N-5a a lone out-road: sigma ON is byte-identical to sigma OFF at every sigma on the ladder (frozen clock)
+
+N-5b negative control: adding one sibling road DOES attenuate, so N-5a is not passing because the overlay does nothing
+
+N-5c a lone out-road transmits with factor exactly 1.0 on a clock that ADVANCES (within-call identity, immune to the noise floor)
+
+N-5d competing is exactly 0.0 for a lone out-road at every strength the substrate can produce, decayed or saturated
+
+N-6a transmitted activation is strictly decreasing in the competing conductance
+
+N-6b transmitted activation increases with sigma — strictly until it saturates at the unnormalized value, then exactly equal
+  NOTE: SPEC-0b2 N-6 says 'strictly increasing in sigma'. In float arithmetic that is true only until saturation: past ~1e13 the factor rounds to exactly 1.0 and further sigma changes nothing. That is N-7's convergence, and the two statements are in tension only if 'strictly' is read past the limit. Recorded, not counted as a failure — the engine cannot do better and the saturating behaviour is the one the spec wants.
+
+N-6c property-based: normalized transmission never exceeds unnormalized, on 35 random hostile graphs
+
+N-7a the gap to the unnormalized engine shrinks monotonically along a sigma ladder, on hostile graphs
+
+N-7b sigma = 1e100 and 1e300 recover sigma=None BYTE-FOR-BYTE on hostile graphs
+
+N-7c sigma's domain: inf / -inf / nan / 0.0 / -0.0 / negative are all REFUSED with ValueError, before any work
+
+N-7d the overlay never emits a non-finite value from finite inputs
+
+N-7e competing = S_out - strength is never negative on any reachable substrate state
+
+N-8a the sharpest case: a closed road BELOW the breakthrough threshold transmits nothing, is absent from flow, and still attenuates its sibling
+
+N-8b a closed road that breaks through is normalized like any other
+
+N-8c closed-road breakthrough at the EXACT boundary: <= blocks, and the overlay does not move it
+
+N-8d recorded wart: broke_through can list a road absent from flow (appended before the floor guard)
+  NOTE: N-8d asserts a KNOWN LIMITATION, not a desired behaviour. It turns red if the ordering is ever changed, which is the point.
+
+N-8e a source with only blocked closed roads: nothing transmits, nothing raises, the seed still stands
+
+N-9a a source at out-degree 200 with sigma=1.0 and the default floor goes OBSERVABLY empty — not quietly truncated
+
+N-9b the same graph is NOT silent unnormalized, and NOT silent at floor=0.0 — so the horizon change is visible as a DIFFERENCE
+
+N-9c the horizon on equal-strength fans is a CLIFF, not a taper (equal roads cross the floor together)
+  (out_degree, reached) = (1,1) (2,2) (4,4) (8,8) (16,16) (24,24) (32,0) (64,0) (128,0) (200,0)
+  NOTE: measured cliff: every target survives to out-degree 24, none from 32. Any floor design in a later brick must reckon with a step, not a slope. This is a mechanism observation only.
+
+N-9e on an UNEQUAL-strength fan the silencing is partial, and the survivors are exactly those the §2 formula puts at or above the floor
+    trial 0: out-degree 21, survivors 17/21
+    trial 1: out-degree 23, survivors 17/23
+    trial 2: out-degree 24, survivors 17/24
+    trial 3: out-degree 30, survivors 18/30
+    trial 4: out-degree 33, survivors 19/33
+    trial 5: out-degree 33, survivors 19/33
+
+N-9d silencing never raises and never leaves a partial result
+
+B-1 the floor guard at its EXACT boundary: transmitted == floor propagates; one ULP below does not
+
+B-2 degenerate inputs: empty graph, single node, isolated seed, hop_budget 0, unknown seed, road id as seed
+  NOTE: OUT OF SCOPE OBSERVATION for architect-pm, not a 0b2 defect and not one of N-1..N-9: spread_activation's seed guard is `store.exists(seed_node)`, which is true for ROAD ids. At hop_budget=0 a road id therefore yields a well-formed ActivationResult with no error; at any larger budget it raises NotFound from inside the expansion rather than at the boundary. Same class as O-12 and DEFECT-C (silent acceptance where a loud refusal was intended), pre-existing, unreachable from any internal caller. Registering it is architect-pm's call.
+
+B-3 a never-worn road (add_road only) still competes for budget
+
+S-1 structural: build_activation_field() and think() still expose no normalization_sigma
+  NOTE: The default flip therefore requires plumbing the parameter through the field builder first. That is a separate brick and is Cagan's call; nothing here tests as though it were decided.
+
+S-2 the §2 transmission rule reproduces every transmitted value on a 128-way fan, at four sigmas
+
+==========================================================================
+  RESULT: 246 passed, 0 failed
+  NOTES CARRIED TO THE REPORT:
+   - N-5 and all byte-identity claims below run on Clock(simulated=True). This is a property of 0a's lazy decay, not of the 0b2 overlay.
+   - SPEC-0b2 N-6 says 'strictly increasing in sigma'. In float arithmetic that is true only until saturation: past ~1e13 the factor rounds to exactly 1.0 and further sigma changes nothing. That is N-7's convergence, and the two statements are in tension only if 'strictly' is read past the limit. Recorded, not counted as a failure — the engine cannot do better and the saturating behaviour is the one the spec wants.
+   - N-8d asserts a KNOWN LIMITATION, not a desired behaviour. It turns red if the ordering is ever changed, which is the point.
+   - measured cliff: every target survives to out-degree 24, none from 32. Any floor design in a later brick must reckon with a step, not a slope. This is a mechanism observation only.
+   - OUT OF SCOPE OBSERVATION for architect-pm, not a 0b2 defect and not one of N-1..N-9: spread_activation's seed guard is `store.exists(seed_node)`, which is true for ROAD ids. At hop_budget=0 a road id therefore yields a well-formed ActivationResult with no error; at any larger budget it raises NotFound from inside the expansion rather than at the boundary. Same class as O-12 and DEFECT-C (silent acceptance where a loud refusal was intended), pre-existing, unreachable from any internal caller. Registering it is architect-pm's call.
+   - The default flip therefore requires plumbing the parameter through the field builder first. That is a separate brick and is Cagan's call; nothing here tests as though it were decided.
+==========================================================================
+  TESTER VERDICT ON SPEC-0b2 §6, SECOND INDEPENDENT PASS: all nine hold
+==========================================================================
+    N-1 neutral byte-identity ....... omitted == None over the whole
+        parameter surface, exception path included; every divergence from
+        the git-recovered pre-overlay engine classified and shown to be
+        0c-owned (N-1i); oracle proven to discriminate at 1 ULP (N-1d);
+        loop-closed through perceive() and build_activation_field().
+    N-2 determinism ................. one SHA-256 across fresh processes,
+        6 hash seeds x every CPython minor version present, on a graph with
+        three or more convergent contributions; and order-INDEPENDENT under
+        externally permuted out-road iteration, proven non-vacuous.
+    N-3 purity ...................... byte-identical substrate, structural
+        write-trap, and last_touched unchanged on a MOVING clock.
+    N-4 S_out order-independence .... equals math.fsum and NOT the left
+        fold, on a fixture searched to make the two differ.
+    N-5 lone out-road ............... exactly 1.0 on a frozen clock at ten
+        sigmas, and as a WITHIN-CALL identity on a clock that advances.
+    N-6 monotonicity ................ strict in competing; strict in sigma
+        until saturation, non-decreasing across 80 ULP-adjacent sigmas.
+    N-7 sigma -> infinity ........... monotone convergence, 1e100/1e300
+        byte-identical to None, and the domain refused at the boundary.
+    N-8 closed roads compete ........ exact arithmetic, the excluded
+        alternative asserted, breakthrough pinned at its exact boundary.
+    N-9 no silent silencing ......... observable at out-degree 200, a CLIFF
+        on equal fans, and exactly the documented survivors on unequal ones.
+
+  Mechanism only. No cognitive claim is made, implied or approached.
+  0b2 remains BUILT-UNVALIDATED whatever this file reports; a pass here
+  closes the MECHANISM bar and nothing else.
+==========================================================================
+
+######################################################################
+# test_tester_0c_adversarial.py
+######################################################################
+==========================================================================
+  TESTER — SPEC-0c deterministic road ordering, adversarial verification
+  Independent suite. src/ is untouched. Mechanism only, no meaning claim.
+==========================================================================
+
+O-1 roads_from/roads_into yield in creation order, on hostile topologies
+
+O-1 the order tracks creation_seq, not the caller's insertion sequence
+
+O-2 order survives add/remove/re-add batteries, with integrity intact
+
+O-2 remove + re-add mints a NEW road, and it sorts LAST
+
+O-3 purity and integrity — the two Phase 0 legs that did NOT fail
+
+O-4 SPEC-0c §1 case 1: ONE bit pattern across the FULL interpreter x seed matrix
+  interpreters swept: python3.10, python3.11, python3.12, python3.13, python3.14
+    0d7ceee443f9b93f  = 0.10145973529004966   (60 of 60 runs)
+
+O-4b SPEC-0c §1 case 2: the COMPETITION path is one bit pattern everywhere
+    thought.strength 3e71cc2431921040  = 4.14276559350793   (60 of 60)
+
+O-4b the pruned winner's strength is fsum over its OWN surviving members
+
+O-5 45 random adversarial graphs x every seed x 2 sigmas: one result, across the full matrix
+
+O-6 permuting roads_from leaves every VALUE bit-identical
+
+O-6 the same, on high-degree fans where the term count is largest
+
+O-7 ASSERTED-NEGATIVE: isomorphic graphs agree on every VALUE, differ in activation's KEY ORDER
+    build order 1 -> activation keys ['S', 'P', 'Q', 'R', 'Z']
+    build order 2 -> activation keys ['S', 'R', 'Q', 'P', 'Z']
+
+O-8/loop-closure: the pipeline's own output, driven end to end, is stable
+
+O-9 one read per road, and every strength in an expansion from ONE instant
+
+O-10 lone out-road: factor exactly 1.0 on the LIBRARY DEFAULT clock
+
+O-11 sigma validation: the boundary is where the spec puts it, exactly
+
+O-12 the general non-finite guard on the transmission path
+
+O-12 non-finite `energy` is refused at the boundary, on every graph shape
+    10 seed shapes x 7 non-finite energies x 8 parameter sets = 560 calls
+
+O-12 the refusal itself is deterministic across hash seeds AND interpreters
+  interpreters swept: python3.10, python3.11, python3.12, python3.13, python3.14
+
+O-12 the boundary discriminates on FINITENESS, not on sign (D-014 stands)
+
+O-12 the `transmitted` backstop guard is live, by two independent routes
+
+O-12 loop-closed: the pipeline's own energies, and hostile input at its top
+
+O-12 ASSERTED-NEGATIVE: fsum overflow raises OverflowError, not the engine's own ValueError
+  FINDING [O-12/neutral-path]: the fsum reduction raises OverflowError where the pre-0c engine returned inf (energy=1e308 on a 12-way convergence, decay=1.0, floor=0.0). A neutral-path behaviour change at extreme energy, outside N-1's PARAM_SWEEP so no existing test sees it. Probably an improvement; must be DOCUMENTED, not discovered.
+
+FINDING 1 ASSERTED-NEGATIVE: the field merge is order-DEPENDENT
+    field.total[m1]: 2 distinct bit patterns over 3! source orders
+        3a76cb5926baf33f  = 1.2329467303856192
+        3b76cb5926baf33f  = 1.2329467303856194
+  FINDING [field-merge]: psyche_field.build_activation_field merges with a naive running float add (total[node] += act, merged_flow[rid] += fv). Order-PINNED, so cross-process determinism is unaffected and every O-4/O-4b/O-5/O-16 result stands; NOT order-INDEPENDENT, and the difference reaches Coalition.strength. Out of 0c's decided scope (§2.5 enumerated builtin sum() sites; these are not sum() calls). Recommend a follow-on brick, not a scope widening here. BOUNDED: the same shape inside psyche_activation (flow[rid] +=) is structurally single-term and is NOT a live instance.
+
+ULP the competition tie-break: exact ties resolve on size then creation_seq
+
+ULP the closure decision sits exactly on the threshold and does not wobble
+
+hostile: empty graph, single node, self-loop only, duplicate edges, unknown seed
+
+hostile: closed-road breakthrough exactly AT the threshold
+
+hostile: a 500-road fan keeps its order and its arithmetic
+
+O-13 N-3, N-4, N-6, N-8, N-9 re-verified independently after the change
+
+O-14 no determinism probe in tests/ or experiments/ compares rounded values
+  NOTE: SPEC-0c §5.1 enumerated 18 sites in 13 files and attributed 8 to the tester. The real tester-owned count was 9 (test_tester_1d_ii_adversarial.py has two driver payloads containing round(), not one). All 9 are converted to struct.pack('<d', x).hex(). experiments/ carries no driver-internal rounding, which §5.1 asked to be audited rather than assumed — audited here, and it holds.
+
+O-15 no builtin sum() over float values remains in src/
+
+O-16 cross-interpreter bit-identity of VALUES, not merely of per-suite counts
+    python3.10   6682e2cdc93eb11da1126dbd9cfdad872a4ebc6ff1b88f82bddc49222b709bdc
+    python3.11   6682e2cdc93eb11da1126dbd9cfdad872a4ebc6ff1b88f82bddc49222b709bdc
+    python3.12   6682e2cdc93eb11da1126dbd9cfdad872a4ebc6ff1b88f82bddc49222b709bdc
+    python3.13   6682e2cdc93eb11da1126dbd9cfdad872a4ebc6ff1b88f82bddc49222b709bdc
+    python3.14   6682e2cdc93eb11da1126dbd9cfdad872a4ebc6ff1b88f82bddc49222b709bdc
+  NOTE: SCOPE, stated with the claim: this is a claim about INTERPRETERS ON ONE MACHINE, not about platforms. IEEE-754 arithmetic is exactly rounded and version-independent, but math.exp in the decay path comes from the platform's libm, and the payload deliberately enters it (the clock is advanced so lazy decay runs, and a bare math.exp value is included as a witness). A different machine could legitimately differ there, and nothing here claims otherwise. Before §2.5 landed this invariant was UNACHIEVABLE: builtin sum() returns different bits on 3.10/3.11 than on 3.12+.
+
+O-17 the assertion count is a property of the code, not of the environment
+    with .git    : 104 passed, 0 failed
+    without .git : 104 passed, 0 failed
+
+==========================================================================
+  RESULT: 150 passed, 0 failed
+==========================================================================
+  TESTER VERDICT ON SPEC-0c §6
+==========================================================================
+    O-1  HOLDS  creation-ordered iteration, asserted against creation_seq
+    O-2  HOLDS  order survives 900-step add/remove/re-add batteries
+    O-3  HOLDS  purity and integrity unchanged; the ORDER is pure too
+    O-4  HOLDS  one bit pattern, 60 processes x 5 interpreters x 6 seeds
+    O-4b HOLDS  competition path: one strength, one membership, one ranking
+    O-5  HOLDS  one SHA-256 over a 45-graph battery, every process
+    O-6  HOLDS  order-perturbation invariance, incl. high-degree fans
+    O-7  BOUNDS THE CLAIM (asserted-negative, amended form)
+    O-8  HOLDS  re-based oracle; see test_tester_0b2_adversarial.py
+    O-9  HOLDS  one read per road, one clock instant per expansion
+    O-10 HOLDS  factor exactly 1.0 on the REAL default clock
+    O-11 HOLDS  sigma boundary exact, down to -0.0 and 5e-324
+    O-12 HOLDS  (re-verified after D-015 (A)) non-finite energy refused on
+                every seed shape; the backstop guard is live on two routes
+    O-13 HOLDS  N-3, N-4, N-6, N-8, N-9 re-verified
+    O-14 HOLDS  no round() in any probe payload, tests/ and experiments/
+    O-15 HOLDS  no builtin sum() in src/, and the conversion is observable
+    O-16 HOLDS  bit-identical on all five interpreters (one machine)
+    O-17 HOLDS  identical totals with and without .git
+
+  THE SUITE BEING GREEN IS NOT THE VERDICT. 2 findings are recorded above as
+  ASSERTED-NEGATIVES, which pass while the limitation is present. A third,
+  the O-12 gap, was RETIRED: D-015 closed it in code and it is now asserted
+  as the positive property.
+    [O-12/neutral-path]
+        the fsum reduction raises OverflowError where the pre-0c engine
+        returned inf (energy=1e308 on a 12-way convergence, decay=1.0,
+        floor=0.0). A neutral-path behaviour change at extreme energy,
+        outside N-1's PARAM_SWEEP so no existing test sees it. Probably an
+        improvement; must be DOCUMENTED, not discovered.
+    [field-merge]
+        psyche_field.build_activation_field merges with a naive running
+        float add (total[node] += act, merged_flow[rid] += fv). Order-
+        PINNED, so cross-process determinism is unaffected and every
+        O-4/O-4b/O-5/O-16 result stands; NOT order-INDEPENDENT, and the
+        difference reaches Coalition.strength. Out of 0c's decided scope
+        (§2.5 enumerated builtin sum() sites; these are not sum() calls).
+        Recommend a follow-on brick, not a scope widening here. BOUNDED: the
+        same shape inside psyche_activation (flow[rid] +=) is structurally
+        single-term and is NOT a live instance.
+
+  Mechanism only. No cognitive claim is made or approached.
+==========================================================================
+
+######################################################################
+# test_tester_2f_adversarial.py
+######################################################################
+==============================================================================
+  TESTER — brick 2f-i (SPEC-2f Design C) and the 0e runner fix
+==============================================================================
+
+=== 0e  an aborted suite is NAMED; its count is UNKNOWN, never reconstructed ===
+
+=== 0e  the END-OF-INPUT arm, and a probe that can actually fail ===
+
+=== 0e  malformed capture is exit 2, exactly as an unreadable source is ===
+
+=== 0e  three readers of the RESULT format agree, and it is pinned ===
+
+=== 0e  refusal ordering, and the blindness my own sweeps share ===
+  NOTE: THE GENERAL LIMIT, recorded because it applies to this project's flagship discipline and not merely to capture_run: any probe whose assertion is 'these N observations agree' is structurally blind to a defect identical across all N. That covers the interpreter sweep, the hash-seed sweep, and every byte-identity comparison in this file. They were built to catch ENVIRONMENT-DEPENDENT defects — BUG-0b1 was one — and they do. They are not correctness checks and must never be read as one. What is NOT blind: probes asserting an independently-derived absolute value, such as 0d's retro-catch MUST-CATCH sites, the exact-zero window assertions below, and the pre-2f byte-identity comparison, which compares against code recovered from git rather than against another run of the same code.
+
+=== 2f  P-0 THE NOISE FLOOR, measured before any off-vs-on comparison ===
+
+=== 2f  I-1 THE GATE: neutral 2f vs the pre-2f engine recovered from git ===
+
+=== 2f  I-1 at the neutral budget, strengthen is SKIPPED, not called with zero ===
+
+=== 2f  PARAMETER VALIDATION — DEFECT-C's class, on every caller-supplied number ===
+
+=== 2f-1 CONVERTED: an adverse outcome is refused, and the caller is told why ===
+
+=== 2f  -0.0: the outcome is right, the reasoning is nowhere written down ===
+
+=== 2f  ATTACK on the load-bearing claim: the store surface is not a boundary ===
+  FINDING [2f-3]: the STRUCTURAL ARGUMENT for potentiation-only is incomplete, though its conclusion is true today. `store.get_road(rid, apply_decay=False)` returns the LIVE stored Road, not a copy: assigning to `.strength` or mutating `.charges` through it reaches the store (verified; apply_decay=True does copy, which is what makes the asymmetry easy to miss). So 'the store surface is get_road + strengthen, and strengthen only increases' does NOT bound what can happen — a future edit like `road = store.get_road(rid, apply_decay=False); road.strength *= 0.5` would weaken a road AND leave the builder's AST assertion green, because the store surface would be unchanged. Today nothing does this and the module reads the attribute immediately, so the brick is correct. This is a finding against the ARGUMENT, and separately a note that 0a hands out a write-capable reference from a method documented as a PURE READ — 0a's own purity claim ('a read changes nothing') is not violated, since the read itself mutates nothing; what is absent is encapsulation. The architect owns whether that is 0a's to close.
+
+=== 2f-3  the binding bound: every dismissal verified, and the bound bites ===
+
+=== 2f-3  the bound BITES on the form it covers ===
+
+=== 2f-3  ASSERTED NEGATIVES: the blind spots really are blind ===
+  NOTE: all five need real DATAFLOW, which the builder declined to build rather than attempt badly. A clean run of this bound proves no BINDING exists outside the four dismissed — never that no write-through is possible.
+
+=== 2g  D-7: can the SIGN reach `eligible` by any route the signature omits? ===
+  NOTE: D-7 HOLDS, and the argument is STRUCTURAL rather than an absence — so it does NOT belong in the registry with the other bounds. It rests on a frozen dataclass with three non-float fields, which no future edit can weaken without changing a type declaration. FINDING 2g-1 is that the builder's STATED argument — 'decided by the signature' — is incomplete: the signature says nothing about self._entries, which is exactly the route a reader should worry about. Right conclusion, incomplete reason; the fifth instance of that shape in this arc.
+  FINDING [2g-1]: D-7's structural argument HOLDS but the builder's stated version is INCOMPLETE. It cites the signature, which does not exclude `self._entries` — mutable state written from outside `eligible` by record(). What actually closes the route is that TraceEntry is FROZEN and its fields are (cycle:int, road_id:str, seq:int), none of which can carry a sign, and that record() never receives an outcome. Structural, not an absence, so no registry entry is warranted — but the docstring should name the frozen record rather than the signature.
+
+=== 2g  every write to `.strength` in src/, enumerated independently ===
+
+=== 2g  weaken's saturation, read from the code — then attacked ===
+
+=== 2g  the constant's own falsifier: is the asymmetry MEASURABLE? ===
+
+=== 2g  composition: strengthen then weaken at the SAME rate — FLAGGED ===
+  FINDING [2g-2]: FLAGGED FOR THE ARCHITECT, not adjudicated. +x then -x at the SAME rate does not return omega to its starting value: 0.5 -> 0.565 -> 0.4916, a net LOSS of 0.00845. This falls out of the two saturations being mirrors of each other — the gain scales by (1-w) and the loss by w, so at w<0.5 a round trip nets positive and at w>0.5 it nets negative, with 0.5 the only fixed point. SPEC-2g does not specify whether a round trip should be neutral, and D-5 in its invariant list says only that whichever way it lands must be ASSERTED rather than assumed — which it now is. Whether path-dependence of this shape is wanted is a design question and it is the architect's.
+
+=== 2f-5 CONVERTED: a comment no longer rots a dismissal, and staleness still bites ===
+
+=== 2f-5  INSTABILITY — the direction that matters, attacked five ways ===
+
+=== 2f-5  the legacy format is refused, and a MIXED ledger fails ===
+
+=== 2f-5  the key is whitespace-free: attack the parser directly ===
+
+=== 2f-2  is the recorded falsifier live or hypothetical? — checked, not assumed ===
+  NOTE: WHAT WOULD MAKE IT LIVE, so the falsifier is watchable rather than decorative: (a) any caller that reads .eligibility or .gain and acts on the raw magnitude — a threshold, a log that triggers something, or a future NEUROMODULATION publisher scaling P_PRP by observed eligibility; (b) any write path that does not go through strengthen(), which today includes the live-reference route FINDING 2f-3 describes. Note that 2f-3 makes (b) reachable in principle already.
+
+=== 2f  FLAGGED, not adjudicated: the module's claim about AOL-2/3/4 ===
+  FINDING [2f-4]: FLAGGED FOR THE ARCHITECT, not adjudicated. The module now states that AOL-2, AOL-3 and AOL-4 'each need an outcome to be able to make an earlier action LESS likely'. Checked against SPEC-2e's actual text: none of the three says that. AOL-2 is the CONJUNCTION of difficulty growth and capability growth; AOL-3 is goal generation adapting to a learning-progress signal; AOL-4 is dropping goals while RETAINING skills, grounded in catastrophic forgetting (BWT). The CONCLUSION — that 2f-i moves none of them — is almost certainly right, but the stated reason is an over-read of the spec, and the ledger already carries a stronger one (D-023): all five are MECHANISM ABSENT, needing goal generation, skill representation and a learning-progress signal, none of which exist. That reason does not depend on sign at all. Claims about specs become citable, which is why this is raised rather than left.
+
+=== 2f  the window boundary, established from the code and then enumerated ===
+
+=== 2f  every control is shown CAPABLE OF FAILING — not decoration ===
+
+=== 2f  repeats: the mechanical property holds; the SEMANTICS are unspecified ===
+  FINDING [2f-2]: ROUTED TO ARCHITECT, not a defect: 'three traversals in one cycle earn exactly triple eligibility' is linear and unbounded in the eligibility term (10000 repeats -> 10000.0), bounded only downstream by strengthen()'s saturation. SPEC-2f does not specify it, so it is an implementation consequence rather than a recorded decision. It is exactly the kind of unstated behaviour that later gets cited as a design choice; it needs a ruling before anything is built on it.
+
+=== 2f  application order cannot change any outcome — proved from the code ===
+
+=== 2f  LOOP-CLOSURE: every road id comes from think(), none chosen here ===
+
+=== 2f  the two absence bounds, searched my own way by AST ===
+
+=== 2f  LANGUAGE: read as a human, since 0f leaves C4 blind to interpolation ===
+  NOTE: checked by reading, not by C4: 'a conscious mind', 'clearly conscious' and 'undeniably sentient' all pass C4 today (brick 0f). None of those forms, or any inflection of them, appears in psyche_credit.py.
+
+=== 2f  determinism: bit patterns across 6 hash seeds, fresh processes ===
+
+==============================================================================
+  RESULT: 196 passed, 0 failed
+==============================================================================
+  TESTER VERDICT ON BRICK 2f-i — PASS  (2026-07-27, final)
+==============================================================================
+  2f-i IS DONE FROM THE TESTER SIDE. The refusal holds, the potentiation basis
+  is an ABSENCE that is machine-checked and bites, all four dismissals are
+  verified rather than read, and the three corrected reasons are the true ones.
+
+  WRAPPED-STRING SWEEP: 0 vacuous across all four suites. The builder's was the
+  only instance and it is fixed. The generalisation is PARTLY true and the
+  difference matters: 0f, the mechanism-vs-negation scan and the wrapped string
+  are all substring matching on structured text, but they need THREE different
+  fixes — tokenisation, parsing, and whitespace normalisation. Normalising
+  everything closes one third of the class while looking like it closed all.
+
+  0d SUITE CONVERTED after four aborted passes: 338 assertions, 0 failures.
+  Census 14/8 -> 15/9, each conversion failing against cce3dc5.
+
+  ONE NEW FINDING, 2f-5, not blocking: bound_on_absence DISMISSALS are keyed
+  path:line and rot on any edit above them — one comment line fires a false
+  [C6]. It cost a real mis-measurement in this pass. Architect's to route.
+==============================================================================
+  FINDINGS
+   [2f-3] the STRUCTURAL ARGUMENT for potentiation-only is incomplete, though its conclusion is true today. `store.get_road(rid, apply_decay=False)` returns the LIVE stored Road, not a copy: assigning to `.strength` or mutating `.charges` through it reaches the store (verified; apply_decay=True does copy, which is what makes the asymmetry easy to miss). So 'the store surface is get_road + strengthen, and strengthen only increases' does NOT bound what can happen — a future edit like `road = store.get_road(rid, apply_decay=False); road.strength *= 0.5` would weaken a road AND leave the builder's AST assertion green, because the store surface would be unchanged. Today nothing does this and the module reads the attribute immediately, so the brick is correct. This is a finding against the ARGUMENT, and separately a note that 0a hands out a write-capable reference from a method documented as a PURE READ — 0a's own purity claim ('a read changes nothing') is not violated, since the read itself mutates nothing; what is absent is encapsulation. The architect owns whether that is 0a's to close.
+   [2g-1] D-7's structural argument HOLDS but the builder's stated version is INCOMPLETE. It cites the signature, which does not exclude `self._entries` — mutable state written from outside `eligible` by record(). What actually closes the route is that TraceEntry is FROZEN and its fields are (cycle:int, road_id:str, seq:int), none of which can carry a sign, and that record() never receives an outcome. Structural, not an absence, so no registry entry is warranted — but the docstring should name the frozen record rather than the signature.
+   [2g-2] FLAGGED FOR THE ARCHITECT, not adjudicated. +x then -x at the SAME rate does not return omega to its starting value: 0.5 -> 0.565 -> 0.4916, a net LOSS of 0.00845. This falls out of the two saturations being mirrors of each other — the gain scales by (1-w) and the loss by w, so at w<0.5 a round trip nets positive and at w>0.5 it nets negative, with 0.5 the only fixed point. SPEC-2g does not specify whether a round trip should be neutral, and D-5 in its invariant list says only that whichever way it lands must be ASSERTED rather than assumed — which it now is. Whether path-dependence of this shape is wanted is a design question and it is the architect's.
+   [2f-4] FLAGGED FOR THE ARCHITECT, not adjudicated. The module now states that AOL-2, AOL-3 and AOL-4 'each need an outcome to be able to make an earlier action LESS likely'. Checked against SPEC-2e's actual text: none of the three says that. AOL-2 is the CONJUNCTION of difficulty growth and capability growth; AOL-3 is goal generation adapting to a learning-progress signal; AOL-4 is dropping goals while RETAINING skills, grounded in catastrophic forgetting (BWT). The CONCLUSION — that 2f-i moves none of them — is almost certainly right, but the stated reason is an over-read of the spec, and the ledger already carries a stronger one (D-023): all five are MECHANISM ABSENT, needing goal generation, skill representation and a learning-progress signal, none of which exist. That reason does not depend on sign at all. Claims about specs become citable, which is why this is raised rather than left.
+   [2f-2] ROUTED TO ARCHITECT, not a defect: 'three traversals in one cycle earn exactly triple eligibility' is linear and unbounded in the eligibility term (10000 repeats -> 10000.0), bounded only downstream by strengthen()'s saturation. SPEC-2f does not specify it, so it is an implementation consequence rather than a recorded decision. It is exactly the kind of unstated behaviour that later gets cited as a design choice; it needs a ruling before anything is built on it.
+==============================================================================
+
+######################################################################
 # test_tester_2c_adversarial.py
 ######################################################################
 ======================================================================
@@ -767,7 +1692,7 @@ B2 §(D-1): the PILOT's own battery (build_battery + percept_flips at fixed swep
 
 B3 LIVE ISOLATION (runtime trap): with time.perf_counter and time.process_time MONKEYPATCHED to detonate, a full REPLAY-mode modulated cycle still runs — proving the graded/replay surface reads NO live timer
 
-B4 LIVE ISOLATION (static): no live-telemetry call (getloadavg / getrusage) is reachable from the deterministic test surface; perf_counter/process_time appear in nous_bodysensor ONLY inside the live branch of read() and the named secondaries
+B4 LIVE ISOLATION (static): no live-telemetry call (getloadavg / getrusage) is reachable from the deterministic test surface; perf_counter/process_time appear in psyche_bodysensor ONLY inside the live branch of read() and the named secondaries
 
 D1 INTEGRITY/PURITY (ON path): across a friction battery, think(body_sensor=..., broadcast=False) leaves the store byte-identical and integrity clean
 
@@ -799,7 +1724,7 @@ G2 FAIRNESS: the readout (winner-set) and the grading mode (REPLAY over the froz
 
 G3 FAIRNESS: the frozen trace hash is a deterministic function of the trace CONTENT (re-hashing the artifact via the pilot's own loader reproduces a stable digest), so a tampered trace would be detected
 
-H1 NO OVERCLAIM: no public name in nous_bodysensor claims a feeling/awareness/consciousness; the headline word is 'friction' (a derived telemetry signal)
+H1 NO OVERCLAIM: no public name in psyche_bodysensor claims a feeling/awareness/consciousness; the headline word is 'friction' (a derived telemetry signal)
 
 H2 NO OVERCLAIM: the pilot frames its number as a populability/feasibility fraction on flip-CAPABLE inputs over a deliberately-extreme range — NOT a meaning result; it explicitly defers meaning to the validator and carries the negations
 
@@ -884,5 +1809,5 @@ RESULT: 42 passed, 0 failed
 RESULT: 67 passed, 0 failed
 
 ======================================================================
-  OVERALL: all 20 suites passed (0 failures)
+  OVERALL: all 26 suites passed (0 failures, 0 aborted)
 ======================================================================

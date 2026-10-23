@@ -1,5 +1,5 @@
 """
-Nous — Phase 2 experiments — the measurement harness.
+Psyche — Phase 2 experiments — the measurement harness.
 
 This is the reusable instrument for the empirical-validation phase. It imports the
 PROVEN, FROZEN library from ../src UNCHANGED and never writes to it. Everything here
@@ -43,8 +43,8 @@ import os
 import sys
 
 # ── bootstrap: make the FROZEN library importable by bare name ───────────────────────
-# The library modules live in ../src and are imported by BARE name (`nous_store`,
-# `nous_activation`) — the project's convention (see run_tests.py). We insert the
+# The library modules live in ../src and are imported by BARE name (`psyche_store`,
+# `psyche_activation`) — the project's convention (see run_tests.py). We insert the
 # ABSOLUTE path to src at the front of sys.path so those imports resolve regardless of
 # the caller's working directory. This reads src/; it never modifies it.
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -55,8 +55,8 @@ if SRC_DIR not in sys.path:
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Tuple
 
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_activation import (
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_activation import (
     spread_activation,
     DEFAULT_SEED_ENERGY,
     DEFAULT_DECAY_PER_HOP,
@@ -287,12 +287,27 @@ def read_targets(
     activation = {t: result.activation.get(t, 0.0) for t in targets}
 
     # outgoing_total = sum of activation transmitted on the cue's own out-roads.
-    # DETERMINISM: store.roads_from yields road IDs in set-iteration order over uuids,
-    # which depends on PYTHONHASHSEED — and float addition is NOT associative, so summing
-    # in that order could differ in the last ULP across processes. We therefore collect
-    # the per-road flow values and sum them in SORTED-VALUE order, which is independent of
-    # the road IDs. The multiset of flow values is identical across builds (equal edge
-    # strengths on a simulated clock), so this sum is byte-identical across hash seeds.
+    #
+    # DETERMINISM. This comment named the wrong cause for a month and the error was
+    # load-bearing, so it is corrected here rather than deleted (D-014, SPEC-0c §2.4).
+    #
+    #   WRONG, as originally written: "roads_from yields road IDs in set-iteration order
+    #   over uuids, WHICH DEPENDS ON PYTHONHASHSEED."
+    #
+    #   RIGHT: the order depended on the uuid4 values themselves, which are freshly random
+    #   in every process. Pinning PYTHONHASHSEED therefore never controlled it — the
+    #   nondeterminism reproduces at a FIXED seed. That misattribution is why the project
+    #   swept a hash-seed axis for a month against a defect no seed could perturb, and why
+    #   this file's local workaround was never promoted into the engine: the hazard looked
+    #   like it belonged to an environment variable rather than to the substrate.
+    #
+    # The hazard itself was real and is stated correctly below: float addition is not
+    # associative, so summing in an unstable order can differ in the last ULP across
+    # processes. Brick 0c fixes it at the source — store adjacency is now insertion-ordered
+    # and the engine's accumulator uses math.fsum — which makes the sort below unnecessary.
+    # It is kept because it is harmless and because removing experiment code is not that
+    # brick's business. The multiset of flow values is identical across builds (equal edge
+    # strengths on a simulated clock), so this sum is byte-identical regardless.
     flows = [result.flow.get(road_id, 0.0) for road_id in store.roads_from(cue)]
     flows.sort()
     outgoing_total = sum(flows)

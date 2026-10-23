@@ -41,7 +41,7 @@ for _p in (_EXP, _SRC):
         sys.path.insert(0, _p)
 
 from harness import build_graph_from_spec, read_targets
-from nous_perceive import think
+from psyche_perceive import think
 import priming_instrument as PI
 from swow import Topology, traverse_count_for_strength as tcs
 import priming_1e as S

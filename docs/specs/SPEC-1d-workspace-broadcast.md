@@ -3,7 +3,7 @@
 Status: **1d-i AND 1d-ii both BUILT · mechanism tester-VERIFIED (PASS); 1d overall `BUILT · UNVALIDATED`** — the cognitive cycle now closes end-to-end (perceive → activate → cluster → compete → prune → broadcast → next cycle). 1d makes a **mechanism** claim only; it makes **no external-data cognitive claim**, so it is **mechanism-verified, not meaning-validated** — meaning lives at 1e. Design decisions A–E **locked 2026-06-20** (A2 / B1 / C1 / D1 / take-the-split — see §8); built 1d-i first, then 1d-ii. **Decision C resolved 2026-06-20 → the realized + accepted C1 is a parameter-free cohesion-valley / relative-attachment watershed (see §3.2 / §8), distinct from both literal domain-membership and the rejected fraction-based C2.** Nothing here is `PROVEN` against external data; "mechanism tester-VERIFIED" means determinism + integrity + the declared selection/feedback properties hold — it is **not** a cognitive result.
 Author: architect-pm
 For: builder (test-first) → tester (independent, adversarial verify). **Mechanism-only: 1d is verified by the tester, not the validator.**
-Depends on: 1a (`nous_field`), 1b (`nous_coalitions`), 1c (`nous_source_clustering`), `nous_perceive` (`think()`), Phase 0 substrate (`nous_store`, `nous_activation`).
+Depends on: 1a (`psyche_field`), 1b (`psyche_coalitions`), 1c (`psyche_source_clustering`), `psyche_perceive` (`think()`), Phase 0 substrate (`psyche_store`, `psyche_activation`).
 Inherits from: SPEC-1c §6.1 (amendment) and §7.7 — the re-scoped "no over-swallow" criterion.
 
 > Scope discipline (CLAUDE.md rules 1–4): this document began as **description**; both components are
@@ -24,7 +24,7 @@ Inherits from: SPEC-1c §6.1 (amendment) and §7.7 — the re-scoped "no over-sw
 ## 1. What 1d is
 
 1d is the **workspace-selection-and-feedback mechanism** that replaces the `think()` placeholder
-"strongest coalition is the thought" (`coalitions[0]`, `src/nous_perceive.py`) with three real
+"strongest coalition is the thought" (`coalitions[0]`, `src/psyche_perceive.py`) with three real
 components:
 
 1. **Competition** — a deterministic, **pure-read** rule that selects exactly **one** winning
@@ -55,7 +55,7 @@ Specifically and bindingly:
   measurable change in the next cycle's activation in a pre-stated direction. It is **not** a claim
   that the system attends, notices, or experiences anything.
 - GWT/LIDA are cited as **engineering lineage** for the routing/selection structure, not as evidence
-  that Nous reproduces the cognitive or neural phenomena those theories model.
+  that Psyche reproduces the cognitive or neural phenomena those theories model.
 
 No biological or cognitive *fidelity* is claimed by 1d. Biological/architectural *inspiration* is
 named; that is the limit.
@@ -69,8 +69,8 @@ The closed loop already exposes two gaps that the `coalitions[0]` placeholder pa
   decision about whether summed activation is even the right rule (see Decision A).
 - **Over-swallow persists (inherited from 1c).** SPEC-1c §7.7 ships
   `test_KNOWN_LIMITATION_single_representative_still_swallows_bridged_domain` (in
-  `tests/test_nous_source_clustering.py`) and its twin residual assertion in
-  `tests/test_nous_perceive.py::test_clustered_sources_no_longer_strand_after_1c`, both **passing**
+  `tests/test_psyche_source_clustering.py`) and its twin residual assertion in
+  `tests/test_psyche_perceive.py::test_clustered_sources_no_longer_strand_after_1c`, both **passing**
   while asserting that the winning thought *still* pulls in the unperceived `work`/`code` domain. 1d
   owns the flip of both (§6.1, §7.1).
 - **No feedback.** Nothing the winner does shapes the next cycle, so the pipeline is one-shot, not a
@@ -91,8 +91,8 @@ hand-placed winners, no hand-placed bias.
 
 | Input | Type | Origin |
 |---|---|---|
-| `coalitions` | `List[Coalition]` (already strongest-first) | `form_coalitions_from_field()` in `src/nous_coalitions.py`, via `think()` |
-| `field_` | `ActivationField` | `build_activation_field()` in `src/nous_field.py` |
+| `coalitions` | `List[Coalition]` (already strongest-first) | `form_coalitions_from_field()` in `src/psyche_coalitions.py`, via `think()` |
+| `field_` | `ActivationField` | `build_activation_field()` in `src/psyche_field.py` |
 | `clustering` | `SourceClustering` | `cluster_sources()` (1c) — tells us which domains a source *named* (perceived) vs. merely *reached* |
 | `store` | `SubstrateStore` | Phase 0 — read for competition/pruning; the **single broadcast write** targets it |
 | `perception.sources` | `Dict[str, float]` | `perceive()` — the set of NodeIDs the input actually named (the anchor for "perceived domain") |
@@ -109,7 +109,7 @@ the same `store`**, so each cycle reads the trace the previous cycle's broadcast
 
 The novelty budget (CLAUDE.md rule 6) is spent on **the selection rule, the pruning criterion, and
 the bounded-feedback dynamics** — not on scaffolding. Determinism reuses the proven pattern shipped in
-`nous_coalitions.py` / `nous_source_clustering.py`: sorted iteration everywhere, every tie broken on
+`psyche_coalitions.py` / `psyche_source_clustering.py`: sorted iteration everywhere, every tie broken on
 `creation_seq` (never a uuid, never set/dict iteration order), connected-components / explicit total
 orders only.
 
@@ -181,7 +181,7 @@ and can place the watershed between them.
 
 Prior art: the GWT account of selective access — the workspace admits *one coherent content* and
 excludes the rest (Baars 1988; Dehaene & Changeux 2011 model selective amplification/suppression).
-Cited as structure, not as a claim Nous reproduces neural ignition.
+Cited as structure, not as a claim Psyche reproduces neural ignition.
 
 ### 3.3 Broadcast — one bounded write that biases the next cycle
 
@@ -192,7 +192,7 @@ decay/normalization rule that **guarantees bounded feedback**. The recommended s
 - Strengthen the **roads internal to the winning coalition** (the associations that just "won") by a
   **small bounded delta**, so that on the next cycle those associations conduct activation slightly
   more — a "what just won is slightly easier to think next" bias. This is in-grain with the substrate
-  (roads carry plasticity; nodes are neutral — `nous_store.py`), reuses the existing road-write path,
+  (roads carry plasticity; nodes are neutral — `psyche_store.py`), reuses the existing road-write path,
   and is exactly the kind of trace 1e (priming) needs.
 - **Boundedness is structural, two ways, both tested (§6.3):**
   1. **No divergence.** Road strength already saturates (`strengthen`: `gain ∝ (1 − strength)`), and
@@ -229,9 +229,9 @@ broadcast — see Decision D), never a new persistence layer.
 
 ## 4. Outputs / data structures (and how `think()` is rewired)
 
-**Module boundary is Decision D.** The recommended shape: a new module `src/nous_workspace.py`
-(suite `tests/test_nous_workspace.py`), keeping competition/pruning/broadcast together and out of the
-proven, pure `nous_coalitions.py`. It exposes small immutable result types:
+**Module boundary is Decision D.** The recommended shape: a new module `src/psyche_workspace.py`
+(suite `tests/test_psyche_workspace.py`), keeping competition/pruning/broadcast together and out of the
+proven, pure `psyche_coalitions.py`. It exposes small immutable result types:
 
 - `WorkspaceResult` — the outcome of competition + pruning:
   - `winner: Optional[Coalition]` — the selected coalition **after pruning** (members already
@@ -254,7 +254,7 @@ Two functions, with the purity boundary explicit in their names and contracts:
   bounded bias to the store and returns what it did. This is the *only* mutation 1d introduces, and
   no read in 1d may call it.
 
-`ThoughtResult` (in `src/nous_perceive.py`) gains fields without changing `think()`'s public
+`ThoughtResult` (in `src/psyche_perceive.py`) gains fields without changing `think()`'s public
 signature:
 
 - `workspace: Optional[WorkspaceResult]` — the competition/pruning outcome.
@@ -265,7 +265,7 @@ signature:
   the writing mode; see below).
 
 **`think()` writing mode (Decision D detail).** `think()` is today a pure read end-to-end, and
-several shipped tests assert that (`test_nous_perceive.py::the end-to-end slice mutates NOTHING`).
+several shipped tests assert that (`test_psyche_perceive.py::the end-to-end slice mutates NOTHING`).
 Broadcast is a write, so it must be **opt-in and explicit** so the pure-read guarantee is not silently
 broken. The recommended contract: `think(..., broadcast=False)` by default keeps `think()` a pure read
 (selection + pruning only, no write — the existing purity tests stay green and meaningful);
@@ -328,12 +328,12 @@ which 1d unblocks by closing the loop.
 
 The two shipped passing asserted-negatives that document over-swallow **flip to real passing tests**:
 
-- `tests/test_nous_source_clustering.py::test_KNOWN_LIMITATION_single_representative_still_swallows_bridged_domain`
+- `tests/test_psyche_source_clustering.py::test_KNOWN_LIMITATION_single_representative_still_swallows_bridged_domain`
   — its `over_swallows == True` assertion is replaced by the positive: **on
   `think(s, "coffee in the kitchen this morning")`, the winning thought contains NEITHER `work` NOR
   `code`** (`n["work"] not in winner.members and n["code"] not in winner.members`), and those nodes
   appear in `workspace.pruned_members`. The known-limitation framing is removed.
-- `tests/test_nous_perceive.py::test_clustered_sources_no_longer_strand_after_1c` — its
+- `tests/test_psyche_perceive.py::test_clustered_sources_no_longer_strand_after_1c` — its
   `DOCUMENTED RESIDUAL` over-swallow assertion is likewise flipped to assert the winner excludes the
   unperceived domain. (The stranding half it already asserts stays.)
 
@@ -467,7 +467,7 @@ byte-identical across 6 seeds) is required, mirroring tester P2b.
 > they are not to be re-opened without the human.
 
 **LOCKED:**
-- **A → A2:** competition = activation **density-normalized by coalition size, with a minimum-size guard**; `creation_seq` tiebreaks reuse the `nous_coalitions.py` pattern.
+- **A → A2:** competition = activation **density-normalized by coalition size, with a minimum-size guard**; `creation_seq` tiebreaks reuse the `psyche_coalitions.py` pattern.
 - **B → B1:** broadcast = **bounded strengthening of the winner's internal roads** (reuse `strengthen()`, whose gain∝(1−strength) gives structural boundedness); this is the durable trace 1e needs.
 - **C → C1, resolved → valley rule (accepted 2026-06-20):** pruning = the realized + accepted
   **parameter-free cohesion-valley / relative-attachment watershed** (§3.2). C1's *intent* was literal
@@ -476,7 +476,7 @@ byte-identical across 6 seeds) is required, mirroring tester P2b.
   region (else prune) — threshold-free, generalizing, and distinct from **both** literal-membership
   (it KEEPS an unnamed domain bridged ≥ its own cohesion — §7 item 8) **and** the rejected
   fraction-based C2. It flips the strong `coffee→work` bridge without tuning a threshold to the test.
-- **D → D1:** new module **`src/nous_workspace.py`** + opt-in `broadcast` flag on `think()`; `broadcast=False` stays a pure read, `broadcast=True` is the only writing path.
+- **D → D1:** new module **`src/psyche_workspace.py`** + opt-in `broadcast` flag on `think()`; `broadcast=False` stays a pure read, `broadcast=True` is the only writing path.
 - **E → take the split:** build **1d-i** (competition + over-swallow pruning; pure selection; no feedback) first, then **1d-ii** (broadcast + bounded feedback; closes the loop; unblocks 1e).
 
 *(The per-decision options and tradeoffs below are retained as the rationale of record.)*
@@ -517,7 +517,7 @@ What gets written, and the rule that guarantees bounded feedback (constraint 5).
   is easier to retrieve next"). Boundedness: per-cycle cap + saturation ceiling → converges.
 - **B2 — raise node "activation baselines" for the next cycle.** Give the winner's nodes a residual
   head-start activation that seeds the next spread. *Tradeoff:* conceptually clean ("recently-active
-  stays warm"), but **nodes are currently neutral** in the substrate (`nous_store.py`), so this needs
+  stays warm"), but **nodes are currently neutral** in the substrate (`psyche_store.py`), so this needs
   a new per-node state field — a larger substrate change, and a new boundedness story (the baseline
   must decay or it accumulates). More invasive, more ways to diverge.
 - **B3 — tag-for-next-cycle (a transient bias map outside the store).** Carry a decaying bias dict
@@ -571,13 +571,13 @@ threshold-tuning. The anti-overcorrection control (§6.1) is mandatory to keep C
 
 ### Decision D — Module boundary and how `think()` is rewired
 
-- **D1 — new `src/nous_workspace.py` + opt-in `broadcast` flag on `think()` (RECOMMENDED).**
+- **D1 — new `src/psyche_workspace.py` + opt-in `broadcast` flag on `think()` (RECOMMENDED).**
   Competition/pruning/broadcast live in a new module; `think(..., broadcast=False)` stays a pure read
   (existing purity tests stay meaningful), `broadcast=True` performs the one write. *Tradeoff:* keeps
-  the proven, pure `nous_coalitions.py` untouched; makes "pure selection" vs "explicit write" two
+  the proven, pure `psyche_coalitions.py` untouched; makes "pure selection" vs "explicit write" two
   visible call modes the acceptance tests exploit; small surface addition to `ThoughtResult`. Slightly
   more files.
-- **D2 — extend `nous_coalitions.py`.** Add selection/pruning/broadcast to the existing coalition
+- **D2 — extend `psyche_coalitions.py`.** Add selection/pruning/broadcast to the existing coalition
   module. *Tradeoff:* fewer files, but it **mixes a pure-read module with a writing one**, muddying
   the purity story that module currently guarantees, and risks the over-swallow/feedback logic
   entangling with the proven coalition-formation code. Rejected as primary.
@@ -617,7 +617,7 @@ build/verify cycle, which the project's discipline already pays gladly. **Confir
 
 - Baars, B. J. (1988). *A Cognitive Theory of Consciousness.* — Global Workspace Theory: coalitions
   compete; one wins access; the winner is broadcast. (Selection-and-feedback **structure**; not a
-  consciousness claim for Nous — see §1.)
+  consciousness claim for Psyche — see §1.)
 - Franklin, S., Madl, T., D'Mello, S., & Snaider, J. (2014). *LIDA: A Systems-level Architecture for
   Cognition, Emotion, and Learning.* IEEE T-AMD. — Computational GWT: attention codelets, coalitions,
   the cognitive cycle. (Design lineage for the whole 1-phase loop.)

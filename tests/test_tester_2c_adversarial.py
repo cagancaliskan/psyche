@@ -2,7 +2,7 @@
 TESTER-AUTHORED adversarial verification of 2c interoception (BodySensor + the default-off
 modulation hook) AND a fairness audit of the populability pilot.
 
-This suite is INDEPENDENT of the builder's test_nous_bodysensor.py. It re-derives every
+This suite is INDEPENDENT of the builder's test_psyche_bodysensor.py. It re-derives every
 acceptance property from SPEC-2c (§1.4 anti-circularity, §3.2 (D-1)/(D-5) determinism,
 §0.1/§2.1 honest framing, §3.1 populability) and attacks the implementation with hostile,
 loop-closed, and re-derived inputs. The verdict rests on THIS file, not the builder's.
@@ -68,11 +68,11 @@ for _p in (_SRC, _EXPERIMENTS):
     if _p not in sys.path:
         sys.path.insert(0, _p)
 
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_activation import DEFAULT_DECAY_PER_HOP
-from nous_perceive import think
-import nous_bodysensor as bs
-from nous_bodysensor import (
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_activation import DEFAULT_DECAY_PER_HOP
+from psyche_perceive import think
+import psyche_bodysensor as bs
+from psyche_bodysensor import (
     BodySensor, TelemetrySample, compute_friction,
     friction_to_decay_factor, modulated_decay_per_hop,
     NEUTRAL_FRICTION, MODULATION_SPAN, MIN_DECAY_PER_HOP, MAX_DECAY_PER_HOP,
@@ -431,10 +431,14 @@ def test_winner_flip_actually_occurs_on_independent_graph():
 def test_winner_trace_byte_identical_across_6_seeds_independent_driver():
     section("B1 §(D-1)/(D-5): the loop's winner-vs-friction trace is byte-identical across 6 "
             "PYTHONHASHSEED values in fresh interpreters (independently authored driver)")
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 4) — the friction scalar that indexes
+    # this trace is itself a float, and rounding the index would let two different
+    # frictions collide into one row and hide a divergence rather than report it.
     driver = textwrap.dedent('''
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import think
-        from nous_bodysensor import BodySensor, TelemetrySample
+        import struct
+        from psyche_store import SubstrateStore, Clock, NodeType
+        from psyche_perceive import think
+        from psyche_bodysensor import BodySensor, TelemetrySample
         def build():
             s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
             def add(c): return s.add_node(c, NodeType.CONCEPT)
@@ -456,7 +460,7 @@ def test_winner_trace_byte_identical_across_6_seeds_independent_driver():
             s=build()
             r=think(s,"alpha gamma",body_sensor=sensor_for(f))
             win=tuple(sorted(s.get_node(m).content for m in r.thought.members)) if r.thought else None
-            out.append((round(f,4), win))
+            out.append((struct.pack("<d", f).hex(), win))
         print(repr(out))
     ''')
     outs = _det_probe(driver)
@@ -542,8 +546,8 @@ def test_replay_path_never_reads_a_live_timer_runtime_trap():
 def test_no_live_telemetry_call_in_graded_source_static():
     section("B4 LIVE ISOLATION (static): no live-telemetry call (getloadavg / getrusage) is "
             "reachable from the deterministic test surface; perf_counter/process_time appear in "
-            "nous_bodysensor ONLY inside the live branch of read() and the named secondaries")
-    src_path = os.path.join(_SRC, "nous_bodysensor.py")
+            "psyche_bodysensor ONLY inside the live branch of read() and the named secondaries")
+    src_path = os.path.join(_SRC, "psyche_bodysensor.py")
     with open(src_path, "r") as f:
         body_src = f.read()
     # getloadavg / getrusage live ONLY in the explicitly live-only secondary helpers.
@@ -563,12 +567,12 @@ def test_no_live_telemetry_call_in_graded_source_static():
               f"{fn_name} contains no getloadavg/getrusage (secondaries are isolated)")
     # perceive's think() path: the only telemetry entry is sensor.read(); confirm think()
     # itself names no live timer.
-    perceive_path = os.path.join(_SRC, "nous_perceive.py")
+    perceive_path = os.path.join(_SRC, "psyche_perceive.py")
     with open(perceive_path, "r") as f:
         perceive_src = f.read()
     check("perf_counter" not in perceive_src and "process_time" not in perceive_src
           and "getloadavg" not in perceive_src and "getrusage" not in perceive_src,
-          "nous_perceive.py names no live timer/telemetry call directly (only sensor.read())")
+          "psyche_perceive.py names no live timer/telemetry call directly (only sensor.read())")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -946,7 +950,7 @@ def test_frozen_trace_hash_is_a_function_of_content():
 # ══════════════════════════════════════════════════════════════════════════════
 
 def test_no_public_name_or_prose_claims_a_feeling_or_meaning():
-    section("H1 NO OVERCLAIM: no public name in nous_bodysensor claims a feeling/awareness/"
+    section("H1 NO OVERCLAIM: no public name in psyche_bodysensor claims a feeling/awareness/"
             "consciousness; the headline word is 'friction' (a derived telemetry signal)")
     public = [name for name in dir(bs) if not name.startswith("_")]
     forbidden = ("feel", "emotion", "aware", "conscious", "sentient", "panic",
@@ -967,7 +971,7 @@ def test_no_public_name_or_prose_claims_a_feeling_or_meaning():
         and any(tok in name.lower() for tok in grading_tokens)
     ]
     check(offenders_api == [],
-          f"nous_bodysensor exposes no meaning/grading/validation API (offenders: {offenders_api})")
+          f"psyche_bodysensor exposes no meaning/grading/validation API (offenders: {offenders_api})")
 
 
 def test_pilot_frames_fraction_as_feasibility_not_meaning():
@@ -1005,7 +1009,7 @@ def test_known_limitation_no_direction_or_meaning_asserted_at_mechanism_layer():
         tok in name.lower() for name in dir(bs) if not name.startswith("_")
         for tok in ("direction", "tracks", "correlat"))
     check(not has_dir_api,
-          "nous_bodysensor exposes no direction/tracking/correlation verdict (that is the validator's)")
+          "psyche_bodysensor exposes no direction/tracking/correlation verdict (that is the validator's)")
 
 
 # ══════════════════════════════════════════════════════════════════════════════

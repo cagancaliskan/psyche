@@ -28,9 +28,9 @@ _SRC = os.path.join(os.path.dirname(_HERE), "src")
 if _SRC not in sys.path:
     sys.path.insert(0, _SRC)
 
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_perceive import think
-from nous_bodysensor import BodySensor
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_perceive import think
+from psyche_bodysensor import BodySensor
 
 
 def _worn(s, a, b, n=30):

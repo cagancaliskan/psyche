@@ -1,11 +1,11 @@
 """
 INDEPENDENT ADVERSARIAL TEST SUITE for step 1d-ii — broadcast + bounded feedback
-(nous_workspace.broadcast / _internal_road_ids, wired behind think(broadcast=True)).
+(psyche_workspace.broadcast / _internal_road_ids, wired behind think(broadcast=True)).
 
 Author: tester (independent adversary). Written FROM SCRATCH against SPEC-1d §3.3
 (broadcast), Decision B/B1, §5 (substrate bar + purity nuance), §6.3 (BOTH stability
 directions — the crux), and §7 (asserted-negatives). NOT adapted from the builder's
-suite (tests/test_nous_workspace_broadcast.py). 1d-i is already verified; this suite
+suite (tests/test_psyche_workspace_broadcast.py). 1d-i is already verified; this suite
 attacks ONLY what 1d-ii ADDS: the single broadcast WRITE and the closed feedback loop.
 
 DISCIPLINE (CLAUDE.md — tester lane):
@@ -50,12 +50,12 @@ import textwrap
 import inspect
 import random
 
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_perceive import perceive, think
-from nous_field import build_activation_field
-from nous_coalitions import form_coalitions_from_field, Coalition
-from nous_source_clustering import cluster_sources
-from nous_workspace import (
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_perceive import perceive, think
+from psyche_field import build_activation_field
+from psyche_coalitions import form_coalitions_from_field, Coalition
+from psyche_source_clustering import cluster_sources
+from psyche_workspace import (
     select_winner, broadcast, Broadcast, WorkspaceResult,
     _internal_road_ids, _strongest_road_strength,
 )
@@ -772,9 +772,13 @@ def test_F_determinism_whole_store_after_n_broadcasts_6_seeds():
     section("F SUBSTRATE BAR: the WHOLE store state after N broadcast cycles on a HOSTILE "
             "graph (dense clique + an unnamed clique + a bridge) is byte-identical across all "
             "6 hash seeds in fresh interpreters (our own probe; ties everywhere)")
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9). This probe watches the WRITE path,
+    # where a rounded strength would hide exactly the kind of accumulated last-bit drift
+    # 15 successive broadcast cycles are most likely to produce.
     driver = textwrap.dedent('''
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import think
+        import struct
+        from psyche_store import SubstrateStore, Clock, NodeType
+        from psyche_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
         def add(c): return s.add_node(c, NodeType.CONCEPT)
         # named dense clique (5 nodes, all pairs)
@@ -796,7 +800,8 @@ def test_F_determinism_whole_store_after_n_broadcasts_6_seeds():
         for rid in s.all_road_ids():
             rd = s.get_road(rid, apply_decay=False)
             rows.append((s.get_node(rd.source_id).content, s.get_node(rd.target_id).content,
-                         rd.creation_seq, round(rd.strength, 9), rd.traversal_count, rd.closed))
+                         rd.creation_seq, struct.pack("<d", rd.strength).hex(),
+                         rd.traversal_count, rd.closed))
         rows.sort()
         print(repr(tuple(rows)))
     ''')
@@ -813,9 +818,11 @@ def test_F_determinism_bias_then_escape_trace_6_seeds():
     section("F SUBSTRATE BAR (loop-closed, multi-percept): the winner+broadcast trace across "
             "bias-A-then-escape-to-B on a BRIDGED graph is byte-identical across 6 hash seeds "
             "(our own probe) — the write AND the escape selection are both deterministic")
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     driver = textwrap.dedent('''
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import think
+        import struct
+        from psyche_store import SubstrateStore, Clock, NodeType
+        from psyche_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
         def add(c): return s.add_node(c, NodeType.CONCEPT)
         coffee=add("coffee"); warmth=add("warmth"); morning=add("morning routine")
@@ -833,7 +840,7 @@ def test_F_determinism_bias_then_escape_trace_6_seeds():
             wmem=tuple(sorted(s.get_node(m).content for m in r.thought.members)) if r.thought else None
             bc=tuple(sorted((s.get_node(s.get_road(rid).source_id).content,
                              s.get_node(s.get_road(rid).target_id).content,
-                             round(s.get_road(rid,apply_decay=False).strength,9))
+                             struct.pack("<d", s.get_road(rid,apply_decay=False).strength).hex())
                             for rid in r.broadcast_.road_ids))
             trace.append((wmem,bc))
         for _ in range(20):

@@ -33,11 +33,11 @@ import sys
 import subprocess
 import textwrap
 
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_perceive import perceive, think
-from nous_field import build_activation_field
-from nous_coalitions import form_coalitions_from_field
-from nous_source_clustering import (
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_perceive import perceive, think
+from psyche_field import build_activation_field
+from psyche_coalitions import form_coalitions_from_field
+from psyche_source_clustering import (
     cluster_sources, SourceClustering, SourceGroup,
     DEFAULT_PROXIMITY_FRACTION, _pair_proximity,
 )
@@ -251,10 +251,14 @@ def test_P2_cross_process_determinism_full_clustering():
     # proximity), all equal energy (ties in representative election), PLUS an unconnected
     # equal-energy pair. Serialized by stable content keys. If any iteration order leaked,
     # group order / representatives / group_seeds would differ across seeds.
+    # SPEC-0c §5.1: the payload serialises BIT PATTERNS, never round(x, 9). round() is
+    # structurally blind to everything below 1e-9, and 1 ULP is exactly what BUG-0b1 was;
+    # a determinism probe that rounds is not a determinism probe.
     driver = textwrap.dedent('''
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import perceive
-        from nous_source_clustering import cluster_sources
+        import struct
+        from psyche_store import SubstrateStore, Clock, NodeType
+        from psyche_perceive import perceive
+        from psyche_source_clustering import cluster_sources
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
         def add(c, t=NodeType.CONCEPT): return s.add_node(c, t)
         # ring p-q-r-s-p, all n=30 (equal strengths -> ties); plus pair u-v (n=30)
@@ -269,7 +273,7 @@ def test_P2_cross_process_determinism_full_clustering():
         for g in cl.groups:
             members = tuple(sorted(s.get_node(m).content for m in g.members))
             rep = s.get_node(g.representative).content
-            seed = round(cl.group_seeds[g.representative], 9)
+            seed = struct.pack("<d", cl.group_seeds[g.representative]).hex()
             out.append((members, rep, seed))
         print(repr(out))
     ''')
@@ -282,9 +286,11 @@ def test_P2_cross_process_determinism_full_clustering():
 def test_P2b_cross_process_determinism_full_think_pipeline():
     section("P2b cross-process determinism: full think() coalitions + clustering across 6 "
             "seeds (loop-closed end to end)")
+    # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     driver = textwrap.dedent('''
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import think
+        import struct
+        from psyche_store import SubstrateStore, Clock, NodeType
+        from psyche_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
         def add(c, t=NodeType.CONCEPT): return s.add_node(c, t)
         coffee=add("coffee",NodeType.ENTITY); warmth=add("warmth",NodeType.SENSATION)
@@ -299,11 +305,11 @@ def test_P2b_cross_process_determinism_full_think_pipeline():
         for g in r.clustering.groups:
             clu.append((tuple(sorted(s.get_node(m).content for m in g.members)),
                         s.get_node(g.representative).content,
-                        round(r.clustering.group_seeds[g.representative], 9)))
+                        struct.pack("<d", r.clustering.group_seeds[g.representative]).hex()))
         co = []
         for c in r.coalitions:
             co.append((tuple(sorted(s.get_node(m).content for m in c.members)),
-                       round(c.strength, 9),
+                       struct.pack("<d", c.strength).hex(),
                        s.get_node(c.representative()).content))
         print(repr((clu, co, s.get_node(r.thought.representative()).content if r.thought else None)))
     ''')

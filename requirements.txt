@@ -1,4 +1,4 @@
-# Nous has NO third-party dependencies.
+# Psyche has NO third-party dependencies.
 #
 # Every module and every test runs on the Python standard library alone
 # (tested on CPython 3.13; expected to work on 3.8+). This file is intentionally
@@ -7,4 +7,4 @@
 # To run the tests:
 #     python3 run_tests.py
 # or a single suite (absolute PYTHONPATH so subprocess determinism probes resolve):
-#     PYTHONPATH="$PWD/src" python3 tests/test_nous_store.py
+#     PYTHONPATH="$PWD/src" python3 tests/test_psyche_store.py
