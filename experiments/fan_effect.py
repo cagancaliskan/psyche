@@ -7,8 +7,8 @@ Fan-effect experiment (Phase 2A) — pre-registered, honest, deterministic.
 ║   (This is the direction of the HUMAN fan effect: the more facts associated     ║
 ║    with a cue, the slower/weaker the retrieval of any one of them.)             ║
 ║                                                                                ║
-║ BRIDGE ASSUMPTION (how a human latency effect maps onto Nous)                  ║
-║   The human fan effect is measured as retrieval LATENCY (reaction time). Nous   ║
+║ BRIDGE ASSUMPTION (how a human latency effect maps onto Psyche)                  ║
+║   The human fan effect is measured as retrieval LATENCY (reaction time). Psyche   ║
 ║   has no latency — it has activation magnitude. We therefore bridge the two by  ║
 ║   mapping HIGHER ACTIVATION = FASTER / STRONGER retrieval. Under this mapping a  ║
 ║   human "slower with higher fan" predicts "LOWER activation with higher fan".   ║
@@ -64,9 +64,9 @@ EPS = 1e-9
 
 # The pre-registered statements, as data (so the same strings are printed and quotable).
 PREDICTION = "Retrieval strength DECREASES as source fan (out-degree) increases."
-BRIDGE = ("Human fan effect is retrieval LATENCY; Nous has no latency, so we map "
+BRIDGE = ("Human fan effect is retrieval LATENCY; Psyche has no latency, so we map "
           "higher activation = faster/stronger retrieval. Thus 'slower with higher "
-          "fan' (human) predicts 'LOWER activation with higher fan' (Nous).")
+          "fan' (human) predicts 'LOWER activation with higher fan' (Psyche).")
 
 
 def _knobs() -> dict:

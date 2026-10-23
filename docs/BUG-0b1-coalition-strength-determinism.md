@@ -5,8 +5,8 @@
 **§5 and §7 amended 2026-07-25 after the tester found the same bug class upstream — see §8**
 **Found:** 2026-07-25, while establishing a baseline before the SPEC-0b2 engine work
 **Severity:** the cross-process determinism property of the workspace competition (Tier 2)
-does not hold. ~~Tier 1 (`nous_store`, `nous_activation`) is **not** affected.~~ **That
-sentence is retracted:** `nous_store` is not affected, but `nous_activation` carries the same
+does not hold. ~~Tier 1 (`psyche_store`, `psyche_activation`) is **not** affected.~~ **That
+sentence is retracted:** `psyche_store` is not affected, but `psyche_activation` carries the same
 hazard at its accumulation site (DEFECT-A, §8), and the fix here does not reach it.
 **Caught by:** the project's own existing adversarial test —
 `test_tester_1d_i_adversarial.py::test_T6b` ("multi-basin tie graph identical across 6 seeds").
@@ -43,7 +43,7 @@ the failure mode the project already hardened against.
 
 > **CORRECTION, 2026-07-26 (D-014) — this section said "two sites" and it was wrong.**
 > There are **three** `Coalition(` construction sites in `src/`, not two:
-> `nous_coalitions.py:228`, `nous_coalitions.py:311`, and **`nous_workspace.py:426`**, which
+> `psyche_coalitions.py:228`, `psyche_coalitions.py:311`, and **`psyche_workspace.py:426`**, which
 > builds the *pruned* winner with `strength=sum(pruned_members.values())`. That third site
 > was never converted, so this bug was reported as closed while a live instance of it
 > remained **on the same competition path**. It is reproduced in SPEC-0c §2.5.1: on the
@@ -53,11 +53,11 @@ the failure mode the project already hardened against.
 > reason, now explained (see §9). Winner *identity* is stable on that graph, which is
 > exactly how the original instance hid too. The site is converted in brick 0c.
 > Nothing else in this report is affected: the diagnosis, the mechanism and the fix applied
-> at the two `nous_coalitions.py` sites were correct as far as they went. What was wrong was
+> at the two `psyche_coalitions.py` sites were correct as far as they went. What was wrong was
 > the claim of completeness.
 
-`src/nous_coalitions.py`, two sites (lines 225 and 308) — **and see the correction above; a
-third site in `nous_workspace.py` was missed**:
+`src/psyche_coalitions.py`, two sites (lines 225 and 308) — **and see the correction above; a
+third site in `psyche_workspace.py` was missed**:
 
 ```python
 strength = sum(members.values())
@@ -129,11 +129,11 @@ removes the failure mode rather than avoiding it.
 
 ## 5. What this does and does not mean
 
-**Does not affect the Tier 1 `PROVEN` claim.** `nous_store` and `nous_activation` are
+**Does not affect the Tier 1 `PROVEN` claim.** `psyche_store` and `psyche_activation` are
 untouched; the paper's engine-determinism sentence is about the store and the spread, and
 `spread_activation` accumulates convergent activation as a commutative sum into a dict per
 target — the value at a node does not depend on arrival order. Only the *aggregation across
-members* in `nous_coalitions` was order-sensitive.
+members* in `psyche_coalitions` was order-sensitive.
 
 > **RETRACTED 2026-07-25 — this paragraph was wrong, and §8 records how it was caught.** The
 > accumulation in `spread_activation` is commutative in exact arithmetic and **is not commutative in
@@ -143,7 +143,7 @@ members* in `nous_coalitions` was order-sensitive.
 > conclusion "does not affect the Tier 1 claim" therefore does not follow from the reason given
 > here; whether the Tier 1 claim survives is an open decision (D-011), not something this document
 > may assert. What remains true is narrower: **the fix in §3 is correct at its own site**, and `0a`
-> (`nous_store`) is not implicated.
+> (`psyche_store`) is not implicated.
 
 **Does affect the Tier 2 mechanism claim** for the workspace competition, for the interval
 during which the suite was reported green on 3.12 while the property did not hold on 3.11.
@@ -201,7 +201,7 @@ ULP-scale asymmetry, the test names it rather than the winner silently flipping.
 independent SPEC-0b2 suite (`tests/test_tester_0b2_adversarial.py`, five interpreters, six hash
 seeds) found it **already present, one layer up**, and reported it as **DEFECT-A**.
 
-**The site.** `src/nous_activation.py:287`:
+**The site.** `src/psyche_activation.py:287`:
 
 ```python
 activation[target] = activation.get(target, 0.0) + transmitted
@@ -209,7 +209,7 @@ activation[target] = activation.get(target, 0.0) + transmitted
 
 a naive sequential float add, whose term order comes from
 `roads_from() -> iter(tuple(self._out[node_id]))` — iteration over a **set of uuid4 hex strings**
-(`src/nous_store.py:444`). Same bug class as this one: an order-dependent float sum feeding a
+(`src/psyche_store.py:444`). Same bug class as this one: an order-dependent float sum feeding a
 comparison. Determinism holds bit-exactly at in-degree ≤ 2 and breaks when **three or more**
 contributions converge on one node.
 
@@ -261,10 +261,10 @@ in this project is a value that depends on which interpreter runs it — which i
 form of the defect, and why SPEC-0c §2.5 converts every one of them.
 
 **(b) An instance survived on the same path, for four weeks.** See the correction in §2:
-`nous_workspace.py` builds the pruned winner's strength with a naive `sum()`, and this
+`psyche_workspace.py` builds the pruned winner's strength with a naive `sum()`, and this
 report's completeness claim missed it. The instructive part is *how* it survived: the
 `Coalition.members` order it inherits comes from `by_basin[src]` — a `Set[str]` of uuid4
-NodeIDs built in `nous_coalitions.py`, not from the store's adjacency index. So brick 0c's
+NodeIDs built in `psyche_coalitions.py`, not from the store's adjacency index. So brick 0c's
 store-ordering fix does not reach it. **Fixing a class at one owner does not fix it at
 another owner**, and a report that says "two sites" without a mechanical check that there
 were only two is an assertion, not a finding. SPEC-0c §2.5.2 records the corresponding

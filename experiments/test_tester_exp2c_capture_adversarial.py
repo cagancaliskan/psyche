@@ -62,10 +62,10 @@ for _p in (_SRC, _HERE):
         sys.path.insert(0, _p)
 
 import exp2c_capture as cap
-import nous_bodysensor as bs
+import psyche_bodysensor as bs
 import pilot_2c_populability as pilot
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_perceive import perceive
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_perceive import perceive
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -494,14 +494,14 @@ def test_realistic_domains_generically_asymmetric_unlike_pilot_mirror():
 
 def test_same_compute_friction_and_bodysensor_by_object_identity():
     section("D1 SAME FRICTION BY IDENTITY: the capture module's compute_friction and "
-            "BodySensor ARE the nous_bodysensor objects (identity, not a re-implementation) — "
+            "BodySensor ARE the psyche_bodysensor objects (identity, not a re-implementation) — "
             "so the trace friction is computed by the SAME code the cycle uses")
     check(cap.compute_friction is bs.compute_friction,
-          "cap.compute_friction IS nous_bodysensor.compute_friction (same object)")
+          "cap.compute_friction IS psyche_bodysensor.compute_friction (same object)")
     check(cap.BodySensor is bs.BodySensor,
-          "cap.BodySensor IS nous_bodysensor.BodySensor (same object)")
+          "cap.BodySensor IS psyche_bodysensor.BodySensor (same object)")
     check(cap.TelemetrySample is bs.TelemetrySample,
-          "cap.TelemetrySample IS nous_bodysensor.TelemetrySample (same object)")
+          "cap.TelemetrySample IS psyche_bodysensor.TelemetrySample (same object)")
     # frictions_from_trace must construct a real BodySensor(simulated=True, trace=...) and
     # call .read() — exactly how the cycle consumes it. Verify structurally.
     src = inspect.getsource(cap.frictions_from_trace)
@@ -734,8 +734,8 @@ def test_built_stores_are_integral_loopclosed():
 
 def _probe(code: str, seed: str) -> str:
     env = dict(os.environ)
-    env["NOUS_SRC"] = _SRC
-    env["NOUS_EXP"] = _HERE
+    env["PSYCHE_SRC"] = _SRC
+    env["PSYCHE_EXP"] = _HERE
     env["PYTHONHASHSEED"] = seed
     out = subprocess.run([sys.executable, "-c", code], env=env,
                          capture_output=True, text=True)
@@ -751,8 +751,8 @@ def test_battery_canonical_hash_byte_identical_across_six_seeds():
             "re-hashed by the tester via the script's serialize_battery.")
     code = (
         "import os,sys\n"
-        "sys.path.insert(0, os.environ['NOUS_SRC'])\n"
-        "sys.path.insert(0, os.environ['NOUS_EXP'])\n"
+        "sys.path.insert(0, os.environ['PSYCHE_SRC'])\n"
+        "sys.path.insert(0, os.environ['PSYCHE_EXP'])\n"
         "import exp2c_capture as cap\n"
         "b = cap.build_realistic_battery(cap.BATTERY_SEED_REALISTIC, cap.PERCEPT_COUNT_REALISTIC)\n"
         "print(cap.sha256_of_canonical(cap.serialize_battery(b)))\n"
@@ -774,8 +774,8 @@ def test_battery_object_fields_byte_identical_across_six_seeds():
             "determinism is in the DATA, not only in a hash that could mask field reordering.")
     code = (
         "import os,sys\n"
-        "sys.path.insert(0, os.environ['NOUS_SRC'])\n"
-        "sys.path.insert(0, os.environ['NOUS_EXP'])\n"
+        "sys.path.insert(0, os.environ['PSYCHE_SRC'])\n"
+        "sys.path.insert(0, os.environ['PSYCHE_EXP'])\n"
         "import exp2c_capture as cap\n"
         "b = cap.build_realistic_battery(cap.BATTERY_SEED_REALISTIC, cap.PERCEPT_COUNT_REALISTIC)\n"
         "rows = [(p.anchor_a_content,p.anchor_b_content,p.domain_size_a,p.domain_size_b,"
@@ -798,10 +798,10 @@ def test_trace_processing_deterministic_across_six_seeds():
             "deterministic; the live CAPTURE is the only non-determinism and is NOT run).")
     code = (
         "import os,sys\n"
-        "sys.path.insert(0, os.environ['NOUS_SRC'])\n"
-        "sys.path.insert(0, os.environ['NOUS_EXP'])\n"
+        "sys.path.insert(0, os.environ['PSYCHE_SRC'])\n"
+        "sys.path.insert(0, os.environ['PSYCHE_EXP'])\n"
         "import exp2c_capture as cap\n"
-        "import nous_bodysensor as bs\n"
+        "import psyche_bodysensor as bs\n"
         "samples=[bs.TelemetrySample(0.0,0.0),bs.TelemetrySample(1.0,0.91),"
         "bs.TelemetrySample(2.3,1.4),bs.TelemetrySample(2.9,1.42),"
         "bs.TelemetrySample(5.0,3.7),bs.TelemetrySample(5.05,5.04)]\n"
@@ -870,18 +870,18 @@ def test_no_graded_or_flip_or_winner_symbol_exposed():
 
 
 def test_does_not_import_competition_or_field_or_coalition_engine():
-    section("G2 BLINDNESS (static imports): the module never imports nous_workspace "
+    section("G2 BLINDNESS (static imports): the module never imports psyche_workspace "
             "(select_winner), and never calls form_coalitions / build_activation_field to "
             "grade. It imports ONLY the permitted §6 surface (store + perceive/think for the "
-            "workload + the SAME nous_bodysensor).")
+            "workload + the SAME psyche_bodysensor).")
     src = inspect.getsource(cap)
-    check("nous_workspace" not in src,
-          "no reference to nous_workspace (the competition/winner readout is not consumed)")
+    check("psyche_workspace" not in src,
+          "no reference to psyche_workspace (the competition/winner readout is not consumed)")
     check("select_winner" not in src, "select_winner appears nowhere")
     check("form_coalitions" not in src, "no coalition formation")
     check("build_activation_field" not in src, "no activation-field construction")
-    check("from nous_bodysensor import" in src,
-          "the module DOES import nous_bodysensor (the permitted §6 telemetry surface)")
+    check("from psyche_bodysensor import" in src,
+          "the module DOES import psyche_bodysensor (the permitted §6 telemetry surface)")
     # parse imports via AST to be sure nothing graded sneaks in
     tree = ast.parse(src)
     imported_modules = set()
@@ -891,14 +891,14 @@ def test_does_not_import_competition_or_field_or_coalition_engine():
         elif isinstance(node, ast.Import):
             for n in node.names:
                 imported_modules.add(n.name)
-    check("nous_workspace" not in imported_modules,
-          f"AST confirms nous_workspace is not imported (imports: {sorted(imported_modules)})")
-    check("nous_coalitions" not in imported_modules,
-          "AST confirms nous_coalitions is not imported")
-    check("nous_field" not in imported_modules,
-          "AST confirms nous_field is not imported")
-    check("nous_activation" not in imported_modules,
-          "AST confirms nous_activation is not imported")
+    check("psyche_workspace" not in imported_modules,
+          f"AST confirms psyche_workspace is not imported (imports: {sorted(imported_modules)})")
+    check("psyche_coalitions" not in imported_modules,
+          "AST confirms psyche_coalitions is not imported")
+    check("psyche_field" not in imported_modules,
+          "AST confirms psyche_field is not imported")
+    check("psyche_activation" not in imported_modules,
+          "AST confirms psyche_activation is not imported")
 
 
 def test_capture_runs_think_only_as_workload_never_reads_result():
@@ -959,8 +959,8 @@ def test_main_not_triggered_by_import_and_writes_nothing_on_import():
     percepts_path = cap.PERCEPTS_PATH
     code = (
         "import os,sys\n"
-        "sys.path.insert(0, os.environ['NOUS_SRC'])\n"
-        "sys.path.insert(0, os.environ['NOUS_EXP'])\n"
+        "sys.path.insert(0, os.environ['PSYCHE_SRC'])\n"
+        "sys.path.insert(0, os.environ['PSYCHE_EXP'])\n"
         "tp = os.environ['TRACE_PATH']; pp = os.environ['PERCEPTS_PATH']\n"
         "before = (os.path.exists(tp), os.path.exists(pp))\n"
         "import exp2c_capture as cap\n"
@@ -968,8 +968,8 @@ def test_main_not_triggered_by_import_and_writes_nothing_on_import():
         "print(repr((before, after)))\n"
     )
     env = dict(os.environ)
-    env["NOUS_SRC"] = _SRC
-    env["NOUS_EXP"] = _HERE
+    env["PSYCHE_SRC"] = _SRC
+    env["PSYCHE_EXP"] = _HERE
     env["TRACE_PATH"] = trace_path
     env["PERCEPTS_PATH"] = percepts_path
     env["PYTHONHASHSEED"] = "0"

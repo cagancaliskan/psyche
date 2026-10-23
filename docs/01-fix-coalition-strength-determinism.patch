@@ -1,5 +1,5 @@
---- /tmp/nous_coalitions.py.bak	2026-07-25 15:27:16.573203789 +0000
-+++ src/nous_coalitions.py	2026-07-25 15:27:16.590779885 +0000
+--- /tmp/psyche_coalitions.py.bak	2026-07-25 15:27:16.573203789 +0000
++++ src/psyche_coalitions.py	2026-07-25 15:27:16.590779885 +0000
 @@ -67,6 +67,7 @@
  from __future__ import annotations
  
@@ -7,7 +7,7 @@
 +import math
  from typing import Dict, List, Set, Optional
  
- from nous_store import SubstrateStore
+ from psyche_store import SubstrateStore
 @@ -222,7 +223,7 @@
  
          members = {n: activation[n] for n in component}

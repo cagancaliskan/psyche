@@ -86,7 +86,7 @@ had never been run on an interpreter which exposes it.
 **Options:** (A) `math.fsum` — exactly rounded, order-independent by construction.
 (B) sort members by `creation_seq` before summing — works, but leaves plain `sum`
 associativity-sensitive to future refactors.
-**Decision:** (A). Two lines, both in `src/nous_coalitions.py`.
+**Decision:** (A). Two lines, both in `src/psyche_coalitions.py`.
 **Evidence:** on CPython 3.11 at a **fixed** `PYTHONHASHSEED=0`, `test_T6b` returned two
 different winners across 30 runs (22 / 8). The 1-ULP difference in `_density_score` resolved
 the comparison before the `min creation_seq` tie-break could run, making the tie-break
@@ -193,9 +193,9 @@ failures, identical on CPython 3.10.17 / 3.11.15 / 3.12.4 / 3.13.14 / 3.14.4, ha
 only for finite sigma.** The overlay's own core arithmetic is sound. Three defects:
 
 - **DEFECT-A (N-2) — INHERITED FROM 0b, not caused and not fixed by 0b2.** Convergent accumulation
-  (`activation[target] = activation.get(target, 0.0) + transmitted`, `src/nous_activation.py:287`)
+  (`activation[target] = activation.get(target, 0.0) + transmitted`, `src/psyche_activation.py:287`)
   is a naive sequential float add whose term order comes from iterating a set of uuid4 ids
-  (`src/nous_store.py:444`). At library defaults, on a 5-node graph built by `traverse()` alone,
+  (`src/psyche_store.py:444`). At library defaults, on a 5-node graph built by `traverse()` alone,
   **48 fresh processes produced two distinct results** (0.10145973529004966 / 0.10145973529004967).
   Holds bit-exactly at in-degree <= 2; breaks at in-degree >= 3. Reproduces with the overlay off.
 - **DEFECT-B (N-5) — INTRODUCED BY 0b2.** The overlay reads each road twice per expansion, and lazy
@@ -283,8 +283,8 @@ with nothing but `traverse()`. That is not an edge case; it is the most ordinary
 The claim as written is false, so the label comes off. Rule 1 does not have an exception for
 labels we are attached to.
 
-**0a is demoted too, and that is deliberate.** The defect site is in `nous_activation`, but the
-enabling condition is `nous_store`'s `_out` being an unordered set of uuid4 ids, exposed through
+**0a is demoted too, and that is deliberate.** The defect site is in `psyche_activation`, but the
+enabling condition is `psyche_store`'s `_out` being an unordered set of uuid4 ids, exposed through
 `roads_from()`. Keeping 0a at PROVEN would rest on the fact that its own suite happened not to
 check the thing that broke — which is precisely the "passes on a friendly input" failure this
 project exists to prevent. Integrity and purity are unaffected and remain verified; only the
@@ -394,7 +394,7 @@ writing, worked around it locally, and the substrate carried `PROVEN` for a mont
 the engine went unfixed. A control that depends on a future reader honouring a note has been tried
 here and failed. Do not buy it twice.
 
-**Ground 3 — the reordering change is already planned, in writing.** `nous_activation.py`'s design
+**Ground 3 — the reordering change is already planned, in writing.** `psyche_activation.py`'s design
 note contemplates a future locality prune that expands "only the top-K most active nodes" within a
 hop layer. Top-K within a layer reorders iteration, which is precisely the condition ground 2 says
 will not be honoured.
@@ -435,9 +435,9 @@ re-validation round.
 
 **Registered:** `0c` is now in the ledger and the roadmap as `DESIGNED`. **SPEC-0c §2.5 is a NEW
 open call** raised while verifying ground 4: three naive `sum()` calls over floats survive in
-`src/` — `nous_workspace.py:428` (the pruned winner's strength, on the 1d-i winner path, which
-BUG-0b1's "both sites" missed — there were three), `nous_workspace.py:235`, and
-`nous_store.py:161` (`Road.valence`, feeding a categorical closure decision). Recommendation is to
+`src/` — `psyche_workspace.py:428` (the pruned winner's strength, on the 1d-i winner path, which
+BUG-0b1's "both sites" missed — there were three), `psyche_workspace.py:235`, and
+`psyche_store.py:161` (`Road.valence`, feeding a categorical closure decision). Recommendation is to
 fold all three into 0c; O-16 (cross-interpreter bit-identity) is unachievable while any remain.
 
 ## D-014 · 2026-07-26 · All three naive float sums convert; BUG-0b1's report is corrected; the -0.0 exception is accepted
@@ -449,7 +449,7 @@ opportunity but a **live instance of the defect BUG-0b1 was reported to have clo
 
 ### §2.5 — all three sites convert to `math.fsum`. This is not hardening.
 
-`src/nous_workspace.py:426` builds the **pruned winner** with `strength=sum(pruned_members.values())`.
+`src/psyche_workspace.py:426` builds the **pruned winner** with `strength=sum(pruned_members.values())`.
 Reproduced on the **post-0c working tree** — store already ordered, activation accumulator already
 using `fsum` — at a **fixed** `PYTHONHASHSEED=0`, 30 fresh processes:
 
@@ -461,7 +461,7 @@ winner membership: 1 distinct on both — identity is stable
 
 Three things this establishes. **(i) The store-ordering fix cannot reach it:** `Coalition.members`
 inherits order from `by_basin[src]`, a `Dict[str, Set[str]]` of uuid4 NodeIDs built in
-`nous_coalitions.py:297` — a set some *other* module constructs. Fixing a class at one owner does
+`psyche_coalitions.py:297` — a set some *other* module constructs. Fixing a class at one owner does
 not fix it at another owner. **(ii) The 3.10-vs-3.14 split is the Neumaier fingerprint** from D-013
 ground 4: invisible on the newer interpreter, reproducible on the older one — BUG-0b1's exact
 signature, recurring at the site BUG-0b1 missed. **(iii) Winner identity is stable today, which is
@@ -469,16 +469,16 @@ exactly how BUG-0b1 hid** until a graph arrived where it flipped one, 8 times in
 `Coalition.strength` is what `_competition_key` compares, so this is the competition path.
 
 Sites 1 and 2 convert on D-013 ground 4's reasoning rather than on a reproduction:
-`nous_workspace.py:235` is `total_strength_after()`, which **by its own docstring** is "the bounded
+`psyche_workspace.py:235` is `total_strength_after()`, which **by its own docstring** is "the bounded
 aggregate the no-divergence test watches converge across cycles" — a version-dependent number
-feeding an assertion; `nous_store.py:168` is `Road.valence`, feeding a categorical closure decision
+feeding an assertion; `psyche_store.py:168` is `Road.valence`, feeding a categorical closure decision
 against −0.75 / −0.30.
 
 ### Two consequences recorded, both larger than the fix
 
 **(a) BUG-0b1's report is wrong and is corrected in place, dated.** It states the fix was
-"`src/nous_coalitions.py`, two sites." There are **three** `Coalition(` construction sites in
-`src/`; the third, in `nous_workspace.py`, was never converted. The bug was reported as closed while
+"`src/psyche_coalitions.py`, two sites." There are **three** `Coalition(` construction sites in
+`src/`; the third, in `psyche_workspace.py`, was never converted. The bug was reported as closed while
 an instance of it remained on the same path. Corrected in `docs/BUG-0b1-*.md` §2 (an inline
 correction block) and §9 (a new postscript that also explains, for the first time, why the bug was
 invisible on 3.12 — the Neumaier change). The diagnosis, mechanism and applied fix were all correct;
@@ -517,7 +517,7 @@ becomes unnecessary after 0c but removing experiment code is not this brick's bu
 
 **Cost:** three one-line conversions inside a re-validation 0c already performs, plus one new
 invariant (O-4b) and one new reproduction case. O-15 and O-16 become unconditional. The
-`nous_workspace.py:426` conversion changes `Coalition.strength` values by ULPs on the competition
+`psyche_workspace.py:426` conversion changes `Coalition.strength` values by ULPs on the competition
 path, so 1b, 1d-i and 1d-ii re-verification — already required by §2.4 — now has a specific place to
 look.
 
@@ -556,7 +556,7 @@ general than σ", and D-014's refusal of `energy` validation was argued about *n
 *non-finite* energy. Whichever is chosen, **O-12 cannot stand as written**, because it currently
 asserts something false.
 
-**OPEN CALL 2 — the fourth order-dependent aggregate.** SPEC-0c §2.7. `src/nous_field.py:131` and
+**OPEN CALL 2 — the fourth order-dependent aggregate.** SPEC-0c §2.7. `src/psyche_field.py:131` and
 `:124` accumulate with `+=` in source order — DEFECT-A's exact shape at a site 0c never touched
 (§2.5 enumerated builtin `sum()` sites; these are `+=`). Reproduced: `field.total[m1]` takes two
 distinct bit patterns over 3! source orders, and it reaches `Coalition.strength`. **Cross-process
@@ -604,7 +604,7 @@ risk; it is the *visible instance* of a general fact: `contributions = {seed: [e
 `transmitted`, which only ever sees downstream values.
 
 A NaN at the seed therefore lands in the **returned** activation map. That map is consumed by
-`nous_field`, accumulated into basins, and reaches `Coalition.strength` and thence
+`psyche_field`, accumulated into basins, and reaches `Coalition.strength` and thence
 `_competition_key` — where every NaN comparison is False and the ordering silently degrades.
 That is DEFECT-C's failure mode one input earlier, and §4 already judged this hazard "more
 general than σ". Validating σ for finiteness while leaving `energy` unvalidated is the same
@@ -627,9 +627,9 @@ reader correctly identifies it as dead code and removes the belt while keeping t
 
 The distinction is in kind, not degree, and it is the one that matters:
 
-- §2.5's site 3 (`nous_workspace.py:428`) **reproduced nondeterminism across processes**. It
+- §2.5's site 3 (`psyche_workspace.py:428`) **reproduced nondeterminism across processes**. It
   falsified 0c's core claim, so it was mandatory scope.
-- `nous_field.py:131` is **order-pinned** — source order is program order — so it falsifies
+- `psyche_field.py:131` is **order-pinned** — source order is program order — so it falsifies
   nothing 0c claims. What is missing there is the weaker property, order-*independence*.
 
 D-013 ground 1 does apply to it, but as a *new instance*, not as a defect in 0c's delivery. A
@@ -649,11 +649,11 @@ brick that keeps growing never closes, and 0c is 17/18 done with an uncommitted 
 ### 0d's deliverable is a DETECTOR, not a fifth patch.
 
 "This is the third time this project has met this shape" is the most important sentence in the
-0c verdict. Three encounters — `nous_coalitions` (BUG-0b1), `nous_activation` +
-`nous_workspace:428` + two others (§2.5), now `nous_field:131` — and every one was found by a
+0c verdict. Three encounters — `psyche_coalitions` (BUG-0b1), `psyche_activation` +
+`psyche_workspace:428` + two others (§2.5), now `psyche_field:131` — and every one was found by a
 person looking, never by a sweep.
 
-The evidence that symptom-hunting cannot close this: **`nous_field.py:124` (`merged_flow`) has
+The evidence that symptom-hunting cannot close this: **`psyche_field.py:124` (`merged_flow`) has
 the identical shape and did NOT reproduce variation** on a four-source, four-way-convergence
 probe. Shape present, symptom absent on that input. That is the friendly-input trap in its
 purest form, and no amount of further reproduction hunting answers it.
@@ -713,13 +713,13 @@ not sign.
 dead code" is *enforced* rather than requested. (ii) A **loop-closed third route** into the guard
 through `think(body_sensor=…)`: a primed replay sensor yields NaN friction, `modulated_decay_per_hop`
 returns NaN because neither clamp fires on NaN, and the guard catches it three modules downstream.
-(iii) A **bound** on FINDING 1's scope: `nous_activation`'s `flow[rid] = flow.get(rid, 0.0) + …` has
+(iii) A **bound** on FINDING 1's scope: `psyche_activation`'s `flow[rid] = flow.get(rid, 0.0) + …` has
 the same shape but is *structurally single-term* — over 574 spreads on 60 hostile graphs no road was
 read twice per spread — so the field-merge finding must not be read as wider than it is.
 
 **Prose reconciliation (architect-pm).** The totals moved 21/1,455 → 22/1,727, which staled 39
 figures outside `docs/paper/`. All are reconciled: `README.md`, `docs/REPORT.md` (its per-suite
-table rebuilt from the ledger rather than patched), `docs/nous_roadmap.md`, `docs/outreach/*`.
+table rebuilt from the ledger rather than patched), `docs/psyche_roadmap.md`, `docs/outreach/*`.
 **`ledger_check` C1/C3/C4/C5 are green and C2 now reports 16 findings, every one of them in
 `docs/paper/*.tex`** — the HELD paper (D-012), where red is correct signal.
 
@@ -760,8 +760,8 @@ agent's to delete.
 
 All three conditions I set are met: O-12 closed in code, the 0c suite registered (C5 green),
 and a complete five-interpreter capture taken. Independently confirmed: Phase 0's own modules
-carry no naive float aggregation. What remains in `nous_store` is integer counters and the
-clock's sequential `_t += dt`; `valence` is converted; `nous_activation`'s accumulator is
+carry no naive float aggregation. What remains in `psyche_store` is integer counters and the
+clock's sequential `_t += dt`; `valence` is converted; `psyche_activation`'s accumulator is
 list-plus-fsum.
 
 **This PROVEN is better than the one it replaces.** The old label rested on sweeping
@@ -769,7 +769,7 @@ list-plus-fsum.
 rests on there being no order dependence left to perturb, confirmed across five CPython minor
 versions. The difference is the whole of what 0b1, 0c and D-012 bought.
 
-**`nous_activation`'s flow accumulator stays naive and is PROVED structurally single-term**
+**`psyche_activation`'s flow accumulator stays naive and is PROVED structurally single-term**
 rather than converted. That is the correct treatment and the better one: a bound is stronger
 than a conversion, because it says why the site cannot break rather than making it not matter.
 It goes into 0d's registry as the model entry.
@@ -895,7 +895,7 @@ well-formed result seeded on a road with no error; at a larger budget `NotFound`
 inside the expansion rather than at the boundary. Verified identical on the pre-overlay engine —
 **pre-existing, not 0b2's** — and unreachable from any internal caller. Same class as O-12 and
 DEFECT-C; **recommend folding into 0c-ii**, whose scope is exactly that class. (ii) The overlay's
-own arithmetic has **no builder-side assertion** — `tests/test_nous_activation.py` has one test
+own arithmetic has **no builder-side assertion** — `tests/test_psyche_activation.py` has one test
 named for it, and everything else lives in tester-owned files. Not a defect and not a reason to
 doubt the verdict, but the overlay would have no coverage if those suites were removed. Worth a
 builder pass eventually.
@@ -931,7 +931,7 @@ re-validation now to buy fidelity buys a claim this project is constitutionally 
 making. 2f's deliverable is a mechanism — temporal credit assignment — and C delivers it.
 
 Second ground, which makes C idiomatic rather than expedient: **computing from timestamps
-instead of storing is the substrate's own existing move.** `nous_store` already does exactly
+instead of storing is the substrate's own existing move.** `psyche_store` already does exactly
 this with lazy decay. C is consistent with the design philosophy, not a shortcut away from it.
 
 And the instinct behind it is correct and worth recording: *Phase 0 was restored four commits
@@ -989,7 +989,7 @@ asserted only the neutral case plus a fan probe, so all evidence for its arithme
 tester-owned files. The practical risk is low — the tester's suite is in the canonical runner —
 but it is a **claim-accuracy** problem: the paper says the builder implements test-first, and for
 this mechanism that is not true. The builder adds arithmetic assertions to
-`tests/test_nous_activation.py`, and the builder's self-audit gains a seventh item: *does a
+`tests/test_psyche_activation.py`, and the builder's self-audit gains a seventh item: *does a
 builder-side assertion exist for the arithmetic you just wrote, or does all evidence for it live
 in tester files?*
 
@@ -1019,7 +1019,7 @@ pre-fix commits shows **all three manual hunts would have been caught on the day
 written**. That is the strongest single piece of evidence 0d could have produced, and nobody
 writing the scanner chose what is in those commits.
 
-**DEFECT 0d-1, and it is mine.** The registry entry for `nous_field.py:124` read *"shape present,
+**DEFECT 0d-1, and it is mine.** The registry entry for `psyche_field.py:124` read *"shape present,
 symptom unreproduced"*, and **SPEC-0d §3.3 presented that pair as "the entire case for a
 detector."** The tester ran the entry's own falsifier and it fires: 2 distinct bit patterns over
 4! source orders, on 40 of 40 randomly generated convergent stores. Verified independently
@@ -1305,12 +1305,12 @@ rather than recording it. Each should gain its reason the next time it is touche
 Reproduced independently rather than taken on report:
 
 ```
-"Nous is conscious."                -> 1 finding
-"Nous is a mind."                   -> 1 finding
-"Nous is a conscious mind."         -> 0 findings   EVADES
-"Nous is clearly conscious."        -> 0 findings   EVADES
-"Nous is, in every sense, a mind."  -> 0 findings   EVADES
-"Nous is undeniably sentient."      -> 0 findings   EVADES   (not in the reported table)
+"Psyche is conscious."                -> 1 finding
+"Psyche is a mind."                   -> 1 finding
+"Psyche is a conscious mind."         -> 0 findings   EVADES
+"Psyche is clearly conscious."        -> 0 findings   EVADES
+"Psyche is, in every sense, a mind."  -> 0 findings   EVADES
+"Psyche is undeniably sentient."      -> 0 findings   EVADES   (not in the reported table)
 "This is an AGI."                   -> 1 finding
 "This is, by any measure, an AGI."  -> 0 findings   EVADES   (not in the reported table)
 ```
@@ -1758,3 +1758,55 @@ author is exactly who a check must still bind — and the same week produced a f
 spec (D-021), an invented justification in a shipped module (2f-4), and two unverified claims
 in my own briefs. **The instruction to check §2's premise before building on it came from the
 same recognition, and it found a real refinement.**
+
+---
+
+## D-030 — The project is Psyche everywhere; the name Nous is retired
+
+**Date:** 2026-10-23 · **Direction:** Cagan · **Lane:** none (a mechanical rename across every
+lane, no behaviour changed) · **Status:** done
+
+### 1. The decision
+
+**One name: Psyche.** This supersedes the earlier split in which the paper said Psyche and the
+repository, the code and every file stayed Nous (the CLAUDE.md branding line and the paper's
+"working name" footnote). Modules are now `src/psyche_*.py`, suites `tests/test_psyche_*.py`,
+the roadmap `docs/psyche_roadmap.md`, the design notes `docs/design/psyche_*.md`, and the
+repository is `github.com/cagancaliskan/psyche`. The rename is whole-word, so `exogenous`,
+`synchronous` and the like are untouched. The social cards carry the Greek mark ψυχή in place of
+νοῦς, and the etymology line in `psyche_project_evaluation.md` now describes ψυχή.
+
+### 2. What keeps the old name, on purpose
+
+A record whose value is that it was not edited afterwards keeps the name it was made under.
+
+- **`docs/report/`**, byte for byte, file names included. It is the source of the record
+  published under DOI 10.5281/zenodo.20474613, and D-012 makes it immutable.
+- **The archived title** "Nous: Adversarial Testing of a Dependency-Free Memory-and-Activation
+  Substrate for Cognitive Architectures", wherever it is cited next to that DOI
+  (`CITATION.cff`, the README citation, the title of `docs/REPORT.md`). It is the title on the
+  record. A new Zenodo version under the Psyche name would be the way to change it.
+- **`docs/experiments/`**: frozen pre-registrations.
+- **`experiments/results/`**: captured run logs and hash-pinned data. The renaming pass found
+  that `exp1c_external_partition.tsv` contains the English word "nous" as a SWOW row; its
+  SHA-256 is frozen in EXP-1c §3.1, so a blind replace would have broken a pre-registered hash.
+- **Tests that read old commits.** Those trees contain `nous_*` files, so the 0b2 oracle and
+  the 0b2 re-verify engine are found at `src/nous_activation.py`, with `nous_store` aliased to
+  today's `psyche_store` (which it was, before the rename). The 0d F-1 keys name the pre-fix
+  files as they were, and the 2f I-1 probe imports either naming era.
+- **Git history and commit messages**, which are not rewritten.
+
+### 3. How it was checked
+
+The renamed tree was run against a pre-rename baseline, suite by suite, and the per-suite
+assertion counts are identical. Counts alone were not trusted: the first post-rename run kept
+every total while three git-recovered oracles had quietly degraded to "git unavailable" notes,
+because the rename had pointed their history lookups at paths that have no history. A word-level
+diff of the two outputs, with the names normalised, caught it. After the fix the oracles run
+again (2728 comparisons against the pre-change engine, 0 mismatches, as before), and the diff
+shows nothing beyond uuid road ids and the census digest, which hashes module paths.
+
+**Not regenerated here:** the paper PDFs (`PSYCHE_1ST_PAPER.pdf`, `psyche_ieee.pdf`) still print
+the removed "working name" footnote until they are recompiled on Overleaf; no TeX toolchain is on
+this machine. Ten of the twelve Mermaid PNGs mention the old name only in a source comment, so
+they keep their original render.

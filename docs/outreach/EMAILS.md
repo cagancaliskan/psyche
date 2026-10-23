@@ -1,7 +1,7 @@
 # Outreach email templates
 
-Short, honest templates for sharing Nous. Replace every `[BRACKETED]` field. The framing is
-deliberately methodology-first and non-salesy: Nous is an engineering prototype and a
+Short, honest templates for sharing Psyche. Replace every `[BRACKETED]` field. The framing is
+deliberately methodology-first and non-salesy: Psyche is an engineering prototype and a
 software-testing-methodology case study, never a mind, a consciousness, an AGI, or a validated
 cognitive model. Numbers are taken from `tools/ledger.json`, which is the single source of truth and is
 generated from `docs/TEST_OUTPUT.txt` (currently **2,594 assertions across 26 suites, all
@@ -16,7 +16,7 @@ sending anything. Do not add cognitive claims beyond what the technical report s
 
 Dear Professor [LASTNAME],
 
-I am [YOUR NAME], a [YEAR/PROGRAM] student at [INSTITUTION]. I built Nous, a dependency-free
+I am [YOUR NAME], a [YEAR/PROGRAM] student at [INSTITUTION]. I built Psyche, a dependency-free
 Python prototype of a graph memory and spreading-activation substrate, written test-first as a
 software-testing-methodology case study.
 
@@ -41,7 +41,7 @@ Thank you for your time,
 
 Dear Professor [LASTNAME],
 
-I am [YOUR NAME], a [YEAR/PROGRAM] student at [INSTITUTION]. I built Nous, a dependency-free
+I am [YOUR NAME], a [YEAR/PROGRAM] student at [INSTITUTION]. I built Psyche, a dependency-free
 memory-and-activation substrate that is proven for determinism, integrity, and purity at the
 substrate level; the cognitive layers above are exploratory, and their meaningfulness is not yet
 established.
@@ -79,7 +79,7 @@ Thank you for considering it,
 
 ### Abstract (paste into the submission form, ~150 words)
 
-Nous is a dependency-free Python prototype of a memory-and-activation substrate for a cognitive
+Psyche is a dependency-free Python prototype of a memory-and-activation substrate for a cognitive
 architecture, presented as a software-testing-methodology case study. Four layers were built
 test-first: a graph substrate store, a deterministic spreading-activation engine, a multi-source
 field, and an end-to-end perceive-then-think slice. The lower two layers are verified for

@@ -33,9 +33,9 @@ import random
 import subprocess
 import textwrap
 
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_perceive import perceive
-from nous_source_clustering import cluster_sources
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_perceive import perceive
+from psyche_source_clustering import cluster_sources
 
 _passed = 0
 _failed = 0
@@ -192,9 +192,9 @@ def test_mutation_battery_cross_process_determinism():
     driver = "WORDS = " + repr(_WORDS) + "\n" + textwrap.dedent('''
         import random
         import struct
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import perceive
-        from nous_source_clustering import cluster_sources
+        from psyche_store import SubstrateStore, Clock, NodeType
+        from psyche_perceive import perceive
+        from psyche_source_clustering import cluster_sources
 
         def build(seed):
             rng = random.Random(seed)

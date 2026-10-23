@@ -1,13 +1,13 @@
 ---
 name: psyche-orient
-description: Orient at the start of any Psyche/Nous session. Loads the LIVE project state — git status, ledger facts, brick statuses, open decisions, and the current meaning-bar position — so you reason about what is true now rather than what a document remembers. Run this before planning, building, testing, or validating anything in this repository.
+description: Orient at the start of any Psyche session. Loads the LIVE project state — git status, ledger facts, brick statuses, open decisions, and the current meaning-bar position — so you reason about what is true now rather than what a document remembers. Run this before planning, building, testing, or validating anything in this repository.
 disable-model-invocation: false
 allowed-tools: Read, Glob, Grep, Bash
 ---
 
 # Orient — where this project actually is, right now
 
-You are working on **Psyche** (paper name) / **Nous** (codebase). Before doing anything
+You are working on **Psyche** (paper and codebase). Before doing anything
 else, absorb the live state below. It is generated at load time, so it cannot be stale the
 way a document can.
 
@@ -67,7 +67,7 @@ PY
 
 | Task | Read |
 |---|---|
-| Planning / sequencing | `CLAUDE.md`, `docs/nous_roadmap.md`, `DECISIONS.md` |
+| Planning / sequencing | `CLAUDE.md`, `docs/psyche_roadmap.md`, `DECISIONS.md` |
 | Writing code | `CLAUDE.md`, the relevant `docs/specs/SPEC-*.md`, the module and its suite |
 | Testing | the module under test, the builder's suite, `docs/specs/SPEC-*.md` §invariants |
 | An experiment / any cognitive claim | `docs/specs/PAPER_CLAIM_INVENTORY.md`, then `/psyche-prereg` |

@@ -36,8 +36,8 @@ if _HERE not in sys.path:
     sys.path.insert(0, _HERE)
 
 from harness import build_graph_from_spec, read_targets, retrieval_strength, SRC_DIR
-from nous_perceive import think
-from nous_activation import DEFAULT_DECAY_PER_HOP
+from psyche_perceive import think
+from psyche_activation import DEFAULT_DECAY_PER_HOP
 import priming_instrument as PI
 
 
@@ -447,8 +447,8 @@ def test_known_limitation_no_restore_leaks():
 
 _DET_PROBE = r'''
 import os, sys
-sys.path.insert(0, os.environ["NOUS_SRC"])
-sys.path.insert(0, os.environ["NOUS_EXP"])
+sys.path.insert(0, os.environ["PSYCHE_SRC"])
+sys.path.insert(0, os.environ["PSYCHE_EXP"])
 from harness import build_graph_from_spec, read_targets
 import priming_instrument as PI
 
@@ -486,8 +486,8 @@ for lab, t in zip(labels, T):
 
 def _det_probe(seed: str) -> str:
     env = dict(os.environ)
-    env["NOUS_SRC"] = SRC_DIR
-    env["NOUS_EXP"] = _HERE
+    env["PSYCHE_SRC"] = SRC_DIR
+    env["PSYCHE_EXP"] = _HERE
     env["PYTHONHASHSEED"] = seed
     out = subprocess.run([sys.executable, "-c", _DET_PROBE], env=env,
                          capture_output=True, text=True)

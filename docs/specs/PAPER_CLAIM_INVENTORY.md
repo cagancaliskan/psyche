@@ -1,4 +1,4 @@
-# PAPER CLAIM INVENTORY — Nous (experience-report paper)
+# PAPER CLAIM INVENTORY — Psyche (experience-report paper)
 
 **Status:** **LOCKED honesty contract as of 2026-06-21.** PM-authored reference artifact. This is **not** the
 paper. It is the paper's **honesty contract**: *if a claim is not in Section 1 with evidence and an assurance
@@ -6,12 +6,12 @@ tier, it may not appear in the paper.* Human decisions folded in: **D1 (Phase 0 
 phrasing) — done**; **D4 (.claude tracking) — done**; **D3 (citations) — done** (citation-verification pass
 completed 2026-06-21; freeze lifted; all 9 priority references independently confirmed at source — see Section 5).
 
-**Authored by:** architect-pm · **Date:** 2026-06-21 · **Against:** `CLAUDE.md`, `docs/nous_roadmap.md`,
+**Authored by:** architect-pm · **Date:** 2026-06-21 · **Against:** `CLAUDE.md`, `docs/psyche_roadmap.md`,
 `docs/METHODOLOGY.md`, all `docs/specs/**`, all `docs/experiments/**`, `docs/TEST_OUTPUT.txt`, and `git log`.
 
 **Paper frame (decided, not re-litigated here):** a software-engineering / methodology **experience report**.
 The central contribution is the **verification methodology** (four-agent build/break-mechanism/break-meaning/plan
-separation; loop-closure; adversarial + property-based testing; pre-registration; anti-circularity gates). Nous
+separation; loop-closure; adversarial + property-based testing; pre-registration; anti-circularity gates). Psyche
 is the **case study**. The three structurally-distinct meaning-bar NOT-YETs are the **empirical evidence the
 methodology works** — it caught false-meaning claims before any wasted graded run.
 
@@ -39,17 +39,17 @@ count is not in that file, it is flagged, not invented.
 > suite total, but does **not** print a single "1,372" line — the total is the arithmetic sum, confirmed.)
 
 **P0-1. The substrate store is deterministic, integrity-preserving, and pure.** — **PROVEN**
-The graph store (`src/nous_store.py`) splits decay into a pure view and a persisting write; reads never mutate
+The graph store (`src/psyche_store.py`) splits decay into a pure view and a persisting write; reads never mutate
 stored state; closure is sticky (time + repeated reads do not reopen a closed road); deletion leaves no dangling
 index entries; the integrity scan passes on healthy and adversarial graphs.
-- Evidence: `tests/test_nous_store.py` — **45 passed, 0 failed** (TEST_OUTPUT.txt). Named properties include
+- Evidence: `tests/test_psyche_store.py` — **45 passed, 0 failed** (TEST_OUTPUT.txt). Named properties include
   "reads do not mutate stored state," "lazy decay … stored state untouched," "closure is sticky," "deletion is
   complete: no dangling index entries; integrity holds," "integrity scan passes on a healthy graph."
 
 **P0-2. The spreading-activation engine is deterministic across process hash seeds, and pure.** — **PROVEN**
 Bounded single-expansion, hop-layered, per-layer frozen values; convergence sums without double-counting; a
 cycle terminates; reads are pure.
-- Evidence: `tests/test_nous_activation.py` — **35 passed, 0 failed** (TEST_OUTPUT.txt). Cross-process
+- Evidence: `tests/test_psyche_activation.py` — **35 passed, 0 failed** (TEST_OUTPUT.txt). Cross-process
   determinism is verified in fresh interpreters under **5 PYTHONHASHSEED values: `{0,1,3,7,42}`**
   (`test_determinism_with_same_hop_edge_adversarial`, confirmed in the test source). Named properties include
   "post-convergence activation is DETERMINISTIC, not order-dependent," "spreading activation mutates NOTHING in
@@ -69,14 +69,14 @@ cross-process claim — but the *number of seeds is not uniform.*** — **PROVEN
   use 8). The paper says **"across randomized process hash seeds (5–8 per suite, in fresh interpreters)"** (the
   locked wording above) rather than assert one fixed number everywhere.
 - Evidence: the four determinism tests named in `docs/METHODOLOGY.md` and confirmed in the test sources
-  (`tests/test_nous_activation.py`, `tests/test_nous_coalitions.py`, `tests/test_nous_field.py`,
-  `tests/test_nous_perceive.py`).
+  (`tests/test_psyche_activation.py`, `tests/test_psyche_coalitions.py`, `tests/test_psyche_field.py`,
+  `tests/test_psyche_perceive.py`).
 
 <!-- ledger:allow-count -->
 > **RESOLVED (human decision, 2026-06-21) — Phase 0 scope vs. roadmap "Done means" line.** The roadmap's Phase 0
-> "Done means" line (`docs/nous_roadmap.md` line 65) reads: *"130 assertions, 56 test functions, five suites, all
+> "Done means" line (`docs/psyche_roadmap.md` line 65) reads: *"130 assertions, 56 test functions, five suites, all
 > passing."* The **current** TEST_OUTPUT.txt has no "five suites / 130 assertions" Phase-0 grouping; the two
-> indisputably Phase-0 suites (`test_nous_store.py` = 45, `test_nous_activation.py` = 35) sum to 80.
+> indisputably Phase-0 suites (`test_psyche_store.py` = 45, `test_psyche_activation.py` = 35) sum to 80.
 > **Decision:** the **present-day canonical Phase 0 figure is store (45) + activation (35) = 80 assertions in the
 > canonical run.** The "130 assertions / 56 test functions / 5 suites" figure may be cited **only** as an
 > explicitly-labelled **historical snapshot from Phase 0's completion moment** — consistent with how the roadmap
@@ -102,7 +102,7 @@ perceived sources through the live loop.** — **MECHANISM-VERIFIED**
   group and (b) no perceived source strands as a singleton; **hand-placed groupings fail the property** (so it is
   not trivially true); scale-invariance; cross-process determinism on randomly-generated hostile graphs; purity;
   integrity unchanged before/after.
-- Evidence: builder suite `tests/test_nous_source_clustering.py` — **49 passed, 0 failed**; tester suite
+- Evidence: builder suite `tests/test_psyche_source_clustering.py` — **49 passed, 0 failed**; tester suite
   `tests/test_tester_1c_adversarial.py` — **73 passed, 0 failed**; tester mutation battery
   `tests/test_tester_1c_mutation_battery.py` — **5 passed, 0 failed** (TEST_OUTPUT.txt). Spec:
   `docs/specs/SPEC-1c-source-clustering.md`. Commit `e4169f9`.
@@ -117,7 +117,7 @@ the bridged, unperceived domain — through the live loop, as a pure read.** —
   anti-overcorrection (a *named* domain is never pruned); the flip **generalizes on a second, independently-built
   isomorphic-but-relabelled graph** (not tuned to coffee/work); deterministic across 6 hash seeds; selection is a
   pure read.
-- Evidence: builder suite `tests/test_nous_workspace.py` — **83 passed, 0 failed**; tester suite
+- Evidence: builder suite `tests/test_psyche_workspace.py` — **83 passed, 0 failed**; tester suite
   `tests/test_tester_1d_i_adversarial.py` — **107 passed, 0 failed** (TEST_OUTPUT.txt). Spec:
   `docs/specs/SPEC-1d-workspace-broadcast.md`. Commit `2fd878b`.
 - Honest known-limitation (shipped as an asserted-negative, not hidden): the realized rule is a **parameter-free
@@ -137,7 +137,7 @@ ways (no divergence; no lock-in).** — **MECHANISM-VERIFIED**
   on a hostile bridged graph, A verified dominant immediately before the switch; mirror test; freeze probe;
   close-competition differential control); deterministic + integrity-preserving under the write across 6 hash
   seeds.
-- Evidence: builder suite `tests/test_nous_workspace_broadcast.py` — **63 passed, 0 failed**; tester suite
+- Evidence: builder suite `tests/test_psyche_workspace_broadcast.py` — **63 passed, 0 failed**; tester suite
   `tests/test_tester_1d_ii_adversarial.py` — **110 passed, 0 failed** (TEST_OUTPUT.txt). Spec:
   `docs/specs/SPEC-1d-workspace-broadcast.md`. Commit `e4df7df`.
 - Explicit non-claim: closing an information loop with bounded feedback is **not** priming, awareness, or a
@@ -146,7 +146,7 @@ ways (no divergence; no lock-in).** — **MECHANISM-VERIFIED**
 **M-4. The cognitive cycle closes end-to-end as a mechanism.** — **MECHANISM-VERIFIED**
 - Claim: perceive → activate → cluster → compete → prune → broadcast → next cycle runs end-to-end on real input,
   deterministically, and the end-to-end slice is a pure read across hash seeds.
-- Evidence: `tests/test_nous_perceive.py` — **19 passed, 0 failed** (end-to-end slice, determinism across 6 hash
+- Evidence: `tests/test_psyche_perceive.py` — **19 passed, 0 failed** (end-to-end slice, determinism across 6 hash
   seeds, pure read); plus M-1/M-2/M-3 above. `docs/METHODOLOGY.md` findings (g)/(h).
 - Explicit non-claim: "closes end-to-end" is a **mechanism** statement only. No external-data cognitive claim is
   made by 1c or 1d, so **1c and 1d are `BUILT · UNVALIDATED`**.
@@ -161,9 +161,9 @@ anti-circular causal readout.** — **MECHANISM-VERIFIED**
   the live branch); the **anti-circularity winner-flip-not-echo guard** — two distinct friction values mapping to
   the same effective decay produce the **same** winner, every winner element is a real `NodeID` (never the injected
   float), friction names no node; integrity + purity on the ON path.
-- Evidence: builder suite `tests/test_nous_bodysensor.py` — **49 passed, 0 failed**; tester suite
+- Evidence: builder suite `tests/test_psyche_bodysensor.py` — **49 passed, 0 failed**; tester suite
   `tests/test_tester_2c_adversarial.py` — **350 passed, 0 failed** (TEST_OUTPUT.txt). Module
-  `src/nous_bodysensor.py`. Spec `docs/specs/SPEC-2c-interoception.md`. Commit `462c82a`.
+  `src/psyche_bodysensor.py`. Spec `docs/specs/SPEC-2c-interoception.md`. Commit `462c82a`.
 - **Feasibility (NOT meaning):** the populability pilot returned **GO, 85% (34/40 winner-flips)**, independently
   re-derived by the tester; **not 100% — 6 genuine non-flips rule out a rigged battery**. This is a **feasibility**
   number — the flip rate on flip-capable, contested-by-design inputs over a deliberately-extreme telemetry range —
@@ -221,7 +221,7 @@ the shipped artifact cannot reproduce them; the paper should keep that restraint
   `test_acceptance_multisource_recovers_communities`.
 - **(f) Circular validation:** the answer was hand-encoded in the input (sources hand-placed; the field
   acceptance test recovered two communities only because one source was hand-placed per community). Fixed by
-  closing the loop (`nous_perceive.py`) so input is system-derived. Locked, *as a limitation*, by
+  closing the loop (`psyche_perceive.py`) so input is system-derived. Locked, *as a limitation*, by
   `test_KNOWN_LIMITATION_clustered_sources_give_poor_basins` (an asserted-negative written to flip green only when
   source-grouping was actually fixed — since flipped; see M-1/M-2).
 - Evidence: `docs/METHODOLOGY.md` §(a)–(f).
@@ -278,7 +278,7 @@ normalization).** — **NOT-YET (UNVALIDATED)**
 - Precise structural reason (from `docs/specs/SPEC-fan-effect.md`): the fan effect is, mechanistically, a
   **shared-budget / normalization** effect — ACT-R divides a *conserved* source activation across its
   associations (`S_ji ≈ S − ln(fan)`). **This engine has no such conservation.** In `spread_activation`
-  (`src/nous_activation.py`), each out-road receives the source's **full** activation (`outgoing = node_act`, then
+  (`src/psyche_activation.py`), each out-road receives the source's **full** activation (`outgoing = node_act`, then
   `transmitted = outgoing × road.strength × decay_per_hop`) with **no `/ len(out_roads)`**. Consequently the
   Phase 2A fan sweep is **flat to the last digit**: target activation `0.2433743975`, identical (spread 0.0)
   across fan ∈ {1,2,4,8,16}. The closed loop inherits the flat response (1d-i competition normalizes by
@@ -297,8 +297,8 @@ normalization).** — **NOT-YET (UNVALIDATED)**
 **NY-3. Interoception timing-pair (2c): NOT-YET — the signal is flat on a realistic CPU-bound workload (the
 contention-tracking meaning claim is structurally unsupported on this substrate with this signal).** —
 **NOT-YET (UNVALIDATED)**
-- Precise structural reason (from EXP-2c §6.1/§6.1.1, verified against `src/nous_activation.py` /
-  `src/nous_bodysensor.py`): `friction = clamp(1 − cpu_dt/wall_dt, 0, 1)` is a **stall fraction** that rises only
+- Precise structural reason (from EXP-2c §6.1/§6.1.1, verified against `src/psyche_activation.py` /
+  `src/psyche_bodysensor.py`): `friction = clamp(1 − cpu_dt/wall_dt, 0, 1)` is a **stall fraction** that rises only
   when the process is **off-CPU**. A realistic `think()` is single-threaded, in-memory, pure compute with no I/O
   and no blocking, so `wall ≈ cpu → friction ≈ 0`; it is **scale-invariant** (a ratio: heavier work moves
   duration, not the cpu/wall ratio); CPython GC runs **in-thread** (counted as CPU — a GC pass makes `think()`
@@ -347,7 +347,7 @@ over three NOT-YETs)
   is finding an external signal the built mechanism can both **produce** and be **graded against without
   circularity.** This pattern is the anti-circularity / honest-framing discipline working (CLAUDE.md rules 2 & 5),
   not project failure.
-- Evidence: `docs/nous_roadmap.md` (top status line; Phase-1 META-FINDING block, lines ~135–140); commits
+- Evidence: `docs/psyche_roadmap.md` (top status line; Phase-1 META-FINDING block, lines ~135–140); commits
   `1faf517`, `b474b8f`, `79260fa`, `9b96b97`.
 - Honest scope: this is a finding *about this substrate and these three yardsticks*, not a general law about
   spreading-activation models or cognition.
@@ -358,11 +358,11 @@ over three NOT-YETs)
 
 Each is a forbidden claim. None may appear in the paper, in any softened form.
 
-**CC-1.** Nous is **NOT** a mind, consciousness, sentience, understanding, awareness, or AGI — not in prose,
+**CC-1.** Psyche is **NOT** a mind, consciousness, sentience, understanding, awareness, or AGI — not in prose,
 figures, captions, or commit-style asides. (CLAUDE.md rule 1.) Biological *inspiration* may be described;
 biological *fidelity* or cognitive achievement may not.
 
-**CC-2.** Nous is **NOT** a validated cognitive model. Its **meaning** is **UNVALIDATED across all three attempts**
+**CC-2.** Psyche is **NOT** a validated cognitive model. Its **meaning** is **UNVALIDATED across all three attempts**
 (1e, fan, 2c). The paper may claim mechanism, never meaning.
 
 **CC-3.** The substrate does **NOT** reproduce **any** cognitive phenomenon. Three attempts were made and none was
@@ -438,18 +438,18 @@ note is not a gate:
 # SECTION 3 — CLAIM-TO-EVIDENCE MAP
 
 > Test counts are verbatim from `docs/TEST_OUTPUT.txt`. "Commit" = the hash from `git log` where the artifact
-> landed. File paths are absolute-from-repo-root under `/Users/cagancaliskan/Desktop/İşler/Nous/NOUS/nous/`.
+> landed. File paths are absolute-from-repo-root under `/Users/cagancaliskan/Desktop/İşler/Psyche/PSYCHE/psyche/`.
 
 | Claim | Tier | Primary artifact(s) | Test (file · what it verifies) | Count | Commit |
 |---|---|---|---|---|---|
-| P0-1 substrate det/integrity/purity | PROVEN | `src/nous_store.py` | `tests/test_nous_store.py` · reads-pure, sticky closure, integrity, deletion | 45 | (pre-`5d29071` base; see note) |
-| P0-2 activation det/purity/no-double-count | PROVEN | `src/nous_activation.py` | `tests/test_nous_activation.py` · cross-proc determinism seeds {0,1,3,7,42}, pure read, convergence sums | 35 | (base) |
+| P0-1 substrate det/integrity/purity | PROVEN | `src/psyche_store.py` | `tests/test_psyche_store.py` · reads-pure, sticky closure, integrity, deletion | 45 | (pre-`5d29071` base; see note) |
+| P0-2 activation det/purity/no-double-count | PROVEN | `src/psyche_activation.py` | `tests/test_psyche_activation.py` · cross-proc determinism seeds {0,1,3,7,42}, pure read, convergence sums | 35 | (base) |
 | P0-3 cross-proc determinism (seed counts) | PROVEN | activation/coalitions/field/perceive | det tests: act 5 seeds, coalitions 8, field 8, slice 6 | (within above) | (base) |
-| M-1 source-clustering mechanism | MECHANISM-VERIFIED | `src/nous_source_clustering.py` · `SPEC-1c-source-clustering.md` | `test_nous_source_clustering.py` (49) + `test_tester_1c_adversarial.py` (73) + `test_tester_1c_mutation_battery.py` (5) | 49 / 73 / 5 | `e4169f9` |
-| M-2 workspace competition + pruning | MECHANISM-VERIFIED | `src/nous_workspace.py` · `SPEC-1d-workspace-broadcast.md` | `test_nous_workspace.py` (83) + `test_tester_1d_i_adversarial.py` (107) · over-swallow flip, generalizes on relabelled graph | 83 / 107 | `2fd878b` |
-| M-3 bounded broadcast/feedback | MECHANISM-VERIFIED | `src/nous_workspace.py` (broadcast) | `test_nous_workspace_broadcast.py` (63) + `test_tester_1d_ii_adversarial.py` (110) · no-divergence + no-lock-in (80-cycle escape) | 63 / 110 | `e4df7df` |
-| M-4 cycle closes end-to-end | MECHANISM-VERIFIED | `src/nous_perceive.py` | `test_nous_perceive.py` · end-to-end slice, det 6 seeds, pure read | 19 | `52abdb6` (merge) |
-| M-5 interoception mechanism | MECHANISM-VERIFIED | `src/nous_bodysensor.py` · `SPEC-2c-interoception.md` | `test_nous_bodysensor.py` (49) + `test_tester_2c_adversarial.py` (350) · default-off byte-identity, replay det 6 seeds, live-off, winner-flip-not-echo | 49 / 350 | `462c82a` |
+| M-1 source-clustering mechanism | MECHANISM-VERIFIED | `src/psyche_source_clustering.py` · `SPEC-1c-source-clustering.md` | `test_psyche_source_clustering.py` (49) + `test_tester_1c_adversarial.py` (73) + `test_tester_1c_mutation_battery.py` (5) | 49 / 73 / 5 | `e4169f9` |
+| M-2 workspace competition + pruning | MECHANISM-VERIFIED | `src/psyche_workspace.py` · `SPEC-1d-workspace-broadcast.md` | `test_psyche_workspace.py` (83) + `test_tester_1d_i_adversarial.py` (107) · over-swallow flip, generalizes on relabelled graph | 83 / 107 | `2fd878b` |
+| M-3 bounded broadcast/feedback | MECHANISM-VERIFIED | `src/psyche_workspace.py` (broadcast) | `test_psyche_workspace_broadcast.py` (63) + `test_tester_1d_ii_adversarial.py` (110) · no-divergence + no-lock-in (80-cycle escape) | 63 / 110 | `e4df7df` |
+| M-4 cycle closes end-to-end | MECHANISM-VERIFIED | `src/psyche_perceive.py` | `test_psyche_perceive.py` · end-to-end slice, det 6 seeds, pure read | 19 | `52abdb6` (merge) |
+| M-5 interoception mechanism | MECHANISM-VERIFIED | `src/psyche_bodysensor.py` · `SPEC-2c-interoception.md` | `test_psyche_bodysensor.py` (49) + `test_tester_2c_adversarial.py` (350) · default-off byte-identity, replay det 6 seeds, live-off, winner-flip-not-echo | 49 / 350 | `462c82a` |
 | M-5 feasibility pilot (85%) | MECHANISM-VERIFIED (feasibility, not meaning) | `experiments/pilot_2c_populability.py` | `test_tester_2c_adversarial.py` E3 · re-derived 34/40 = 85.0% | (within 350) | `462c82a` |
 | MM-1 four-agent separation | METHODOLOGY | `CLAUDE.md` · `.claude/agents/` | existence of `test_tester_*` distinct from builder suites | n/a | n/a |
 | MM-2 loop-closure caught bugs | METHODOLOGY | `docs/METHODOLOGY.md` | findings (a)–(f) + (g)/(h), each → named test | n/a | n/a |
@@ -463,7 +463,7 @@ note is not a gate:
 
 > **DISCREPANCY FLAGGED (commit attribution for Phase 0).** `git log --oneline -100` shows the **earliest** commit
 > as `5d29071 Initial honest package …`, which already contains the verified substrate + activation. The 100-commit
-> window does **not** expose the individual commits where `nous_store.py` / `nous_activation.py` were first written
+> window does **not** expose the individual commits where `psyche_store.py` / `psyche_activation.py` were first written
 > and verified (they predate or are bundled into `5d29071`). The paper should attribute Phase 0 to "the initial
 > honest package (`5d29071`) and earlier development," not to a fabricated per-module commit hash. Marked "base"
 > above.
@@ -494,7 +494,7 @@ not a generalization. The paper is an **experience report**, and should claim on
 **L-5. Three assurance tiers coexist in the repo and must not be conflated.** PROVEN (Phase 0), MECHANISM-VERIFIED
 (1c/1d/2c), and disciplined-exploratory (Phase 2A/2B scaffolding, the 1c §6.2 reproduction). The last is
 self-tested, not tester/validator-verified, predates the four-agent discipline, and its data-dependent suites are
-**not** in `run_tests.py`. (`docs/nous_roadmap.md` "Verification tiers" note.)
+**not** in `run_tests.py`. (`docs/psyche_roadmap.md` "Verification tiers" note.)
 
 **L-6. "Tester-verified" means verified by an independent adversarial AI agent, against *mechanism* properties
 only.** It is not a formal proof and not a meaning verification. The known-limitations are shipped as
@@ -510,7 +510,7 @@ is now itself independently source-confirmed (arXiv:2604.24527; also in Cognitiv
 residual citation caution is the one-line volume/page check on the 8 classics before publication.
 
 **L-8. The roadmap carries historical snapshots alongside current status.** Several figures in
-`docs/nous_roadmap.md` (e.g. the 8-suite/254-assertion 1c snapshot; the 130/56/5 Phase-0 line) are explicitly
+`docs/psyche_roadmap.md` (e.g. the 8-suite/254-assertion 1c snapshot; the 130/56/5 Phase-0 line) are explicitly
 superseded. The paper must read counts from `docs/TEST_OUTPUT.txt` only (canonical: 20 suites / 1,372).
 
 ---
@@ -540,20 +540,20 @@ superseded. The paper must read counts from `docs/TEST_OUTPUT.txt` only (canonic
 
 ### 5.1 Property-based / random testing (the methodology's nearest engineering lineage)
 - **Claessen, K. & Hughes, J. (2000). "QuickCheck: A Lightweight Tool for Random Testing of Haskell Programs."
-  ICFP '00 (ACM). DOI 10.1145/351240.351266.** **[VERIFIED]** (agent-verified prior pass; kept) — positions Nous's
+  ICFP '00 (ACM). DOI 10.1145/351240.351266.** **[VERIFIED]** (agent-verified prior pass; kept) — positions Psyche's
   property tests (determinism, purity, integrity, scale-invariance, no-double-count) in the property-based-testing
-  tradition. *Nous does not use QuickCheck; it hand-rolls properties in a stdlib harness — note this as a deliberate
+  tradition. *Psyche does not use QuickCheck; it hand-rolls properties in a stdlib harness — note this as a deliberate
   dependency-free choice.*
 - **MacIver, D. R. & Hatfield-Dodds, Z. (2019). "Hypothesis: A new approach to property-based testing." Journal of
   Open Source Software 4(43):1891. DOI 10.21105/joss.01891.** **[VERIFIED]** (agent-verified prior pass; kept) — the
-  canonical Python PBT library; the natural "why not just use this" comparison. *Nous deliberately stays stdlib-only
+  canonical Python PBT library; the natural "why not just use this" comparison. *Psyche deliberately stays stdlib-only
   (CLAUDE.md rule 8), so it re-implements a minimal property runner; positioning, not endorsement.*
 
 ### 5.2 Pre-registration / reproducibility (the methodology's science lineage)
 - **Nosek, B. A., Ebersole, C. R., DeHaven, A. C. & Mellor, D. T. (2018). "The preregistration revolution." PNAS
   115(11):2600–2606. DOI 10.1073/pnas.1708274114.** **[VERIFIED]** (agent-verified prior pass; kept) — the
   anti-circularity / pre-registration discipline (fix prediction + direction before seeing data) is borrowed
-  directly; Nous applies it to a software artifact (frozen EXP docs, anti-tamper notices, deferred hashing).
+  directly; Psyche applies it to a software artifact (frozen EXP docs, anti-tamper notices, deferred hashing).
 - Cross-process determinism under randomized `PYTHONHASHSEED` is a **reproducibility** practice; if the paper wants
   a citation for the general reproducibility-in-computational-science argument, that needs a real check.
   **[NO CITATION YET — do not invent one]** (this is a placeholder for an optional future reference, *not* a
@@ -561,14 +561,14 @@ superseded. The paper must read counts from `docs/TEST_OUTPUT.txt` only (canonic
   freeze).
 
 ### 5.3 Cognitive architectures (DESIGN LINEAGE ONLY — explicitly NOT a validated comparison)
-> **Framing rule for the paper:** these are cited as the *design vocabulary and structural lineage* Nous borrows
-> (GWT competition-then-broadcast; ACT-R spreading activation), **never** as systems Nous is benchmarked against
-> or shown to match. Nous reproduces **none** of their cognitive results (see Section 2). The fan-effect NO-GO is
-> precisely a place where Nous's engine **diverges** from ACT-R's mechanism.
+> **Framing rule for the paper:** these are cited as the *design vocabulary and structural lineage* Psyche borrows
+> (GWT competition-then-broadcast; ACT-R spreading activation), **never** as systems Psyche is benchmarked against
+> or shown to match. Psyche reproduces **none** of their cognitive results (see Section 2). The fan-effect NO-GO is
+> precisely a place where Psyche's engine **diverges** from ACT-R's mechanism.
 - **Baars, B. J. (1988). *A Cognitive Theory of Consciousness.* Cambridge Univ. Press.**
   **[VERIFIED-PENDING-FINAL-CHECK]** (foundational classic; existence certain; carry detail as given; one-line
   volume/page confirmation at final pre-publication pass) (SPEC-1d §9) — Global Workspace Theory; the competition →
-  single winner → broadcast **structure** for 1d. *Cited for structure; not a consciousness claim for Nous.*
+  single winner → broadcast **structure** for 1d. *Cited for structure; not a consciousness claim for Psyche.*
 - **Franklin, S., Madl, T., D'Mello, S. & Snaider, J. (2014). "LIDA: A Systems-level Architecture for Cognition,
   Emotion, and Learning." IEEE Transactions on Autonomous Mental Development 6(1):19–41. DOI
   10.1109/TAMD.2013.2277589.** **[VERIFIED]** (independently confirmed at source 2026-06-21 via WebSearch: IEEE
@@ -579,7 +579,7 @@ superseded. The paper must read counts from `docs/TEST_OUTPUT.txt` only (canonic
   now upgraded to source-confirmed; the previously-missing venue/volume/pages/DOI are added from source.)*
 - **Anderson, J. R. & Lebiere, C. (1998). *The Atomic Components of Thought.* Erlbaum. ISBN 9780805828177.**
   **[VERIFIED]** (agent-verified prior pass; kept) — ACT-R; source of the `S_ji ≈ S − ln(fan)` shared-budget
-  account that the fan-effect NO-GO shows Nous's engine lacks.
+  account that the fan-effect NO-GO shows Psyche's engine lacks.
 - **Anderson, J. R. (1974). "Retrieval of propositional information from long-term memory." Cognitive Psychology
   6(4):451–474. DOI 10.1016/0010-0285(74)90021-8.** **[VERIFIED]** (independently confirmed at source 2026-06-21:
   Cognitive Psychology 6(4):451–474; via Semantic Scholar / Springer-indexed citation and the U. Michigan Deep Blue
@@ -594,7 +594,7 @@ superseded. The paper must read counts from `docs/TEST_OUTPUT.txt` only (canonic
 - **Shanahan, M. (2010). *Embodiment and the Inner Life: Cognition and Consciousness in the Space of Possible
   Minds.* Oxford University Press. ISBN 9780199226559.** **[VERIFIED]** (independently confirmed at source
   2026-06-21: Oxford University Press, 2010, ISBN 9780199226559; via the OUP/Biblio listing, Internet Archive, and
-  Semantic Scholar). — the "space of possible minds" framing; design lineage, not a consciousness claim for Nous.
+  Semantic Scholar). — the "space of possible minds" framing; design lineage, not a consciousness claim for Psyche.
 - **Dehaene, S. & Changeux, J.-P. (2011). "Experimental and theoretical approaches to conscious processing."
   Neuron 70(2):200–227.** **[VERIFIED-PENDING-FINAL-CHECK]** (foundational classic; existence certain; carry detail
   as given; one-line volume/page confirmation at final pre-publication pass) (SPEC-1d §9) — cited for selective
@@ -619,7 +619,7 @@ superseded. The paper must read counts from `docs/TEST_OUTPUT.txt` only (canonic
 - **Craig, A. D. (2002). "How do you feel? Interoception: the sense of the physiological condition of the body."
   Nature Reviews Neuroscience 3:655–666.** **[VERIFIED-PENDING-FINAL-CHECK]** (foundational classic; existence
   certain; carry detail as given; one-line volume/page confirmation at final pre-publication pass) (SPEC-2c §2.1) —
-  interoception as a sensory channel; Nous tests only the computational analogue.
+  interoception as a sensory channel; Psyche tests only the computational analogue.
 - **Candia-Rivera, D. (2026). "Interoceptive machine framework: Toward interoception-inspired regulatory
   architectures in artificial intelligence." Cognitive Systems Research (arXiv:2604.24527; submitted 27 Apr 2026).**
   **[VERIFIED]** (independently confirmed at source 2026-06-21: sole author Diego Candia-Rivera, arXiv:2604.24527
@@ -634,7 +634,7 @@ superseded. The paper must read counts from `docs/TEST_OUTPUT.txt` only (canonic
   (independently confirmed at source 2026-06-21: sole author Seamus Brady, arXiv:2604.04660 submitted 6 Apr 2026,
   cs.AI; confirmed via the arXiv 2026-04 listing and the project's own GitHub/site) — cited **only** as a
   different-family reference point (an **LLM-based** persistent-runtime system), **not** as a comparison or
-  benchmark for Nous. **NB: post-cutoff (2026); a one-line re-confirm at final pre-publication pass is prudent.**
+  benchmark for Psyche. **NB: post-cutoff (2026); a one-line re-confirm at final pre-publication pass is prudent.**
   *(The doc previously carried the fuller title; confirmed it matches. Earlier SPEC-2c marking "UNVERIFIED in detail
   / WebFetch blocked" is now superseded — WebSearch reached the arXiv listing and the title/author/date all match.)*
 
@@ -682,8 +682,8 @@ superseded. The paper must read counts from `docs/TEST_OUTPUT.txt` only (canonic
 broadcast → next).
 1. Shows the seven-stage loop and where the single bounded write closes it.
 2. Backs **M-4** (cycle closes end-to-end) and contextualizes M-1/M-2/M-3.
-3. Built from: the module call graph (`nous_perceive.py` → `nous_activation.py` → `nous_source_clustering.py` →
-   `nous_field.py`/`nous_coalitions.py` → `nous_workspace.py` → broadcast); existing diagram source
+3. Built from: the module call graph (`psyche_perceive.py` → `psyche_activation.py` → `psyche_source_clustering.py` →
+   `psyche_field.py`/`psyche_coalitions.py` → `psyche_workspace.py` → broadcast); existing diagram source
    `docs/diagrams/pipeline.mmd` can be the starting point (note it predates 1d — must be updated to show
    prune + broadcast + feedback edge).
 4. Avoids overclaiming: label it **"mechanism / information flow"**; caption must say "no cognitive claim — these
@@ -739,7 +739,7 @@ as UNVALIDATED).
 1. Shows the repo stratified by tier: Phase 0 (PROVEN) at the base; 1c/1d/2c (MECHANISM-VERIFIED) above; Phase
    2A/2B scaffolding + 1c §6.2 (disciplined-exploratory) to the side; the meaning bar as an open/empty top box.
 2. Backs the whole of Section 1's tier structure and **L-5**.
-3. Built from: `docs/nous_roadmap.md` "Verification tiers" note + `docs/TEST_OUTPUT.txt` per-suite counts.
+3. Built from: `docs/psyche_roadmap.md` "Verification tiers" note + `docs/TEST_OUTPUT.txt` per-suite counts.
 4. Avoids overclaiming: keep the three boxes visually distinct and **never** merge them; the meaning box is empty
    with the label "UNVALIDATED (3 attempts, 3 structural walls)." Put exact assertion counts only where they come
    from TEST_OUTPUT.txt.
@@ -765,7 +765,7 @@ as UNVALIDATED).
 1. Shows, per suite, the seed set used (act 5, coalitions 8, field 8, slice 6, tester suites 6) and "byte-identical
    across all."
 2. Backs **P0-3** and **CC-7** (makes the non-uniform seed count honest and visible).
-3. Built from: the determinism tests' seed lists (confirmed in `tests/test_nous_*.py`).
+3. Built from: the determinism tests' seed lists (confirmed in `tests/test_psyche_*.py`).
 4. Avoids overclaiming: this figure exists precisely to **prevent** the "6 seeds everywhere" overclaim — show the
    real per-suite numbers. (An existing `docs/diagrams/figures/determinism_seeds.py` exists but its docstring
    mentions "invented activation values" for illustration — **flag:** if reused, redraw from the real seed lists,
@@ -773,7 +773,7 @@ as UNVALIDATED).
 
 > **Figures NOT to propose (no real artifact / would overclaim):** any "cognitive performance" curve; any
 > priming effect size, fan slope, or interoception direction-of-effect plot (those graded runs were never run —
-> CC-5); any figure built from the parked 2c capture as if it were canonical; any side-by-side "Nous vs ACT-R/LIDA
+> CC-5); any figure built from the parked 2c capture as if it were canonical; any side-by-side "Psyche vs ACT-R/LIDA
 > performance" comparison (design lineage only — Section 5.3).
 
 ---

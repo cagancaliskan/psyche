@@ -1,6 +1,6 @@
-# Nous: a one-page summary
+# Psyche: a one-page summary
 
-**What it is:** Nous is a dependency-free Python prototype of a memory-and-activation substrate
+**What it is:** Psyche is a dependency-free Python prototype of a memory-and-activation substrate
 for a cognitive architecture, presented as much as a software-testing-methodology case study as an
 engineering artifact: a small system built test-first, in which adversarial testing caught a
 sequence of real structural bugs. It is not a mind, a consciousness, an AGI, or a validated
@@ -38,7 +38,7 @@ strand alone, and the resulting "thought" is incoherent. This is not hidden. It 
 known-limitation test that flips to green only if the underlying problem is solved.
 
 **The next step:** Stop validating the cognitive layer against hand-built inputs, and instead test
-it against a *measurable* cognitive effect whose direction is known independently of Nous, for
+it against a *measurable* cognitive effect whose direction is known independently of Psyche, for
 example **semantic priming** [10, 11]: does pre-activating a related concept measurably raise a
 target's activation?
 

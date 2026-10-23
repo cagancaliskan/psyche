@@ -79,9 +79,9 @@ _SRC = os.path.join(os.path.dirname(_HERE), "src")
 if _SRC not in sys.path:
     sys.path.insert(0, _SRC)
 
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_perceive import think
-from nous_bodysensor import BodySensor, TelemetrySample, compute_friction
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_perceive import think
+from psyche_bodysensor import BodySensor, TelemetrySample, compute_friction
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -109,7 +109,7 @@ RESULTS_DIR = os.path.join(_HERE, "results")
 TRACE_PATH = os.path.join(RESULTS_DIR, "pilot_2c_telemetry_trace.json")
 
 # the modulated decay range the BodySensor produces is set by the library mapping
-# (nous_bodysensor.MODULATION_SPAN); the pilot does NOT introduce its own magnitude.
+# (psyche_bodysensor.MODULATION_SPAN); the pilot does NOT introduce its own magnitude.
 
 
 # ══════════════════════════════════════════════════════════════════════════════

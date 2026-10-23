@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # STEP 5 — Phase 2B self-audit. Prints evidence (not assertions) for each integrity claim.
-# Run from anywhere; resolves the repo root (nous/) from its own location.
+# Run from anywhere; resolves the repo root (psyche/) from its own location.
 set -u
-cd "$(dirname "$0")/.."   # -> repo root (nous/)
+cd "$(dirname "$0")/.."   # -> repo root (psyche/)
 
 echo "=================================================================="
 echo "PHASE 2B SELF-AUDIT  (evidence, not assertion)"
@@ -16,8 +16,8 @@ if [ -z "$changed" ]; then echo "    PASS — src/ and tests/ are clean."
 else echo "    FAIL — modifications detected:"; echo "$changed"; fail=1; fi
 
 echo
-echo "[2] The engine src/nous_activation.py and src/nous_store.py were NOT altered:"
-eng=$(git status --porcelain src/nous_activation.py src/nous_store.py)
+echo "[2] The engine src/psyche_activation.py and src/psyche_store.py were NOT altered:"
+eng=$(git status --porcelain src/psyche_activation.py src/psyche_store.py)
 if [ -z "$eng" ]; then echo "    PASS — engine + store unchanged in git."
 else echo "    FAIL — engine/store shows modified."; echo "$eng"; fail=1; fi
 
@@ -45,7 +45,7 @@ echo "[5] Conditions selected BLIND (swow.py never IMPORTS or CALLS the engine):
 # Check actual import statements and call sites, NOT prose mentions in the docstring
 # (the docstring explains that selection does not call spread_activation; that word is
 # expected to appear in comments). We grep for import lines and bare-call syntax.
-if grep -E "^\s*(import|from)\s+(nous_store|nous_activation|harness)" experiments/swow.py \
+if grep -E "^\s*(import|from)\s+(psyche_store|psyche_activation|harness)" experiments/swow.py \
    || grep -E "(spread_activation|retrieval_strength|read_targets)\s*\(" experiments/swow.py; then
   echo "    FAIL — swow.py imports or calls an engine/readout function (selection not blind)."; fail=1
 else echo "    PASS — swow.py has no engine import and no activation call; selection is topology-only."; fi

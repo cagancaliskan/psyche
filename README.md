@@ -1,7 +1,7 @@
-# Nous
+# Psyche
 
 A **biologically-motivated, dependency-free Python prototype** of a memory-and-activation
-substrate for a cognitive architecture. Nous implements, with no third-party
+substrate for a cognitive architecture. Psyche implements, with no third-party
 dependencies, a **cognitive cycle that now closes end-to-end**: (1) a graph **substrate
 store** of concept *nodes* and weighted *roads* with synaptic-tagging/consolidation-*inspired*
 dynamics, lazy activity-dependent decay, and "sticky" closure of traumatic edges;
@@ -29,7 +29,7 @@ yardstick rather than the mechanism.
 
 ## What this is (and how to read it)
 
-Nous is **an engineering prototype and a software-testing-methodology case study**. It is
+Psyche is **an engineering prototype and a software-testing-methodology case study**. It is
 suitable as a capstone / technical-report artifact: a small, self-contained system built
 test-first, where adversarial testing caught a sequence of real structural bugs that the
 write-up ([docs/METHODOLOGY.md](docs/METHODOLOGY.md)) documents in detail.
@@ -53,7 +53,7 @@ system does something unproven, this documentation says so plainly.
 This work is archived on **Zenodo** with a permanent DOI:
 **<https://doi.org/10.5281/zenodo.20474613>**
 
-If you use or reference Nous, please cite:
+If you use or reference Psyche, please cite:
 
 > Caliskan, C. (2026). *Nous: Adversarial Testing of a Dependency-Free Memory-and-Activation
 > Substrate for Cognitive Architectures.* Zenodo. https://doi.org/10.5281/zenodo.20474613
@@ -163,7 +163,7 @@ python3 run_tests.py
 
 # or a single suite directly (absolute PYTHONPATH so the determinism subprocess
 # probes resolve their imports regardless of working directory):
-PYTHONPATH="$PWD/src" python3 tests/test_nous_store.py
+PYTHONPATH="$PWD/src" python3 tests/test_psyche_store.py
 ```
 
 The suites use a tiny built-in harness, **not** pytest: each prints `RESULT: N passed,
@@ -181,15 +181,15 @@ with it.
 
 | Suite | Layer / role | Checks passed |
 |---|---|---:|
-| `test_nous_store.py` | substrate store | **45** |
-| `test_nous_activation.py` | spreading activation | **35** |
-| `test_nous_coalitions.py` | coalition formation | **19** |
-| `test_nous_field.py` | multi-source field | **13** |
-| `test_nous_source_clustering.py` | source-clustering (1c) | **49** |
-| `test_nous_workspace.py` | workspace competition + pruning (1d-i) | **83** |
-| `test_nous_workspace_broadcast.py` | bounded broadcast + feedback (1d-ii) | **63** |
-| `test_nous_perceive.py` | perception + closed end-to-end cycle | **19** |
-| `test_nous_bodysensor.py` | body-state sensor + modulation hook (2c) | **49** |
+| `test_psyche_store.py` | substrate store | **45** |
+| `test_psyche_activation.py` | spreading activation | **35** |
+| `test_psyche_coalitions.py` | coalition formation | **19** |
+| `test_psyche_field.py` | multi-source field | **13** |
+| `test_psyche_source_clustering.py` | source-clustering (1c) | **49** |
+| `test_psyche_workspace.py` | workspace competition + pruning (1d-i) | **83** |
+| `test_psyche_workspace_broadcast.py` | bounded broadcast + feedback (1d-ii) | **63** |
+| `test_psyche_perceive.py` | perception + closed end-to-end cycle | **19** |
+| `test_psyche_bodysensor.py` | body-state sensor + modulation hook (2c) | **49** |
 | `test_tester_0b2_adversarial.py` | tester: adversarial 0b2 normalization overlay | **83** |
 | `test_tester_1c_adversarial.py` | tester: adversarial 1c | **73** |
 | `test_tester_1c_mutation_battery.py` | tester: 1c randomized mutation battery | **5** |
@@ -254,29 +254,29 @@ and are checked against every document by `tools/ledger_check.py`.
 ## Project structure
 
 ```
-nous/
+psyche/
 ├── README.md               ← you are here
 ├── LICENSE                 ← MIT
 ├── requirements.txt        ← standard library only (no dependencies)
 ├── run_tests.py            ← runs all 26 suites with the correct absolute PYTHONPATH
 ├── src/                    ← the 8 modules
-│   ├── nous_store.py               substrate store (Layer 1): graph, IDs, decay, closure
-│   ├── nous_activation.py          deterministic spreading activation + flow
-│   ├── nous_field.py               multi-source activation field (basins)
-│   ├── nous_coalitions.py          coalition formation (flow-cut & by-basin)
-│   ├── nous_source_clustering.py   source-clustering pre-stage (group nearby sources)
-│   ├── nous_workspace.py           workspace: competition + pruning + bounded broadcast
-│   ├── nous_perceive.py            perception + the closed end-to-end cycle
-│   └── nous_bodysensor.py          body-state sensor + default-off decay modulation (2c)
+│   ├── psyche_store.py               substrate store (Layer 1): graph, IDs, decay, closure
+│   ├── psyche_activation.py          deterministic spreading activation + flow
+│   ├── psyche_field.py               multi-source activation field (basins)
+│   ├── psyche_coalitions.py          coalition formation (flow-cut & by-basin)
+│   ├── psyche_source_clustering.py   source-clustering pre-stage (group nearby sources)
+│   ├── psyche_workspace.py           workspace: competition + pruning + bounded broadcast
+│   ├── psyche_perceive.py            perception + the closed end-to-end cycle
+│   └── psyche_bodysensor.py          body-state sensor + default-off decay modulation (2c)
 ├── tests/                  ← the test suites (built-in harness; run as scripts)
-│   ├── test_nous_*.py              builder suites (one per module)
+│   ├── test_psyche_*.py              builder suites (one per module)
 │   └── test_tester_*.py            independent tester-authored adversarial suites
 ├── experiments/            ← Tier 3 disciplined-exploratory scaffolding (NOT in run_tests.py)
 └── docs/
     ├── ARCHITECTURE.md         as-built technical reference
     ├── METHODOLOGY.md          the adversarial-testing development history
     ├── TEST_OUTPUT.txt         verbatim captured test run (the source of the numbers above)
-    ├── nous_roadmap.md         the living roadmap (current state, tiers, next step)
+    ├── psyche_roadmap.md         the living roadmap (current state, tiers, next step)
     ├── specs/                  ADRs / specs the architect writes for the builder
     ├── design/                 the original *aspirational* vision docs (see its README)
     └── diagrams/               Mermaid (.mmd) diagrams
@@ -286,8 +286,8 @@ nous/
 
 ## Background (conceptual inspiration, not implementation)
 
-Nous **borrows vocabulary and structure** from the following bodies of work. These are
-*inspirations that shaped the design's framing*; Nous does **not** implement, validate, or
+Psyche **borrows vocabulary and structure** from the following bodies of work. These are
+*inspirations that shaped the design's framing*; Psyche does **not** implement, validate, or
 reproduce any of these theories or their biological results, and makes **no claim of
 biological fidelity**.
 

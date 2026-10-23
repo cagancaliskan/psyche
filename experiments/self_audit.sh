@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # STEP 5 — Phase 2A self-audit. Prints evidence for each integrity claim.
-# Run from anywhere; it resolves the repo root (nous/) from its own location.
+# Run from anywhere; it resolves the repo root (psyche/) from its own location.
 set -u
-cd "$(dirname "$0")/.."   # -> repo root (nous/)
+cd "$(dirname "$0")/.."   # -> repo root (psyche/)
 
 echo "=================================================================="
 echo "PHASE 2A SELF-AUDIT  (evidence, not assertion)"
@@ -20,11 +20,11 @@ else
 fi
 
 echo
-echo "[2] The engine src/nous_activation.py was NOT altered to force an effect:"
-if [ -n "$(git status --porcelain src/nous_activation.py)" ]; then
-  echo "    FAIL — nous_activation.py shows as modified."; fail=1
+echo "[2] The engine src/psyche_activation.py was NOT altered to force an effect:"
+if [ -n "$(git status --porcelain src/psyche_activation.py)" ]; then
+  echo "    FAIL — psyche_activation.py shows as modified."; fail=1
 else
-  echo "    PASS — nous_activation.py unchanged in git."
+  echo "    PASS — psyche_activation.py unchanged in git."
 fi
 
 echo

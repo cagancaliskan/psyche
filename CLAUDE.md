@@ -1,4 +1,4 @@
-# CLAUDE.md — Nous Project Constitution
+# CLAUDE.md — Psyche Project Constitution
 
 Loaded at the start of every session; shared ground truth for the human and all subagents.
 Read it first, every time. If anything below conflicts with a request, surface the conflict
@@ -9,9 +9,9 @@ does not duplicate.
 
 ---
 
-## What Nous is (state it this way, always)
+## What Psyche is (state it this way, always)
 
-Nous is a biologically-motivated, dependency-free Python prototype of a
+Psyche is a biologically-motivated, dependency-free Python prototype of a
 **memory-and-activation substrate for a cognitive architecture**. The long-term aim is a
 non-LLM, biologically-grounded mind. The current built artifact is a proven substrate plus
 an honest, well-tested exploration of higher layers.
@@ -20,7 +20,7 @@ an honest, well-tested exploration of higher layers.
 claimed** is that any layer *reproduces a cognitive phenomenon* or constitutes a mind. These
 are different claims and the line between them is sacred.
 
-In the paper the system is **Psyche**; in the codebase it stays **Nous**.
+The project is **Psyche** everywhere: the paper, the codebase, and the repository.
 
 ---
 
@@ -30,7 +30,7 @@ In the paper the system is **Psyche**; in the codebase it stays **Nous**.
 |---|---|
 | Test counts, statuses, constants, results | `tools/ledger.json` — **only** |
 | Captured run | `docs/TEST_OUTPUT.txt` (the ledger is generated from it) |
-| Narrative position, phases | `docs/nous_roadmap.md` |
+| Narrative position, phases | `docs/psyche_roadmap.md` |
 | Why something changed | `DECISIONS.md` |
 | Specs / ADRs | `docs/specs/` |
 | Pre-registrations and results | `docs/experiments/` |
@@ -45,7 +45,7 @@ assertion total; that is why `tools/ledger_check.py` exists and why it runs in C
 
 These are the disciplines the project has already paid for in bugs.
 
-1. **Never overclaim.** Nous is never called "a mind," "conscious," "sentient," "AGI," or "a
+1. **Never overclaim.** Psyche is never called "a mind," "conscious," "sentient," "AGI," or "a
    validated cognitive model" — not in code, comments, docstrings, docs, or commit messages.
    Biological *inspiration* may be described; biological *fidelity* or cognitive achievement
    may not be asserted.
@@ -117,7 +117,7 @@ evidence. Run `/psyche-lane` before touching a file.
    *Documents only; no production code or tests.*
 2. **builder** — implements the spec test-first, self-audits against the six-bug checklist,
    delivers only when the whole suite passes on every interpreter and nothing is overclaimed.
-   *`src/` and `tests/test_nous_*.py` only.*
+   *`src/` and `tests/test_psyche_*.py` only.*
 3. **tester** — independently and adversarially verifies, writing its *own* hostile and
    loop-closed tests. Verifies mechanism, not meaning. **Never modifies production code** —
    enforced by a hook.
@@ -148,7 +148,7 @@ yardsticks*, never a general law about spreading activation or cognition.
 
 ## Repo conventions
 
-- Modules `src/nous_<name>.py`; builder suites `tests/test_nous_<name>.py`; tester suites
+- Modules `src/psyche_<name>.py`; builder suites `tests/test_psyche_<name>.py`; tester suites
   `tests/test_tester_<brick>_*.py`.
 - One runner: `run_tests.py`. Its captured output in `docs/TEST_OUTPUT.txt` is the ground
   truth for all counts. Never estimate; read them from the ledger.

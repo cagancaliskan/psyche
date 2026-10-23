@@ -1,5 +1,5 @@
 """
-INDEPENDENT ADVERSARIAL TEST SUITE for step 1d-i (nous_workspace.select_winner).
+INDEPENDENT ADVERSARIAL TEST SUITE for step 1d-i (psyche_workspace.select_winner).
 
 Author: tester (independent adversary). These tests are written FROM SCRATCH against
 the spec's acceptance PROPERTIES (SPEC-1d §3.1 A2 competition, §3.2 + Decision C1
@@ -51,12 +51,12 @@ import subprocess
 import textwrap
 import inspect
 
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_perceive import perceive, think
-from nous_field import build_activation_field
-from nous_coalitions import form_coalitions_from_field, Coalition
-from nous_source_clustering import cluster_sources
-from nous_workspace import (
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_perceive import perceive, think
+from psyche_field import build_activation_field
+from psyche_coalitions import form_coalitions_from_field, Coalition
+from psyche_source_clustering import cluster_sources
+from psyche_workspace import (
     select_winner, rank_coalitions, WorkspaceResult,
     _density_score, _perceived_domain_members, _strongest_road_strength,
     _internal_road_ids,
@@ -556,8 +556,8 @@ def test_T6_determinism_winner_pruned_ranked_6_seeds():
     # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     driver = textwrap.dedent('''
         import struct
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import think
+        from psyche_store import SubstrateStore, Clock, NodeType
+        from psyche_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
         def add(c, t=NodeType.CONCEPT): return s.add_node(c, t)
         coffee=add("coffee",NodeType.ENTITY); warmth=add("warmth",NodeType.SENSATION)
@@ -598,8 +598,8 @@ def test_T6b_determinism_multi_basin_ties_6_seeds():
     # exactly is what makes the next such leak visible before it flips anything.
     driver = textwrap.dedent('''
         import struct
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import think
+        from psyche_store import SubstrateStore, Clock, NodeType
+        from psyche_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
         def add(c, t=NodeType.CONCEPT): return s.add_node(c, t)
         # two identical, unlinked triangles named by one token each -> equal everything
@@ -689,7 +689,7 @@ def test_T7c_broadcast_true_now_performs_exactly_one_write_reowned():
     #
     # I do not accept the flip on authority. I RE-DERIVE the now-built contract independently
     # and only re-author the assertion if my derivation agrees. My derivation, from the
-    # mechanism (nous_workspace.broadcast + nous_store.strengthen, both read directly):
+    # mechanism (psyche_workspace.broadcast + psyche_store.strengthen, both read directly):
     #   (1) broadcast=True must strengthen EXACTLY the winner's internal roads (both endpoints
     #       in the winner), each EXACTLY ONCE (deduped by RoadID), creating NO new road, and
     #       touching NO node (strengthen with no charge moves no node access stat).

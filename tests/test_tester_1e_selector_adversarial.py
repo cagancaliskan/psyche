@@ -476,8 +476,8 @@ def test_blindness_no_engine_import():
     import priming_1e
     src = open(priming_1e.__file__, encoding="utf-8").read()
     # forbidden engine surfaces (the selector must not be able to see activation)
-    for forbidden in ("spread_activation", "nous_activation", "nous_perceive",
-                      "import think", "from nous_perceive", "nous_workspace",
+    for forbidden in ("spread_activation", "psyche_activation", "psyche_perceive",
+                      "import think", "from psyche_perceive", "psyche_workspace",
                       "build_activation_field", "ThoughtResult", "MAResult",
                       "priming_instrument"):
         check(forbidden not in src, f"selector source does not reference '{forbidden}'")

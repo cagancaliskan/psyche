@@ -47,7 +47,7 @@ the piece neither Obsidian nor a database gives you.
 Zero migration. Obsidian vaults are just folders of Markdown.
 
 1. Obsidian → **Open folder as vault** → select the repo root
-   (`~/Desktop/İşler/Nous/NOUS/nous`).
+   (`~/Desktop/İşler/Psyche/PSYCHE/psyche`).
 2. When prompted about `.obsidian/`, let it create the folder, then add it to `.gitignore` —
    your view settings should not be a repository artifact.
 3. Settings → **Files & Links** → set *Excluded files* to `.git`, `__pycache__`,

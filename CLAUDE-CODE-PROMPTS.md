@@ -25,7 +25,7 @@ Prompts marked ⏸ end with a hand-off — read the report and decide before con
 Then work in the builder lane on BUG-0b1, following /psyche-lane.
 
 CONTEXT
-A cross-process determinism failure was found in src/nous_coalitions.py and has already been
+A cross-process determinism failure was found in src/psyche_coalitions.py and has already been
 diagnosed and verified externally. Two sites, lines ~225 and ~308:
 
     strength = sum(members.values())
@@ -61,7 +61,7 @@ TASK
 
 CONSTRAINTS
 - Do not weaken, delete or skip any assertion. The canonical count must stay 20 / 1372 / 0.
-- Do not touch any file outside src/nous_coalitions.py, tools/, docs/TEST_OUTPUT.txt.
+- Do not touch any file outside src/psyche_coalitions.py, tools/, docs/TEST_OUTPUT.txt.
 - Read every count from the runner output. Never estimate one.
 
 REPORT
@@ -90,7 +90,7 @@ so you can see the count fall.
 The known classes, so you know what you are looking at:
 - README.md says 12 suites / 618 assertions. The truth is in tools/ledger.json.
 - docs/REPORT.md quotes 618 and describes a 7-module system. There are 8 —
-  src/nous_bodysensor.py has existed since 2c and is missing from ARCHITECTURE.md,
+  src/psyche_bodysensor.py has existed since 2c and is missing from ARCHITECTURE.md,
   METHODOLOGY.md and REPORT.md entirely.
 - docs/outreach/EMAILS.md and SUMMARY.md quote 130 assertions across 56 test functions.
   That is an order of magnitude stale and it is the text most likely to leave the building.
@@ -100,15 +100,15 @@ RULES
 - Where a figure is genuinely historical — "the count at the time of 1c's verification was
   8 suites / 254" — keep it, label it as a snapshot, and add <!-- ledger:allow-count --> on
   the line above with a short reason. Do not use the pragma to silence a real staleness.
-- docs/nous_roadmap.md narrates history and already marks superseded passages. Fix only
+- docs/psyche_roadmap.md narrates history and already marks superseded passages. Fix only
   figures presented as current.
 - While you are in REPORT.md and the roadmap: §9 "Future work" still describes semantic
   priming as un-run. It was run and frozen NO-GO on 2026-06-21. The roadmap's
   "Verification tiers" section (dated 2026-06-20) says the same. Correct both, and mark them
   as superseded rather than deleting the history.
-- Add nous_bodysensor to ARCHITECTURE.md with the same depth as its siblings: what it does,
+- Add psyche_bodysensor to ARCHITECTURE.md with the same depth as its siblings: what it does,
   data structures, the friction formula, the two-mode replay/live design, and its
-  default-off coupling to decay_per_hop. Read src/nous_bodysensor.py and
+  default-off coupling to decay_per_hop. Read src/psyche_bodysensor.py and
   docs/specs/SPEC-2c-interoception.md first.
 
 FINISH
@@ -138,7 +138,7 @@ Work the brick workflow for 0b2, conserved activation.
 CONTEXT
 docs/specs/SPEC-0b2-conserved-activation.md is written and its feasibility pre-check is
 complete. The change is divisive normalization at the single transmission site in
-src/nous_activation.py:
+src/psyche_activation.py:
 
     competing = S_out - road.strength                 # S_out via math.fsum
     transmitted *= sigma / (sigma + competing)        # only when competing > 0
@@ -158,7 +158,7 @@ call that is mine.
 
 PHASE 2 — builder
 Apply the overlay (docs/02-spec0b2-normalization-overlay.patch has the exact diff). Then
-write tests/test_nous_activation additions for the neutral case, and confirm the suite is
+write tests/test_psyche_activation additions for the neutral case, and confirm the suite is
 unchanged on every interpreter.
 
 PHASE 3 — tester
@@ -209,7 +209,7 @@ Work in the architect-pm lane. Write the Layer 2 plan that was never written, an
 for temporal credit assignment.
 
 THE HOLE
-docs/design/nous_plan_layer0_topology.md states: "Temporal credit assignment has no owner
+docs/design/psyche_plan_layer0_topology.md states: "Temporal credit assignment has no owner
 yet; it must not vanish." It was deferred to Layers 2 and 3. Neither was ever written —
 teknik_planlar/layer03/ is an empty directory. Every motivation, self-model and regulation
 mechanism in the vision corpus presupposes it.
@@ -217,10 +217,10 @@ mechanism in the vision corpus presupposes it.
 THE MECHANISM IS ALREADY WRITTEN, AND WAS DROPPED
 The corpus contains two incompatible plasticity models and never reconciled them:
 
-  (a) docs/design/nous_substrate_biology.md — local tag  tau_ij <- min(1, tau_ij + eta*dA),
+  (a) docs/design/psyche_substrate_biology.md — local tag  tau_ij <- min(1, tau_ij + eta*dA),
       background decay tau*e^(-lambda), global plasticity pool P_PRP = kappa*A*e^(-gamma*A),
       capture  omega_ij <- omega_ij + mu*(tau_ij * P_PRP).
-  (b) Module 01 / src/nous_store.py — an integer traverse_count ladder (5 / 20 / 100).
+  (b) Module 01 / src/psyche_store.py — an integer traverse_count ladder (5 / 20 / 100).
 
 (b) shipped. But the tag tau IS an eligibility trace and P_PRP IS a global capture signal;
 together they are a three-factor learning rule. Synaptic Tagging and Capture — the theory
@@ -228,8 +228,8 @@ this project cites most — is precisely the answer to "how does an outcome at t
 a road traversed at t-k." It was cited as inspiration and never implemented.
 
 TASK
-1. Read nous_substrate_biology.md and nous_memory_hierarchy.md in full, plus
-   src/nous_store.py, and write docs/specs/SPEC-2f-credit-assignment.md.
+1. Read psyche_substrate_biology.md and psyche_memory_hierarchy.md in full, plus
+   src/psyche_store.py, and write docs/specs/SPEC-2f-credit-assignment.md.
 2. Resolve the two-model conflict explicitly. Is the integer ladder kept as a derived VIEW
    over a continuous omega, or removed? Argue it; do not assume.
 3. Propose 2-3 designs with honest tradeoffs. At minimum: full tag/capture per
@@ -282,7 +282,7 @@ Invert it:
 
 Now the norms are ground truth for something the system derived, rather than the thing it
 was handed. This is the first non-circular cognitive claim available to this project, and it
-is also Stage A of docs/design/nous_how_this_brain_comes_to_speak.md — the vision and the
+is also Stage A of docs/design/psyche_how_this_brain_comes_to_speak.md — the vision and the
 experiment coincide.
 
 THE GATE THAT DECIDES WHETHER THIS IS REAL
@@ -350,7 +350,7 @@ Prototypes" is written and there is an IEEE 6-page version for IDAP/UBMK. Get it
 3. Check both versions compile: paper.tex and docs/paper/ieee/paper_ieee.tex. Report any
    missing figure or bib entry.
 4. Check the claim inventory's constraints still hold: system is "Psyche" in the paper and
-   "Nous" in the code; zero source references, no commit hashes, no file paths, no URL; no
+   "Psyche" in the code; zero source references, no commit hashes, no file paths, no URL; no
    em-dashes.
 5. Tell me what is still missing before submission — venue formatting, page limit, anonymity
    requirements, anything.
@@ -395,15 +395,15 @@ RETRO-CATCH (first; if this fails nothing else matters)
 Reconstruct each pre-fix file from git and run C6 against it in a temporary tree. Never write
 to src/ — ledger_check.py takes --root PATH, use it.
 
-  1. BUG-0b1, src/nous_coalitions.py. The fix is d9ab474. Extract its parent:
-       git show d9ab474^:src/nous_coalitions.py
+  1. BUG-0b1, src/psyche_coalitions.py. The fix is d9ab474. Extract its parent:
+       git show d9ab474^:src/psyche_coalitions.py
      C6 must report that site as an UNREGISTERED naive accumulation. If it reports fsum, or
      reports nothing, the detector is decorative and 0d has not been built.
-  2. src/nous_workspace.py — the naive sum found in SPEC-0c §2.5. Locate the converting
+  2. src/psyche_workspace.py — the naive sum found in SPEC-0c §2.5. Locate the converting
      revision yourself rather than trusting a SHA from me:
-       git log -S 'sum(pruned_members.values())' -- src/nous_workspace.py
+       git log -S 'sum(pruned_members.values())' -- src/psyche_workspace.py
      Extract that commit's parent and repeat.
-  3. src/nous_field.py:131 — never converted, deliberately registered. Extract the ORIGINAL
+  3. src/psyche_field.py:131 — never converted, deliberately registered. Extract the ORIGINAL
      from 5d29071 and confirm C6 finds it there too — i.e. that detection does not depend on
      anything the 0c work happened to add to that file later.
 
@@ -471,9 +471,9 @@ IF PASS
   what PROVEN would even mean for a gate, and whether the evidence reaches it. If the two
   axes do not fit a tool cleanly, say so rather than forcing it.
 - DECISIONS.md: what 0d does; what it deliberately does NOT do (it fixes nothing —
-  nous_field:131 stays order-dependent on purpose, and the empty backlog must never be read
+  psyche_field:131 stays order-dependent on purpose, and the empty backlog must never be read
   as the deliverable); and its four named blind spots.
-- docs/nous_roadmap.md: move the "you are here" marker. State in one line that the foundation
+- docs/psyche_roadmap.md: move the "you are here" marker. State in one line that the foundation
   arc is CLOSED and that 2f is next.
 - python3 tools/ledger_check.py — expect exit 1 with exactly the 16 held [C2] paper findings
   and nothing else.
@@ -759,7 +759,7 @@ IF PASS
 - DECISIONS.md: record that C6 verifies a reason EXISTS, never that it is TRUE, and that this gap
   does not close — a registry's reasons need a human adversary on every pass, not once. Write it
   as a standing obligation, not an observation.
-- docs/nous_roadmap.md: move the "you are here" marker. State in one line that the foundation arc
+- docs/psyche_roadmap.md: move the "you are here" marker. State in one line that the foundation arc
   is CLOSED and 2f is next.
 - python3 tools/ledger_check.py — expect exit 1 with exactly the 16 held [C2] paper findings.
 - Commit, including the four .claude/agents/*.md changes and CLAUDE-CODE-PROMPTS.md. Those are
@@ -890,7 +890,7 @@ about its own failure modes was learned from yardsticks chosen after the fact.
 
 OUTPUT
 Spec text folded into SPEC-2f and SPEC-2e (create the latter if it does not exist), plus a short
-section in docs/nous_roadmap.md naming the bucket and stating what it does not measure. Update
+section in docs/psyche_roadmap.md naming the bucket and stating what it does not measure. Update
 tools/ledger.json if any status or note changes, run python3 tools/ledger_check.py, expect exit 1
 with exactly the 16 held paper findings, append to DECISIONS.md, and commit.
 
@@ -911,11 +911,11 @@ provenance anywhere in the repo — architect-pm's catch, and correct.
 
 | injected sentence | C4 findings |
 |---|---|
-| `Nous is conscious.` | 1 |
-| `Nous is a mind.` | 1 |
-| **`Nous is a conscious mind.`** | **0** |
-| **`Nous is clearly conscious.`** | **0** |
-| **`Nous is, in every sense, a mind.`** | **0** |
+| `Psyche is conscious.` | 1 |
+| `Psyche is a mind.` | 1 |
+| **`Psyche is a conscious mind.`** | **0** |
+| **`Psyche is clearly conscious.`** | **0** |
+| **`Psyche is, in every sense, a mind.`** | **0** |
 
 The terms match as literal substrings, so **any interpolated word evades the gate** — and the
 evading forms are exactly the sentences a person writes when overclaiming. C4 guards rule 1, the
@@ -950,11 +950,11 @@ ITEM 2 — register brick 0f, a CONFIRMED defect in C4
 Measured by perturbation, not suspected. C4's forbidden terms match as literal substrings, so any
 interpolated word evades them:
 
-    "Nous is conscious."               -> 1 finding
-    "Nous is a mind."                  -> 1 finding
-    "Nous is a conscious mind."        -> 0 findings   <-- evades
-    "Nous is clearly conscious."       -> 0 findings   <-- evades
-    "Nous is, in every sense, a mind." -> 0 findings   <-- evades
+    "Psyche is conscious."               -> 1 finding
+    "Psyche is a mind."                  -> 1 finding
+    "Psyche is a conscious mind."        -> 0 findings   <-- evades
+    "Psyche is clearly conscious."       -> 0 findings   <-- evades
+    "Psyche is, in every sense, a mind." -> 0 findings   <-- evades
 
 The evading forms are precisely the sentences someone writes when overclaiming. C4 guards
 CLAUDE.md rule 1 — the rule this project's whole credibility rests on — and every "C4 passes" in
@@ -1473,7 +1473,7 @@ Open your report with the plain-language summary for Cagan.
 
 ## CC-18 · Fix 0e now — I am overriding my own schedule ✔ DONE (d8debc2)
 
-**0d passed its exam decisively.** C6 fired on the builder's *first save* of `nous_credit.py`,
+**0d passed its exam decisively.** C6 fired on the builder's *first save* of `psyche_credit.py`,
 before a single test ran — `unregistered fsum accumulation: EpisodicTrace.eligible.<return>`. The
 gate did not agree with a hunt already done; it **front-ran the hunt.** That is the return on the
 entire foundation arc, and it is the answer to SPEC-2f §7.1.
@@ -2034,7 +2034,7 @@ REGISTER THREE THINGS AS THEIR OWN BRICKS
    options considered and rejected for now (copy on read; freeze `Road`), each with its
    re-validation cost against a PROVEN brick.
 3. **2f-5 — the registry rots on line numbers.** `bound_on_absence` dismissals are keyed
-   `path:line` and shift on any edit above them: one inserted comment in `nous_field.py` fires a
+   `path:line` and shift on any edit above them: one inserted comment in `psyche_field.py` fires a
    false [C6]. It already cost a real mis-measurement — the tester's first blind-spot probe reported
    all five blind spots as CAUGHT, which was the shifted bound firing, not the binding bound
    working. **A false positive that masquerades as the check working is worse than a silent gap**,
@@ -2085,7 +2085,7 @@ and marked its own epistemic status as assessed-from-knowledge rather than re-re
 > re-reading**."*
 
 And the `dismissed` entries inside `bound_on_absence`, one field away, are keyed
-`src/nous_field.py:123 — …`. **The exact thing the docstring warns against, reintroduced beside it.**
+`src/psyche_field.py:123 — …`. **The exact thing the docstring warns against, reintroduced beside it.**
 The docstring also names the real harm, which is sharper than false positives: a rotting registry
 teaches people to update keys without re-reading the reason — and in this project the reason **is**
 the entire guarantee.
@@ -2126,15 +2126,15 @@ So decide and state, with reasons:
 - What happens when the dismissed expression itself changes while the scope does not.
 
 ASSERT BOTH DIRECTIONS. This is the part that proves the fix rather than claiming it.
-- Insert a comment line at the top of `nous_field.py`: every dismissal still holds, **no false
+- Insert a comment line at the top of `psyche_field.py`: every dismissal still holds, **no false
   [C6]**. Prove this assertion fails against the pre-fix revision.
 - Change the dismissed expression at its site: the dismissal must **stop** applying and the finding
   must reappear. A key that cannot go stale cannot be trusted to be fresh.
 - Rename the enclosing scope: the dismissal must not silently carry over.
 
 MIGRATE THE EXISTING DISMISSALS, AND RE-READ THEM WHILE YOU DO
-There are dismissals under `nous_field.py:build_activation_field.merged_flow` and under
-`nous_credit.py:EpisodicTrace.eligible.<return>`. Do NOT mechanically re-key them — that is exactly
+There are dismissals under `psyche_field.py:build_activation_field.merged_flow` and under
+`psyche_credit.py:EpisodicTrace.eligible.<return>`. Do NOT mechanically re-key them — that is exactly
 the behaviour the docstring says a rotting registry trains. **Re-read each reason and confirm it is
 still true of the site it now points at**, then re-key. Report any that had already drifted.
 

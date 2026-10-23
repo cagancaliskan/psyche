@@ -16,9 +16,9 @@ description of a working system.
 
 Of the 13 files here, only two correspond to what was actually built:
 
-- [`nous_plan_layer0_topology.md`](nous_plan_layer0_topology.md): the topology/graph layer plan.
-- [`nous_plan_layer1_substrate_store.md`](nous_plan_layer1_substrate_store.md): the substrate
-  store plan, realized in `src/nous_store.py`.
+- [`psyche_plan_layer0_topology.md`](psyche_plan_layer0_topology.md): the topology/graph layer plan.
+- [`psyche_plan_layer1_substrate_store.md`](psyche_plan_layer1_substrate_store.md): the substrate
+  store plan, realized in `src/psyche_store.py`.
 
 The other **eleven** documents (substrate biology, memory hierarchy, abstraction engine, self
 model, motivation architecture, attention & awareness, emotional regulation, the sleeping brain,

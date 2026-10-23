@@ -1,12 +1,12 @@
 <!-- ledger:ignore-file -->
-# Nous / Psyche — map of content
+# Psyche — map of content
 
 The entry point. Start here in Obsidian; everything else hangs off this.
 
 ## Where we are
 
 - [[tools/ledger.json|THE LEDGER]] — every quotable fact. Nothing else is authoritative.
-- [[docs/nous_roadmap|Roadmap]] — the narrative position, phases, "you are here"
+- [[docs/psyche_roadmap|Roadmap]] — the narrative position, phases, "you are here"
 - [[DECISIONS|Decisions]] — append-only log of what changed and why
 - [[CLAUDE|Constitution]] — the ten rules
 
@@ -17,8 +17,8 @@ The entry point. Start here in Obsidian; everything else hangs off this.
 - [[docs/METHODOLOGY|Methodology — the six bugs]]
 - [[docs/REPORT|Technical report]]
 
-Modules: `nous_store` · `nous_activation` · `nous_field` · `nous_coalitions` ·
-`nous_source_clustering` · `nous_workspace` · `nous_perceive` · `nous_bodysensor`
+Modules: `psyche_store` · `psyche_activation` · `psyche_field` · `psyche_coalitions` ·
+`psyche_source_clustering` · `psyche_workspace` · `psyche_perceive` · `psyche_bodysensor`
 
 ## Specs and pre-registrations
 

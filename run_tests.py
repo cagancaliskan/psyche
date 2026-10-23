@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Run every Nous test suite from the src-layout and report real pass/fail counts.
+Run every Psyche test suite from the src-layout and report real pass/fail counts.
 
 Why this script exists
 ----------------------
 The modules live in ``src/`` and the suites in ``tests/``, but each suite imports
-the modules by bare name (``from nous_store import ...``) and the determinism tests
+the modules by bare name (``from psyche_store import ...``) and the determinism tests
 additionally spawn fresh ``python -c`` subprocesses that *also* import by bare name.
 Those subprocesses set their own working directory to ``tests/`` and inherit this
 process's environment, so the only thing that makes their imports resolve is an
@@ -34,25 +34,25 @@ TESTS = os.path.join(ROOT, "tests")
 EXPERIMENTS = os.path.join(ROOT, "experiments")
 
 SUITES = [
-    "test_nous_store.py",
-    "test_nous_activation.py",
-    "test_nous_coalitions.py",
-    "test_nous_field.py",
-    "test_nous_source_clustering.py",
-    "test_nous_workspace.py",
-    "test_nous_workspace_broadcast.py",
-    "test_nous_perceive.py",
+    "test_psyche_store.py",
+    "test_psyche_activation.py",
+    "test_psyche_coalitions.py",
+    "test_psyche_field.py",
+    "test_psyche_source_clustering.py",
+    "test_psyche_workspace.py",
+    "test_psyche_workspace_broadcast.py",
+    "test_psyche_perceive.py",
     # 2c interoception: BodySensor + default-off modulation hook — REPLAY-deterministic
     # mechanism only (no live telemetry here; the live smoke + populability pilot are
     # data/telemetry-dependent and stay OUT of the canonical runner, like the 1e selection
     # runner). Makes NO meaning claim.
-    "test_nous_bodysensor.py",
+    "test_psyche_bodysensor.py",
     # 2f-i temporal credit assignment (SPEC-2f Design C) — the episodic trace and the
     # eligibility kernel, plus think()'s default-off `credit_trace` hook. MECHANISM only:
     # it verifies that an outcome at cycle t+k moves a weight at t in a bounded, decaying,
     # reproducible way, against a control matched by construction and a shuffle that
     # preserves both marginals. It makes NO cognitive claim.
-    "test_nous_credit.py",
+    "test_psyche_credit.py",
     # independent adversarial verification (tester-authored) — kept in the one runner so the
     # canonical captured output reflects the full verification, not just the builder's suites.
     "test_tester_1c_adversarial.py",

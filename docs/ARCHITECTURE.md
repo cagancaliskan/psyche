@@ -1,11 +1,11 @@
-# Nous: Architecture (as built)
+# Psyche: Architecture (as built)
 
 This is the **as-built** technical reference for the code in `src/`. It describes what the
 eight modules actually do, the data model, the public surfaces and their invariants, and the
 key design decisions and *why* they were made. Claims here are traceable to the code and its
 docstrings; design rationale draws on the two implementation-plan documents,
-[`design/nous_plan_layer0_topology.md`](design/nous_plan_layer0_topology.md) and
-[`design/nous_plan_layer1_substrate_store.md`](design/nous_plan_layer1_substrate_store.md),
+[`design/psyche_plan_layer0_topology.md`](design/psyche_plan_layer0_topology.md) and
+[`design/psyche_plan_layer1_substrate_store.md`](design/psyche_plan_layer1_substrate_store.md),
 and on the specs in [`specs/`](specs/).
 
 Where a component is exploratory, or where a property is mechanism-verified but its *cognitive
@@ -24,36 +24,36 @@ times and refused three times before any graded number existed; the meaning bar 
 ```
 text ─► perceive() ─► cluster_sources() ─► build_activation_field() ─► form_coalitions_from_field()
                             │                       │                          │
-   nous_perceive.py         │  nous_source_         │   nous_field.py          │  nous_coalitions.py
+   psyche_perceive.py         │  psyche_source_         │   psyche_field.py          │  psyche_coalitions.py
                             │  clustering.py         ▼                          ▼
                             │              spread_activation()  ◄── reads ──  SubstrateStore
-                            │              nous_activation.py                 nous_store.py
+                            │              psyche_activation.py                 psyche_store.py
                             ▼                                                       ▲
                      select_winner() ─► prune ─► broadcast()  ── single bounded write ──┘
-                     nous_workspace.py                          (biases the next cycle; closes the loop)
+                     psyche_workspace.py                          (biases the next cycle; closes the loop)
 ```
 
-- **`nous_store.py`: SubstrateStore (Layer 1):** Holds the graph; the only component that
+- **`psyche_store.py`: SubstrateStore (Layer 1):** Holds the graph; the only component that
   mutates. Contains no "cognitive" logic. **`PROVEN`: determinism, integrity, purity.**
-- **`nous_activation.py`: spreading activation:** The first operation that *reads across* the
+- **`psyche_activation.py`: spreading activation:** The first operation that *reads across* the
   graph. Pure read. **`PROVEN`: determinism, purity; principled approximation.**
-- **`nous_field.py`: multi-source field:** Composes per-source spreads into basins.
+- **`psyche_field.py`: multi-source field:** Composes per-source spreads into basins.
   Deterministic, pure. *Tester-verified mechanism; no cognitive claim.*
-- **`nous_coalitions.py`: coalition formation:** Groups co-activated nodes. Deterministic,
+- **`psyche_coalitions.py`: coalition formation:** Groups co-activated nodes. Deterministic,
   pure. *Tester-verified mechanism; no cognitive claim.*
-- **`nous_source_clustering.py`: source-clustering (1c):** A pure-read pre-stage between
+- **`psyche_source_clustering.py`: source-clustering (1c):** A pure-read pre-stage between
   perception and the field that groups nearby perceived sources and seeds the field from one
   representative per group. Deterministic, pure, integrity-preserving. *Tester-verified
   mechanism; no cognitive claim.*
-- **`nous_workspace.py`: workspace (1d):** One competition among coalitions (1d-i), pruning of
+- **`psyche_workspace.py`: workspace (1d):** One competition among coalitions (1d-i), pruning of
   the bridged unperceived material from the winner (1d-i), and a single bounded broadcast back
   onto the substrate that biases the next cycle (1d-ii). Selection is a pure read; the broadcast
   is the one explicit write. *Tester-verified mechanism — including no-divergence and
   no-lock-in stability of the write; no cognitive claim.*
-- **`nous_perceive.py`: perception + the closed cycle:** Turns text into sources and runs the
+- **`psyche_perceive.py`: perception + the closed cycle:** Turns text into sources and runs the
   whole loop. `think(..., broadcast=False)` (the default) is a pure read; `broadcast=True`
   performs the single feedback write. *Tester-verified mechanism; the loop closes.*
-- **`nous_bodysensor.py`: body-state sensor + modulation hook (2c):** Derives a scalar from
+- **`psyche_bodysensor.py`: body-state sensor + modulation hook (2c):** Derives a scalar from
   live process telemetry and, when enabled, scales the global `decay_per_hop`. Two modes:
   deterministic **replay** over a frozen hashed trace (the entire test surface) and **live**
   (the single isolated boundary, production only). **Default-off**: with no sensor supplied,
@@ -67,7 +67,7 @@ public surface only.
 
 ## 1. Data model
 
-### Node: `nous_store.Node`
+### Node: `psyche_store.Node`
 The atomic unit of information; **always emotionally neutral** (emotion lives on roads, never
 on nodes).
 
@@ -81,7 +81,7 @@ on nodes).
 | `last_accessed` | `float` | updated by `traverse()` (touch) |
 | `access_count` | `int` | how often the node was touched |
 
-### Road: `nous_store.Road`
+### Road: `psyche_store.Road`
 A **directed** connection `source → target`. Carries access quality (via `strength`) and a
 **multi-valued emotional life** (via `charges`). Decay is lazy.
 
@@ -348,7 +348,7 @@ disciplined-exploratory tier, not here, and does not move this layer out of `BUI
 
 ## 7. The workspace: competition, pruning, and bounded broadcast (1d)
 
-`nous_workspace.py` is what the old "strongest coalition = the thought" placeholder stood in
+`psyche_workspace.py` is what the old "strongest coalition = the thought" placeholder stood in
 for. It is built as two bricks.
 
 ### 7.1 Competition + pruning (1d-i) — a pure read
@@ -450,11 +450,11 @@ residual corner case (§7.1) shipped as an asserted-negative.
 
 ## 9. Body-state sensor and the modulation hook (2c)
 
-`nous_bodysensor.py`. Interoception in the only sense this codebase permits the word: **a scalar
+`psyche_bodysensor.py`. Interoception in the only sense this codebase permits the word: **a scalar
 computed from live OS/process telemetry, injected at a defined point in the cycle, which
 causally changes what the cycle does.** It is not a claim that the system feels anything, has a
 body, or is aware of its own state; the vision document this descends from
-([`design/nous_the_bodys_voice.md`](design/nous_the_bodys_voice.md)) is quarantined as vision,
+([`design/psyche_the_bodys_voice.md`](design/psyche_the_bodys_voice.md)) is quarantined as vision,
 and SPEC-2c §0.1 states that firewall as an acceptance condition.
 
 ### 9.1 The signal
@@ -540,5 +540,5 @@ which the anti-manufacture guard forbids. This is recorded as the finding rather
     loop, graded against human SWOW norms) has **not** been run. No cognitive meaning is claimed
     by any layer above.
 
-  See [METHODOLOGY.md](METHODOLOGY.md), [`nous_roadmap.md`](nous_roadmap.md), and the README's
+  See [METHODOLOGY.md](METHODOLOGY.md), [`psyche_roadmap.md`](psyche_roadmap.md), and the README's
   scope statement.

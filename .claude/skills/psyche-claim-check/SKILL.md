@@ -1,6 +1,6 @@
 ---
 name: psyche-claim-check
-description: Audit any text against the Psyche/Nous honesty contract before it ships — a commit message, README section, paper paragraph, delivery report, outreach email, or docstring. Runs the automated staleness and forbidden-claim checks, then applies the judgement checks a linter cannot. Use before every commit and before anything leaves the repository.
+description: Audit any text against the Psyche honesty contract before it ships — a commit message, README section, paper paragraph, delivery report, outreach email, or docstring. Runs the automated staleness and forbidden-claim checks, then applies the judgement checks a linter cannot. Use before every commit and before anything leaves the repository.
 argument-hint: "[path or paste the text]"
 allowed-tools: Read, Glob, Grep, Bash, Edit
 ---

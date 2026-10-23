@@ -1,6 +1,6 @@
 ---
 name: psyche-prereg
-description: Write a frozen pre-registration for any Psyche/Nous experiment that will produce a graded number, and run the anti-circularity gate before a single number is computed. Use for every meaning-bar attempt, every cognitive claim, and every validator experiment. Encodes the reasoning that produced three correct NO-GOs before wasted graded runs.
+description: Write a frozen pre-registration for any Psyche experiment that will produce a graded number, and run the anti-circularity gate before a single number is computed. Use for every meaning-bar attempt, every cognitive claim, and every validator experiment. Encodes the reasoning that produced three correct NO-GOs before wasted graded runs.
 argument-hint: "[brick-id] [short experiment name]"
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, WebSearch, WebFetch
 ---

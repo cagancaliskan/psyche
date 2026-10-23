@@ -3,11 +3,11 @@
 Figure: passing assertions per test suite.
 
 Data are taken VERBATIM from docs/TEST_OUTPUT.txt:
-    test_nous_store.py        45
-    test_nous_activation.py   35
-    test_nous_coalitions.py   19
-    test_nous_field.py        13
-    test_nous_perceive.py     18
+    test_psyche_store.py        45
+    test_psyche_activation.py   35
+    test_psyche_coalitions.py   19
+    test_psyche_field.py        13
+    test_psyche_perceive.py     18
     --------------------------------
     TOTAL                    130 passed, 0 failed   (across 56 test functions)
 
@@ -48,7 +48,7 @@ ax.set_xticks(range(len(suites)))
 ax.set_xticklabels(suites, fontsize=10)
 ax.set_ylabel("Passing assertions (checks)", fontsize=11)
 ax.set_ylim(0, 52)
-ax.set_title("Nous test suite: passing assertions per suite\n"
+ax.set_title("Psyche test suite: passing assertions per suite\n"
              "130 passed, 0 failed  •  56 test functions  •  CPython 3.13.2",
              fontsize=12.5, fontweight="bold")
 ax.spines["top"].set_visible(False)

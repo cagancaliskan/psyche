@@ -1,6 +1,6 @@
 ---
 name: psyche-ledger
-description: Read or update the Psyche/Nous fact ledger — the single source of truth for test counts, brick statuses, constants and results. Use whenever you need a number, whenever a suite is re-captured, and whenever a brick changes status. Never quote a count from a document; quote it from here.
+description: Read or update the Psyche fact ledger — the single source of truth for test counts, brick statuses, constants and results. Use whenever you need a number, whenever a suite is re-captured, and whenever a brick changes status. Never quote a count from a document; quote it from here.
 argument-hint: "[show|sync|status <brick> <STATUS>|check]"
 allowed-tools: Read, Edit, Bash
 ---

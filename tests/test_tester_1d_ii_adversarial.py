@@ -1,11 +1,11 @@
 """
 INDEPENDENT ADVERSARIAL TEST SUITE for step 1d-ii — broadcast + bounded feedback
-(nous_workspace.broadcast / _internal_road_ids, wired behind think(broadcast=True)).
+(psyche_workspace.broadcast / _internal_road_ids, wired behind think(broadcast=True)).
 
 Author: tester (independent adversary). Written FROM SCRATCH against SPEC-1d §3.3
 (broadcast), Decision B/B1, §5 (substrate bar + purity nuance), §6.3 (BOTH stability
 directions — the crux), and §7 (asserted-negatives). NOT adapted from the builder's
-suite (tests/test_nous_workspace_broadcast.py). 1d-i is already verified; this suite
+suite (tests/test_psyche_workspace_broadcast.py). 1d-i is already verified; this suite
 attacks ONLY what 1d-ii ADDS: the single broadcast WRITE and the closed feedback loop.
 
 DISCIPLINE (CLAUDE.md — tester lane):
@@ -50,12 +50,12 @@ import textwrap
 import inspect
 import random
 
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_perceive import perceive, think
-from nous_field import build_activation_field
-from nous_coalitions import form_coalitions_from_field, Coalition
-from nous_source_clustering import cluster_sources
-from nous_workspace import (
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_perceive import perceive, think
+from psyche_field import build_activation_field
+from psyche_coalitions import form_coalitions_from_field, Coalition
+from psyche_source_clustering import cluster_sources
+from psyche_workspace import (
     select_winner, broadcast, Broadcast, WorkspaceResult,
     _internal_road_ids, _strongest_road_strength,
 )
@@ -777,8 +777,8 @@ def test_F_determinism_whole_store_after_n_broadcasts_6_seeds():
     # 15 successive broadcast cycles are most likely to produce.
     driver = textwrap.dedent('''
         import struct
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import think
+        from psyche_store import SubstrateStore, Clock, NodeType
+        from psyche_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
         def add(c): return s.add_node(c, NodeType.CONCEPT)
         # named dense clique (5 nodes, all pairs)
@@ -821,8 +821,8 @@ def test_F_determinism_bias_then_escape_trace_6_seeds():
     # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     driver = textwrap.dedent('''
         import struct
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import think
+        from psyche_store import SubstrateStore, Clock, NodeType
+        from psyche_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
         def add(c): return s.add_node(c, NodeType.CONCEPT)
         coffee=add("coffee"); warmth=add("warmth"); morning=add("morning routine")

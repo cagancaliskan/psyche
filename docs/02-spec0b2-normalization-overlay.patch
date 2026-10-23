@@ -1,5 +1,5 @@
---- /tmp/nous_activation.py.bak	2026-07-25 15:32:46.707673438 +0000
-+++ src/nous_activation.py	2026-07-25 15:29:23.385369683 +0000
+--- /tmp/psyche_activation.py.bak	2026-07-25 15:32:46.707673438 +0000
++++ src/psyche_activation.py	2026-07-25 15:29:23.385369683 +0000
 @@ -69,6 +69,7 @@
  
  import itertools
@@ -7,7 +7,7 @@
 +import math
  from typing import Dict, List, Optional
  
- from nous_store import SubstrateStore, NotFound
+ from psyche_store import SubstrateStore, NotFound
 @@ -163,6 +164,7 @@
      decay_per_hop: float = DEFAULT_DECAY_PER_HOP,
      floor: float = DEFAULT_FLOOR,

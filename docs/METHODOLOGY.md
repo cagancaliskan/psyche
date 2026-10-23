@@ -1,4 +1,4 @@
-# Nous: Methodology: adversarial testing caught structural bugs
+# Psyche: Methodology: adversarial testing caught structural bugs
 
 This is the most transferable part of the project, and the one whose claims are easiest to
 check, so it is written to be checkable. **Every factual claim below is traceable to the code
@@ -71,7 +71,7 @@ re-evaluated closure, repeated reads over time could let a *closed* (traumatic) 
 open, with no crossing ever having reopened it.
 **Root cause:** conflating "compute the current value" with "persist the current value," and
 letting a passive read touch a state (`closed`) that should only change on an active event.
-**The fix (in `nous_store.py`):** decay is split into a pure view and a persisting write.
+**The fix (in `psyche_store.py`):** decay is split into a pure view and a persisting write.
 `_compute_decay(road, now)` returns decayed `(strength, charges)` **without mutating**;
 `get_road(apply_decay=True)` returns a **copy** carrying those values (docstring: *"a decayed
 VIEW: a copy, so the read does not persist anything"*). Only `_persist_decay` mutates, and it is
@@ -90,7 +90,7 @@ node is then re-expanded as later paths raise its value, everything downstream o
 point is counted multiple times.
 **Root cause (named in the code):** importing **Dijkstra's "first-pop-final" intuition** into an
 algorithm where activation *accumulates* rather than being a shortest-path minimum. The
-`nous_activation.py` docstring calls the earlier draft's structure out directly.
+`psyche_activation.py` docstring calls the earlier draft's structure out directly.
 **The fix:** **bounded single-expansion**, hop-layered: each node expands exactly once, at the
 first hop it is reached, carrying the full sum of all paths of length ≤ that hop. Equal-length
 convergence is therefore **exact** (not a coincidence of edge strengths).
@@ -157,7 +157,7 @@ preserved while genuine internal edges are cut).
 segmentation rule applied to it keys off distance, not community structure.
 **The fix:** keep flow-cut as the single-seed segmenter (it does satisfy the "more than one
 coalition" property), but recognize the real problem is **upstream** of the algorithm and reframe
-to a **multi-source field** (`nous_field.py`): multiple sources → multiple genuine peaks → basins
+to a **multi-source field** (`psyche_field.py`): multiple sources → multiple genuine peaks → basins
 around peaks, where a node bridging two concerns goes to whichever pulls it harder, so seams fall
 *between* centers.
 **Locked by:** `test_single_seed_spread_yields_multiple_coalitions` (flow-cut yields > 1 coalition
@@ -176,7 +176,7 @@ visible in the artifact itself: `test_acceptance_multisource_recovers_communitie
 source per community by hand. It is honest as a *mechanism* test and dishonest if read as evidence
 the system finds communities on its own.)
 **Root cause:** validating a stage against inputs invented to produce the desired output.
-**The fix:** **close the loop** with the thinnest real vertical slice (`nous_perceive.py`):
+**The fix:** **close the loop** with the thinnest real vertical slice (`psyche_perceive.py`):
 `text → perceive() → sources → field → coalitions → thought`, where *which* nodes become sources is
 decided by the input matched against the substrate, **not** chosen by the test. Run on real
 clustered input, the field then produces an **incoherent** "thought": basins collapse, one source
@@ -228,7 +228,7 @@ The honest boundary that falls out of this:
 "The mechanism is correct and deterministic" and "the mechanism reproduces a cognitive phenomenon"
 are different claims. This project earns the first and explicitly does not claim the second. The
 natural next step is to test the cognitive layer against a **measurable** effect whose direction is
-known independently of Nous (for example **semantic priming**, graded against human association
+known independently of Psyche (for example **semantic priming**, graded against human association
 norms), so that, as with the substrate, the input is no longer chosen to make the answer come out
 right. That result has not yet been produced; it is the open frontier.
 
@@ -366,7 +366,7 @@ This is the generalisation of the most expensive defect in the sequence, and it 
 the highest price of the three: **it occurred inside the brick built to stop that very class,
 and it was written into that brick's spec as its headline argument.**
 
-The registry entry for `nous_field.py`'s merged-flow accumulator read *"shape present, symptom
+The registry entry for `psyche_field.py`'s merged-flow accumulator read *"shape present, symptom
 unreproduced"* — a site that looked dangerous, probed, and cleared. The probe put four sources
 onto **one node**. At the first hop each road is traversed by exactly one source's spread, so
 every value there is **single-term**, and a single-term sum cannot vary by reordering. The

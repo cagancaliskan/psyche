@@ -1,11 +1,11 @@
 <!-- ledger:ignore-file -->
 # Install
 
-Extract into the repository root (`~/Desktop/İşler/Nous/NOUS/nous`). Everything is additive
+Extract into the repository root (`~/Desktop/İşler/Psyche/PSYCHE/psyche`). Everything is additive
 except `CLAUDE.md`, which is a rewrite — diff it before overwriting.
 
 ```
-tar xzf psyche-toolkit.tar.gz -C /path/to/nous
+tar xzf psyche-toolkit.tar.gz -C /path/to/psyche
 ```
 
 ## What lands where
@@ -39,7 +39,7 @@ docs/specs/SPEC-0b2-*.md               new — the conserved-activation spec
 ## Steps
 
 ```bash
-cd ~/Desktop/İşler/Nous/NOUS/nous
+cd ~/Desktop/İşler/Psyche/PSYCHE/psyche
 git checkout -b toolkit/install
 
 # 1. diff the constitution before replacing it

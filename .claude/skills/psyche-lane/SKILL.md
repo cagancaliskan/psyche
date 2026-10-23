@@ -1,6 +1,6 @@
 ---
 name: psyche-lane
-description: Declare and enforce which of the four Psyche/Nous roles you are working in — architect-pm, builder, tester, or validator. Use before writing any code, test, spec, or experiment in this repository, and whenever a task would have you touch a file outside your role's lane. Prevents the lane violations that make this project's verification worthless.
+description: Declare and enforce which of the four Psyche roles you are working in — architect-pm, builder, tester, or validator. Use before writing any code, test, spec, or experiment in this repository, and whenever a task would have you touch a file outside your role's lane. Prevents the lane violations that make this project's verification worthless.
 argument-hint: "[architect-pm|builder|tester|validator]"
 allowed-tools: Read, Glob, Grep
 ---
@@ -22,7 +22,7 @@ do the first, hand off, and say so.
 
 ## architect-pm — plans, sequences, specifies
 
-**May:** write and edit `docs/nous_roadmap.md`, `docs/specs/**`, `DECISIONS.md`, design
+**May:** write and edit `docs/psyche_roadmap.md`, `docs/specs/**`, `DECISIONS.md`, design
 notes. Read anything. Run read-only shell (`git log`, `ls`, `cat`).
 
 **May not:** write or edit any file under `src/`, `tests/`, or `experiments/`. Decide a
@@ -39,7 +39,7 @@ A spec without a falsifier is not a spec.
 
 ## builder — implements, test-first
 
-**May:** write and edit `src/**` and its own `tests/test_nous_*.py`. Run the suite.
+**May:** write and edit `src/**` and its own `tests/test_psyche_*.py`. Run the suite.
 
 **May not:** write `tests/test_tester_*.py` (the tester's files). Mark anything as built
 that is not tested. Weaken an assertion or hand-place an input to make a test pass. Claim a

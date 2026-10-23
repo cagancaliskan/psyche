@@ -41,8 +41,8 @@ for _p in (_EXP, _SRC):
         sys.path.insert(0, _p)
 
 from harness import build_graph_from_spec, read_targets, retrieval_strength
-from nous_perceive import think
-from nous_activation import DEFAULT_DECAY_PER_HOP
+from psyche_perceive import think
+from psyche_activation import DEFAULT_DECAY_PER_HOP
 import priming_instrument as PI
 
 

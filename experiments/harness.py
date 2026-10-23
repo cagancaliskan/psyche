@@ -1,5 +1,5 @@
 """
-Nous — Phase 2 experiments — the measurement harness.
+Psyche — Phase 2 experiments — the measurement harness.
 
 This is the reusable instrument for the empirical-validation phase. It imports the
 PROVEN, FROZEN library from ../src UNCHANGED and never writes to it. Everything here
@@ -43,8 +43,8 @@ import os
 import sys
 
 # ── bootstrap: make the FROZEN library importable by bare name ───────────────────────
-# The library modules live in ../src and are imported by BARE name (`nous_store`,
-# `nous_activation`) — the project's convention (see run_tests.py). We insert the
+# The library modules live in ../src and are imported by BARE name (`psyche_store`,
+# `psyche_activation`) — the project's convention (see run_tests.py). We insert the
 # ABSOLUTE path to src at the front of sys.path so those imports resolve regardless of
 # the caller's working directory. This reads src/; it never modifies it.
 _HERE = os.path.dirname(os.path.abspath(__file__))
@@ -55,8 +55,8 @@ if SRC_DIR not in sys.path:
 from dataclasses import dataclass
 from typing import Callable, Dict, List, Tuple
 
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_activation import (
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_activation import (
     spread_activation,
     DEFAULT_SEED_ENERGY,
     DEFAULT_DECAY_PER_HOP,

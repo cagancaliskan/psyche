@@ -5,10 +5,10 @@ Figure: adversarial determinism across process hash seeds (before/after).
 What is REAL here (traceable to the test sources in tests/):
   - Four determinism tests re-run the same construction in FRESH interpreters under
     several PYTHONHASHSEED values and assert the output is BYTE-IDENTICAL:
-        test_nous_activation : test_determinism_with_same_hop_edge_adversarial   seeds {0,1,3,7,42}
-        test_nous_coalitions : test_determinism_adversarial_across_hash_seeds     seeds {0,1,2,3,7,42,123,999}
-        test_nous_field      : test_field_determinism_adversarial_across_hash_seeds seeds {0,1,2,3,7,42,123,999}
-        test_nous_perceive   : test_slice_determinism_across_hash_seeds           seeds {0,1,2,7,42,999}
+        test_psyche_activation : test_determinism_with_same_hop_edge_adversarial   seeds {0,1,3,7,42}
+        test_psyche_coalitions : test_determinism_adversarial_across_hash_seeds     seeds {0,1,2,3,7,42,123,999}
+        test_psyche_field      : test_field_determinism_adversarial_across_hash_seeds seeds {0,1,2,3,7,42,123,999}
+        test_psyche_perceive   : test_slice_determinism_across_hash_seeds           seeds {0,1,2,7,42,999}
     All of these pass (see docs/TEST_OUTPUT.txt), i.e. output is identical across each
     test's seed set.
 

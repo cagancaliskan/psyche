@@ -16,7 +16,7 @@ are used instead:
 
   1. PLANTED DEFECTS, in a scratch copy of the tree — never in src/ or tools/.
   2. THE PROJECT'S OWN HISTORY. The three naive accumulations this project found by hand
-     (BUG-0b1's two, SPEC-0c §2.5's `nous_workspace:428`, SPEC-0c §2.7's `nous_field:131`)
+     (BUG-0b1's two, SPEC-0c §2.5's `psyche_workspace:428`, SPEC-0c §2.7's `psyche_field:131`)
      are checked out from git at the commits where they were still live, and the detector
      is required to report them. That input is external to 0d: nobody writing the scanner
      got to choose what those trees contain.
@@ -28,7 +28,7 @@ while the defect is present and goes RED when it is fixed, so the record cannot 
 Every one carries an explicit exit instruction.
 
   DEFECT 0d-1  (F-6, the verdict-deciding one)  The registry entry for
-      `src/nous_field.py:build_activation_field.merged_flow` states "SHAPE PRESENT,
+      `src/psyche_field.py:build_activation_field.merged_flow` states "SHAPE PRESENT,
       SYMPTOM UNREPRODUCED". Its own stated falsifier — "a permutation probe over source
       order that moves any merged_flow value" — fires on a SIX-NODE graph, on the first
       try, and on 40 of 40 randomly generated convergent graphs. The claim is false.
@@ -48,7 +48,7 @@ Every one carries an explicit exit instruction.
       targets, `itertools.accumulate`, and — a traversal blind spot rather than a shape
       gap — EVERY STATEMENT inside a `match` case.
 
-  FINDING 0d-3  (F-6, reason quality)  `src/nous_store.py:Clock.advance._t` is registered
+  FINDING 0d-3  (F-6, reason quality)  `src/psyche_store.py:Clock.advance._t` is registered
       with "there is no term SET that could be permuted ... no alternative order a
       correct program could produce". Measured: over a random 4-element dt multiset the
       first trial already yields TWO distinct bit patterns of `_t` across the 4! orders.
@@ -197,34 +197,34 @@ def gate_exit(root: Path) -> int:
 
 HAND_CENSUS = {
     # key                                                             is_fsum
-    "src/nous_activation.py:spread_activation.frozen":                True,
-    "src/nous_activation.py:spread_activation.out_total":             True,
-    "src/nous_activation.py:spread_activation.activation":            True,
-    "src/nous_activation.py:spread_activation.flow":                  False,
-    "src/nous_coalitions.py:form_coalitions.strength":                True,
-    "src/nous_coalitions.py:form_coalitions_from_field.strength":     True,
-    "src/nous_field.py:build_activation_field.merged_flow":           False,
-    "src/nous_field.py:build_activation_field.total":                 False,
-    "src/nous_store.py:Clock.advance._t":                             False,
-    "src/nous_store.py:Road.valence.<return>":                        True,
-    "src/nous_store.py:SubstrateStore.strengthen.road.strength":      False,
-    "src/nous_store.py:SubstrateStore.strengthen.road.charges":       False,
-    "src/nous_workspace.py:Broadcast.total_strength_after.<return>":  True,
-    "src/nous_workspace.py:select_winner.strength":                   True,
+    "src/psyche_activation.py:spread_activation.frozen":                True,
+    "src/psyche_activation.py:spread_activation.out_total":             True,
+    "src/psyche_activation.py:spread_activation.activation":            True,
+    "src/psyche_activation.py:spread_activation.flow":                  False,
+    "src/psyche_coalitions.py:form_coalitions.strength":                True,
+    "src/psyche_coalitions.py:form_coalitions_from_field.strength":     True,
+    "src/psyche_field.py:build_activation_field.merged_flow":           False,
+    "src/psyche_field.py:build_activation_field.total":                 False,
+    "src/psyche_store.py:Clock.advance._t":                             False,
+    "src/psyche_store.py:Road.valence.<return>":                        True,
+    "src/psyche_store.py:SubstrateStore.strengthen.road.strength":      False,
+    "src/psyche_store.py:SubstrateStore.strengthen.road.charges":       False,
+    "src/psyche_workspace.py:Broadcast.total_strength_after.<return>":  True,
+    "src/psyche_workspace.py:select_winner.strength":                   True,
     # CONVERTED 2026-07-27. Brick 2f-i added one accumulation and the census moved
-    # 14 -> 15 (8 -> 9 fsum). Derived by hand from src/nous_credit.py, exactly as the
+    # 14 -> 15 (8 -> 9 fsum). Derived by hand from src/psyche_credit.py, exactly as the
     # fourteen above were: `math.fsum(vs)` folds a road's eligibility over its
     # occurrences in the window, which is a fold over a term set with no intrinsic
     # order. Added, never re-derived from the scanner — a hand census that copies the
     # scanner is not a second opinion.
-    "src/nous_credit.py:EpisodicTrace.eligible.<return>":             True,
+    "src/psyche_credit.py:EpisodicTrace.eligible.<return>":             True,
     # CONVERTED 2026-07-28. Brick 2g added the depression path, and with it one naive
     # accumulation: `road.strength = max(0.0, road.strength - base_loss * road.strength)`.
-    # Derived by hand from src/nous_store.py, exactly as the fifteen above were — a hand
+    # Derived by hand from src/psyche_store.py, exactly as the fifteen above were — a hand
     # census that reads the scanner is not a second opinion. Naive, not fsum, and that is
     # correct: it is a single-term decrement per call, registered with the same bound its
     # mirror `strengthen.road.strength` carries.
-    "src/nous_store.py:SubstrateStore.weaken.road.strength":           False,
+    "src/psyche_store.py:SubstrateStore.weaken.road.strength":           False,
 }
 
 
@@ -306,6 +306,7 @@ def test_F1_LOOPCLOSED_the_detector_reports_the_three_hunts_on_the_trees_they_li
     section("F-1  LOOP-CLOSED: run the census on the project's OWN pre-fix trees")
     # Input the previous stages actually produced. Nobody writing the scanner chose what
     # is in these commits, so a hit here cannot be a fixture agreeing with itself.
+    # Keys name the files as they were in each commit, before the Psyche rename.
     cases = [
         ("5d29071", "initial commit",
          {"src/nous_activation.py:spread_activation.activation",     # DEFECT-A
@@ -434,18 +435,18 @@ P_SUBPACKAGE = ('"""A module in a src/ SUBDIRECTORY the census has never seen.""
                 '    return t\n')
 
 INJECTIONS = [
-    ("SPEC shape 1/3  += into a dict", {"src/nous_field.py": P_DICT}, "_tp_basin_merge.basin"),
-    ("SPEC shape 2/3  a running local", {"src/nous_activation.py": P_LOCAL}, "_tp_running.carried"),
-    ("SPEC shape 3/3  the builtin sum", {"src/nous_workspace.py": P_SUM}, "_tp_builtin.<return>"),
-    ("tester  class-attribute fold", {"src/nous_store.py": P_CLASSATTR}, "_tp_classattr._TpLedger.running"),
-    ("tester  += into a subscript", {"src/nous_coalitions.py": P_AUGSUB_ITEM}, "_tp_item_aug.bucket"),
-    ("tester  setdefault chain", {"src/nous_field.py": P_SETDEFAULT}, "_tp_setdefault.out"),
-    ("tester  defaultdict(float) +=", {"src/nous_perceive.py": P_DEFAULTDICT}, "_tp_defaultdict.out"),
-    ("tester  dict-comprehension fold", {"src/nous_field.py": P_COMPREHENSION}, "_tp_comp.acc"),
-    ("tester  ternary fold", {"src/nous_activation.py": P_TERNARY}, "_tp_ternary.o"),
-    ("tester  nested subscript grid[i][j]", {"src/nous_store.py": P_NESTED_SUB}, "_tp_grid.grid[]"),
-    ("tester  module-scope accumulation", {"src/nous_bodysensor.py": P_MODULE_SCOPE}, "_TP_TOTAL"),
-    ("tester  self-attribute accumulator", {"src/nous_workspace.py": P_SELF_ATTR}, "_TpAcc.take.pool"),
+    ("SPEC shape 1/3  += into a dict", {"src/psyche_field.py": P_DICT}, "_tp_basin_merge.basin"),
+    ("SPEC shape 2/3  a running local", {"src/psyche_activation.py": P_LOCAL}, "_tp_running.carried"),
+    ("SPEC shape 3/3  the builtin sum", {"src/psyche_workspace.py": P_SUM}, "_tp_builtin.<return>"),
+    ("tester  class-attribute fold", {"src/psyche_store.py": P_CLASSATTR}, "_tp_classattr._TpLedger.running"),
+    ("tester  += into a subscript", {"src/psyche_coalitions.py": P_AUGSUB_ITEM}, "_tp_item_aug.bucket"),
+    ("tester  setdefault chain", {"src/psyche_field.py": P_SETDEFAULT}, "_tp_setdefault.out"),
+    ("tester  defaultdict(float) +=", {"src/psyche_perceive.py": P_DEFAULTDICT}, "_tp_defaultdict.out"),
+    ("tester  dict-comprehension fold", {"src/psyche_field.py": P_COMPREHENSION}, "_tp_comp.acc"),
+    ("tester  ternary fold", {"src/psyche_activation.py": P_TERNARY}, "_tp_ternary.o"),
+    ("tester  nested subscript grid[i][j]", {"src/psyche_store.py": P_NESTED_SUB}, "_tp_grid.grid[]"),
+    ("tester  module-scope accumulation", {"src/psyche_bodysensor.py": P_MODULE_SCOPE}, "_TP_TOTAL"),
+    ("tester  self-attribute accumulator", {"src/psyche_workspace.py": P_SELF_ATTR}, "_TpAcc.take.pool"),
 ]
 
 
@@ -506,8 +507,8 @@ def test_F3_the_key_round_trips_through_the_registry():
                     "reason": "reconstructed from the printed census for a round-trip test"}
     check(c6(scratch(registry=built)) == [],
           "a registry rebuilt from the tool's own printed keys is accepted verbatim")
-    for victim in ("src/nous_field.py:build_activation_field.total",
-                   "src/nous_store.py:Road.valence.<return>"):
+    for victim in ("src/psyche_field.py:build_activation_field.total",
+                   "src/psyche_store.py:Road.valence.<return>"):
         partial = {k: v for k, v in built.items() if k != victim}
         f = c6(scratch(registry=partial))
         check(len(f) == 1 and victim in f[0].message,
@@ -828,7 +829,7 @@ def test_F4_integer_accumulation_is_not_reported():
             '        hits += len(k)\n'
             '        per[k] = per.get(k, 0) + 1\n'
             '    return seq, hits, per, sum(1 for _ in items), sum(range(4)), sum([1, 2])\n')
-    check(c6(scratch(append={"src/nous_store.py": ints})) == [],
+    check(c6(scratch(append={"src/psyche_store.py": ints})) == [],
           "six integer shapes, zero findings")
 
     section("F-4  the exemption is STRUCTURAL — a float named like a counter is caught")
@@ -837,7 +838,7 @@ def test_F4_integer_accumulation_is_not_reported():
             '    for v in vals:\n'
             '        traversal_count += v\n'
             '    return traversal_count\n')
-    f = c6(scratch(append={"src/nous_store.py": liar}))
+    f = c6(scratch(append={"src/psyche_store.py": liar}))
     check(len(f) == 1 and "_tp_liar.traversal_count" in f[0].message,
           "a FLOAT accumulator named `traversal_count` is still reported")
 
@@ -864,16 +865,16 @@ def test_F4_integer_accumulation_is_not_reported():
 def test_F5_registry_rot_is_itself_a_finding():
     section("F-5  a registry rot battery, written from the invariant not from the code")
     reg = real_registry()
-    K_NAIVE = "src/nous_field.py:build_activation_field.total"
-    K_FSUM = "src/nous_workspace.py:select_winner.strength"
+    K_NAIVE = "src/psyche_field.py:build_activation_field.total"
+    K_FSUM = "src/psyche_workspace.py:select_winner.strength"
 
     cases = [
         ("names a site that no longer exists",
-         {**reg, "src/nous_ghost.py:gone.total": {"verdict": "registered",
+         {**reg, "src/psyche_ghost.py:gone.total": {"verdict": "registered",
                                                   "reason": "a site deleted three bricks ago"}},
          "no longer exists"),
         ("names a real file but a symbol that does not exist",
-         {**reg, "src/nous_field.py:build_activation_field.nosuchname":
+         {**reg, "src/psyche_field.py:build_activation_field.nosuchname":
              {"verdict": "registered", "reason": "a symbol that was renamed away"}},
          "no longer exists"),
         ("claims fsum for a site that is naive",
@@ -911,7 +912,7 @@ def test_F5_registry_rot_is_itself_a_finding():
               f"rejected: registry = {bad!r}")
 
     section("F-5  a right-looking key under the WRONG path does not cover the site")
-    wrong = {("src/nous_activation.py:build_activation_field.total" if
+    wrong = {("src/psyche_activation.py:build_activation_field.total" if
               k == K_NAIVE else k): v for k, v in reg.items()}
     f = c6(scratch(registry=wrong))
     check(len(f) == 2, f"one unregistered site AND one stale entry, got {len(f)}")
@@ -934,7 +935,7 @@ def test_F5_registry_rot_is_itself_a_finding():
 # ─────────────────────────────────────────────────────────────────────────────
 
 def _store():
-    from nous_store import SubstrateStore, Clock
+    from psyche_store import SubstrateStore, Clock
     return SubstrateStore, Clock
 
 
@@ -1003,7 +1004,7 @@ def test_F6_every_entry_is_structurally_well_formed():
             # cancelling" produces. Kept parameterised so the discriminator keeps biting
             # as the registry grows, rather than being re-pinned by hand each brick.
             len(bd) == len(nv) - 1 and len(cf) == 2,
-            sorted(set(nv) - bd) == ["src/nous_field.py:build_activation_field.total"],
+            sorted(set(nv) - bd) == ["src/psyche_field.py:build_activation_field.total"],
             (set(nv) - cf) <= bd,
             (set(nv) - bd) <= cf)
 
@@ -1012,8 +1013,8 @@ def test_F6_every_entry_is_structurally_well_formed():
         r[key]["reason"] = r[key]["reason"].replace(phrase, "xxxx")
         return r
 
-    STRENGTH = "src/nous_store.py:SubstrateStore.strengthen.road.strength"
-    TOTAL = "src/nous_field.py:build_activation_field.total"
+    STRENGTH = "src/psyche_store.py:SubstrateStore.strengthen.road.strength"
+    TOTAL = "src/psyche_field.py:build_activation_field.total"
 
     old_a, old_b, new_a, new_b = _measure(_blank(reg, STRENGTH, "FALSIFIER"))
     check(old_a and not new_a,
@@ -1037,11 +1038,11 @@ def test_F6_every_entry_is_structurally_well_formed():
 
 def test_F6_DEFECT_the_merged_flow_reason_is_FALSE():
     section("F-6  DEFECT 0d-1 — run the merged_flow entry's OWN stated falsifier")
-    from nous_store import SubstrateStore, Clock, NodeType
-    from nous_field import build_activation_field
-    from nous_activation import spread_activation
+    from psyche_store import SubstrateStore, Clock, NodeType
+    from psyche_field import build_activation_field
+    from psyche_activation import spread_activation
 
-    reg = real_registry()["src/nous_field.py:build_activation_field.merged_flow"]
+    reg = real_registry()["src/psyche_field.py:build_activation_field.merged_flow"]
     # The phrase still appears — as a QUOTED RETRACTION, which is the project's idiom for
     # a corrected record ("a spec quietly amended teaches nothing"). So the assertion has to
     # separate ASSERTING the claim from QUOTING it. Checking for the phrase's absence was my
@@ -1145,8 +1146,8 @@ def test_F6_DEFECT_the_merged_flow_reason_is_FALSE():
 
 
 def test_F6_measure_the_other_five_naive_reasons():
-    from nous_store import SubstrateStore, Clock, NodeType
-    from nous_activation import spread_activation
+    from psyche_store import SubstrateStore, Clock, NodeType
+    from psyche_activation import spread_activation
     reg = real_registry()
 
     section("F-6  entry 1/6 flow — re-measure the model entry's single-term bound")
@@ -1184,7 +1185,7 @@ def test_F6_measure_the_other_five_naive_reasons():
           f"every flow-carrying road starts at a once-expanded node ({violations} "
           f"violations)")
     check("FALSIFIER: any spread that writes the same road id twice"
-          in reg["src/nous_activation.py:spread_activation.flow"]["reason"],
+          in reg["src/psyche_activation.py:spread_activation.flow"]["reason"],
           "the model entry states a falsifier a reader can run")
 
     section("F-6  entry 1/6 flow — and run the falsifier DIRECTLY, not by proxy")
@@ -1192,7 +1193,7 @@ def test_F6_measure_the_other_five_naive_reasons():
     # falsifier is narrower and sharper: "any spread that writes the same road id twice".
     # So instrument the write itself, in a SCRATCH copy of the engine — src/ is untouched.
     r = scratch()
-    eng = r / "src" / "nous_activation.py"
+    eng = r / "src" / "psyche_activation.py"
     t = eng.read_text(encoding="utf-8")
     counter = ('class _TpCountingDict(dict):\n'
                '    LOG = []\n\n'
@@ -1209,8 +1210,8 @@ def test_F6_measure_the_other_five_naive_reasons():
         driver.write_text(
             "import random, sys, pathlib\n"
             "sys.path.insert(0, str(pathlib.Path(__file__).parent / 'src'))\n"
-            "from nous_store import SubstrateStore, Clock, NodeType\n"
-            "import nous_activation as NA\n"
+            "from psyche_store import SubstrateStore, Clock, NodeType\n"
+            "import psyche_activation as NA\n"
             "spreads = writes = doubles = loops = 0\n"
             "for seed in range(120):\n"
             "    rng = random.Random(seed)\n"
@@ -1254,7 +1255,7 @@ def test_F6_measure_the_other_five_naive_reasons():
              "argument above stands")
 
     section("F-6  entry 3/6 total — 'CONFIRMED ORDER-DEPENDENT' is TRUE")
-    from nous_field import build_activation_field
+    from psyche_field import build_activation_field
     # A three-source star does NOT always vary — with only three terms the naive sum is
     # frequently order-invariant, and a probe built on one such graph would clear the
     # site. That is DEFECT 0d-1's mistake, so the probe is a BATTERY, and the pass
@@ -1281,11 +1282,11 @@ def test_F6_measure_the_other_five_naive_reasons():
               f"field.total[hub] moves over source order in {moved}/30 graphs "
               f"at {n_src} sources")
         print(f"    {n_src} sources: order-dependent in {moved}/30 generated graphs")
-    check("CONFIRMED ORDER-DEPENDENT" in reg["src/nous_field.py:build_activation_field.total"]["reason"],
+    check("CONFIRMED ORDER-DEPENDENT" in reg["src/psyche_field.py:build_activation_field.total"]["reason"],
           "and the entry says so")
 
     section("F-6  entry 4/6 Clock.advance._t — FINDING 0d-3, the reason overstates")
-    e = reg["src/nous_store.py:Clock.advance._t"]["reason"]
+    e = reg["src/psyche_store.py:Clock.advance._t"]["reason"]
     check("no term SET that could be permuted" in e,
           "the entry claims there is no permutable term set")
     rng = random.Random(11)
@@ -1309,7 +1310,7 @@ def test_F6_measure_the_other_five_naive_reasons():
         print(f"    _t bit patterns over 4! orders: {witness[1]}")
     check(trials == 1, "and it is the FIRST multiset tried, not a rare construction")
     # the mechanical half IS true: exactly one term arrives per call
-    tree = ast.parse((SRC / "nous_store.py").read_text(encoding="utf-8"))
+    tree = ast.parse((SRC / "psyche_store.py").read_text(encoding="utf-8"))
     adv = [n for n in ast.walk(tree)
            if isinstance(n, ast.FunctionDef) and n.name == "advance"]
     writes = [m for n in adv for m in ast.walk(n)
@@ -1321,7 +1322,7 @@ def test_F6_measure_the_other_five_naive_reasons():
     check(callers == "", "and src/ contains no caller of advance() at all")
 
     section("F-6  entry 5/6 road.strength — 'exactly one term per crossing' is TRUE")
-    tree = ast.parse((SRC / "nous_store.py").read_text(encoding="utf-8"))
+    tree = ast.parse((SRC / "psyche_store.py").read_text(encoding="utf-8"))
     fn = [n for n in ast.walk(tree)
           if isinstance(n, ast.FunctionDef) and n.name == "strengthen"][0]
     w = [ast.unparse(m.value) for m in ast.walk(fn) if isinstance(m, ast.Assign)
@@ -1356,15 +1357,15 @@ def test_F6_measure_the_other_five_naive_reasons():
 # ─────────────────────────────────────────────────────────────────────────────
 
 def test_F7_ASSERTED_NEGATIVE_the_field_sites_are_still_naive():
-    section("F-7  ASSERTED NEGATIVE: nous_field's two sites are STILL naive after 0d")
-    text = (SRC / "nous_field.py").read_text(encoding="utf-8")
+    section("F-7  ASSERTED NEGATIVE: psyche_field's two sites are STILL naive after 0d")
+    text = (SRC / "psyche_field.py").read_text(encoding="utf-8")
     check("total[node] = total.get(node, 0.0) + act" in text,
           "field.total is still the naive shape, verbatim")
     check("merged_flow[rid] = merged_flow.get(rid, 0.0) + fv" in text,
           "field.merged_flow is still the naive shape, verbatim")
     sites = {s.key: s for s in LC.scan_float_accumulations(ROOT)[0]}
-    for k in ("src/nous_field.py:build_activation_field.total",
-              "src/nous_field.py:build_activation_field.merged_flow"):
+    for k in ("src/psyche_field.py:build_activation_field.total",
+              "src/psyche_field.py:build_activation_field.merged_flow"):
         check(sites[k].exact is False, f"{k} is classified naive by the census")
         check(real_registry()[k]["verdict"] == "registered",
               f"{k} is REGISTERED, not converted")
@@ -1379,9 +1380,9 @@ def test_F7_ASSERTED_NEGATIVE_the_field_sites_are_still_naive():
         note("git unavailable; the src/ no-diff check was skipped")
 
     section("F-7  LOOP-CLOSED: the order dependence still reaches Coalition.strength")
-    from nous_store import SubstrateStore, Clock, NodeType
-    from nous_field import build_activation_field
-    from nous_coalitions import form_coalitions_from_field
+    from psyche_store import SubstrateStore, Clock, NodeType
+    from psyche_field import build_activation_field
+    from psyche_coalitions import form_coalitions_from_field
     rng = random.Random(4242)
     reached = 0
     for seed in range(20):
@@ -1403,7 +1404,7 @@ def test_F7_ASSERTED_NEGATIVE_the_field_sites_are_still_naive():
     check(reached > 0,
           f"Coalition.strength takes >1 bit pattern over source order in {reached}/20 "
           f"loop-closed graphs — the site's effect is still live")
-    note("this block goes RED when a later brick converts the nous_field sites. That is "
+    note("this block goes RED when a later brick converts the psyche_field sites. That is "
          "the correct signal: the brick that converts them re-verifies here.")
 
 
@@ -1495,7 +1496,7 @@ def test_purity_the_check_writes_nothing():
     check(snap() == before, "src/ and tools/ are byte-identical after four gate runs")
 
     section("PURITY  an injection into a scratch tree never touches the real one")
-    scratch(append={"src/nous_field.py": P_DICT})
+    scratch(append={"src/psyche_field.py": P_DICT})
     check(snap() == before, "the scratch machinery wrote nothing into the repository")
 
 
@@ -1735,14 +1736,14 @@ def test_refusal_machinery_end_to_end():
           f"enclosing scope: {[(r.rule, r.scope) for r in deep]}. The fold and the refusal "
           f"share ONE traversal, so neither can reach a construct the other misses")
     # The two in src/ today, confirmed by an INDEPENDENT walk rather than by the tool.
-    tree = ast.parse((SRC / "nous_store.py").read_text(encoding="utf-8"))
+    tree = ast.parse((SRC / "psyche_store.py").read_text(encoding="utf-8"))
     mine = sorted({n.lineno for n in ast.walk(tree)
                    if isinstance(n, (ast.Assign, ast.AnnAssign))
                    for t in (n.targets if isinstance(n, ast.Assign) else [n.target])
                    if isinstance(t, (ast.Tuple, ast.List))
                    and not isinstance(n.value, (ast.Tuple, ast.List))})
     theirs = sorted(r.line for r in LC.scan_float_refusals(ROOT)
-                    if r.path.endswith("nous_store.py"))
+                    if r.path.endswith("psyche_store.py"))
     check(mine == theirs,
           f"the two L13 sites in src/ agree with an INDEPENDENT AST walk written here: "
           f"{mine} vs {theirs} — both are `new_strength, new_charges = _compute_decay(...)`, "
@@ -1767,9 +1768,9 @@ def test_robustness_unreadable_and_unparseable_modules():
     that never happened."""
     section("ROBUSTNESS  CONVERTED: unreadable source is exit 2, never 0, never a finding")
     for label, payload in (
-        ("unparseable",  {"files": {"src/nous_tp_broken.py": "def f(:\n    pass\n"}}),
-        ("non-UTF-8",    {"raw": ("src/nous_tp_latin1.py", b"x = 1\n# caf\xe9 \xff\xfe\n")}),
-        ("NUL byte",     {"raw": ("src/nous_tp_nul.py", b'x = 1\ny = "a\x00b"\n')}),
+        ("unparseable",  {"files": {"src/psyche_tp_broken.py": "def f(:\n    pass\n"}}),
+        ("non-UTF-8",    {"raw": ("src/psyche_tp_latin1.py", b"x = 1\n# caf\xe9 \xff\xfe\n")}),
+        ("NUL byte",     {"raw": ("src/psyche_tp_nul.py", b'x = 1\ny = "a\x00b"\n')}),
     ):
         r = scratch(files=payload.get("files"))
         if "raw" in payload:
@@ -1788,7 +1789,7 @@ def test_robustness_unreadable_and_unparseable_modules():
 
     section("ROBUSTNESS  CONVERTED: the NUL byte no longer diverges by interpreter")
     r = scratch()
-    (r / "src" / "nous_tp_nul.py").write_bytes(b'x = 1\ny = "a\x00b"\n')
+    (r / "src" / "psyche_tp_nul.py").write_bytes(b'x = 1\ny = "a\x00b"\n')
     seen = {}
     for name in ("python3.10", "python3.11", "python3.12", "python3.13", "python3.14"):
         exe = shutil.which(name)
@@ -1871,7 +1872,7 @@ def main():
     print("    F-6  HOLDS       all SIX reasons survived their OWN falsifiers, run rather")
     print("                     than admired. Its two count assertions are DE-BRITTLED to")
     print("                     the debt relation SPEC-0d §3.1 actually states.")
-    print("    F-7  HOLDS       both nous_field sites still naive; src/ has zero diff")
+    print("    F-7  HOLDS       both psyche_field sites still naive; src/ has zero diff")
     print("    F-8  HOLDS       CONVERTED: the tuple and split spellings now report the")
     print("                     SAME sites, which is what L3 being load-bearing meant.")
     print("=" * 78)

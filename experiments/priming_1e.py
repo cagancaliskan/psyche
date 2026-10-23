@@ -4,7 +4,7 @@ SPEC-1e §10 — the BLIND three-arm stimulus selector for the 1e priming pre-re
 its per-arm pair-list hashes to (EXP-1e §10.2 / SPEC-1e §10: no parallel selector).
 
 It is STIMULUS CONSTRUCTION ONLY. It selects, per prime, the targets for the three
-pre-registered arms using **SWOW topology + R123.Strength ONLY** — never any Nous activation
+pre-registered arms using **SWOW topology + R123.Strength ONLY** — never any Psyche activation
 (the anti-circularity core, CLAUDE.md rule 5 / EXP-1e §11). It computes **no activation, no
 Δ, no verdict.** Selecting a target *because it activated well* would void the run; nothing
 here calls the engine.

@@ -20,12 +20,12 @@ open to the human, are now **RESOLVED** (2026-06-21) and folded into the binding
 **no code**, runs **no code**, asserts **no** built or proven artifact, and computes **no** graded number. It is
 `DESIGNED`-tier analysis and design only.
 
-Depends on (read): the source design doc `docs/design/nous_the_bodys_voice.md` (the interoception "spark");
+Depends on (read): the source design doc `docs/design/psyche_the_bodys_voice.md` (the interoception "spark");
 the two frozen NO-GOs that establish the gating pattern — `docs/experiments/EXP-1e-priming.md` §15 and
 `docs/specs/SPEC-fan-effect.md` (what killed each, and why an engine-change rescue would not earn it); the
-roadmap (`docs/nous_roadmap.md`, 2c is "you are here", the re-routed primary meaning bar); the frozen engine
-(`src/nous_activation.py`, `spread_activation`); the closed loop (`src/nous_perceive.py` `think()`,
-`src/nous_workspace.py` `select_winner` / `broadcast`); the substrate `Clock` (`src/nous_store.py`).
+roadmap (`docs/psyche_roadmap.md`, 2c is "you are here", the re-routed primary meaning bar); the frozen engine
+(`src/psyche_activation.py`, `spread_activation`); the closed loop (`src/psyche_perceive.py` `think()`,
+`src/psyche_workspace.py` `select_winner` / `broadcast`); the substrate `Clock` (`src/psyche_store.py`).
 
 > **Scope discipline (CLAUDE.md rules 1–5).** This is **description, design, and feasibility analysis — not a
 > result.** `PROVEN` and `DESIGNED` stay in separate boxes; nothing here is built. No mechanism status changes:
@@ -40,7 +40,7 @@ roadmap (`docs/nous_roadmap.md`, 2c is "you are here", the re-routed primary mea
 
 ## 0.1 The honest-framing firewall (read before anything — the design doc is vision, this spec is mechanism)
 
-`nous_the_bodys_voice.md` is a **vision document**. It says the brain "feels" its heartbeat, that memory
+`psyche_the_bodys_voice.md` is a **vision document**. It says the brain "feels" its heartbeat, that memory
 pressure "is" muscular tension, that the system "panics." **None of that is a claim 2c may make.** Per CLAUDE.md
 rules 1–2, this spec separates mechanism from meaning at every step:
 
@@ -159,25 +159,25 @@ The genuinely novel part of 2c is *telemetry-as-interoception for a non-LLM cogn
   "computes quantitative readings from observable cycle telemetry" and "exposes a valence/arousal readout from a
   homeostatic budget model" could **not** be confirmed at the source and is **not** relied upon. *Used only as a
   weak existence pointer* that an auditable runtime can carry an affect channel alongside cycle telemetry — and
-  flagged as an **LLM** system, a different family from Nous's non-LLM substrate. **2c's pass-through guard does
+  flagged as an **LLM** system, a different family from Psyche's non-LLM substrate. **2c's pass-through guard does
   not depend on this reference** (see the boxed point above); it is retained, marked unverified, rather than
   asserted as settled prior art.
 - **Craig, A. D. (2002), "How do you feel? Interoception: the sense of the physiological condition of the body,"
-  *Nature Reviews Neuroscience* 3, 655–666.** *Establishes (in biology, not Nous):* interoception as a genuine
-  sensory channel for the body's internal state, integrated in the anterior insula. **What Nous tests is only
-  the computational analogue:** an internal-state scalar that modulates processing — **never** that Nous has an
+  *Nature Reviews Neuroscience* 3, 655–666.** *Establishes (in biology, not Psyche):* interoception as a genuine
+  sensory channel for the body's internal state, integrated in the anterior insula. **What Psyche tests is only
+  the computational analogue:** an internal-state scalar that modulates processing — **never** that Psyche has an
   insula, a body, or a feeling.
 - **Damasio, A. (1994), *Descartes' Error*; the somatic-marker hypothesis.** *Establishes (in biology):* bodily
   states bias decision/selection among options. **The 2c analogue, stated narrowly:** a telemetry-derived
   body-state variable biases **which coalition wins the workspace** (a selection bias) — the mechanistic shadow
   of a somatic marker, with **no** claim that the system has somatic feelings or makes decisions as a person does.
 
-**What the literature establishes vs. what Nous would test.** The literature establishes that *biological*
+**What the literature establishes vs. what Psyche would test.** The literature establishes that *biological*
 interoception is real and shapes affect/decision, and that *artificial* systems can compute interoceptive-style
-scalars from telemetry and must distinguish them from passive telemetry. **Nous would test only** whether *its*
+scalars from telemetry and must distinguish them from passive telemetry. **Psyche would test only** whether *its*
 telemetry-derived scalar **causally and measurably** changes *its* cycle's emergent selection/activation, tracked
 against the live telemetry. A positive result is "a real machine-state signal demonstrably modulates the loop,"
-never "Nous feels its body."
+never "Psyche feels its body."
 
 ### 1.2 Part (b) — Is it GRADABLE AGAINST THE TELEMETRY ITSELF, with no human-norm circularity? (the key advantage)
 
@@ -220,7 +220,7 @@ correlation is trivially 1.0 and proves nothing. That is the pass-through trap, 
   structurally lacked (shared-budget normalization) and could not be added without re-validating everything.
   **2c's modulation is the opposite case: it is a NEW, ADDABLE mechanism that the engine is already shaped to
   accept.** `spread_activation` already takes `energy`, `decay_per_hop`, `floor`, `hop_budget` as **first-class
-  parameters** (`src/nous_activation.py` lines 162–166) — a body-state variable that scales `energy` or
+  parameters** (`src/psyche_activation.py` lines 162–166) — a body-state variable that scales `energy` or
   `decay_per_hop` is a **natural, in-grain modulation entry point**, not a missing conservation law. The cycle
   already has a real competition stage (1d-i `select_winner`) and a real feedback write (1d-ii `broadcast`) that
   a body-state variable can color. **The mechanism 2c needs is not absent the way fan normalization was absent —
@@ -328,7 +328,7 @@ and could never be tester-verified as a mechanism.
 
 **It is resolvable, and the substrate is already built for the resolution.** The pattern is **recorded/replayed
 telemetry traces, with the single live read isolated at the boundary** — and the codebase **already has the exact
-abstraction for this**: the `Clock` class (`src/nous_store.py` lines 72–91) has a **`simulated` mode** that
+abstraction for this**: the `Clock` class (`src/psyche_store.py` lines 72–91) has a **`simulated` mode** that
 returns an injectable `self._t` instead of `time.time()`, precisely so "decay is observable instantly" and
 deterministically in tests, with the live `time.time()` used only in real mode. 2c generalizes this proven
 pattern to all telemetry:
@@ -545,7 +545,7 @@ at once, and a result is valid only if **both** hold:
   claim only when a winner-flip is BOTH emergent (not an echo) AND reproducible (frozen replay) — simultaneously.**
   Neither guard is relaxed to satisfy the other.
 
-This commitment generalizes the substrate's already-proven `Clock(simulated=...)` pattern (`src/nous_store.py`):
+This commitment generalizes the substrate's already-proven `Clock(simulated=...)` pattern (`src/psyche_store.py`):
 the live read is isolated behind one boundary object (`BodySensor`, live mode), and the science is graded on the
 frozen replay (`BodySensor`, replay mode) — the same freeze-hash-replay discipline the project already uses for
 external artifacts, here applied to a telemetry trace instead of a SWOW partition.
@@ -564,9 +564,9 @@ readout, never a readback of B.
   tightly-bound coalitions favored over far, diffuse ones*; the exact monotone direction is pre-registered, not
   discovered. (**Direction-label correction, prose only — no mechanism change.** In the engine,
   `decay_per_hop` is a per-hop **transmission multiplier** — `transmitted = outgoing · road.strength · decay_per_hop`
-  in `src/nous_activation.py` — so **higher decay ⇒ more BROAD, lower decay ⇒ more LOCAL**; an earlier draft of
+  in `src/psyche_activation.py` — so **higher decay ⇒ more BROAD, lower decay ⇒ more LOCAL**; an earlier draft of
   this line mislabeled it as "higher decay ⇒ more local." The **implementation was already correct**:
-  `friction_to_decay_factor = 1 − 0.6·friction` in `src/nous_bodysensor.py` is monotone *decreasing*, so higher
+  `friction_to_decay_factor = 1 − 0.6·friction` in `src/psyche_bodysensor.py` is monotone *decreasing*, so higher
   friction → lower decay → more local — matching both the engine semantics and the Easterbrook narrowing
   direction. The resolved, pre-registered direction is worked out in full in `docs/experiments/EXP-2c-interoception.md` §2.)
 - **Headline readout (emergent; (C-GRADE-EMERGENT); RESOLVED §6.3):** the **categorical winner-identity flip** —
@@ -653,8 +653,8 @@ the new §3.2 determinism commitment). The options are retained for the record; 
    pre-registered: higher B ⇒ **LOWER** decay ⇒ near/tight coalitions favored over far/diffuse ones. (**Direction
    label corrected, prose only — no mechanism change; the implementation was already correct.** `decay_per_hop` is
    a per-hop transmission multiplier (`transmitted = outgoing · road.strength · decay_per_hop`,
-   `src/nous_activation.py`), so higher decay ⇒ more broad and lower decay ⇒ more local;
-   `friction_to_decay_factor = 1 − 0.6·friction` (`src/nous_bodysensor.py`) is monotone decreasing, giving higher
+   `src/psyche_activation.py`), so higher decay ⇒ more broad and lower decay ⇒ more local;
+   `friction_to_decay_factor = 1 − 0.6·friction` (`src/psyche_bodysensor.py`) is monotone decreasing, giving higher
    friction → lower decay → more local. The resolved, pre-registered direction lives in
    `docs/experiments/EXP-2c-interoception.md` §2.)
 3. **Emergent readout for the headline (the (C-GRADE-EMERGENT) choice). RESOLVED → winner-identity flips (headline),

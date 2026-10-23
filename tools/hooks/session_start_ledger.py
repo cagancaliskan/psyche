@@ -42,7 +42,7 @@ def build_context(root: Path) -> str:
     mb = d.get("meaning_bar", {})
 
     lines = [
-        "PSYCHE / NOUS — canonical state, read from tools/ledger.json at session start.",
+        "PSYCHE — canonical state, read from tools/ledger.json at session start.",
         "These numbers override anything a document in this repository says.",
         "",
         f"  tests        {t.get('suites')} suites, {t.get('assertions')} assertions, "

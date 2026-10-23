@@ -111,7 +111,7 @@ def header(interps: List[str], primary: str, per: Dict[str, int]) -> str:
     sweep = ", ".join(f"{i} ({version_of(i).split()[-1]})" for i in interps)
     return "\n".join([
         "=" * 70,
-        "  NOUS — CAPTURED TEST OUTPUT (verbatim)",
+        "  PSYCHE — CAPTURED TEST OUTPUT (verbatim)",
         "=" * 70,
         f"Generated : {now.strftime('%Y-%m-%d %H:%M:%S %z')}",
         f"Machine   : {os.uname().sysname} {os.uname().release} {os.uname().machine}",

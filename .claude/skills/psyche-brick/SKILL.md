@@ -1,6 +1,6 @@
 ---
 name: psyche-brick
-description: Run a complete Psyche/Nous brick end to end — spec, build, adversarial verify, ledger update, commit. Use when starting or finishing a numbered step (0b2, 1c, 2a...). Orchestrates the four lanes in order with a hand-off between each, so no role certifies its own work.
+description: Run a complete Psyche brick end to end — spec, build, adversarial verify, ledger update, commit. Use when starting or finishing a numbered step (0b2, 1c, 2a...). Orchestrates the four lanes in order with a hand-off between each, so no role certifies its own work.
 argument-hint: "[brick-id] e.g. 0b2"
 allowed-tools: Read, Glob, Grep, Write, Edit, Bash, Agent
 ---
@@ -102,7 +102,7 @@ this step is what closes that gap (D-016). `ledger_check` C5 fails until it is d
 3. Update the brick's status in `tools/ledger.json`, and append the decision to
    `DECISIONS.md` — date, what changed, evidence, who decided.
 4. `python3 tools/ledger_check.py` — fix every document the change now contradicts.
-5. Update `docs/nous_roadmap.md`: status, the "you are here" marker, the next action.
+5. Update `docs/psyche_roadmap.md`: status, the "you are here" marker, the next action.
 6. Run `/psyche-claim-check` on the delivery report and the commit message.
 7. Commit in the repository's existing style:
    `feat(<brick>): <what>` · `fix(<brick>): <what>` · `test(<brick>): <what>` ·
