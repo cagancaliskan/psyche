@@ -1,13 +1,13 @@
-%% Nous: repository / asset map (at a glance).
+%% Psyche: repository / asset map (at a glance).
 flowchart TB
-    root["nous/  (MIT; pure standard library)"]:::root
+    root["psyche/  (MIT; pure standard library)"]:::root
     root --> src["src/: 5 modules"]:::dir
     root --> tests["tests/: 5 suites (130 checks, 56 fns)"]:::dir
     root --> runner["run_tests.py · requirements.txt · LICENSE"]:::file
     root --> docs["docs/"]:::dir
 
-    src --> srcf["nous_store · nous_activation · nous_field<br/>nous_coalitions · nous_perceive"]:::file
-    tests --> testf["test_nous_store / _activation / _coalitions<br/>/ _field / _perceive"]:::file
+    src --> srcf["psyche_store · psyche_activation · psyche_field<br/>psyche_coalitions · psyche_perceive"]:::file
+    tests --> testf["test_psyche_store / _activation / _coalitions<br/>/ _field / _perceive"]:::file
 
     docs --> dmain["README · ARCHITECTURE · METHODOLOGY · REPORT"]:::file
     docs --> dtest["TEST_OUTPUT.txt  (verbatim run; source of all numbers)"]:::file

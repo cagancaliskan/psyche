@@ -60,8 +60,8 @@ import subprocess
 import sys
 import textwrap
 
-from nous_store import SubstrateStore, Clock, NodeType, NotFound
-from nous_activation import (
+from psyche_store import SubstrateStore, Clock, NodeType, NotFound
+from psyche_activation import (
     spread_activation, ActivationResult,
     DEFAULT_SEED_ENERGY, DEFAULT_DECAY_PER_HOP, DEFAULT_FLOOR, DEFAULT_HOP_BUDGET,
     CLOSED_BREAKTHROUGH_THRESHOLD, CLOSED_LEAK_FRACTION,
@@ -476,7 +476,7 @@ MUTANTS = [
 # ═════════════════════════════════════════════════════════════════════════════
 # ORACLE 2 — the ACTUAL pre-0b2 engine, recovered from git.
 #
-# Resolved by CONTENT (newest revision of src/nous_activation.py that does not
+# Resolved by CONTENT (newest revision of src/psyche_activation.py that does not
 # mention normalization_sigma), so a rebase cannot stale it. It is a historical
 # artifact and cannot be re-based: it accumulates convergent contributions with a
 # naive running float add, so it has a SINGLE WELL-DEFINED ANSWER only where no
@@ -497,6 +497,7 @@ def pre_overlay_engine():
         return _PRE_CACHE[0]
     out = None
     try:
+        # Historical path and store alias: the pre-overlay engine predates the Psyche rename.
         log = subprocess.run(["git", "log", "--format=%H", "--",
                               "src/nous_activation.py"],
                              cwd=ROOT, capture_output=True, text=True, timeout=60)
@@ -507,9 +508,10 @@ def pre_overlay_engine():
                                       timeout=60)
                 if blob.returncode != 0 or "normalization_sigma" in blob.stdout:
                     continue
+                import importlib
                 import importlib.util
                 import tempfile
-                tmp = tempfile.mkdtemp(prefix="nous_pre0b2_reverify_")
+                tmp = tempfile.mkdtemp(prefix="psyche_pre0b2_reverify_")
                 path = os.path.join(tmp, "_pre0b2_engine.py")
                 try:
                     with open(path, "w", encoding="utf-8") as fh:
@@ -518,8 +520,9 @@ def pre_overlay_engine():
                         "_pre0b2_engine_reverify", path)
                     mod = importlib.util.module_from_spec(spec)
                     sys.modules["_pre0b2_engine_reverify"] = mod
+                    sys.modules.setdefault("nous_store", importlib.import_module("psyche_store"))
                     spec.loader.exec_module(mod)
-                    mod.__nous_sha__ = sha
+                    mod.__psyche_sha__ = sha
                     out = mod
                     break
                 finally:
@@ -636,7 +639,7 @@ def test_N1b_neutral_matches_the_actual_pre_overlay_engine_from_git():
         check(True, "(placeholder so the assertion count does not depend on git)")
         check(True, "(placeholder so the assertion count does not depend on git)")
         return
-    print(f"  recovered pre-overlay engine at {mod.__nous_sha__[:12]}")
+    print(f"  recovered pre-overlay engine at {mod.__psyche_sha__[:12]}")
     compared = 0
     at_boundary = 0
     skipped = 0
@@ -898,7 +901,7 @@ def test_N1e_loop_closed_on_a_substrate_the_system_itself_built():
     ranking — never a hand-placed node id."""
     section("N-1e LOOP-CLOSED: seeds from perceive(), then from the previous "
             "spread's own ranking")
-    from nous_perceive import perceive
+    from psyche_perceive import perceive
 
     s = frozen_store()
     vocab = ["harbour lantern", "lantern glass", "glass tide", "tide harbour",
@@ -956,8 +959,8 @@ def test_N1f_the_field_builder_consumes_the_neutral_path_unchanged():
     actually gets."""
     section("N-1f LOOP-CLOSED through build_activation_field(): the consumer's "
             "results equal explicit sigma=None")
-    from nous_perceive import perceive
-    from nous_field import build_activation_field
+    from psyche_perceive import perceive
+    from psyche_field import build_activation_field
 
     s = frozen_store()
     vocab = ["copper wire", "wire spool", "spool copper", "amber wire",
@@ -1146,8 +1149,8 @@ def run_matrix(driver, reps=1, seeds=None):
 # by node CONTENT.
 DET_DRIVER = textwrap.dedent('''
     import hashlib, struct, math
-    from nous_store import SubstrateStore, Clock, NodeType
-    from nous_activation import spread_activation
+    from psyche_store import SubstrateStore, Clock, NodeType
+    from psyche_activation import spread_activation
 
     s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
     def add(c): return s.add_node(c, NodeType.CONCEPT)
@@ -2251,16 +2254,16 @@ def test_S1_the_overlay_is_still_not_plumbed_past_spread_activation():
     first — a re-validation surface for 1a/1b/1c/1d."""
     section("S-1 structural: build_activation_field() and think() still expose no "
             "normalization_sigma")
-    from nous_field import build_activation_field
-    from nous_perceive import think
+    from psyche_field import build_activation_field
+    from psyche_perceive import think
     for fn in (build_activation_field, think):
         params = inspect.signature(fn).parameters
         check("normalization_sigma" not in params,
               f"{fn.__name__}() has no normalization_sigma parameter "
               f"(params={list(params)})")
-    src_text = open(os.path.join(SRC, "nous_field.py"), encoding="utf-8").read()
+    src_text = open(os.path.join(SRC, "psyche_field.py"), encoding="utf-8").read()
     check("normalization_sigma" not in src_text,
-          "and nous_field.py never mentions it, so the field builder cannot pass "
+          "and psyche_field.py never mentions it, so the field builder cannot pass "
           "it through positionally either")
     note("The default flip therefore requires plumbing the parameter through the "
          "field builder first. That is a separate brick and is Cagan's call; "

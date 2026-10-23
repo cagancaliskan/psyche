@@ -54,7 +54,7 @@ hid the twelve tests after it -- and it has been deleted and converted into the 
 property. The twelve hidden tests were then re-derived independently, not inherited from
 the builder's measurement of this file.
 
-  FINDING 1  nous_field.build_activation_field merges per-source activations with a NAIVE
+  FINDING 1  psyche_field.build_activation_field merges per-source activations with a NAIVE
              running float add (`total[node] = total.get(node, 0.0) + act`, and the same
              shape for merged_flow). That is DEFECT-A's shape at a different owner. It is
              order-PINNED (the source order is program order, so determinism across
@@ -90,10 +90,10 @@ import subprocess
 import sys
 import textwrap
 
-from nous_store import (
+from psyche_store import (
     SubstrateStore, Clock, NodeType, NotFound, IntegrityError, Road,
 )
-from nous_activation import (
+from psyche_activation import (
     spread_activation,
     DEFAULT_SEED_ENERGY, DEFAULT_DECAY_PER_HOP, DEFAULT_FLOOR, DEFAULT_HOP_BUDGET,
     CLOSED_BREAKTHROUGH_THRESHOLD, CLOSED_LEAK_FRACTION,
@@ -530,8 +530,8 @@ def test_O3_purity_and_integrity_are_unchanged_by_the_representation_change():
 
 CASE1_DRIVER = textwrap.dedent('''
     import struct
-    from nous_store import SubstrateStore, Clock, NodeType
-    from nous_activation import spread_activation
+    from psyche_store import SubstrateStore, Clock, NodeType
+    from psyche_activation import spread_activation
     s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
     S = s.add_node("S", NodeType.CONCEPT); T = s.add_node("T", NodeType.CONCEPT)
     for i, (a, b) in enumerate(((1, 2), (1, 3), (1, 9))):
@@ -580,13 +580,13 @@ def test_O4_the_reproduction_is_one_bit_pattern_across_the_full_matrix():
 # ═════════════════════════════════════════════════════════════════════════════
 # O-4b — THE COMPETITION PATH. The store-ordering fix cannot reach it: Coalition.members
 # inherits its order from by_basin[src], a Dict[str, Set[str]] of uuid4 NodeIDs built in
-# nous_coalitions.py — a set some OTHER module constructs. Fixing a class at one owner
+# psyche_coalitions.py — a set some OTHER module constructs. Fixing a class at one owner
 # does not fix it at another owner, which is the general lesson SPEC-0c §2.5.2 draws.
 # ═════════════════════════════════════════════════════════════════════════════
 
 CASE2_GRAPH = '''
-    from nous_store import SubstrateStore, Clock, NodeType
-    from nous_perceive import think
+    from psyche_store import SubstrateStore, Clock, NodeType
+    from psyche_perceive import think
     import itertools
     s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
     add = lambda c: s.add_node(c, NodeType.CONCEPT)
@@ -652,7 +652,7 @@ def test_O4b_the_pruned_winner_strength_is_the_exactly_rounded_member_sum():
     # Derived from the winner's own recorded member activations, so the assertion cannot be
     # satisfied by a number this test chose. This is SPEC-0c §2.5 site 1: the third
     # Coalition construction site, which BUG-0b1's 'two sites' claim missed.
-    from nous_perceive import think
+    from psyche_perceive import think
     ns = {}
     exec(textwrap.dedent(CASE2_GRAPH), ns)
     r, s = ns["r"], ns["s"]
@@ -687,8 +687,8 @@ def test_O4b_the_pruned_winner_strength_is_the_exactly_rounded_member_sum():
 
 O5_DRIVER = textwrap.dedent('''
     import random, struct
-    from nous_store import SubstrateStore, Clock, NodeType
-    from nous_activation import spread_activation
+    from psyche_store import SubstrateStore, Clock, NodeType
+    from psyche_activation import spread_activation
 
     def graph(seed):
         rng = random.Random(seed)
@@ -1035,7 +1035,7 @@ def test_O8_loop_closed_determinism_through_the_whole_pipeline():
     # clusterer picks the representatives and their energies, the field builder merges,
     # coalitions form from the basins, and the workspace prunes. Every stage is driven by
     # the previous stage's actual output.
-    from nous_perceive import think
+    from psyche_perceive import think
     store = frozen_store()
     words = ["coffee", "warmth", "morning routine", "cozy feeling", "kitchen",
              "work", "desk", "deadline pressure", "writing code", "commute"]
@@ -1367,8 +1367,8 @@ def test_O12_non_finite_energy_is_refused_at_every_graph_shape():
 
 ENERGY_REFUSAL_DRIVER = textwrap.dedent('''
     import hashlib, math, struct
-    from nous_store import SubstrateStore, Clock, NodeType
-    from nous_activation import spread_activation
+    from psyche_store import SubstrateStore, Clock, NodeType
+    from psyche_activation import spread_activation
     s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
     A = s.add_node("A", NodeType.CONCEPT)
     B = s.add_node("B", NodeType.CONCEPT)
@@ -1565,7 +1565,7 @@ def test_O12_the_transmitted_backstop_guard_is_LIVE_by_two_independent_routes():
     # structural: SPEC-0c §4 says the guard MUST NOT be removed as dead code. A future
     # reader who finds no in-domain route is reading correctly and concluding wrongly, so
     # the requirement is machine-checked rather than left to a comment.
-    tree = ast.parse(open(os.path.join(SRC, "nous_activation.py"),
+    tree = ast.parse(open(os.path.join(SRC, "psyche_activation.py"),
                           encoding="utf-8").read())
     fn = next((n for n in ast.walk(tree)
                if isinstance(n, ast.FunctionDef) and n.name == "spread_activation"), None)
@@ -1585,10 +1585,10 @@ def test_O12_loop_closed_no_non_finite_survives_the_pipeline():
     the new boundary must refuse hostile input, AND it must not fire on the system's own.
     """
     section("O-12 loop-closed: the pipeline's own energies, and hostile input at its top")
-    import nous_field
-    from nous_perceive import perceive, think
-    from nous_source_clustering import cluster_sources
-    from nous_field import build_activation_field
+    import psyche_field
+    from psyche_perceive import perceive, think
+    from psyche_source_clustering import cluster_sources
+    from psyche_field import build_activation_field
 
     def corpus(seed):
         rng = random.Random(seed)
@@ -1606,14 +1606,14 @@ def test_O12_loop_closed_no_non_finite_survives_the_pipeline():
     # (1) NO-REGRESSION, loop-closed: spy on the energies the pipeline itself hands the
     # engine. If any were non-finite the new validation would turn a silent NaN into a
     # production crash — so this is the leg that would catch the fix breaking the system.
-    real = nous_field.spread_activation
+    real = psyche_field.spread_activation
     seen = []
 
     def spy(store, seed_node, **kw):
         seen.append(kw.get("energy"))
         return real(store, seed_node, **kw)
 
-    nous_field.spread_activation = spy
+    psyche_field.spread_activation = spy
     thoughts = 0
     try:
         for gs in range(12):
@@ -1628,7 +1628,7 @@ def test_O12_loop_closed_no_non_finite_survives_the_pipeline():
             if think(s, utt).thought is not None:
                 thoughts += 1
     finally:
-        nous_field.spread_activation = real
+        psyche_field.spread_activation = real
     check(len(seen) >= 12,
           f"the pipeline was actually driven ({len(seen)} spreads from system-generated "
           f"percepts, {thoughts} thoughts)")
@@ -1665,7 +1665,7 @@ def test_O12_loop_closed_no_non_finite_survives_the_pipeline():
     # telemetry yields a NaN friction modulates decay_per_hop to NaN. Three modules deep,
     # and the backstop is what catches it. (Adversarial replay data — live perf_counter()
     # does not produce NaN — but it is a real composition of shipped public APIs.)
-    from nous_bodysensor import BodySensor, TelemetrySample
+    from psyche_bodysensor import BodySensor, TelemetrySample
     trace = [TelemetrySample(perf=0.0, proc=0.0),
              TelemetrySample(perf=float("nan"), proc=1.0)]
     sensor = BodySensor(simulated=True, trace=trace)
@@ -1757,8 +1757,8 @@ def test_FINDING_ASSERTED_NEGATIVE_field_merge_is_order_dependent():
     have shipped a live defect. The obvious next question is whether the SECOND sweep was
     exhaustive either. It was not:
 
-        nous_field.py  total[node] = total.get(node, 0.0) + act      (the merge)
-        nous_field.py  merged_flow[rid] = merged_flow.get(rid, 0.0) + fv
+        psyche_field.py  total[node] = total.get(node, 0.0) + act      (the merge)
+        psyche_field.py  merged_flow[rid] = merged_flow.get(rid, 0.0) + fv
 
     Both are naive running float adds — DEFECT-A's exact shape, at a third owner. §2.5
     enumerated three builtin `sum()` sites; these are not `sum()` calls, so O-15 does not
@@ -1774,9 +1774,9 @@ def test_FINDING_ASSERTED_NEGATIVE_field_merge_is_order_dependent():
     This test PASSES while the limitation is present and goes RED when it is closed.
     """
     section("FINDING 1 ASSERTED-NEGATIVE: the field merge is order-DEPENDENT")
-    from nous_field import build_activation_field
-    from nous_coalitions import form_coalitions_from_field
-    from nous_workspace import rank_coalitions
+    from psyche_field import build_activation_field
+    from psyche_coalitions import form_coalitions_from_field
+    from psyche_workspace import rank_coalitions
     rng = random.Random(0)
     s = frozen_store()
     src = [s.add_node("s%d" % i, NodeType.CONCEPT) for i in range(3)]
@@ -1815,7 +1815,7 @@ def test_FINDING_ASSERTED_NEGATIVE_field_merge_is_order_dependent():
           f"either, until a graph arrived where it did, 8 times in 30.")
     # AND THE BOUND ON THE FINDING, so it is not read as wider than it is. The identical
     # shape exists inside the module 0c DOES own — `flow[rid] = flow.get(rid, 0.0) +
-    # transmitted` in nous_activation — and there it is STRUCTURALLY SINGLE-TERM: under
+    # transmitted` in psyche_activation — and there it is STRUCTURALLY SINGLE-TERM: under
     # hop-layered single expansion a node expands at most once, so a road transmits at
     # most once and the add never has a second operand. That is the six-bug checklist's
     # "can this branch ever fire?" question, answered by measurement rather than by
@@ -1835,18 +1835,18 @@ def test_FINDING_ASSERTED_NEGATIVE_field_merge_is_order_dependent():
                     reads_max = max(reads_max, max(per.values()))
                     spreads += 1
     check(reads_max == 1,
-          f"the same shape at nous_activation's `flow[rid] +=` is structurally "
+          f"the same shape at psyche_activation's `flow[rid] +=` is structurally "
           f"single-term: over {spreads} spreads on 60 hostile graphs — cycles, "
           f"self-loops, fans — no road was ever read (and so never transmitted) more "
           f"than once, so its second operand cannot exist (max {reads_max})")
     finding("field-merge",
-            "nous_field.build_activation_field merges with a naive running float add "
+            "psyche_field.build_activation_field merges with a naive running float add "
             "(total[node] += act, merged_flow[rid] += fv). Order-PINNED, so cross-process "
             "determinism is unaffected and every O-4/O-4b/O-5/O-16 result stands; NOT "
             "order-INDEPENDENT, and the difference reaches Coalition.strength. Out of "
             "0c's decided scope (§2.5 enumerated builtin sum() sites; these are not "
             "sum() calls). Recommend a follow-on brick, not a scope widening here. "
-            "BOUNDED: the same shape inside nous_activation (flow[rid] +=) is "
+            "BOUNDED: the same shape inside psyche_activation (flow[rid] +=) is "
             "structurally single-term and is NOT a live instance.")
 
 
@@ -1857,8 +1857,8 @@ def test_FINDING_ASSERTED_NEGATIVE_field_merge_is_order_dependent():
 
 def test_ULP_the_competition_tie_break_is_decided_by_the_documented_integer_keys():
     section("ULP the competition tie-break: exact ties resolve on size then creation_seq")
-    from nous_coalitions import Coalition
-    from nous_workspace import rank_coalitions, _density_score, DEFAULT_MIN_SIZE_GUARD
+    from psyche_coalitions import Coalition
+    from psyche_workspace import rank_coalitions, _density_score, DEFAULT_MIN_SIZE_GUARD
 
     def coal(members_seq, strength):
         return Coalition(members={f"n{i}": strength / len(members_seq)
@@ -1918,7 +1918,7 @@ def test_ULP_the_competition_tie_break_is_decided_by_the_documented_integer_keys
 
 def test_ULP_road_valence_closure_decision_is_multiset_determined():
     section("ULP the closure decision sits exactly on the threshold and does not wobble")
-    from nous_store import _open_close_on_crossing, _CLOSURE_THRESHOLD
+    from psyche_store import _open_close_on_crossing, _CLOSURE_THRESHOLD
     # Four ordinary two-digit charges whose exact mean IS the closure threshold. Sitting on
     # the threshold is what turns the last ULP into a categorical question.
     charges = (("grief", -0.9), ("anger", -0.8), ("shame", -0.7), ("fear", -0.6))
@@ -2118,7 +2118,7 @@ def test_O14_no_determinism_probe_compares_rounded_values():
     # a scanner that flagged every literal containing the text "round(" would flag this
     # test's own failure messages, which is how the first draft of it failed.
     def is_payload(text):
-        return ("from nous_" in text or "import nous_" in text) and "\n" in text
+        return ("from psyche_" in text or "import psyche_" in text) and "\n" in text
 
     offenders = []
     scanned = payloads = 0
@@ -2146,7 +2146,7 @@ def test_O14_no_determinism_probe_compares_rounded_values():
     # round, it has to flag it — otherwise the zero above proves nothing.
     # assembled at runtime, not written as one literal, so the scanner above does not
     # (correctly) flag this very fixture as an offender — which it did on the first run
-    poison = "from nous_store import SubstrateStore\nprint(" + "round" + "(1.0, 9))\n"
+    poison = "from psyche_store import SubstrateStore\nprint(" + "round" + "(1.0, 9))\n"
     check(is_payload(poison) and "round(" in poison,
           "the scanner is SENSITIVE: a synthetic payload that rounds is recognised as a "
           "payload and matched, so a clean result is a finding rather than a blind spot")
@@ -2182,7 +2182,7 @@ def test_O15_no_builtin_sum_over_floats_survives_in_src():
           f"no builtin sum() call survives anywhere in src/, over floats or otherwise "
           f"({offenders})")
     # the three §2.5 sites specifically, by behaviour rather than by grep
-    from nous_workspace import Broadcast
+    from psyche_workspace import Broadcast
     b = Broadcast(road_ids=["a", "b", "c"], before={}, after={"a": 1.0, "b": 1e-16,
                                                              "c": 1e-16}, winner_member_count=0)
     naive = 0.0
@@ -2197,7 +2197,7 @@ def test_O15_no_builtin_sum_over_floats_survives_in_src():
 
 O16_DRIVER = textwrap.dedent(CASE2_GRAPH + '''
     import struct, hashlib, math
-    from nous_activation import spread_activation
+    from psyche_activation import spread_activation
     rows = []
     # (a) the competition path
     rows.append(("thought", struct.pack("<d", r.thought.strength).hex()))
@@ -2293,7 +2293,7 @@ def test_O17_the_assertion_count_does_not_depend_on_the_environment():
     # A checkout with NO .git — a git archive extract, a release tarball, a Docker COPY,
     # the Zenodo artifact. Copied from the WORKING TREE so it tests the current code
     # rather than the last commit.
-    tmp = tempfile.mkdtemp(prefix="nous_nogit_")
+    tmp = tempfile.mkdtemp(prefix="psyche_nogit_")
     dest = os.path.join(tmp, "repo")
     shutil.copytree(ROOT, dest,
                     ignore=shutil.ignore_patterns(".git", "__pycache__", "*.pyc", "data"))

@@ -33,14 +33,14 @@ MEANING run (the 1e-selector analogue).
 
 BLINDNESS, CONCRETELY (the anti-circularity guard at the construction layer):
   - The battery is generated from a FIXED SEED over a FIXED structural parameter space —
-    NEVER from any Nous activation. Its serialized form records ONLY the structural
+    NEVER from any Psyche activation. Its serialized form records ONLY the structural
     description (anchors, domain sizes, integer traversal counts, bridge presence/target/
     bridge_n, depth_extra), so it is built from the seed and the parameter space alone.
   - The trace is captured from REAL perf_counter/process_time telemetry while the substrate
-    does real mixed work (think()), with friction computed by the SAME nous_bodysensor.
+    does real mixed work (think()), with friction computed by the SAME psyche_bodysensor.
     compute_friction the cycle uses. think() runs ONLY to make real CPU work for the timing
     measurement; its winner/field/thought is NEVER read.
-  - This module imports nous_bodysensor (the permitted §6 telemetry surface) and the store/
+  - This module imports psyche_bodysensor (the permitted §6 telemetry surface) and the store/
     perceive surface (to construct stimuli + generate workload). It does NOT import the
     workspace-competition module that produces the graded winner, and it does not otherwise
     grade. (The blindness tests assert this statically.)
@@ -89,12 +89,12 @@ _SRC = os.path.join(os.path.dirname(_HERE), "src")
 if _SRC not in sys.path:
     sys.path.insert(0, _SRC)
 
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_perceive import think
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_perceive import think
 # the SAME telemetry surface the cycle uses (the ONLY permitted §6 imports). compute_friction
 # and BodySensor are re-exported by NAME so tests can assert object identity (they must be the
 # library objects, never re-implementations).
-from nous_bodysensor import BodySensor, TelemetrySample, compute_friction
+from psyche_bodysensor import BodySensor, TelemetrySample, compute_friction
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -137,7 +137,7 @@ PERCEPTS_PATH = os.path.join(RESULTS_DIR, "exp2c_realistic_percepts.json")
 # ══════════════════════════════════════════════════════════════════════════════
 # §5.2 ANCHOR VOCABULARY — non-substring-overlapping content words.
 # Perception lights up a node iff an input token is a substring of the node's content
-# (nous_perceive.perceive). To keep perception CLEAN (each percept lights up exactly its two
+# (psyche_perceive.perceive). To keep perception CLEAN (each percept lights up exactly its two
 # anchors and their neighbors, never a stray anchor), no anchor word may be a substring of
 # another. This is a structural cleanliness requirement (as in the pilot's two clean anchors),
 # NOT a flip-engineering choice — the anchors are drawn at random from this fixed vocabulary.
@@ -315,7 +315,7 @@ def build_realistic_battery(seed: int, count: int) -> List[RealisticPercept]:
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _percept_to_jsonable(p: RealisticPercept) -> dict:
-    """The STRUCTURAL description of one percept (the §6.4-required fields). NO Nous output —
+    """The STRUCTURAL description of one percept (the §6.4-required fields). NO Psyche output —
     no activation, no winner, no friction. Built from the seed + parameter space alone."""
     return {
         "anchor_a": p.anchor_a_content,

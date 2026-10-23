@@ -4,7 +4,7 @@ INDEPENDENT ADVERSARIAL TEST SUITE for step 0b2 — divisive normalization overl
 Author: tester (independent adversary). Written FROM SCRATCH against SPEC-0b2 §6's
 invariants N-1..N-9, not adapted from the builder's suite. There was in fact nothing to
 adapt: at the time of writing `normalization_sigma` appeared in exactly one file in the
-repository (`src/nous_activation.py`) and in no test at all, so the overlay shipped with
+repository (`src/psyche_activation.py`) and in no test at all, so the overlay shipped with
 zero coverage and every property below is verified here for the first time.
 
 Mechanism only. Nothing here grades a cognitive claim; see the validator's lane for that.
@@ -91,10 +91,10 @@ import subprocess
 import sys
 import textwrap
 
-from nous_store import (
+from psyche_store import (
     SubstrateStore, Clock, NodeType, NotFound, IntegrityError,
 )
-from nous_activation import (
+from psyche_activation import (
     spread_activation, ActivationResult,
     DEFAULT_SEED_ENERGY, DEFAULT_DECAY_PER_HOP, DEFAULT_FLOOR, DEFAULT_HOP_BUDGET,
     CLOSED_BREAKTHROUGH_THRESHOLD, CLOSED_LEAK_FRACTION,
@@ -261,7 +261,7 @@ _PRE_CACHE = []           # memoised: git is slow and four tests want the same m
 
 
 def load_pre_change_engine():
-    """Recover the last version of nous_activation.py that predates the overlay.
+    """Recover the last version of psyche_activation.py that predates the overlay.
 
     Resolved by CONTENT, not by a pinned hash: walk the file's history newest-first and
     take the first revision that does not mention normalization_sigma. That survives a
@@ -276,6 +276,8 @@ def load_pre_change_engine():
         return _PRE_CACHE[0]
     result = None
     try:
+        # The pre-0b2 engine predates the Nous -> Psyche rename, so it is found at its
+        # historical path, and its `from nous_store import` resolves to today's store.
         log = subprocess.run(["git", "log", "--format=%H", "--", "src/nous_activation.py"],
                              cwd=ROOT, capture_output=True, text=True, timeout=30)
         if log.returncode != 0:
@@ -288,9 +290,10 @@ def load_pre_change_engine():
                 continue
             if "normalization_sigma" in blob.stdout:
                 continue
+            import importlib
             import importlib.util
             import tempfile
-            tmpdir = tempfile.mkdtemp(prefix="nous_pre0b2_")
+            tmpdir = tempfile.mkdtemp(prefix="psyche_pre0b2_")
             path = os.path.join(tmpdir, "__pre0b2_oracle.py")
             with open(path, "w", encoding="utf-8") as fh:
                 fh.write(blob.stdout)
@@ -298,9 +301,10 @@ def load_pre_change_engine():
                 spec = importlib.util.spec_from_file_location("__pre0b2_oracle", path)
                 mod = importlib.util.module_from_spec(spec)
                 sys.modules["__pre0b2_oracle"] = mod   # dataclass needs it registered
+                sys.modules.setdefault("nous_store", importlib.import_module("psyche_store"))
                 spec.loader.exec_module(mod)
-                mod.__nous_sha__ = sha
-                mod.__nous_source__ = blob.stdout      # the temp tree is removed below
+                mod.__psyche_sha__ = sha
+                mod.__psyche_source__ = blob.stdout      # the temp tree is removed below
                 result = mod
                 break
             finally:
@@ -423,7 +427,7 @@ def max_arriving_contributions(store, result, seed_node, energy):
 # src/ would build a MIRROR, not an oracle, and N-1 would become vacuous — it would
 # assert that the engine equals itself. So every line below is derived from SPEC-0c's
 # PROSE description of what the engine should do, clause by clause, with the clause
-# cited. The tester has deliberately not transcribed src/nous_activation.py; the two
+# cited. The tester has deliberately not transcribed src/psyche_activation.py; the two
 # implementations differ in shape (this one keeps `settled` and `nxt` separate, uses a
 # different loop skeleton and different names) and agree only because they compute the
 # same function.
@@ -439,7 +443,7 @@ def max_arriving_contributions(store, result, seed_node, energy):
 #   §4    reject non-finite / non-positive sigma at the boundary, and reject a non-finite
 #         `transmitted` on its own terms BEFORE the floor comparison.
 #
-# Everything else is nous_activation's own documented design and is untouched by 0c: the
+# Everything else is psyche_activation's own documented design and is untouched by 0c: the
 # hop-layer freeze, the closed-road breakthrough/leak policy, the floor guard, flow
 # recording, and first-arrival settling.
 # ─────────────────────────────────────────────────────────────────────────────
@@ -622,7 +626,7 @@ def test_N1_byte_identity_vs_git_pre_change_engine():
     """
     section("N-1/O-8 byte-identity vs the ACTUAL pre-change engine, inside its real boundary")
     check("normalization_sigma" not in open(
-        os.path.join(SRC, "nous_activation.py"), encoding="utf-8").read().split(
+        os.path.join(SRC, "psyche_activation.py"), encoding="utf-8").read().split(
         "def spread_activation")[0],
         "the overlay parameter is not introduced above spread_activation (sanity)")
     # The bound is a property of the fixtures and is checked with or without git, so the
@@ -665,7 +669,7 @@ def test_N1_byte_identity_vs_git_pre_change_engine():
           f"pre-change engine was deterministic on; the seed's own energy counts as a term")
     check(not mismatches,
           f"oracle 1: {compared} in-boundary comparisons vs git "
-          f"{getattr(pre, '__nous_sha__', '?')[:7]} byte-identical "
+          f"{getattr(pre, '__psyche_sha__', '?')[:7]} byte-identical "
           f"(mismatches: {mismatches})")
     print(f"  ({compared} comparisons against the real pre-change engine "
           f"inside its boundary, {len(mismatches)} mismatches)")
@@ -772,13 +776,13 @@ def test_N1_the_rebase_is_real_and_the_oracle_is_not_a_mirror():
     # (b) NOT A MIRROR BY DELEGATION. This half IS mechanically decidable and is asserted
     #     absolutely: an oracle that calls the module under test proves nothing, and that
     #     is a property of the text, not a threshold.
-    engine_src = open(os.path.join(SRC, "nous_activation.py"), encoding="utf-8").read()
+    engine_src = open(os.path.join(SRC, "psyche_activation.py"), encoding="utf-8").read()
     this_src = open(os.path.abspath(__file__), encoding="utf-8").read()
     body = this_src.split("def reference_spread", 1)[1].split("\ndef ", 1)[0]
     engine_body = engine_src.split("def spread_activation", 1)[1]
-    check("spread_activation(" not in body and "nous_activation" not in body,
+    check("spread_activation(" not in body and "psyche_activation" not in body,
           "(b) the reference never calls spread_activation and never reaches into "
-          "nous_activation — it cannot be a mirror by delegation. It consumes only the "
+          "psyche_activation — it cannot be a mirror by delegation. It consumes only the "
           "store's public surface and the module's exported CONSTANTS.")
 
     # And the residual honesty. A TRANSCRIBED reference cannot be caught at runtime at
@@ -829,8 +833,8 @@ def test_N1_byte_identity_loop_closed_on_a_system_built_substrate():
     the boundary.
     """
     section("N-1/O-8 LOOP-CLOSED: identity on a substrate the system's own pipeline built")
-    from nous_perceive import perceive
-    from nous_source_clustering import cluster_sources
+    from psyche_perceive import perceive
+    from psyche_source_clustering import cluster_sources
     store = frozen_store()
     words = ["coffee", "warmth", "morning routine", "cozy feeling", "kitchen",
              "work", "desk", "deadline pressure", "writing code", "commute"]
@@ -861,7 +865,7 @@ def test_N1_byte_identity_loop_closed_on_a_system_built_substrate():
           f"neutral output byte-identical on pipeline-selected seeds at pipeline-selected "
           f"energies ({len(mismatches)} mismatches: {mismatches})")
     # and one level further out: the whole multi-source field, driven end to end
-    from nous_field import build_activation_field
+    from psyche_field import build_activation_field
     f1 = build_activation_field(store, list(clustering.group_seeds.keys()),
                                 source_energies=clustering.group_seeds)
     ref_total = {}
@@ -913,7 +917,7 @@ def run_probe(driver, interps=None, seeds=None, reps=1):
 # addition is commutative (a+b == b+a). This isolates determinism from DEFECT-A below,
 # and the in-degree bound is asserted structurally so the fixture cannot silently drift.
 DET_GRAPH = '''
-    from nous_store import SubstrateStore, Clock, NodeType
+    from psyche_store import SubstrateStore, Clock, NodeType
     s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
     def add(c): return s.add_node(c, NodeType.CONCEPT)
     hub = add("hub")
@@ -931,7 +935,7 @@ DET_GRAPH = '''
 
 DET_DRIVER = textwrap.dedent(DET_GRAPH + '''
     import struct
-    from nous_activation import spread_activation
+    from psyche_activation import spread_activation
     indeg = {}
     for r in s.all_road_ids():
         rd = s.get_road(r)
@@ -1074,8 +1078,8 @@ def test_N2_O6_order_independence_holds_with_the_overlay_ON_as_well():
 
 DEFECT_A_DRIVER = textwrap.dedent('''
     import struct, sys
-    from nous_store import SubstrateStore, Clock, NodeType
-    from nous_activation import spread_activation
+    from psyche_store import SubstrateStore, Clock, NodeType
+    from psyche_activation import spread_activation
     s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
     S = s.add_node("S", NodeType.CONCEPT); T = s.add_node("T", NodeType.CONCEPT)
     for i, (a, b) in enumerate(((1, 2), (1, 3), (1, 9))):
@@ -1484,7 +1488,7 @@ def test_N5_O9_the_expansion_loop_reads_each_road_exactly_once():
           f"no road is read more than once in any expansion, across 25 adversarial graphs "
           f"x every seed x sigma in (None, 1.0) ({len(worst)} violations; {worst[:2]})")
     # (b) TEXTUAL — the tripwire. SPEC-0c §6.1 fixes the expected count at 1.
-    src = open(os.path.join(SRC, "nous_activation.py"), encoding="utf-8").read()
+    src = open(os.path.join(SRC, "psyche_activation.py"), encoding="utf-8").read()
     body = src.split("def spread_activation", 1)[1]
     check(body.count("store.get_road(") == 1,
           f"exactly ONE `store.get_road(` call site inside spread_activation "
@@ -1498,7 +1502,7 @@ def test_N5_O9_the_expansion_loop_reads_each_road_exactly_once():
              "observation; the check below is still emitted, so the total does not move")
         check(True, "pre-0b2 read-count comparison: UNAVAILABLE, recorded (git absent)")
     else:
-        pre_body = getattr(pre, "__nous_source__", "").split("def spread_activation", 1)[-1]
+        pre_body = getattr(pre, "__psyche_source__", "").split("def spread_activation", 1)[-1]
         check(pre_body.count("store.get_road(") == 1,
               f"pre-0b2 read-count comparison: the engine before the overlay also had "
               f"exactly one site (found {pre_body.count('store.get_road(')}) — 0c returns "
@@ -1935,8 +1939,8 @@ def test_R2_seed_and_graph_edge_cases():
 def test_S1_overlay_is_not_reachable_from_the_field_or_think():
     section("S1 structural: the overlay is not plumbed past spread_activation")
     import inspect
-    from nous_field import build_activation_field
-    from nous_perceive import think
+    from psyche_field import build_activation_field
+    from psyche_perceive import think
     field_params = inspect.signature(build_activation_field).parameters
     think_params = inspect.signature(think).parameters
     check("normalization_sigma" not in field_params,

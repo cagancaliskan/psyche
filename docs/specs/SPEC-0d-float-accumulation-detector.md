@@ -22,9 +22,9 @@ spec worth remembering:
 
 | # | Site | How it was found |
 |---|---|---|
-| 1 | `nous_coalitions.py` ×2 | BUG-0b1 — an existing adversarial test happened to fire on an interpreter that exposed it |
-| 2 | `nous_workspace.py:426` | SPEC-0c §2.5 — someone asked "where else?" *after* the first fix |
-| 3 | `nous_field.py:131` | SPEC-0c §2.7 — the tester was asked "was that sweep exhaustive?" |
+| 1 | `psyche_coalitions.py` ×2 | BUG-0b1 — an existing adversarial test happened to fire on an interpreter that exposed it |
+| 2 | `psyche_workspace.py:426` | SPEC-0c §2.5 — someone asked "where else?" *after* the first fix |
+| 3 | `psyche_field.py:131` | SPEC-0c §2.7 — the tester was asked "was that sweep exhaustive?" |
 
 **Three encounters, three times found by a person looking. Never once by a sweep.** Each
 time the project fixed the instance and moved on; each time an instance survived. Twice the
@@ -45,7 +45,7 @@ This repository has twice proved that a recorded intention does not hold here:
 carried `PROVEN` for a month; BUG-0b1's report claimed "two sites" and a third survived four
 weeks on the same competition path. **A note is not a control. A failing build is.**
 
-If 0d also fixed `nous_field`, the next naive accumulation would still arrive unannounced
+If 0d also fixed `psyche_field`, the next naive accumulation would still arrive unannounced
 and the brick after it would be a fifth manual hunt. Registering the known sites and leaving
 them is what converts "we should look again sometime" into "the build stops."
 
@@ -78,7 +78,7 @@ Any construct reducing two or more floats into one where the reduction order is 
 the values. In this codebase, three shapes:
 
 ```python
-total[k] = total.get(k, 0.0) + v      # the +=-into-a-dict shape (both nous_field sites)
+total[k] = total.get(k, 0.0) + v      # the +=-into-a-dict shape (both psyche_field sites)
 acc += v                              # a running local
 sum(iterable_of_floats)               # the builtin (BUG-0b1, SPEC-0c §2.5)
 ```
@@ -120,7 +120,7 @@ and it **fails the build**.
 
 ### 3.1 The model entry — and registry entries should aspire to this form
 
-**`src/nous_activation.py` — the `flow` accumulator.**
+**`src/psyche_activation.py` — the `flow` accumulator.**
 
 ```python
 flow[rid] = flow.get(rid, 0.0) + transmitted
@@ -142,7 +142,7 @@ Registry entries should aspire to this form: a reason that explains, not a reaso
 asserts. "Registered because it is single-term, proven over N adversarial graphs" is an
 entry that does work. "Registered because it is fine" is an entry that trains people to skim.
 
-### 3.2 `src/nous_field.py:131` — confirmed order-dependent, registered not fixed
+### 3.2 `src/psyche_field.py:131` — confirmed order-dependent, registered not fixed
 
 ```python
 total[node] = total.get(node, 0.0) + act
@@ -153,7 +153,7 @@ permutations**, and the difference reaches `Coalition.strength`. **Order-PINNED*
 order is program order — so it is **not** a determinism defect and no 0c result depends on
 it. Registered with exactly that reason and left in place.
 
-### 3.3 `src/nous_field.py:124` — CORRECTED: the symptom was present; the probe could not see it
+### 3.3 `src/psyche_field.py:124` — CORRECTED: the symptom was present; the probe could not see it
 
 ```python
 merged_flow[rid] = merged_flow.get(rid, 0.0) + fv
@@ -223,7 +223,7 @@ no caller in `src/`. Falsifier: any consumer that starts reading `ActivationFiel
 
 - **F-6** Every entry names a real site and carries a reason that is checkable rather than
   decorative. The `flow` bound (§3.1) is the reference standard.
-- **F-7** ASSERTED-NEGATIVE: `nous_field.py:131` **is still order-dependent** after 0d, and
+- **F-7** ASSERTED-NEGATIVE: `psyche_field.py:131` **is still order-dependent** after 0d, and
   a test asserts it. 0d fixes nothing, and the record must not drift into implying it did.
   This test goes red when a later brick converts the site — which is the correct signal, and
   that brick re-verifies here.
@@ -241,7 +241,7 @@ no caller in `src/`. Falsifier: any consumer that starts reading `ActivationFiel
 1. F-1 … F-8 hold, tester-verified, on all five interpreters.
 2. C6 runs in `ledger_check.py` and fails the build on an unregistered naive accumulation,
    **demonstrated by injection of three distinct shapes** (F-3).
-3. `src/` contains zero *unregistered* float accumulations — and **the two `nous_field`
+3. `src/` contains zero *unregistered* float accumulations — and **the two `psyche_field`
    sites are still naive**, registered rather than converted.
 4. The delivery report states plainly that 0d fixed nothing and explains why that is the
    deliverable.
@@ -257,7 +257,7 @@ that always returns "clean."
   shape is too coarse, and it should be narrowed **before** it trains people to approve
   entries without reading them. **A registry nobody reads is worse than no check**, because
   it converts a signal into a formality.
-- Anyone "closes" 0d by converting the `nous_field` sites and finding the detector then has
+- Anyone "closes" 0d by converting the `psyche_field` sites and finding the detector then has
   nothing to report → that is §0.2's failure mode, and it means the gate was never tested
   against the thing it exists to catch.
 
@@ -298,7 +298,7 @@ of the gate is that it is standing **before** the code that would otherwise slip
 gate installed after the traffic has passed is a fifth manual hunt wearing a detector's name.
 
 **Single next action:** hand to the builder. Detector and registry only. If the builder
-finds itself editing `nous_field.py`, it has left the spec.
+finds itself editing `psyche_field.py`, it has left the spec.
 
 ---
 

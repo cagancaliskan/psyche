@@ -45,13 +45,13 @@ for _p in (_SRC, _HERE):
         sys.path.insert(0, _p)
 
 import exp2c_capture as cap
-import nous_bodysensor as bs
+import psyche_bodysensor as bs
 import pilot_2c_populability as pilot
 # perceive is the INPUT side (it produces matched SOURCE nodes from the utterance) — used here
 # ONLY to verify the stimulus is well-formed (exactly the two anchors light up), NOT to grade.
 # It produces no winner/activation/flip; checking the source set is stimulus validation, the
 # §5.2 "perception lights up exactly the two anchors" requirement, not a graded readout.
-from nous_perceive import perceive
+from psyche_perceive import perceive
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -329,16 +329,16 @@ def test_battery_is_structurally_distinct_from_the_pilot_battery():
 
 def test_capture_uses_the_same_compute_friction_object_identity():
     section("C1 SAME FRICTION (identity, not re-derivation): the capture module's friction "
-            "function IS nous_bodysensor.compute_friction — the SAME object the BodySensor / "
+            "function IS psyche_bodysensor.compute_friction — the SAME object the BodySensor / "
             "cycle use, never a re-implementation")
     # object identity: the name the capture module binds must be the library function itself
     check(cap.compute_friction is bs.compute_friction,
-          "exp2c_capture.compute_friction IS nous_bodysensor.compute_friction (same object)")
+          "exp2c_capture.compute_friction IS psyche_bodysensor.compute_friction (same object)")
     # and the trace-processing helper consumes the BodySensor in REPLAY exactly as the cycle
     # does (it constructs a BodySensor(simulated=True, trace=...) and reads it). We assert the
     # helper references the library BodySensor, not a private copy.
     check(cap.BodySensor is bs.BodySensor,
-          "exp2c_capture.BodySensor IS nous_bodysensor.BodySensor (same object)")
+          "exp2c_capture.BodySensor IS psyche_bodysensor.BodySensor (same object)")
 
 
 def test_frictions_from_trace_match_compute_friction_on_the_deltas():
@@ -450,16 +450,16 @@ def _battery_blob_probe(seed: str) -> str:
     across hash seeds. Mirrors test_harness.py's adversarial probe pattern."""
     code = r'''
 import os, sys
-sys.path.insert(0, os.environ["NOUS_SRC"])
-sys.path.insert(0, os.environ["NOUS_EXP"])
+sys.path.insert(0, os.environ["PSYCHE_SRC"])
+sys.path.insert(0, os.environ["PSYCHE_EXP"])
 import exp2c_capture as cap
 battery = cap.build_realistic_battery(cap.BATTERY_SEED_REALISTIC, cap.PERCEPT_COUNT_REALISTIC)
 blob = cap.serialize_battery(battery)
 print(cap.sha256_of_canonical(blob))
 '''
     env = dict(os.environ)
-    env["NOUS_SRC"] = _SRC
-    env["NOUS_EXP"] = _HERE
+    env["PSYCHE_SRC"] = _SRC
+    env["PSYCHE_EXP"] = _HERE
     env["PYTHONHASHSEED"] = seed
     out = subprocess.run([sys.executable, "-c", code], env=env,
                          capture_output=True, text=True)
@@ -489,10 +489,10 @@ def test_trace_processing_is_deterministic_over_a_fixed_sample_sequence():
     seeds = ["0", "1", "2", "3", "7", "42"]
     code = r'''
 import os, sys
-sys.path.insert(0, os.environ["NOUS_SRC"])
-sys.path.insert(0, os.environ["NOUS_EXP"])
+sys.path.insert(0, os.environ["PSYCHE_SRC"])
+sys.path.insert(0, os.environ["PSYCHE_EXP"])
 import exp2c_capture as cap
-import nous_bodysensor as bs
+import psyche_bodysensor as bs
 samples = [
     bs.TelemetrySample(0.0, 0.0),
     bs.TelemetrySample(1.0, 0.91),
@@ -509,8 +509,8 @@ print(repr(lv))
     outs = []
     for s in seeds:
         env = dict(os.environ)
-        env["NOUS_SRC"] = _SRC
-        env["NOUS_EXP"] = _HERE
+        env["PSYCHE_SRC"] = _SRC
+        env["PSYCHE_EXP"] = _HERE
         env["PYTHONHASHSEED"] = s
         out = subprocess.run([sys.executable, "-c", code], env=env,
                              capture_output=True, text=True)
@@ -556,8 +556,8 @@ def test_module_does_not_import_the_competition_or_activation_engine():
             "the §5/§6 procedure (store construction + the SAME compute_friction)")
     src = inspect.getsource(cap)
     # it must NOT import the workspace selection (the graded readout) nor form coalitions
-    check("from nous_workspace import" not in src and "import nous_workspace" not in src,
-          "no import of nous_workspace (the competition/winner readout is not consumed)")
+    check("from psyche_workspace import" not in src and "import psyche_workspace" not in src,
+          "no import of psyche_workspace (the competition/winner readout is not consumed)")
     check("select_winner" not in src,
           "select_winner appears nowhere in the capture module (no winner is computed)")
     check("form_coalitions" not in src,
@@ -566,8 +566,8 @@ def test_module_does_not_import_the_competition_or_activation_engine():
           "no activation-field construction in the capture module (no activation read)")
     # the SAME compute_friction and BodySensor (telemetry only) ARE imported — that is the
     # whole permitted §6 surface
-    check("from nous_bodysensor import" in src,
-          "the capture module DOES import nous_bodysensor (the permitted §6 telemetry surface)")
+    check("from psyche_bodysensor import" in src,
+          "the capture module DOES import psyche_bodysensor (the permitted §6 telemetry surface)")
 
 
 def test_capture_main_path_calls_think_only_as_workload_never_reads_its_winner():
@@ -590,7 +590,7 @@ def test_capture_main_path_calls_think_only_as_workload_never_reads_its_winner()
 def test_battery_serialization_is_structural_only_no_activation():
     section("E4 BLINDNESS (battery serialization is STRUCTURAL): the serialized battery records "
             "ONLY the structural description (anchors, domain sizes, integer traversal counts, "
-            "bridge presence/target/bridge_n, depth_extra) — never any Nous activation / winner")
+            "bridge presence/target/bridge_n, depth_extra) — never any Psyche activation / winner")
     battery = cap.build_realistic_battery(cap.BATTERY_SEED_REALISTIC, cap.PERCEPT_COUNT_REALISTIC)
     blob = cap.serialize_battery(battery)
     payload = json.loads(blob)

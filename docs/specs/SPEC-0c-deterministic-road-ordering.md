@@ -49,7 +49,7 @@ enumeration. So the claim is bounded to what was actually verified:
   sampled — §1 case 1 and case 2, O-1…O-6, O-16.
 - **Order-independence** is achieved at those sites: a different iteration order yields the
   same bits, not merely a fixed order yielding a fixed result.
-- One further site is **identified and deferred** (§2.7, `nous_field.py`). It is
+- One further site is **identified and deferred** (§2.7, `psyche_field.py`). It is
   **order-pinned**, so it is **not a determinism defect** and it falsifies nothing 0c
   asserts.
 
@@ -97,8 +97,8 @@ through `think()`, and its order comes from a set of uuid4 NodeIDs in the coalit
 which the store-ordering fix does not touch.
 
 ```python
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_perceive import think
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_perceive import think
 import itertools
 s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
 add = lambda c: s.add_node(c, NodeType.CONCEPT)
@@ -135,9 +135,9 @@ isomorphism-invariance.
 ### 2.1 Cause, restated exactly
 
 `SubstrateStore._out` and `._in` are `Dict[NodeID, Set[RoadID]]`. `roads_from()` returns
-`iter(tuple(self._out.get(node_id, set())))` (`src/nous_store.py:444`) — iteration over a
+`iter(tuple(self._out.get(node_id, set())))` (`src/psyche_store.py:444`) — iteration over a
 **set of uuid4 hex strings**, whose order depends on the hash of values that are freshly
-random in every process. `nous_activation.py:287` then accumulates convergent
+random in every process. `psyche_activation.py:287` then accumulates convergent
 contributions with a naive sequential float add in that order, and float addition is not
 associative. At in-degree ≥ 3 the accumulated sum is run-dependent.
 
@@ -165,7 +165,7 @@ order, which is identical in every process. This is the project's existing float
 applied one level out, to iteration rather than to comparison: the intrinsic integer is
 `creation_seq`, and insertion order already encodes it.
 
-The full change surface is **fourteen lines** in `src/nous_store.py`, all mechanical: the
+The full change surface is **fourteen lines** in `src/psyche_store.py`, all mechanical: the
 two type annotations (249–250), per-node init `set()` → `{}` (276–277), `add(rid)` →
 `d[rid] = None` (319–320), `discard(rid)` → `d.pop(rid, None)` (330–331), and the six
 `.get(node_id, set())` fallbacks (291, 444, 449, 453, 504, 506). Four further sites need
@@ -212,7 +212,7 @@ property:
    anyway and the engine was never fixed. A control that depends on a future reader
    honouring a note has been tried here, on this hazard, and it failed. Do not buy it twice.
 
-3. **A reordering change is already planned, in writing.** `nous_activation.py`'s own design
+3. **A reordering change is already planned, in writing.** `psyche_activation.py`'s own design
    note contemplates *"a future locality prune [that wants] 'expand only the top-K most
    active nodes' ... within a hop layer."* Top-K within a layer **reorders iteration**. So
    order-independence is not speculative hardening against a hypothetical refactor; it is a
@@ -314,9 +314,9 @@ builtin?* — and the answer is three places:
 
 | Site | What it computes | Assessment |
 |---|---|---|
-| **`src/nous_workspace.py:428`** | `strength=sum(pruned_members.values())` — the **pruned winner's** strength | **A LIVE DEFECT, reproduced — see §2.5.1.** Its own comment says it applies *"the same 'sum of member activations' rule coalition formation uses."* BUG-0b1 changed that rule to `math.fsum` at `nous_coalitions.py:228` and `:311` and **did not change this site**. There are **three** `Coalition(` construction sites in `src/`, not two. So the pruned winner's strength is computed by a *different* rule than the raw winner's, by the version-dependent one, on the 1d-i winner path — the exact path BUG-0b1's flip occurred on. |
-| **`src/nous_workspace.py:235`** | `total_strength_after()` — the bounded aggregate the no-divergence test watches converge | Lower stakes: it informs a test's judgement rather than a selection. But a convergence test whose statistic is version-dependent is a weak test. |
-| **`src/nous_store.py:161`** | `Road.valence` = `sum(charges.values()) / max(1, len(...))` | Feeds `_open_close_on_crossing`'s comparisons against `_CLOSURE_THRESHOLD` (−0.75) and `_REOPEN_THRESHOLD` (−0.30) — a **categorical** closure decision resolved on a float sum, which is the exact shape the project's float rule prohibits. Reachability is low (a sum must land within a ULP of a threshold) but the shape is wrong. |
+| **`src/psyche_workspace.py:428`** | `strength=sum(pruned_members.values())` — the **pruned winner's** strength | **A LIVE DEFECT, reproduced — see §2.5.1.** Its own comment says it applies *"the same 'sum of member activations' rule coalition formation uses."* BUG-0b1 changed that rule to `math.fsum` at `psyche_coalitions.py:228` and `:311` and **did not change this site**. There are **three** `Coalition(` construction sites in `src/`, not two. So the pruned winner's strength is computed by a *different* rule than the raw winner's, by the version-dependent one, on the 1d-i winner path — the exact path BUG-0b1's flip occurred on. |
+| **`src/psyche_workspace.py:235`** | `total_strength_after()` — the bounded aggregate the no-divergence test watches converge | Lower stakes: it informs a test's judgement rather than a selection. But a convergence test whose statistic is version-dependent is a weak test. |
+| **`src/psyche_store.py:161`** | `Road.valence` = `sum(charges.values()) / max(1, len(...))` | Feeds `_open_close_on_crossing`'s comparisons against `_CLOSURE_THRESHOLD` (−0.75) and `_REOPEN_THRESHOLD` (−0.30) — a **categorical** closure decision resolved on a float sum, which is the exact shape the project's float rule prohibits. Reachability is low (a sum must land within a ULP of a threshold) but the shape is wrong. |
 
 **Why this is not already covered by the rest of 0c.** Ordering closes *order*-dependence;
 after 0c these dicts iterate deterministically anyway. It does **not** close
@@ -345,7 +345,7 @@ activation accumulator already using `math.fsum`. The §2 fix does not reach it.
 **Three things this shows, and each is load-bearing.**
 
 1. **The store-ordering fix cannot reach it.** `Coalition.members` inherits its order from
-   `by_basin[src]`, which is `Dict[str, Set[str]]` in `nous_coalitions.py:297` — a **set of
+   `by_basin[src]`, which is `Dict[str, Set[str]]` in `psyche_coalitions.py:297` — a **set of
    uuid4 NodeIDs** built in the coalition layer, not an adjacency index the store owns.
    Ordering `_out`/`_in` fixes the store's iteration; it does nothing for a set some other
    module constructs. **Fixing a class at one owner does not fix it at another owner.**
@@ -370,9 +370,9 @@ deterministic?" with "yes, except where it depends on your interpreter."
 #### 2.5.2 Two consequences that outlive the fix
 
 **(a) BUG-0b1's report is wrong, and is corrected in place.**
-`docs/BUG-0b1-coalition-strength-determinism.md` states the fix was *"`src/nous_coalitions.py`,
+`docs/BUG-0b1-coalition-strength-determinism.md` states the fix was *"`src/psyche_coalitions.py`,
 two sites (lines 225 and 308)"*. There was a **third** `Coalition` construction site, in
-`nous_workspace.py`, and it was missed. The bug was reported as closed while an instance of
+`psyche_workspace.py`, and it was missed. The bug was reported as closed while an instance of
 it remained on the same path. This is corrected in the document, **dated**, as a
 claim-accuracy fix — the same treatment its §5 "Tier 1 is not affected" sentence already
 received. The ledger's `0b1` note is corrected with it.
@@ -422,7 +422,7 @@ subject.
 ### 2.7 FINDING — a fourth order-dependent aggregate, in a module 0c never touched · **OPEN**
 
 The tester was asked whether the §2.5 sweep was exhaustive. **It was not.**
-`src/nous_field.py:131` and `:124`:
+`src/psyche_field.py:131` and `:124`:
 
 ```python
 total[node] = total.get(node, 0.0) + act            # DEFECT-A's exact shape
@@ -525,7 +525,7 @@ activation once `floor` is negative.
    The engine seeds `contributions = {seed_node: [energy]}`, so **the seed's own activation
    is unguarded on every graph, connected or not** — part 2's guard is on `transmitted`,
    which only ever sees downstream values. A NaN at the seed therefore lands in the
-   **returned** activation map, is consumed by `nous_field`, accumulated into basins, and
+   **returned** activation map, is consumed by `psyche_field`, accumulated into basins, and
    reaches `Coalition.strength` and thence `_competition_key`, where **every NaN comparison
    is False and the ordering silently degrades**. That is DEFECT-C's own failure mode, one
    input earlier. The isolated node in §4.1 is the *visible instance*, not the risk.
@@ -648,10 +648,10 @@ flip an outcome has been invisible for the life of the project.**
 split by lane.** Each owner rewrites its own; the lanes do not cross for this either.
 
 *Builder-owned (8 files, 10 sites):*
-`test_nous_activation.py` (1) · `test_nous_bodysensor.py` (2) · `test_nous_coalitions.py`
-(1) · `test_nous_field.py` (1) · `test_nous_perceive.py` (1) ·
-`test_nous_source_clustering.py` (1) · `test_nous_workspace.py` (1) ·
-`test_nous_workspace_broadcast.py` (2)
+`test_psyche_activation.py` (1) · `test_psyche_bodysensor.py` (2) · `test_psyche_coalitions.py`
+(1) · `test_psyche_field.py` (1) · `test_psyche_perceive.py` (1) ·
+`test_psyche_source_clustering.py` (1) · `test_psyche_workspace.py` (1) ·
+`test_psyche_workspace_broadcast.py` (2)
 
 *Tester-owned (5 files, **9** sites — corrected from 8 on the tester's audit):*
 `test_tester_1c_adversarial.py` (3) · `test_tester_1c_mutation_battery.py` (1) ·

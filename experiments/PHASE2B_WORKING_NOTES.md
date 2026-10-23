@@ -6,7 +6,7 @@
 > captured result file, it does not belong here.
 
 ## TASK (verbatim intent)
-Pre-registered GRADED SEMANTIC PRIMING on SWOW English. Work in nous/experiments/. DO NOT
+Pre-registered GRADED SEMANTIC PRIMING on SWOW English. Work in psyche/experiments/. DO NOT
 modify src/ or tests/. Reuse 2A harness.py (build_graph_from_spec, retrieval_strength,
 run_trials) UNCHANGED; may ADD additive helpers. Disciplines: deterministic by construction
 (Clock simulated), pure reads, adversarial cross-process determinism (PYTHONHASHSEED in
@@ -53,7 +53,7 @@ Start branch: phase-2a-fan-effect (2A=780f96f, clean working tree).
   invariance). Node ids assigned by sorted(words). CSR neighbor order sorted.
 - Adversarial cross-process test: run the SAME pipeline in fresh subprocess per hash seed,
   print canonical summary, assert byte-identical across the 8 seeds. To keep it tractable it
-  uses a REDUCED but real config (env NOUS_PRIMING_MAXROWS + small N_PRIMES) exercising the
+  uses a REDUCED but real config (env PSYCHE_PRIMING_MAXROWS + small N_PRIMES) exercising the
   IDENTICAL load->build->select->spread->summarize code path. Documented as reduced-but-faithful.
 
 ## FEASIBILITY — measured (library defaults, manual TSV)
@@ -74,7 +74,7 @@ Start branch: phase-2a-fan-effect (2A=780f96f, clean working tree).
   to retrieval_strength, adversarial cross-process determinism of summary. check() style.
 
 ## DELIVERABLES CHECKLIST
-- [ ] nous/.gitignore : add experiments/data/  (exclude the 53MB csv)
+- [ ] psyche/.gitignore : add experiments/data/  (exclude the 53MB csv)
 - [ ] experiments/data/README.md (SWOW version, URL, citation, license, schema, how-to-obtain)
 - [ ] experiments/swow.py
 - [ ] harness.py : + read_targets (additive)

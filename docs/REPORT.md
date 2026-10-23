@@ -1,12 +1,12 @@
 <!--
-  MASTER SOURCE OF TRUTH for the Nous technical report.
+  MASTER SOURCE OF TRUTH for the Psyche technical report.
   The LaTeX (docs/report/nous_report.tex) and Word (docs/report/nous_report.docx)
   deliverables are rendered from THIS file and must be kept in sync in content.
 
   HARD RULES (do not relax):
    - Every number is taken verbatim from docs/TEST_OUTPUT.txt and the measured stats
      in README.md. Do not recompute or estimate.
-   - Nous is an engineering prototype AND a testing-methodology case study: never a
+   - Psyche is an engineering prototype AND a testing-methodology case study: never a
      mind, consciousness, AGI, or a validated cognitive model. The cognitive cycle now
      CLOSES end-to-end, but that is a tester-verified MECHANISM result, not a cognitive
      one; no cognitive meaning is claimed above the substrate.
@@ -29,15 +29,15 @@
 **Year:** 2026
 **DOI:** https://doi.org/10.5281/zenodo.20474613
 **Archived on Zenodo** (open access, CC BY 4.0).
-**Artifact:** `nous/`: pure-Python standard-library prototype; 7 modules, 12 test suites; MIT-licensed.
+**Artifact:** `psyche/`: pure-Python standard-library prototype; 7 modules, 12 test suites; MIT-licensed.
 
 ---
 
 ## Abstract
 
-This report describes **Nous**, a dependency-free Python prototype of a memory-and-activation
+This report describes **Psyche**, a dependency-free Python prototype of a memory-and-activation
 substrate for a cognitive architecture, and (more centrally) the **software-engineering
-methodology** used to build it. Nous comprises a graph *substrate store* of concept nodes and
+methodology** used to build it. Psyche comprises a graph *substrate store* of concept nodes and
 weighted "roads"; a deterministic *spreading-activation* engine; a multi-source *activation
 field*; a *source-clustering* pre-stage that groups nearby perceived sources; and a *workspace*
 that runs one competition among coalitions, prunes the bridged unperceived material from the
@@ -88,7 +88,7 @@ survive happy-path tests. The question this project answers in the affirmative i
 disciplined, adversarial, property-oriented test process can surface such bugs early and force the
 honest scoping of what has and has not been achieved.
 
-**Aspiration vs. built reality:** Nous began as a large design vision. Those original vision
+**Aspiration vs. built reality:** Psyche began as a large design vision. Those original vision
 documents are retained verbatim in the repository under `docs/design/`, but they are **quarantined
 as aspiration**: a disclaimer there states plainly that their grand language ("AGI," "a real
 brain," "mind," "felt experience") describes intent, not the built code, and that of the thirteen
@@ -97,7 +97,7 @@ documents only the two layer-plan files correspond to anything implemented. This
 
 **Scope and non-claims (binding):**
 
-- Nous is an **engineering prototype** and a **testing-methodology case study**.
+- Psyche is an **engineering prototype** and a **testing-methodology case study**.
 - It is **not** a mind, consciousness, AGI, or a validated cognitive model, and makes **no claim of
   machine cognition**.
 - The substrate store and spreading-activation engine are **`PROVEN`** deterministic,
@@ -135,23 +135,23 @@ documents only the two layer-plan files correspond to anything implemented. This
 
 ## 2. Background and related work
 
-The following bodies of work **inspired** the design's vocabulary and structure. Nous does not
+The following bodies of work **inspired** the design's vocabulary and structure. Psyche does not
 implement, validate, or reproduce any of them, and claims no biological fidelity; each is named to
 position the prototype, not to assert a result.
 
 **Complementary Learning Systems (CLS):** The fast/slow split between a rapidly-learning episodic
 system and a slowly-consolidating semantic one [1], updated for intelligent-agent design in [2],
-*inspires* Nous's separation of **activation** (what lights up now) from **consolidation** (what is
+*inspires* Psyche's separation of **activation** (what lights up now) from **consolidation** (what is
 later reinforced). In the prototype this appears only as a strict rule: spreading activation is a
 pure read and never strengthens what it touches, not as a consolidation system.
 
 **Synaptic Tagging and Capture (STC):** The hypothesis that a weak event sets a local "tag" that can
 capture plasticity-related products from a nearby strong event [3, 4] *inspires* the framing of
-reinforcement as a *gated, budgeted* event. Nous borrows the framing to justify keeping activation
+reinforcement as a *gated, budgeted* event. Psyche borrows the framing to justify keeping activation
 read-only; it does not model tagging dynamics.
 
 **Global Workspace Theory (GWT):** The idea that specialized processes form coalitions that compete,
-and a winner is broadcast globally [5, 6], is the source of Nous's *coalition* vocabulary. Coalition
+and a winner is broadcast globally [5, 6], is the source of Psyche's *coalition* vocabulary. Coalition
 **formation**, a one-winner **competition**, and a single **bounded broadcast** back onto the
 substrate now all exist as mechanism. This borrows the theory's *framing* only: no claim of
 conscious access, ignition, or global availability in its sense is made — the broadcast is an
@@ -162,11 +162,11 @@ shapes the staging of the end-to-end cycle, which now **closes** (the broadcast 
 pass). The resemblance is structural framing, not an implementation or validation of the model.
 
 **Cognitive architectures:** ACT-R's integrated theory of cognition [8] and SPAUN's large-scale
-functional brain model [9] are referenced for **positioning**: Nous is far smaller and makes no
+functional brain model [9] are referenced for **positioning**: Psyche is far smaller and makes no
 behavioral or biological claims; it is a substrate-and-method study, not an architecture in their
 sense.
 
-**Spreading-activation theory:** Nous's activation engine is a deterministic, engineered variant of
+**Spreading-activation theory:** Psyche's activation engine is a deterministic, engineered variant of
 spreading activation in the sense of Collins & Loftus [10]; the convergence-sums property is taken
 from that lineage, while the hop-layered single-expansion is an engineering choice made for
 determinism (§6).
@@ -176,13 +176,13 @@ appears in the design notes as motivation for emotion-modulated plasticity; in t
 charge-modulated strengthening and is best read as design-level aspiration.
 
 **Semantic priming** [10, 11] is named here because it is the worked example for future validation
-(§9): an effect whose direction is known independently of Nous.
+(§9): an effect whose direction is known independently of Psyche.
 
 ---
 
 ## 3. System architecture (as built)
 
-Nous is pure-Python standard library, organized bottom-up across **seven modules**. Each layer
+Psyche is pure-Python standard library, organized bottom-up across **seven modules**. Each layer
 reads the one below through its public surface only. The full pipeline is the closed cognitive
 cycle *perceive → cluster → activate (field) → form coalitions → compete → prune → broadcast →
 next cycle*. The honest boundary runs **through** the tiers, not between two halves: the substrate
@@ -198,7 +198,7 @@ cycle close end-to-end. The figure establishes *where verification stops* — it
 any layer is cognitively meaningful. (This rendered figure predates the source-clustering and
 workspace bricks; the as-built module set and the closed cycle are described in §3.5–§3.6 below.)
 
-### 3.1 Substrate store (`nous_store.py`, 548 lines)
+### 3.1 Substrate store (`psyche_store.py`, 548 lines)
 
 The only component that mutates the graph; it holds no cognitive logic.
 
@@ -236,7 +236,7 @@ separate from ordering (`creation_seq`). Describes the data structures only.
 mutate; only writes persist decay; closure changes only on an active crossing. Visualizes finding (a);
 it proves a *mechanism* property, not anything about cognition.
 
-### 3.2 Spreading activation (`nous_activation.py`, 281 lines)
+### 3.2 Spreading activation (`psyche_activation.py`, 281 lines)
 
 The first operation that reads *across* the graph: radiate activation from a seed along directed
 out-roads and report what lit up. **Pure read:**
@@ -261,7 +261,7 @@ out-roads and report what lit up. **Pure read:**
 - **Locality:** A hop budget and an activation floor keep the spread in the seed's neighborhood,
   which is what makes it affordable in pure Python.
 
-### 3.3 Multi-source activation field (`nous_field.py`, 161 lines)
+### 3.3 Multi-source activation field (`psyche_field.py`, 161 lines)
 
 Runs the proven single-source spread once **per source** and assembles a field: each node's
 activation from each source, the **summed total** across sources, and the **dominant source** (the
@@ -270,7 +270,7 @@ one that activates it most: the node's *basin*). Dominant-source ties break on t
 *single* seed yields one activation peak, so any segmentation of it keys off distance from the seed
 rather than community structure (finding (e)); multiple sources yield multiple genuine peaks.
 
-### 3.4 Coalitions and perception (`nous_coalitions.py` 324 lines; `nous_perceive.py` 248 lines)
+### 3.4 Coalitions and perception (`psyche_coalitions.py` 324 lines; `psyche_perceive.py` 248 lines)
 
 - **Coalition formation** groups co-activated nodes. Two entry points exist: a *flow-cut*
   segmentation of a single spread (cut the region at weak-flow edges), and a *group-by-basin* path
@@ -288,7 +288,7 @@ rather than community structure (finding (e)); multiple sources yield multiple g
   The cycle is deterministic; what it produces is **not** claimed to be cognitively meaningful
   (finding (f); §7.3).
 
-### 3.5 Source-clustering (`nous_source_clustering.py`, 275 lines)
+### 3.5 Source-clustering (`psyche_source_clustering.py`, 275 lines)
 
 A **pure-read** pre-stage between perception and the field. The closed loop surfaced that
 perception emits *clustered, overlapping* source sets, so basins are meaningless until nearby
@@ -302,7 +302,7 @@ field-builder signature. Verified (mechanism only): deterministic across 6 hash 
 interpreters, pure (mutates nothing), integrity-preserving, scale-invariant — and it carries an
 explicit asserted-negative that the grouping is **topological only, no cognitive claim**.
 
-### 3.6 The workspace: competition, pruning, bounded broadcast (`nous_workspace.py`, 533 lines)
+### 3.6 The workspace: competition, pruning, bounded broadcast (`psyche_workspace.py`, 533 lines)
 
 What the old placeholder stood in for, built as two bricks.
 
@@ -508,7 +508,7 @@ yield two basins with the bridge as the seam. The multi-source recovery is the a
   does place one source per community by hand. It is honest as a *mechanism* test and would be
   dishonest if read as evidence that the system finds communities on its own.)
 - **Root cause:** validating a stage against inputs invented to produce the desired output.
-- **Fix:** **close the loop** with the thinnest real slice (`nous_perceive.py`): `text → perceive →
+- **Fix:** **close the loop** with the thinnest real slice (`psyche_perceive.py`): `text → perceive →
   sources → field → coalitions → thought`, where which nodes become sources is decided by the input
   matched against the substrate, not by the test. On real clustered input the field then produces an
   **incoherent** "thought": basins collapse, one source over-swallows across domains, and same-domain
@@ -596,15 +596,15 @@ builder suites.
 
 | Suite | Layer / role | Checks passed |
 |---|---|---:|
-| `test_nous_store.py` | substrate store | 45 |
-| `test_nous_activation.py` | spreading activation | 35 |
-| `test_nous_coalitions.py` | coalition formation | 19 |
-| `test_nous_field.py` | multi-source field | 13 |
-| `test_nous_source_clustering.py` | source-clustering (1c) | 49 |
-| `test_nous_workspace.py` | workspace competition + pruning (1d-i) | 83 |
-| `test_nous_workspace_broadcast.py` | bounded broadcast + feedback (1d-ii) | 63 |
-| `test_nous_perceive.py` | perception + closed end-to-end cycle | 19 |
-| `test_nous_bodysensor.py` | body-state sensor + modulation hook (2c) | 49 |
+| `test_psyche_store.py` | substrate store | 45 |
+| `test_psyche_activation.py` | spreading activation | 35 |
+| `test_psyche_coalitions.py` | coalition formation | 19 |
+| `test_psyche_field.py` | multi-source field | 13 |
+| `test_psyche_source_clustering.py` | source-clustering (1c) | 49 |
+| `test_psyche_workspace.py` | workspace competition + pruning (1d-i) | 83 |
+| `test_psyche_workspace_broadcast.py` | bounded broadcast + feedback (1d-ii) | 63 |
+| `test_psyche_perceive.py` | perception + closed end-to-end cycle | 19 |
+| `test_psyche_bodysensor.py` | body-state sensor + modulation hook (2c) | 49 |
 | `test_tester_0b2_adversarial.py` | tester: adversarial 0b2 normalization overlay | 83 |
 | `test_tester_1c_adversarial.py` | tester: adversarial 1c | 73 |
 | `test_tester_1c_mutation_battery.py` | tester: 1c randomized mutation battery | 5 |
@@ -826,7 +826,7 @@ caught six structural bugs that happy-path testing passes over, and the same dis
 across an independent builder and an independent adversarial tester — drew the boundary the project
 refuses to cross: proving mechanism while explicitly declining to claim cognition. What remains open
 is exactly what the method recommends next, and it is the headline of the next phase: evaluate the
-*closed cycle* against a behavioral effect whose direction is known independently of Nous (semantic
+*closed cycle* against a behavioral effect whose direction is known independently of Psyche (semantic
 priming, graded against human association norms) — a result that has not yet been produced. The honest
 version of "it works" used throughout this project is the useful one: *this part is proven; that part
 is tester-verified as mechanism; that part is not yet earned, and here is exactly where the line is.*
@@ -887,15 +887,15 @@ The following is the captured run from `docs/TEST_OUTPUT.txt` (per-suite result 
 of the totals in §7.2).
 
 ```
-test_nous_store.py                      → RESULT:  67 passed, 0 failed
-test_nous_activation.py                 → RESULT: 102 passed, 0 failed
-test_nous_coalitions.py                 → RESULT:  19 passed, 0 failed
-test_nous_field.py                      → RESULT:  13 passed, 0 failed
-test_nous_source_clustering.py          → RESULT:  49 passed, 0 failed
-test_nous_workspace.py                  → RESULT:  96 passed, 0 failed
-test_nous_workspace_broadcast.py        → RESULT:  63 passed, 0 failed
-test_nous_perceive.py                   → RESULT:  19 passed, 0 failed
-test_nous_bodysensor.py                 → RESULT:  49 passed, 0 failed
+test_psyche_store.py                      → RESULT:  67 passed, 0 failed
+test_psyche_activation.py                 → RESULT: 102 passed, 0 failed
+test_psyche_coalitions.py                 → RESULT:  19 passed, 0 failed
+test_psyche_field.py                      → RESULT:  13 passed, 0 failed
+test_psyche_source_clustering.py          → RESULT:  49 passed, 0 failed
+test_psyche_workspace.py                  → RESULT:  96 passed, 0 failed
+test_psyche_workspace_broadcast.py        → RESULT:  63 passed, 0 failed
+test_psyche_perceive.py                   → RESULT:  19 passed, 0 failed
+test_psyche_bodysensor.py                 → RESULT:  49 passed, 0 failed
 test_tester_1c_adversarial.py           → RESULT:  73 passed, 0 failed
 test_tester_1c_mutation_battery.py      → RESULT:   5 passed, 0 failed
 test_tester_1d_i_adversarial.py         → RESULT: 107 passed, 0 failed
@@ -927,7 +927,7 @@ python3 run_tests.py
 python3 tools/capture_run.py
 
 # a single suite directly:
-PYTHONPATH="$PWD/src" python3 tests/test_nous_store.py
+PYTHONPATH="$PWD/src" python3 tests/test_psyche_store.py
 ```
 
 Pure standard library; no dependencies (developed on CPython 3.12.4; the current capture is swept

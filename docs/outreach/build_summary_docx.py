@@ -7,7 +7,7 @@ SUMMARY.md is the source of truth; this script parses its lightweight Markdown
 two stay in sync. No new claims are introduced here: text is taken from SUMMARY.md.
 
 Run with the venv that has python-docx:
-    /tmp/nous_venv/bin/python build_summary_docx.py
+    /tmp/psyche_venv/bin/python build_summary_docx.py
 """
 import os
 import re

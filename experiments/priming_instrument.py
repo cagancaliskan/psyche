@@ -64,9 +64,9 @@ if _HERE not in sys.path:
 from typing import Callable, Dict, List, Optional, Sequence
 
 from harness import read_targets, SRC_DIR  # noqa: F401  (SRC_DIR re-exported for tests)
-from nous_store import SubstrateStore
-from nous_perceive import think
-from nous_activation import (
+from psyche_store import SubstrateStore
+from psyche_perceive import think
+from psyche_activation import (
     DEFAULT_SEED_ENERGY,
     DEFAULT_DECAY_PER_HOP,
     DEFAULT_FLOOR,

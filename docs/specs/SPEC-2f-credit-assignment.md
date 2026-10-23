@@ -130,7 +130,7 @@ the false-positive noise SPEC-0d §6 names as the way a registry stops being rea
 
 ## 1. The hole, and its exact shape
 
-`docs/design/nous_plan_layer0_topology.md` lines 64–68, in the Layer 0 topology's own words:
+`docs/design/psyche_plan_layer0_topology.md` lines 64–68, in the Layer 0 topology's own words:
 
 > *"(Kept on the radar for Layer 2/3, not solved here: **action→consequence pairing** — who
 > tells the self-update policy that *this* input is the world's response to *that* earlier
@@ -139,7 +139,7 @@ the false-positive noise SPEC-0d §6 names as the way a registry stops being rea
 It vanished. Layers 2 and 3 were never written — **there is no `teknik_planlar/` directory in
 this repository at all**, verified, so the deferral target does not exist as a document.
 Meanwhile every downstream vision document presupposes the mechanism:
-`nous_motivation_architecture_v2.md`, `nous_self_model.md`, `nous_emotional_regulation.md`
+`psyche_motivation_architecture_v2.md`, `psyche_self_model.md`, `psyche_emotional_regulation.md`
 each assume that an outcome can reach back and change a connection that preceded it.
 
 **The pyramid is upside down**: the layers that depend on credit assignment are specified in
@@ -152,16 +152,16 @@ detail, and credit assignment is a parenthesis.
 ### 2.1 The premise, corrected
 
 The brief describes two incompatible models: (a) the biology document's continuous tag and
-capture, and (b) *"Module 01 / `src/nous_store.py` — an integer `traverse_count` ladder
+capture, and (b) *"Module 01 / `src/psyche_store.py` — an integer `traverse_count` ladder
 (5 / 20 / 100)"*, with (b) having shipped.
 
 **Checked against the code, and (b) did not ship.** There are three models, not two:
 
 | | Model | Status |
 |---|---|---|
-| (a) | `nous_substrate_biology.md` §1.3, §2 — continuous ω with tag τ, global pool `P_PRP`, capture | **never implemented** |
-| (b) | `nous_memory_hierarchy.md` §1.3 — integer ladder, `traversal_count` 1–4 / 5–19 / 20–99 / 100+ | **never implemented either** |
-| (c) | `src/nous_store.py` — continuous `strength ∈ [0,1]` with lazy decay; quality is a **derived view** via float ceilings `DIRT_CEILING=0.20`, `GRAVEL_CEILING=0.50`, `ROAD_CEILING=0.80` | **this is what shipped** |
+| (a) | `psyche_substrate_biology.md` §1.3, §2 — continuous ω with tag τ, global pool `P_PRP`, capture | **never implemented** |
+| (b) | `psyche_memory_hierarchy.md` §1.3 — integer ladder, `traversal_count` 1–4 / 5–19 / 20–99 / 100+ | **never implemented either** |
+| (c) | `src/psyche_store.py` — continuous `strength ∈ [0,1]` with lazy decay; quality is a **derived view** via float ceilings `DIRT_CEILING=0.20`, `GRAVEL_CEILING=0.50`, `ROAD_CEILING=0.80` | **this is what shipped** |
 
 `quality_of()` reads `road.strength`, a float. It does not read `traversal_count`. And
 `traversal_count` is written (`+= 1` in `strengthen`) and copied into decayed views, but
@@ -208,7 +208,7 @@ stays. But **"document it" becomes "enforce it"**, which is this project's idiom
 price of one comment and one test, and no Tier-1 change. If anyone starts reading it, the
 test goes red and forces a decision rather than a discovery.
 
-**Routed to the builder** (`src/` comment + `tests/test_nous_*.py` assertion); not
+**Routed to the builder** (`src/` comment + `tests/test_psyche_*.py` assertion); not
 architect-pm's to write.
 
 ---
@@ -228,7 +228,7 @@ is not one of the tradeoffs.
 τ becomes a field on `Road`, decaying like `strength`. A global `P_PRP` gates a capture sweep
 that applies `ω ← ω + μ·(τ·P_PRP)` to every road whose τ exceeds a threshold.
 
-Faithful to `nous_substrate_biology.md` §2, and the only option that delivers **behavioural
+Faithful to `psyche_substrate_biology.md` §2, and the only option that delivers **behavioural
 tagging** — a weak trace preserved because a *strong, unrelated* event flooded the system
 within the same window. That is the property the biology document is actually about, and no
 other option has it.
@@ -252,7 +252,7 @@ trace to capture.
 
 ### 3.3 Design C — an episodic trace outside the store · **RECOMMENDED**
 
-No change to `Road`, and **no change to `src/nous_store.py` at all.**
+No change to `Road`, and **no change to `src/psyche_store.py` at all.**
 
 A new module holds a bounded, append-only trace of `(cycle_index, road_id)` — a deque with a
 fixed window `L`. An explicit `assign_credit(trace, outcome, ...)` computes an eligibility
@@ -260,7 +260,7 @@ weight `e(k) = f(cycle_outcome − cycle_traversal)` per entry, and applies cred
 the existing public `strengthen(road_id, charge, base_gain)`**.
 
 The eligibility trace is then not a stored field but a **function of the trace's own
-timestamps** — which is the same move `nous_store` already makes with lazy decay: don't store
+timestamps** — which is the same move `psyche_store` already makes with lazy decay: don't store
 what you can compute from a timestamp on access.
 
 **Cost — near zero against Tier 1.** The store is untouched, so 0a needs no re-verification.
@@ -301,7 +301,7 @@ scaffolding that will be replaced. D-020 answers it directly:
 
 **And C is idiomatic, not expedient — this is the second ground and the more durable one.**
 Computing eligibility from a timestamp instead of storing it is **the substrate's own
-existing move**: `nous_store` already does exactly this with lazy decay, which is why
+existing move**: `psyche_store` already does exactly this with lazy decay, which is why
 `get_road` returns a computed view rather than a persisted value. C follows the design
 philosophy already in the code. It is not a shortcut away from it.
 
@@ -316,7 +316,7 @@ tidier**. Deferred, not foreclosed, and the difference is written down.
 
 ### 4.1 What Layer 0 specifies
 
-`nous_plan_layer0_topology.md` lines 271–277:
+`psyche_plan_layer0_topology.md` lines 271–277:
 
 > *"**NEUROMODULATION (T2 integrator)** — global, cross-cutting state owned by no actor:
 > system-wide **arousal** and the **plasticity budget** (`P_PRP`) … **Loop order pinned:**
@@ -356,7 +356,7 @@ foreclosing it. NEUROMODULATION gets a real interface to satisfy, which is what 
 real job" should mean.
 
 **And the justification correction is recorded now, before NEUROMODULATION exists** — see
-§4.2. `docs/design/nous_plan_layer0_topology.md` has been amended in place. The reason for
+§4.2. `docs/design/psyche_plan_layer0_topology.md` has been amended in place. The reason for
 recording it early is itself the point: **a design implemented for a resemblance reason is a
 design someone later removes when the resemblance stops feeling compelling.** The structural
 reason survives that; "neuromodulation is slow in brains" does not.

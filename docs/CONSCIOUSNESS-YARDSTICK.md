@@ -28,7 +28,7 @@ forbidding.
 **The hard problem** (Chalmers): why is there something it is like to be a system at all. Nothing
 anyone can build touches this. No experiment distinguishes a system that has experience from a
 functional duplicate that does not. This is not pessimism about this project specifically; it is
-the unmoved state of the question after thirty years. **Nous should never claim anything here,
+the unmoved state of the question after thirty years. **Psyche should never claim anything here,
 and should never be designed as though it could.**
 
 **The functional / access questions**: global availability of information, metacognitive
@@ -53,7 +53,7 @@ largely absent.
 *(These are external figures quoted from the cited paper, not project counts. They are outside
 the ledger's scope by construction — see the count-quarantine note in §7.)*
 
-**The operational consequence: do not bet the architecture on one theory.** Nous sits in the
+**The operational consequence: do not bet the architecture on one theory.** Psyche sits in the
 GWT/LIDA lineage by construction, and GWT's most specific neural prediction just failed its own
 pre-registered test. A pluralist target is the correct posture, and one exists.
 
@@ -82,7 +82,7 @@ structure `CONTRIBUTING.md` already demands.
 Those are behavioural and measure open-ended learning; these are architectural and are assessed by
 reading code. Neither supersedes the other, and neither is a consciousness test.
 
-## 4. Nous assessed against all 14 indicators — 2026-07-25
+## 4. Psyche assessed against all 14 indicators — 2026-07-25
 
 Indicator wording is quoted from arXiv:2308.08708 Table 1. Status is this project's own
 assessment and is the falsifiable part.
@@ -92,14 +92,14 @@ assessment and is the falsifiable part.
 | **RPT-1** | "Input modules using algorithmic recurrence" | ✗ | Perception is exact/substring token matching. The *cycle* is recurrent (broadcast → next cycle); the *input module* is not. |
 | **RPT-2** | "Input modules generating organised, integrated perceptual representations" | ✗ | No binding, no integration. Perception emits sources, nothing more. |
 | **GWT-1** | "Multiple specialised systems capable of operating in parallel (modules)" | ✗ | Layer 0 specifies eight brain systems; one pipeline is built. Single-threaded, no parallelism. |
-| **GWT-2** | "Limited capacity workspace, entailing a bottleneck in information flow and a selective attention mechanism" | ✗ → **0b2** | The engine has no scarcity by default: `outgoing = node_act` down every road. The default-off normalization overlay (0b2) is the mechanism; its default flip is a separate brick with its own gate. **The single indicator most specific to the theory Nous is built in, and it is the one the engine lacks.** |
+| **GWT-2** | "Limited capacity workspace, entailing a bottleneck in information flow and a selective attention mechanism" | ✗ → **0b2** | The engine has no scarcity by default: `outgoing = node_act` down every road. The default-off normalization overlay (0b2) is the mechanism; its default flip is a separate brick with its own gate. **The single indicator most specific to the theory Psyche is built in, and it is the one the engine lacks.** |
 | **GWT-3** | "Global broadcast: availability of information in the workspace to all modules" | ◐ | The broadcast mechanism exists (1d-ii), bounded and tester-verified. But it writes back onto the substrate; there are no modules for it to be *available to*. **Mechanism present, scope absent** — which is precisely why this is ◐ and not ✓. |
 | **GWT-4** | "State-dependent attention, giving rise to the capacity to use the workspace to query modules in succession to perform complex tasks" | ✗ | No task capability. |
 | **HOT-1** | "Generative, top-down or noisy perception modules" | ✗ | Perception is bottom-up and deterministic. |
-| **HOT-2** | "Metacognitive monitoring distinguishing reliable perceptual representations from noise" | ✗ | `docs/design/nous_self_model.md`. Designed in detail, entirely unbuilt. |
-| **HOT-3** | "Agency guided by a general belief-formation and action selection system, and a strong disposition to update beliefs in accordance with the outputs of metacognitive monitoring" | ✗ | `docs/design/nous_motivation_architecture_v2.md`. Presupposes credit assignment — **2f**. |
-| **HOT-4** | "Sparse and smooth coding generating a 'quality space'" | ✗ | **Architectural tension worth knowing.** Nous is *localist* — one node per concept — which is the opposite of a smooth quality space. There is no similarity metric between concepts except graph distance. Downstream of the "no embeddings" decision, and not a small gap. |
-| **AST-1** | "A predictive model representing and enabling control over the current state of attention" | ✗ | `docs/design/nous_attention_awareness.md` plus the self-model *is* an attention schema. Graziano's theory is the most straightforwardly engineerable of the set, and most of the design already exists on paper. |
+| **HOT-2** | "Metacognitive monitoring distinguishing reliable perceptual representations from noise" | ✗ | `docs/design/psyche_self_model.md`. Designed in detail, entirely unbuilt. |
+| **HOT-3** | "Agency guided by a general belief-formation and action selection system, and a strong disposition to update beliefs in accordance with the outputs of metacognitive monitoring" | ✗ | `docs/design/psyche_motivation_architecture_v2.md`. Presupposes credit assignment — **2f**. |
+| **HOT-4** | "Sparse and smooth coding generating a 'quality space'" | ✗ | **Architectural tension worth knowing.** Psyche is *localist* — one node per concept — which is the opposite of a smooth quality space. There is no similarity metric between concepts except graph distance. Downstream of the "no embeddings" decision, and not a small gap. |
+| **AST-1** | "A predictive model representing and enabling control over the current state of attention" | ✗ | `docs/design/psyche_attention_awareness.md` plus the self-model *is* an attention schema. Graziano's theory is the most straightforwardly engineerable of the set, and most of the design already exists on paper. |
 | **PP-1** | "Input modules using predictive coding" | ✗ | Nothing in the system predicts anything. |
 | **AE-1** | "Learning from feedback and selecting outputs so as to pursue goals, especially where this involves flexible responsiveness to competing goals" | ✗ → **2f** | Temporal credit assignment — the hole Layer 0 admits has no owner. |
 | **AE-2** | "Modeling output-input contingencies, including some systematic effects, and using this model in perception or control" | ✗ | No action, so no contingencies to model. |
@@ -148,7 +148,7 @@ Three recorded NO-GOs before any graded number is the strongest available eviden
 project has the antibodies. But the discipline has not yet been tested against a topic that
 actively rewards grandiosity. The rule that keeps it safe is already written:
 
-> `CONTRIBUTING.md` rule 1: Nous is never called "a mind," "conscious," "sentient," "AGI," or "a
+> `CONTRIBUTING.md` rule 1: Psyche is never called "a mind," "conscious," "sentient," "AGI," or "a
 > validated cognitive model."
 
 **Keep it. Forever.** The indicator list is how the project makes real progress toward the

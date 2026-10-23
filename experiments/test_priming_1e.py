@@ -350,8 +350,8 @@ def test_selector_is_blind_to_activation():
     src = open(os.path.join(_HERE, "priming_1e.py"), encoding="utf-8").read()
     # the selector must not import the activation engine or call think()/spread_activation
     check("spread_activation" not in src, "priming_1e never references spread_activation")
-    check("nous_activation" not in src, "priming_1e never imports nous_activation")
-    check("import think" not in src and "nous_perceive" not in src,
+    check("psyche_activation" not in src, "priming_1e never imports psyche_activation")
+    check("import think" not in src and "psyche_perceive" not in src,
           "priming_1e never imports the think() loop")
     check("read_targets" not in src, "priming_1e never reads activation targets")
 
@@ -362,7 +362,7 @@ def test_selector_is_blind_to_activation():
 
 _DET_PROBE = r'''
 import os, sys
-sys.path.insert(0, os.environ["NOUS_EXP"])
+sys.path.insert(0, os.environ["PSYCHE_EXP"])
 from swow import Topology
 import priming_1e as S1E
 
@@ -395,7 +395,7 @@ print("CUTS", sel.decile_cuts)
 
 def _det_probe(seed: str) -> str:
     env = dict(os.environ)
-    env["NOUS_EXP"] = _HERE
+    env["PSYCHE_EXP"] = _HERE
     env["PYTHONHASHSEED"] = seed
     out = subprocess.run([sys.executable, "-c", _DET_PROBE], env=env,
                          capture_output=True, text=True)

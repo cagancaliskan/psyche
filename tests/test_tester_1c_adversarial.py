@@ -33,11 +33,11 @@ import sys
 import subprocess
 import textwrap
 
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_perceive import perceive, think
-from nous_field import build_activation_field
-from nous_coalitions import form_coalitions_from_field
-from nous_source_clustering import (
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_perceive import perceive, think
+from psyche_field import build_activation_field
+from psyche_coalitions import form_coalitions_from_field
+from psyche_source_clustering import (
     cluster_sources, SourceClustering, SourceGroup,
     DEFAULT_PROXIMITY_FRACTION, _pair_proximity,
 )
@@ -256,9 +256,9 @@ def test_P2_cross_process_determinism_full_clustering():
     # a determinism probe that rounds is not a determinism probe.
     driver = textwrap.dedent('''
         import struct
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import perceive
-        from nous_source_clustering import cluster_sources
+        from psyche_store import SubstrateStore, Clock, NodeType
+        from psyche_perceive import perceive
+        from psyche_source_clustering import cluster_sources
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
         def add(c, t=NodeType.CONCEPT): return s.add_node(c, t)
         # ring p-q-r-s-p, all n=30 (equal strengths -> ties); plus pair u-v (n=30)
@@ -289,8 +289,8 @@ def test_P2b_cross_process_determinism_full_think_pipeline():
     # SPEC-0c §5.1: BIT PATTERNS, never round(x, 9).
     driver = textwrap.dedent('''
         import struct
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import think
+        from psyche_store import SubstrateStore, Clock, NodeType
+        from psyche_perceive import think
         s = SubstrateStore(clock=Clock(simulated=True, start=0.0))
         def add(c, t=NodeType.CONCEPT): return s.add_node(c, t)
         coffee=add("coffee",NodeType.ENTITY); warmth=add("warmth",NodeType.SENSATION)

@@ -109,7 +109,7 @@ def parse_capture(root: Path) -> Optional[Dict[str, object]]:
 
     The capture format is one block per suite:
         ######################################################################
-        # test_nous_store.py
+        # test_psyche_store.py
         ######################################################################
         ...
           RESULT: 45 passed, 0 failed
@@ -354,7 +354,7 @@ def check_status_vocabulary(root: Path, ledger: dict) -> List[Finding]:
             continue
         rel = path.relative_to(root).as_posix()
         # the roadmap and the decision log narrate history, including superseded states
-        if rel.endswith("nous_roadmap.md") or rel.endswith("DECISIONS.md"):
+        if rel.endswith("psyche_roadmap.md") or rel.endswith("DECISIONS.md"):
             continue
         lines = text.splitlines()
         for i, line in enumerate(lines):
@@ -518,8 +518,8 @@ def check_runner_completeness(root: Path, ledger: dict) -> List[Finding]:
 # ─────────────────────────────────────────────────────────────────────────────
 #
 # WHY THIS EXISTS (SPEC-0d §0.1). This project has met the naive-float-accumulation
-# shape three times — nous_coalitions (BUG-0b1), nous_workspace:426 (SPEC-0c §2.5),
-# nous_field:131 (SPEC-0c §2.7) — and every one was found by a person looking, never by
+# shape three times — psyche_coalitions (BUG-0b1), psyche_workspace:426 (SPEC-0c §2.5),
+# psyche_field:131 (SPEC-0c §2.7) — and every one was found by a person looking, never by
 # a sweep. Twice the survivor sat in a file the previous fix's author had open. A fourth
 # manual hunt has no better prior than the first three, so this is the sweep.
 #

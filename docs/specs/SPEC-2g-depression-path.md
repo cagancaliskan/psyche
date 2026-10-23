@@ -15,7 +15,7 @@ That framing was wrong and is corrected in §1.
 **Fix `bound_on_absence`'s line-anchored dismissals first.**
 
 Dismissals are keyed `path:line`. Inserting **one comment line** at the top of
-`nous_field.py` shifts every line below it and fires a **false `[C6]`** against the
+`psyche_field.py` shifts every line below it and fires a **false `[C6]`** against the
 `ActivationField.flow` bound. 2g edits `src/` — a new parameter on an existing signature and
 a new branch in the write path — and will trip this constantly.
 

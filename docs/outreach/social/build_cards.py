@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-Build four LinkedIn social cards for Nous in the project's own brand identity
-(the "ancient manuscript at dawn" look from nous-brand.html): ink/parchment/gold,
+Build four LinkedIn social cards for Psyche in the project's own brand identity
+(the "ancient manuscript at dawn" look from psyche-brand.html): ink/parchment/gold,
 Cormorant Garamond + Cormorant SC for display, Inter for eyebrows/footers, a faint
 fractal-noise grain, and a thin gold hairline.
 
@@ -15,7 +15,7 @@ mark appears only beside the wordmark, no gloss. Numbers are exact: 130 / 0 / 56
 6 / 0. No banned overclaim phrases, no exclamation marks, no em dashes, no single
 hash-seed count. Copy is verbatim from the brief.
 
-Run:  /tmp/nous_venv/bin/python build_cards.py
+Run:  /tmp/psyche_venv/bin/python build_cards.py
 """
 import os, re, glob, base64, subprocess, urllib.request, urllib.parse
 from PIL import Image
@@ -80,12 +80,12 @@ def build_fontfaces():
     for fam, style, wt, spec in latin:
         url, _ = _subset(_css(spec), "latin")
         out.append(face(fam, style, wt, _b64(url)))
-    # Greek mark (νοῦς) from EB Garamond italic (a Garamond cousin to Cormorant);
-    # needs both the 'greek' (ν ο ς) and 'greek-ext' (polytonic ῦ) static subsets.
+    # Greek mark (ψυχή) from EB Garamond italic (a Garamond cousin to Cormorant);
+    # ψ υ χ ή all sit in the 'greek' subset; 'greek-ext' is kept for polytonic forms.
     eb = _css("EB+Garamond:ital,wght@1,500")
     for sub in ("greek", "greek-ext"):
         url, ur = _subset(eb, sub)
-        out.append(face("NousGreek", "italic", 500, _b64(url), ur))
+        out.append(face("PsycheGreek", "italic", 500, _b64(url), ur))
     css = "\n".join(out)
     with open(os.path.join(HERE, "_fontfaces.css"), "w", encoding="utf-8") as f:
         f.write(css)
@@ -113,7 +113,7 @@ body{background:#0a0908;color:#f5f0e8;font-family:'Cormorant Garamond',Georgia,s
 .eyebrow{font-family:'Inter',sans-serif;font-weight:300;text-transform:uppercase;
   letter-spacing:0.34em;font-size:37px;color:#b8913a;}
 .eyebrow .dot{color:#8a8278;padding:0 0.08em;}
-.eyebrow .greek{font-family:'NousGreek','Cormorant Garamond',serif;font-style:italic;
+.eyebrow .greek{font-family:'PsycheGreek','Cormorant Garamond',serif;font-style:italic;
   text-transform:none;letter-spacing:0.02em;font-size:56px;color:#8a8278;vertical-align:-4px;}
 .hairline{width:1px;height:74px;margin-top:36px;background:linear-gradient(to bottom,#b8913a,rgba(184,145,58,0));}
 .mid{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;}
@@ -144,7 +144,7 @@ body{background:#0a0908;color:#f5f0e8;font-family:'Cormorant Garamond',Georgia,s
 
 CARDS = [
     dict(name="card1_hook",
-         eyebrow='NOUS<span class="dot"> &middot; </span><span class="greek">νοῦς</span>',
+         eyebrow='PSYCHE<span class="dot"> &middot; </span><span class="greek">ψυχή</span>',
          mid='<div class="main" style="font-size:100px">'
              '<span class="line">One test passed only</span>'
              '<span class="line">because I had hidden</span>'
@@ -154,7 +154,7 @@ CARDS = [
          footer="A different bet on machine memory"),
 
     dict(name="card2_contrast",
-         eyebrow='NOUS<span class="dot"> &middot; </span><span class="greek">νοῦς</span>',
+         eyebrow='PSYCHE<span class="dot"> &middot; </span><span class="greek">ψυχή</span>',
          mid='<div class="main" style="font-size:84px">'
              '<span class="line">Most systems are shown</span>'
              '<span class="line">by their best demo.</span>'
@@ -164,7 +164,7 @@ CARDS = [
          footer="An inspectable memory substrate.<br>Write-up in comments."),
 
     dict(name="card3_receipts",
-         eyebrow='VERIFIED<span class="dot"> &middot; </span><span class="greek">νοῦς</span>',
+         eyebrow='VERIFIED<span class="dot"> &middot; </span><span class="greek">ψυχή</span>',
          mid='<div class="stats">'
              '<div class="stat"><div class="num">130</div>'
              '<div class="lbl">Adversarial tests. Zero failures.</div></div>'
@@ -174,10 +174,10 @@ CARDS = [
              '<div class="lbl">Third-party dependencies.</div></div></div>'
              '<div class="subitalic" style="font-size:48px;margin-top:50px">'
              'Honest about what is not yet proven.</div>',
-         footer="NOUS"),
+         footer="PSYCHE"),
 
     dict(name="card4_premise",
-         eyebrow='NOUS<span class="dot"> &middot; </span><span class="greek">νοῦς</span>',
+         eyebrow='PSYCHE<span class="dot"> &middot; </span><span class="greek">ψυχή</span>',
          mid='<div class="main" style="font-size:86px">'
              '<span class="line">A different bet on</span>'
              '<span class="line">machine memory.</span>'

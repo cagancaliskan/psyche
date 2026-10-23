@@ -45,10 +45,10 @@ import sys
 import tempfile
 import textwrap
 
-from nous_store import SubstrateStore, Clock, NodeType
-from nous_perceive import think
-import nous_credit as cr
-from nous_credit import EpisodicTrace, assign_credit, eligibility
+from psyche_store import SubstrateStore, Clock, NodeType
+from psyche_perceive import think
+import psyche_credit as cr
+from psyche_credit import EpisodicTrace, assign_credit, eligibility
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "tools"))
 import ledger_check as LC  # noqa: E402
@@ -323,8 +323,12 @@ def test_I1_neutral_is_byte_identical_to_the_REAL_pre_2f_engine():
     probe = work / "probe.py"
     probe.write_text(textwrap.dedent('''
         import struct
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import think
+        try:
+            from psyche_store import SubstrateStore, Clock, NodeType
+            from psyche_perceive import think
+        except ImportError:  # the pre-2f tree predates the Nous -> Psyche rename
+            from nous_store import SubstrateStore, Clock, NodeType
+            from nous_perceive import think
         def bits(x): return struct.pack("<d", x).hex()
         out = []
         for utt in ("dog bark loud", "cat purr kitten", "hound dog pet soft", "no match"):
@@ -639,7 +643,7 @@ def test_the_binding_bound_and_its_four_dismissals():
     import json
     reg = json.loads((ROOT / "tools" / "ledger.json").read_text(encoding="utf-8"))
     b = [x for x in reg["float_accumulations"][
-             "src/nous_credit.py:EpisodicTrace.eligible.<return>"]["bound_on_absence"]
+             "src/psyche_credit.py:EpisodicTrace.eligible.<return>"]["bound_on_absence"]
          if x["kind"] == "binding"][0]
     dismissed = {d.split(" ", 1)[0] for d in b["dismissed"]}
     # CONVERTED for brick 0g. These four assertions named LINE-KEYED dismissals
@@ -652,11 +656,11 @@ def test_the_binding_bound_and_its_four_dismissals():
     check(not any(re.search(r":\d+$", k) for k in dismissed),
           f"and not one of them is keyed by line number any more: {sorted(dismissed)}")
     for site, want_reads, want_decay in (
-            ("src/nous_coalitions.py:form_coalitions.road=store.get_road",
+            ("src/psyche_coalitions.py:form_coalitions.road=store.get_road",
              {"source_id", "target_id"}, "False"),
-            ("src/nous_coalitions.py:form_coalitions_from_field.road=store.get_road",
+            ("src/psyche_coalitions.py:form_coalitions_from_field.road=store.get_road",
              {"target_id"}, "False"),
-            ("src/nous_store.py:SubstrateStore.quality_of.road=self.get_road",
+            ("src/psyche_store.py:SubstrateStore.quality_of.road=self.get_road",
              {"closed", "strength"}, "DEFAULT")):
         check(site in dismissed, f"CONVERTED: dismissed by content key — {site}")
         fn, rest = site.split(":", 1)
@@ -808,13 +812,13 @@ def test_every_write_to_strength_in_src_enumerated_by_me():
                             writers.setdefault(f"{f.name}:{nm}", []).append(c.lineno)
                 walk(c, nm)
         walk(tree, "<module>")
-    check(sorted(writers) == ["nous_store.py:_persist_decay",
-                              "nous_store.py:strengthen", "nous_store.py:weaken"],
+    check(sorted(writers) == ["psyche_store.py:_persist_decay",
+                              "psyche_store.py:strengthen", "psyche_store.py:weaken"],
           f"THREE writers, not two: {sorted(writers)}. The re-scoped bound's claim says "
           f"'strengthen or weaken'; the third is _persist_decay, and naming only two "
           f"understates the enumeration even though the claim survives")
     calls = set()
-    tree = ast.parse((ROOT / "src" / "nous_store.py").read_text(encoding="utf-8"))
+    tree = ast.parse((ROOT / "src" / "psyche_store.py").read_text(encoding="utf-8"))
     def cw(node, name):
         for c in ast.iter_child_nodes(node):
             nm = c.name if isinstance(c, (ast.FunctionDef, ast.AsyncFunctionDef)) else name
@@ -826,14 +830,14 @@ def test_every_write_to_strength_in_src_enumerated_by_me():
           f"and _persist_decay is reachable ONLY from strengthen and weaken ({calls}), so "
           f"the claim 'every write goes through a sanctioned method' HOLDS — the third "
           f"writer is an internal helper of the other two, not a fourth door")
-    check(all(f.name.startswith("nous_store") for f in [] ) or True,
-          "no module outside nous_store.py writes .strength at all")
+    check(all(f.name.startswith("psyche_store") for f in [] ) or True,
+          "no module outside psyche_store.py writes .strength at all")
 
 
 def test_weaken_saturation_is_structural_and_its_boundary():
     section("2g  weaken's saturation, read from the code — then attacked")
     import textwrap
-    from nous_store import SubstrateStore as SS
+    from psyche_store import SubstrateStore as SS
     src = textwrap.dedent(inspect.getsource(SS.weaken))
     line = [l.strip() for l in src.splitlines() if "road.strength =" in l]
     check(line == ["road.strength = max(0.0, road.strength - base_loss * road.strength)"],
@@ -938,7 +942,7 @@ def test_CONVERTED_2f5_dismissals_are_content_anchored():
 
     def edit(a, bb):
         def go(d):
-            f = d / "src" / "nous_field.py"
+            f = d / "src" / "psyche_field.py"
             t = f.read_text(encoding="utf-8")
             f.write_text(t.replace(a, bb, 1), encoding="utf-8")
         return go
@@ -947,8 +951,8 @@ def test_CONVERTED_2f5_dismissals_are_content_anchored():
     check(c6(lambda d: None).returncode == 0,
           "CONTROL: an unmutated tree is clean — without this every result below is noise")
     r = c6(edit("", ""))
-    check(c6(lambda d: (d / "src" / "nous_field.py").write_text(
-              "# harmless\n" + (d / "src" / "nous_field.py").read_text(encoding="utf-8"),
+    check(c6(lambda d: (d / "src" / "psyche_field.py").write_text(
+              "# harmless\n" + (d / "src" / "psyche_field.py").read_text(encoding="utf-8"),
               encoding="utf-8")).returncode == 0,
           "CONVERTED (was: one comment fired a false [C6]): a comment inserted above a "
           "dismissed site now changes NOTHING")
@@ -966,7 +970,7 @@ def test_CONVERTED_2f5_dismissals_are_content_anchored():
           "the REGISTRY's own key is scope-anchored too, so the entry unmatches and the "
           "bound is never evaluated. Red by a different path than a reader would assume")
     def move(d):
-        f = d / "src" / "nous_field.py"
+        f = d / "src" / "psyche_field.py"
         t = f.read_text(encoding="utf-8")
         t = t.replace(FLOW + "\n            merged_flow[rid] = merged_flow.get(rid, 0.0) + fv",
                       "        _hm(res, merged_flow)", 1)
@@ -990,16 +994,16 @@ def test_CONVERTED_2f5_dismissals_are_content_anchored():
     def with_dismissals(vals):
         def go(d):
             L = json.loads((d / "tools" / "ledger.json").read_text(encoding="utf-8"))
-            k = "src/nous_field.py:build_activation_field.merged_flow"
+            k = "src/psyche_field.py:build_activation_field.merged_flow"
             L["float_accumulations"][k]["bound_on_absence"][0]["dismissed"] = vals
             (d / "tools" / "ledger.json").write_text(
                 json.dumps(L, indent=2, ensure_ascii=False), encoding="utf-8")
         return go
-    GOOD = "src/nous_field.py:build_activation_field.res.flow — ok"
-    r = c6(with_dismissals(["src/nous_field.py:123 — old"]))
+    GOOD = "src/psyche_field.py:build_activation_field.res.flow — ok"
+    r = c6(with_dismissals(["src/psyche_field.py:123 — old"]))
     check(r.returncode == 1 and "LINE-NUMBER format" in r.stdout,
           "an all-legacy dismissal list is REFUSED with its own finding")
-    r = c6(with_dismissals([GOOD, "src/nous_coalitions.py:178 — old"]))
+    r = c6(with_dismissals([GOOD, "src/psyche_coalitions.py:178 — old"]))
     check(r.returncode == 1 and "LINE-NUMBER format" in r.stdout,
           "and a MIXED list fails too rather than partially passing — a half-migrated "
           "ledger cannot pass while its old entries excuse nothing")
@@ -1031,7 +1035,7 @@ def test_2f2_falsifier_is_hypothetical_today_not_live():
         if not base.is_dir():
             continue
         for f in sorted(base.rglob("*.py")):
-            if f.name == "nous_credit.py":
+            if f.name == "psyche_credit.py":
                 continue
             txt = f.read_text(encoding="utf-8", errors="replace")
             for probe in (".eligibility", "CreditAssignment", "assign_credit("):
@@ -1041,10 +1045,10 @@ def test_2f2_falsifier_is_hypothetical_today_not_live():
           f"NO consumer of CreditAssignment.eligibility or .gain exists anywhere outside "
           f"the module itself ({consumers}) — so the falsifier is HYPOTHETICAL today and "
           f"the recording is accurate rather than already false")
-    perceive = (ROOT / "src" / "nous_perceive.py").read_text(encoding="utf-8")
+    perceive = (ROOT / "src" / "psyche_perceive.py").read_text(encoding="utf-8")
     check("EpisodicTrace" in perceive and "assign_credit" not in perceive.replace(
-              "nous_credit.assign_credit remains", ""),
-          "the only in-src consumer, nous_perceive, imports EpisodicTrace and calls "
+              "psyche_credit.assign_credit remains", ""),
+          "the only in-src consumer, psyche_perceive, imports EpisodicTrace and calls "
           "record() alone — it never applies credit, so no eligibility value leaves the "
           "module through it")
     note("WHAT WOULD MAKE IT LIVE, so the falsifier is watchable rather than decorative: "
@@ -1138,7 +1142,7 @@ def test_WINDOW_boundary_is_structural_not_sampled():
 def test_CONTROLS_can_each_exhibit_a_difference():
     section("2f  every control is shown CAPABLE OF FAILING — not decoration")
     sys.path.insert(0, str(HERE))
-    import test_nous_credit as B
+    import test_psyche_credit as B
 
     s, rp, ru = B.matched_pair_store()
     check(bits(B.strength_of(s, rp)) == bits(B.strength_of(s, ru)),
@@ -1257,7 +1261,7 @@ def test_REPEATS_mechanical_property_and_the_design_question():
 
 def test_ORDER_independence_is_structural():
     section("2f  application order cannot change any outcome — proved from the code")
-    import nous_store as ns
+    import psyche_store as ns
     src = textwrap.dedent(inspect.getsource(ns.SubstrateStore.strengthen))
     tree = ast.parse(src)
     targets = sorted({ast.unparse(t) for n in ast.walk(tree)
@@ -1344,8 +1348,8 @@ def test_ABSENCE_BOUNDS_rechecked_independently():
             if (isinstance(n, ast.Call) and isinstance(n.func, ast.Name)
                     and n.func.id in ("getattr", "setattr")):
                 dynamic.append(f"{p.name}:{n.lineno} {ast.unparse(n)[:48]}")
-    check(sorted(flow_loads) == ["nous_coalitions.py:178 result.flow",
-                                 "nous_field.py:123 res.flow"],
+    check(sorted(flow_loads) == ["psyche_coalitions.py:178 result.flow",
+                                 "psyche_field.py:123 res.flow"],
           f"ActivationField.flow has NO new reader — the only two .flow loads in src/ are "
           f"the pair already dismissed in the registry ({flow_loads})")
     check(all("flow" not in d for d in dynamic),
@@ -1364,13 +1368,13 @@ def test_ABSENCE_BOUNDS_rechecked_independently():
           f"advance() has NO caller in src/ (a declaration is not a call): {advance_calls}")
     csrc = inspect.getsource(cr)
     check(not any(w in csrc for w in ("Clock", ".now()", "import time")),
-          "and nous_credit never touches the clock at all — eligibility is measured in "
+          "and psyche_credit never touches the clock at all — eligibility is measured in "
           "integer CYCLES, which is why neither bound was even at risk")
 
 
 def test_LANGUAGE_read_as_a_human_because_C4_is_broken():
     section("2f  LANGUAGE: read as a human, since 0f leaves C4 blind to interpolation")
-    src = (ROOT / "src" / "nous_credit.py").read_text(encoding="utf-8")
+    src = (ROOT / "src" / "psyche_credit.py").read_text(encoding="utf-8")
     low = src.lower()
     lines = src.splitlines()
     claims = []
@@ -1414,7 +1418,7 @@ def test_LANGUAGE_read_as_a_human_because_C4_is_broken():
             idiom = re.search(r"\bknown\s+(non-?\w+|to\s+be|at\s+)", low_text) is not None
             # HYPHENATED COMPOUND = a term of art, not a predicate about this system.
             # "learning-progress signal" names a construct from the intrinsic-motivation
-            # literature that SPEC-2e cites; it says nothing about what Nous does. The
+            # literature that SPEC-2e cites; it says nothing about what Psyche does. The
             # exclusion is narrow ON PURPOSE — it fires only when the matched token is
             # immediately followed by a hyphen and another word — and the planted-claim
             # proof below shows it opens no hole.
@@ -1462,16 +1466,16 @@ def test_LANGUAGE_read_as_a_human_because_C4_is_broken():
           "form CONTRIBUTING.md rule 1 permits")
     note("checked by reading, not by C4: 'a conscious mind', 'clearly conscious' and "
          "'undeniably sentient' all pass C4 today (brick 0f). None of those forms, or "
-         "any inflection of them, appears in nous_credit.py.")
+         "any inflection of them, appears in psyche_credit.py.")
 
 
 def test_DETERMINISM_across_seeds_in_fresh_processes():
     section("2f  determinism: bit patterns across 6 hash seeds, fresh processes")
     prog = textwrap.dedent("""
         import struct
-        from nous_store import SubstrateStore, Clock, NodeType
-        from nous_perceive import think
-        from nous_credit import EpisodicTrace, assign_credit
+        from psyche_store import SubstrateStore, Clock, NodeType
+        from psyche_perceive import think
+        from psyche_credit import EpisodicTrace, assign_credit
         s = SubstrateStore(clock=Clock(simulated=True, start=1000.0))
         n = {w: s.add_node(w, NodeType.CONCEPT) for w in
              "dog bark loud noise pet soft cat purr".split()}

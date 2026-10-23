@@ -4,7 +4,7 @@ Status: **BUILT (mechanism) · UNVALIDATED (meaning)** — implemented and passi
 Author: architect-pm
 For: builder (§6.1 test-first) → tester (independent verify) → validator (§6.2)
 Amended 2026-06-20: §6.1's "no over-swallow" criterion re-scoped to 1d by human decision (see §6.1 and §8).
-Depends on: 1a (`nous_field`), 1b (`nous_coalitions`, `nous_perceive`), Phase 0 substrate.
+Depends on: 1a (`psyche_field`), 1b (`psyche_coalitions`, `psyche_perceive`), Phase 0 substrate.
 
 > Scope discipline (CONTRIBUTING.md): this document is **description, not built code**. Nothing here is
 > `PROVEN` or `BUILT` until the tester returns PASS on §6.1 and the validator returns a verdict on §6.2.
@@ -26,7 +26,7 @@ by 1c on its own (see §7).
 
 **The concrete problem 1c exists to fix.** The closed loop already surfaced the bug, and it is
 recorded honestly as a deliberately-failing test:
-`test_KNOWN_LIMITATION_clustered_sources_give_poor_basins` in `tests/test_nous_perceive.py`. On real
+`test_KNOWN_LIMITATION_clustered_sources_give_poor_basins` in `tests/test_psyche_perceive.py`. On real
 input — `think(s, "coffee in the kitchen this morning")` — perception lights up three same-domain
 sources (`coffee`, `kitchen`, `morning`). The multi-source field then collapses: one source
 over-swallows (it pulls in the unrelated `work`/`code` domain), and same-domain siblings strand as
@@ -47,9 +47,9 @@ hand-placed groupings.
 
 | Input | Type | Origin |
 |---|---|---|
-| `perception.sources` | `Dict[str, float]` (NodeID → source energy) | `perceive()` / `Perception` in `src/nous_perceive.py` |
+| `perception.sources` | `Dict[str, float]` (NodeID → source energy) | `perceive()` / `Perception` in `src/psyche_perceive.py` |
 | `store` | `SubstrateStore` | Phase 0 |
-| per-source spreads | `ActivationField.per_source` (`SourceID → NodeID → activation`) | `build_activation_field()` in `src/nous_field.py` — only if the activation-overlap signal (A2) is chosen; see §3 / Decision 1 |
+| per-source spreads | `ActivationField.per_source` (`SourceID → NodeID → activation`) | `build_activation_field()` in `src/psyche_field.py` — only if the activation-overlap signal (A2) is chosen; see §3 / Decision 1 |
 
 **Canonical driver.** The acceptance path is the existing `think()` flow, unmodified at its public
 surface. 1c slots in so that the sources reaching `build_activation_field` are the **group
@@ -63,7 +63,7 @@ test is forbidden.
 
 The novelty budget is spent on *which sources are near each other*, not on the clustering scaffolding
 (CONTRIBUTING.md rule 6). The clustering itself reuses the proven determinism pattern already shipped in
-`nous_coalitions.py`: build a graph, take connected components of a thinned graph, iterate seeds and
+`psyche_coalitions.py`: build a graph, take connected components of a thinned graph, iterate seeds and
 neighbors in **sorted order**, and break every tie on `creation_seq` (never a uuid, never set
 iteration order).
 
@@ -106,7 +106,7 @@ determinism story is already paid for.
 
 ### Dependency posture
 
-Core stays **stdlib-only** (CONTRIBUTING.md rule 8). No new dependency is requested for `nous_source_clustering`.
+Core stays **stdlib-only** (CONTRIBUTING.md rule 8). No new dependency is requested for `psyche_source_clustering`.
 Any community-detection library needed purely to *grade* §6.2 lives under `experiments/`, is run
 once to produce a frozen external label file, and never enters the core import graph.
 
@@ -114,7 +114,7 @@ once to produce a frozen external label file, and never enters the core import g
 
 ## 4. Outputs
 
-New module `src/nous_source_clustering.py` (suite `tests/test_nous_source_clustering.py`), exposing
+New module `src/psyche_source_clustering.py` (suite `tests/test_psyche_source_clustering.py`), exposing
 small immutable dataclasses:
 
 - `SourceGroup` — `members: frozenset[str]`, `representative: str`, `_seq: Dict[str,int]` (the
@@ -199,11 +199,11 @@ than no clustering.
   truth community labels come from a **third-party community partition of the SWOW graph** — a
   published partition if a citable one is available (Decision 2), otherwise a single documented
   off-the-shelf Leiden/Louvain run frozen under `experiments/` and treated as fixed external truth.
-  The labels are **not** authored by Nous.
+  The labels are **not** authored by Psyche.
 - **Probe construction (anti-circularity):** probe source-sets are selected **blind**, by SWOW graph
-  topology only (reuse the `Topology` / `select_pairs` discipline from Phase 2B), before any Nous
-  output is seen. Selection never looks at how Nous will cluster them.
-- **Metric:** Adjusted Rand Index (Hubert & Arabie 1985) between Nous's 1c partition and the external
+  topology only (reuse the `Topology` / `select_pairs` discipline from Phase 2B), before any Psyche
+  output is seen. Selection never looks at how Psyche will cluster them.
+- **Metric:** Adjusted Rand Index (Hubert & Arabie 1985) between Psyche's 1c partition and the external
   community labels, over the probe sets.
 - **Control:** the no-clustering baseline (every source its own group) graded by the identical
   pipeline. Plus a random-partition sanity control (ARI must sit near 0).

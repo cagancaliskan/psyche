@@ -4,7 +4,7 @@ EXP-1c — FROZEN EXTERNAL PARTITION GENERATOR  (§6.2 grader, fallback path).
 Produces the EXTERNAL community partition the 1c source-clustering is graded against, by a
 DIFFERENT algorithm family from the method under test:
 
-  - Method under test (1c, src/nous_source_clustering.py): single-link agglomerative =
+  - Method under test (1c, src/psyche_source_clustering.py): single-link agglomerative =
     connected-components of a thinned proximity graph (transitive closure).
   - This grader: LOUVAIN modularity optimization (Blondel, Guillaume, Lambiotte & Lefebvre,
     2008, J. Stat. Mech. P10008). A modularity-objective method — a genuinely different
@@ -34,7 +34,7 @@ DETERMINISM:
 USAGE:
     python3 experiments/exp1c_build_partition.py
   (optional, for a fast smoke test only — NOT the frozen artifact:
-    NOUS_EXP1C_MAXROWS=200000 python3 experiments/exp1c_build_partition.py
+    PSYCHE_EXP1C_MAXROWS=200000 python3 experiments/exp1c_build_partition.py
    the frozen run uses the FULL file; if MAXROWS is set the script refuses to overwrite the
    canonical output path and writes a *_SMOKE.tsv instead.)
 """
@@ -230,7 +230,7 @@ def main() -> int:
     import random
     random.Random(SEED)  # recorded for completeness; sorted order makes output seed-free
 
-    maxrows_env = os.environ.get("NOUS_EXP1C_MAXROWS")
+    maxrows_env = os.environ.get("PSYCHE_EXP1C_MAXROWS")
     smoke = maxrows_env is not None
 
     print("=" * 70)

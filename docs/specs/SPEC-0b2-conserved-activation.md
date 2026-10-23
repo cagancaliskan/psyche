@@ -50,7 +50,7 @@ remove it at the **activation-accumulation** site one layer upstream, where the 
 live all along (DEFECT-A, §6.2). So this change did land on top of a summation-order defect, in the
 precise sense this section was written to prevent. That does not invalidate the neutral-identity
 result — N-1 compares the new engine against the *actual* pre-change engine, so a defect present in
-both cancels — but it does mean §0.2's guarantee should be read as scoped to `nous_coalitions`,
+both cancels — but it does mean §0.2's guarantee should be read as scoped to `psyche_coalitions`,
 not to the whole float path.
 
 ---
@@ -70,7 +70,7 @@ It has one, and it comes from the project's own cited lineage.
 > theory about a **bottleneck**: coalitions compete because access is scarce, and the whole
 > explanatory content of "one wins and is broadcast" is that not everything can. LIDA
 > inherits this. `SPEC-1d` §1 cites Baars (1988) and LIDA as the engineering lineage of the
-> competition, and `nous_plan_layer0_topology.md` locates Psyche as *"a blackboard
+> competition, and `psyche_plan_layer0_topology.md` locates Psyche as *"a blackboard
 > architecture combined with a Global Workspace running on a timed cognitive cycle."*
 >
 > In the engine as built, **nothing is scarce.** `spread_activation` gives every out-road
@@ -100,7 +100,7 @@ answer was engineered and this spec fails on its own terms.
 
 ## 2. The change
 
-One site, `src/nous_activation.py`, inside the per-node expansion:
+One site, `src/psyche_activation.py`, inside the per-node expansion:
 
 ```
 S_out    = Σ_{r ∈ out(node)} strength(r)          # fsum: exactly rounded, order-independent
@@ -370,7 +370,7 @@ attack.*
 Verified against **two independent oracles**, which is stronger than the invariant asked for:
 
 - the **actual pre-change engine recovered from git** (resolved by content — the newest revision of
-  `src/nous_activation.py` with no `normalization_sigma`): **17,017 adversarial comparisons, 0
+  `src/psyche_activation.py` with no `normalization_sigma`): **17,017 adversarial comparisons, 0
   mismatches**;
 - an **independent reimplementation of the documented algorithm**: **15,554 comparisons, 0
   mismatches**.
@@ -396,12 +396,12 @@ Determinism holds bit-exactly across six hash seeds × five interpreters **on gr
 have in-degree ≤ 2**. It **breaks when three or more contributions converge on one node**:
 
 ```
-activation[target] = activation.get(target, 0.0) + transmitted     # src/nous_activation.py:287
+activation[target] = activation.get(target, 0.0) + transmitted     # src/psyche_activation.py:287
 ```
 
 is a naive sequential float add, and the term order comes from
 `roads_from() -> iter(tuple(self._out[node_id]))` — iteration over a **set of uuid4 hex strings**
-(`src/nous_store.py:444`). Float addition is not associative, so the accumulated sum is
+(`src/psyche_store.py:444`). Float addition is not associative, so the accumulated sum is
 run-dependent. This is the **same bug class as BUG-0b1, one layer upstream** of the
 coalition-strength site that `math.fsum` fixed.
 
@@ -697,7 +697,7 @@ the pre-overlay engine — pre-existing, not 0b2's**, and unreachable from any i
 It is the same class as O-12 and DEFECT-C: silent acceptance where loud refusal was intended.
 Recommend folding into **0c-ii**, whose scope is exactly that class.
 
-**The overlay's evidence lives entirely in tester-owned files.** `tests/test_nous_activation.py`
+**The overlay's evidence lives entirely in tester-owned files.** `tests/test_psyche_activation.py`
 contains one test named for the overlay. The overlay's own arithmetic — `S_out = fsum`,
 `competing = S_out − s`, the closed-road competition decision, the horizon change — has no
 builder-side assertion at all. Not a defect, and not a reason to doubt the verdict, but it

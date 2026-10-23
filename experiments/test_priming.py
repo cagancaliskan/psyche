@@ -11,7 +11,7 @@ Guards the properties the study depends on, in the project's tiny check() style 
   - ADVERSARIAL cross-process determinism: the FULL priming summary is byte-identical across
     PYTHONHASHSEED in {0,1,2,3,7,42,123,999}, run in fresh subprocesses (reuses the 2A
     pattern). To stay tractable on the large graph it runs a REDUCED-but-faithful config
-    (NOUS_PRIMING_MAXROWS + small NOUS_PRIMING_NPRIMES) exercising the identical
+    (PSYCHE_PRIMING_MAXROWS + small PSYCHE_PRIMING_NPRIMES) exercising the identical
     load→build→select→spread→summarize code path.
 
 If the SWOW data file is absent, the data-dependent tests are SKIPPED with a clear notice
@@ -195,18 +195,18 @@ def test_read_targets_pure_and_equivalent():
 def _hash_seed_probe(seed: str) -> str:
     code = r'''
 import os, sys
-sys.path.insert(0, os.environ["NOUS_SRC"])
-sys.path.insert(0, os.environ["NOUS_EXP"])
+sys.path.insert(0, os.environ["PSYCHE_SRC"])
+sys.path.insert(0, os.environ["PSYCHE_EXP"])
 import priming
 raise SystemExit(priming.main())
 '''
     env = dict(os.environ)
-    env["NOUS_SRC"] = SRC_DIR
-    env["NOUS_EXP"] = _HERE
+    env["PSYCHE_SRC"] = SRC_DIR
+    env["PSYCHE_EXP"] = _HERE
     env["PYTHONHASHSEED"] = seed
     # reduced-but-faithful: same code path, smaller graph + fewer primes
-    env["NOUS_PRIMING_MAXROWS"] = str(REDUCED_ROWS)
-    env["NOUS_PRIMING_NPRIMES"] = str(REDUCED_PRIMES)
+    env["PSYCHE_PRIMING_MAXROWS"] = str(REDUCED_ROWS)
+    env["PSYCHE_PRIMING_NPRIMES"] = str(REDUCED_PRIMES)
     out = subprocess.run([sys.executable, "-c", code], env=env,
                          capture_output=True, text=True)
     if out.returncode != 0:

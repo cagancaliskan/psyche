@@ -1,5 +1,5 @@
 ======================================================================
-  NOUS — CAPTURED TEST OUTPUT (verbatim)
+  PSYCHE — CAPTURED TEST OUTPUT (verbatim)
 ======================================================================
 Generated : 2026-07-27 22:43:53 +0300
 Machine   : Darwin 24.5.0 arm64
@@ -13,10 +13,10 @@ Note      : Built-in harness (not pytest); each suite prints RESULT: N passed,
             Totals: 26 suites, 2594 assertions, 0 failures.
 ======================================================================
 ######################################################################
-# test_nous_store.py
+# test_psyche_store.py
 ######################################################################
 ======================================================================
-  NOUS SUBSTRATE STORE — TEST SUITE (Layer 1)
+  PSYCHE SUBSTRATE STORE — TEST SUITE (Layer 1)
 ======================================================================
 
 identity & creation order
@@ -73,10 +73,10 @@ integrity scan passes on a healthy graph of moderate size
 ======================================================================
 
 ######################################################################
-# test_nous_activation.py
+# test_psyche_activation.py
 ######################################################################
 ======================================================================
-  NOUS SPREADING ACTIVATION — TEST SUITE
+  PSYCHE SPREADING ACTIVATION — TEST SUITE
 ======================================================================
 
 a missing seed raises NotFound
@@ -152,10 +152,10 @@ flow records which edges actually carried activation (and respects closure)
 ======================================================================
 
 ######################################################################
-# test_nous_coalitions.py
+# test_psyche_coalitions.py
 ######################################################################
 ======================================================================
-  NOUS COALITION FORMATION — TEST SUITE
+  PSYCHE COALITION FORMATION — TEST SUITE
 ======================================================================
 
 no coalitions when nothing clears the coherence floor
@@ -187,10 +187,10 @@ ADVERSARIAL determinism: clustering identical across hash seeds
 ======================================================================
 
 ######################################################################
-# test_nous_field.py
+# test_psyche_field.py
 ######################################################################
 ======================================================================
-  NOUS MULTI-SOURCE FIELD + FIELD COALITIONS — TEST SUITE
+  PSYCHE MULTI-SOURCE FIELD + FIELD COALITIONS — TEST SUITE
 ======================================================================
 
 field: total activation sums across sources at a shared node
@@ -210,10 +210,10 @@ ADVERSARIAL determinism: field coalitions identical across hash seeds
 ======================================================================
 
 ######################################################################
-# test_nous_source_clustering.py
+# test_psyche_source_clustering.py
 ######################################################################
 ======================================================================
-  NOUS SOURCE-CLUSTERING (1c) — TEST SUITE
+  PSYCHE SOURCE-CLUSTERING (1c) — TEST SUITE
 ======================================================================
 
 LOOP-CLOSED: three same-domain perceived sources merge into ONE group
@@ -255,10 +255,10 @@ ASSERTED-NEGATIVE #6: the relative threshold is an uncalibrated design constant
 ======================================================================
 
 ######################################################################
-# test_nous_workspace.py
+# test_psyche_workspace.py
 ######################################################################
 ======================================================================
-  NOUS WORKSPACE SELECTION (1d-i) — TEST SUITE
+  PSYCHE WORKSPACE SELECTION (1d-i) — TEST SUITE
 ======================================================================
 
 §6.1 ACCEPTANCE (loop-closed): the winning thought excludes the bridged, unperceived work/code domain
@@ -330,10 +330,10 @@ KNOWN LIMITATION (asserted-negative): 1d-i pruning is a parameter-free cohesion-
 ======================================================================
 
 ######################################################################
-# test_nous_workspace_broadcast.py
+# test_psyche_workspace_broadcast.py
 ######################################################################
 ======================================================================
-  NOUS WORKSPACE BROADCAST (1d-ii) — TEST SUITE
+  PSYCHE WORKSPACE BROADCAST (1d-ii) — TEST SUITE
 ======================================================================
 
 §6.2 explicit-write: think(broadcast=True) changes EXACTLY the roads in the returned Broadcast and NOTHING else (no other road, no node touched)
@@ -387,10 +387,10 @@ ASSERTED-NEGATIVE: broadcast writes ONLY the winner's internal roads — it neve
 ======================================================================
 
 ######################################################################
-# test_nous_perceive.py
+# test_psyche_perceive.py
 ######################################################################
 ======================================================================
-  NOUS PERCEPTION + END-TO-END SLICE — TEST SUITE
+  PSYCHE PERCEPTION + END-TO-END SLICE — TEST SUITE
 ======================================================================
 
 tokenize: lowercases, keeps content words, drops short ones
@@ -416,10 +416,10 @@ ADVERSARIAL determinism: end-to-end result identical across hash seeds
 ======================================================================
 
 ######################################################################
-# test_nous_bodysensor.py
+# test_psyche_bodysensor.py
 ######################################################################
 ======================================================================
-  NOUS BODYSENSOR + 2c MODULATION HOOK — TEST SUITE (mechanism, replay)
+  PSYCHE BODYSENSOR + 2c MODULATION HOOK — TEST SUITE (mechanism, replay)
 ======================================================================
 
 compute_friction = 1 - cpu/wall (the stall fraction), bounded to [0,1]
@@ -458,7 +458,7 @@ PURITY (sensor): a sensor read mutates ONLY the sensor's cursor, never the store
 
 ASSERTED-NEGATIVE (soft-Wall-1 guard): the BodySensor takes NO store/graph and computes friction ONLY from the telemetry pair — it CANNOT re-derive from substrate
 
-ASSERTED-NEGATIVE (honest framing): no public name in nous_bodysensor encodes a feeling/emotion/awareness/consciousness claim — the headline is 'friction', a derived telemetry signal
+ASSERTED-NEGATIVE (honest framing): no public name in psyche_bodysensor encodes a feeling/emotion/awareness/consciousness claim — the headline is 'friction', a derived telemetry signal
 
 KNOWN LIMITATION (asserted-negative): this suite proves the modulation is a REAL causal effect (winner-flip) and DETERMINISTIC — it does NOT establish that the flip tracks the telemetry in a validator-pre-registered direction, nor that it MEANS anything. That is the validator's graded run, gated by the populability pilot.
 
@@ -467,10 +467,10 @@ KNOWN LIMITATION (asserted-negative): this suite proves the modulation is a REAL
 ======================================================================
 
 ######################################################################
-# test_nous_credit.py
+# test_psyche_credit.py
 ######################################################################
 ======================================================================
-  NOUS CREDIT — BRICK 2f-i TEST SUITE (mechanism, SPEC-2f Design C)
+  PSYCHE CREDIT — BRICK 2f-i TEST SUITE (mechanism, SPEC-2f Design C)
 ======================================================================
 
 I-1  neutral P_PRP leaves the store byte-identical (THE GATE)
@@ -1124,12 +1124,12 @@ F-6  entry 5/6 road.strength — 'exactly one term per crossing' is TRUE
 
 F-6  entry 6/6 road.charges — the per-key bound, measured over 6! orders
 
-F-7  ASSERTED NEGATIVE: nous_field's two sites are STILL naive after 0d
+F-7  ASSERTED NEGATIVE: psyche_field's two sites are STILL naive after 0d
 
 F-7  ASSERTED NEGATIVE: SCOPE — 0d touched no production module
 
 F-7  LOOP-CLOSED: the order dependence still reaches Coalition.strength
-  NOTE: this block goes RED when a later brick converts the nous_field sites. That is the correct signal: the brick that converts them re-verifies here.
+  NOTE: this block goes RED when a later brick converts the psyche_field sites. That is the correct signal: the brick that converts them re-verifies here.
 
 F-8  ASSERTED NEGATIVE: nothing outside src/ is claimed
 
@@ -1197,7 +1197,7 @@ ROBUSTNESS  CONVERTED: the NUL byte no longer diverges by interpreter
     F-6  HOLDS       all SIX reasons survived their OWN falsifiers, run rather
                      than admired. Its two count assertions are DE-BRITTLED to
                      the debt relation SPEC-0d §3.1 actually states.
-    F-7  HOLDS       both nous_field sites still naive; src/ has zero diff
+    F-7  HOLDS       both psyche_field sites still naive; src/ has zero diff
     F-8  HOLDS       CONVERTED: the tuple and split spellings now report the
                      SAME sites, which is what L3 being load-bearing meant.
 ==============================================================================
@@ -1461,7 +1461,7 @@ FINDING 1 ASSERTED-NEGATIVE: the field merge is order-DEPENDENT
     field.total[m1]: 2 distinct bit patterns over 3! source orders
         3a76cb5926baf33f  = 1.2329467303856192
         3b76cb5926baf33f  = 1.2329467303856194
-  FINDING [field-merge]: nous_field.build_activation_field merges with a naive running float add (total[node] += act, merged_flow[rid] += fv). Order-PINNED, so cross-process determinism is unaffected and every O-4/O-4b/O-5/O-16 result stands; NOT order-INDEPENDENT, and the difference reaches Coalition.strength. Out of 0c's decided scope (§2.5 enumerated builtin sum() sites; these are not sum() calls). Recommend a follow-on brick, not a scope widening here. BOUNDED: the same shape inside nous_activation (flow[rid] +=) is structurally single-term and is NOT a live instance.
+  FINDING [field-merge]: psyche_field.build_activation_field merges with a naive running float add (total[node] += act, merged_flow[rid] += fv). Order-PINNED, so cross-process determinism is unaffected and every O-4/O-4b/O-5/O-16 result stands; NOT order-INDEPENDENT, and the difference reaches Coalition.strength. Out of 0c's decided scope (§2.5 enumerated builtin sum() sites; these are not sum() calls). Recommend a follow-on brick, not a scope widening here. BOUNDED: the same shape inside psyche_activation (flow[rid] +=) is structurally single-term and is NOT a live instance.
 
 ULP the competition tie-break: exact ties resolve on size then creation_seq
 
@@ -1528,14 +1528,14 @@ O-17 the assertion count is a property of the code, not of the environment
         outside N-1's PARAM_SWEEP so no existing test sees it. Probably an
         improvement; must be DOCUMENTED, not discovered.
     [field-merge]
-        nous_field.build_activation_field merges with a naive running float
+        psyche_field.build_activation_field merges with a naive running float
         add (total[node] += act, merged_flow[rid] += fv). Order-PINNED, so
         cross-process determinism is unaffected and every O-4/O-4b/O-5/O-16
         result stands; NOT order-INDEPENDENT, and the difference reaches
         Coalition.strength. Out of 0c's decided scope (§2.5 enumerated
         builtin sum() sites; these are not sum() calls). Recommend a follow-
         on brick, not a scope widening here. BOUNDED: the same shape inside
-        nous_activation (flow[rid] +=) is structurally single-term and is
+        psyche_activation (flow[rid] +=) is structurally single-term and is
         NOT a live instance.
 
   Mechanism only. No cognitive claim is made or approached.
@@ -1582,7 +1582,7 @@ O-17 the assertion count is a property of the code, not of the environment
   NOTE: all five need real DATAFLOW, which the builder declined to build rather than attempt badly. A clean run of this bound proves no BINDING exists outside the four dismissed — never that no write-through is possible.
 
 === 2f-5  FINDING: a dismissal is anchored to path:line and rots on any shift ===
-  FINDING [2f-5]: bound_on_absence DISMISSALS are line-anchored and rot on any edit above them: adding a single comment to the top of nous_field.py fires a false [C6] against the ActivationField.flow bound. This is the exact failure the Accumulation dataclass docstring says it avoids — 'a registry keyed by line rots on every insertion above it and trains people to re-key mechanically instead of re-reading' — and the dismissal list reintroduces it one field away. It cost a real mis-measurement in this pass: my first blind-spot probe prepended to an existing module and reported all five blind spots as CAUGHT, which was the shifted bound firing, not the binding bound working. Not urgent and not 2f-i's: no dismissal is wrong today. Architect's to route — a content-anchored key (the source line's text, or an AST path) would close it.
+  FINDING [2f-5]: bound_on_absence DISMISSALS are line-anchored and rot on any edit above them: adding a single comment to the top of psyche_field.py fires a false [C6] against the ActivationField.flow bound. This is the exact failure the Accumulation dataclass docstring says it avoids — 'a registry keyed by line rots on every insertion above it and trains people to re-key mechanically instead of re-reading' — and the dismissal list reintroduces it one field away. It cost a real mis-measurement in this pass: my first blind-spot probe prepended to an existing module and reported all five blind spots as CAUGHT, which was the shifted bound firing, not the binding bound working. Not urgent and not 2f-i's: no dismissal is wrong today. Architect's to route — a content-anchored key (the source line's text, or an AST path) would close it.
 
 === 2f-2  is the recorded falsifier live or hypothetical? — checked, not assumed ===
   NOTE: WHAT WOULD MAKE IT LIVE, so the falsifier is watchable rather than decorative: (a) any caller that reads .eligibility or .gain and acts on the raw magnitude — a threshold, a log that triggers something, or a future NEUROMODULATION publisher scaling P_PRP by observed eligibility; (b) any write path that does not go through strengthen(), which today includes the live-reference route FINDING 2f-3 describes. Note that 2f-3 makes (b) reachable in principle already.
@@ -1604,7 +1604,7 @@ O-17 the assertion count is a property of the code, not of the environment
 === 2f  the two absence bounds, searched my own way by AST ===
 
 === 2f  LANGUAGE: read as a human, since 0f leaves C4 blind to interpolation ===
-  NOTE: checked by reading, not by C4: 'a conscious mind', 'clearly conscious' and 'undeniably sentient' all pass C4 today (brick 0f). None of those forms, or any inflection of them, appears in nous_credit.py.
+  NOTE: checked by reading, not by C4: 'a conscious mind', 'clearly conscious' and 'undeniably sentient' all pass C4 today (brick 0f). None of those forms, or any inflection of them, appears in psyche_credit.py.
 
 === 2f  determinism: bit patterns across 6 hash seeds, fresh processes ===
 
@@ -1633,7 +1633,7 @@ O-17 the assertion count is a property of the code, not of the environment
 ==============================================================================
   FINDINGS
    [2f-3] the STRUCTURAL ARGUMENT for potentiation-only is incomplete, though its conclusion is true today. `store.get_road(rid, apply_decay=False)` returns the LIVE stored Road, not a copy: assigning to `.strength` or mutating `.charges` through it reaches the store (verified; apply_decay=True does copy, which is what makes the asymmetry easy to miss). So 'the store surface is get_road + strengthen, and strengthen only increases' does NOT bound what can happen — a future edit like `road = store.get_road(rid, apply_decay=False); road.strength *= 0.5` would weaken a road AND leave the builder's AST assertion green, because the store surface would be unchanged. Today nothing does this and the module reads the attribute immediately, so the brick is correct. This is a finding against the ARGUMENT, and separately a note that 0a hands out a write-capable reference from a method documented as a PURE READ — 0a's own purity claim ('a read changes nothing') is not violated, since the read itself mutates nothing; what is absent is encapsulation. The architect owns whether that is 0a's to close.
-   [2f-5] bound_on_absence DISMISSALS are line-anchored and rot on any edit above them: adding a single comment to the top of nous_field.py fires a false [C6] against the ActivationField.flow bound. This is the exact failure the Accumulation dataclass docstring says it avoids — 'a registry keyed by line rots on every insertion above it and trains people to re-key mechanically instead of re-reading' — and the dismissal list reintroduces it one field away. It cost a real mis-measurement in this pass: my first blind-spot probe prepended to an existing module and reported all five blind spots as CAUGHT, which was the shifted bound firing, not the binding bound working. Not urgent and not 2f-i's: no dismissal is wrong today. Architect's to route — a content-anchored key (the source line's text, or an AST path) would close it.
+   [2f-5] bound_on_absence DISMISSALS are line-anchored and rot on any edit above them: adding a single comment to the top of psyche_field.py fires a false [C6] against the ActivationField.flow bound. This is the exact failure the Accumulation dataclass docstring says it avoids — 'a registry keyed by line rots on every insertion above it and trains people to re-key mechanically instead of re-reading' — and the dismissal list reintroduces it one field away. It cost a real mis-measurement in this pass: my first blind-spot probe prepended to an existing module and reported all five blind spots as CAUGHT, which was the shifted bound firing, not the binding bound working. Not urgent and not 2f-i's: no dismissal is wrong today. Architect's to route — a content-anchored key (the source line's text, or an AST path) would close it.
    [2f-4] FLAGGED FOR THE ARCHITECT, not adjudicated. The module now states that AOL-2, AOL-3 and AOL-4 'each need an outcome to be able to make an earlier action LESS likely'. Checked against SPEC-2e's actual text: none of the three says that. AOL-2 is the CONJUNCTION of difficulty growth and capability growth; AOL-3 is goal generation adapting to a learning-progress signal; AOL-4 is dropping goals while RETAINING skills, grounded in catastrophic forgetting (BWT). The CONCLUSION — that 2f-i moves none of them — is almost certainly right, but the stated reason is an over-read of the spec, and the ledger already carries a stronger one (D-023): all five are MECHANISM ABSENT, needing goal generation, skill representation and a learning-progress signal, none of which exist. That reason does not depend on sign at all. Claims about specs become citable, which is why this is raised rather than left.
    [2f-2] ROUTED TO ARCHITECT, not a defect: 'three traversals in one cycle earn exactly triple eligibility' is linear and unbounded in the eligibility term (10000 repeats -> 10000.0), bounded only downstream by strengthen()'s saturation. SPEC-2f does not specify it, so it is an implementation consequence rather than a recorded decision. It is exactly the kind of unstated behaviour that later gets cited as a design choice; it needs a ruling before anything is built on it.
 ==============================================================================
@@ -1667,7 +1667,7 @@ B2 §(D-1): the PILOT's own battery (build_battery + percept_flips at fixed swep
 
 B3 LIVE ISOLATION (runtime trap): with time.perf_counter and time.process_time MONKEYPATCHED to detonate, a full REPLAY-mode modulated cycle still runs — proving the graded/replay surface reads NO live timer
 
-B4 LIVE ISOLATION (static): no live-telemetry call (getloadavg / getrusage) is reachable from the deterministic test surface; perf_counter/process_time appear in nous_bodysensor ONLY inside the live branch of read() and the named secondaries
+B4 LIVE ISOLATION (static): no live-telemetry call (getloadavg / getrusage) is reachable from the deterministic test surface; perf_counter/process_time appear in psyche_bodysensor ONLY inside the live branch of read() and the named secondaries
 
 D1 INTEGRITY/PURITY (ON path): across a friction battery, think(body_sensor=..., broadcast=False) leaves the store byte-identical and integrity clean
 
@@ -1699,7 +1699,7 @@ G2 FAIRNESS: the readout (winner-set) and the grading mode (REPLAY over the froz
 
 G3 FAIRNESS: the frozen trace hash is a deterministic function of the trace CONTENT (re-hashing the artifact via the pilot's own loader reproduces a stable digest), so a tampered trace would be detected
 
-H1 NO OVERCLAIM: no public name in nous_bodysensor claims a feeling/awareness/consciousness; the headline word is 'friction' (a derived telemetry signal)
+H1 NO OVERCLAIM: no public name in psyche_bodysensor claims a feeling/awareness/consciousness; the headline word is 'friction' (a derived telemetry signal)
 
 H2 NO OVERCLAIM: the pilot frames its number as a populability/feasibility fraction on flip-CAPABLE inputs over a deliberately-extreme range — NOT a meaning result; it explicitly defers meaning to the validator and carries the negations
 

@@ -100,20 +100,20 @@ def make_repo(tmp: Path, *, ledger=None, capture=CAPTURE, files=None) -> Path:
 #
 # path:scope.symbol -> True if the site is math.fsum (exactly rounded), False if naive.
 KNOWN_SITES = {
-    "src/nous_activation.py:spread_activation.frozen": True,
-    "src/nous_activation.py:spread_activation.out_total": True,
-    "src/nous_activation.py:spread_activation.activation": True,
-    "src/nous_activation.py:spread_activation.flow": False,
-    "src/nous_coalitions.py:form_coalitions.strength": True,
-    "src/nous_coalitions.py:form_coalitions_from_field.strength": True,
-    "src/nous_field.py:build_activation_field.merged_flow": False,
-    "src/nous_field.py:build_activation_field.total": False,
-    "src/nous_store.py:Clock.advance._t": False,
-    "src/nous_store.py:Road.valence.<return>": True,
-    "src/nous_store.py:SubstrateStore.strengthen.road.strength": False,
-    "src/nous_store.py:SubstrateStore.strengthen.road.charges": False,
-    "src/nous_workspace.py:Broadcast.total_strength_after.<return>": True,
-    "src/nous_workspace.py:select_winner.strength": True,
+    "src/psyche_activation.py:spread_activation.frozen": True,
+    "src/psyche_activation.py:spread_activation.out_total": True,
+    "src/psyche_activation.py:spread_activation.activation": True,
+    "src/psyche_activation.py:spread_activation.flow": False,
+    "src/psyche_coalitions.py:form_coalitions.strength": True,
+    "src/psyche_coalitions.py:form_coalitions_from_field.strength": True,
+    "src/psyche_field.py:build_activation_field.merged_flow": False,
+    "src/psyche_field.py:build_activation_field.total": False,
+    "src/psyche_store.py:Clock.advance._t": False,
+    "src/psyche_store.py:Road.valence.<return>": True,
+    "src/psyche_store.py:SubstrateStore.strengthen.road.strength": False,
+    "src/psyche_store.py:SubstrateStore.strengthen.road.charges": False,
+    "src/psyche_workspace.py:Broadcast.total_strength_after.<return>": True,
+    "src/psyche_workspace.py:select_winner.strength": True,
 }
 
 # THE ACCEPTANCE TEST (SPEC-0d F-3). A detector that passes because it found nothing is
@@ -123,7 +123,7 @@ KNOWN_SITES = {
 INJECT_DICT_ADD = '''
 
 def _injected_dict_add(items):
-    """+= into a dict — nous_field's shape."""
+    """+= into a dict — psyche_field's shape."""
     bucket = {}
     for k, v in items:
         bucket[k] = bucket.get(k, 0.0) + v
@@ -231,7 +231,7 @@ def make_src_repo(tmp: Path, *, appended: str = "", extra: dict = None,
     (root / "tools" / "ledger.json").write_text(json.dumps(led, indent=2), encoding="utf-8")
     if appended:
         # APPEND, so no existing line number moves and the only new finding is the planted one
-        p = root / "src" / "nous_field.py"
+        p = root / "src" / "psyche_field.py"
         p.write_text(p.read_text(encoding="utf-8") + appended, encoding="utf-8")
     for rel, body in (extra or {}).items():
         q = root / rel
@@ -375,13 +375,13 @@ def run(tmp: Path) -> None:
           "multi-brick narration not adjudicated")
 
     section("C3 leaves the roadmap alone (it narrates history)")
-    r = make_repo(tmp, files={"docs/nous_roadmap.md": "Step 1c is PROVEN.\n"})
+    r = make_repo(tmp, files={"docs/psyche_roadmap.md": "Step 1c is PROVEN.\n"})
     check(LC.check_status_vocabulary(r, LC.load_ledger(r)) == [], "roadmap exempt")
 
     # ── C4 ───────────────────────────────────────────────────────────────────
     section("C4 does NOT flag a disclaimer — the real false-positive risk")
     r = make_repo(tmp, files={"R.md": (
-        "Nous is not a validated cognitive model and is not a mind.\n"
+        "Psyche is not a validated cognitive model and is not a mind.\n"
         "The winner is never 'what the system is conscious of'.\n"
         "No claim is made that the system is conscious.\n"
         "It does not follow that it is a mind.\n")})
@@ -518,7 +518,7 @@ def run(tmp: Path) -> None:
     check(len({x.line for x in f}) == 3, "three distinct sites, not one counted thrice")
 
     section("C6/F-3 a brand-new module, and a site nested in a method")
-    r = make_src_repo(tmp, extra={"src/nous_injected.py": INJECT_NEW_MODULE})
+    r = make_src_repo(tmp, extra={"src/psyche_injected.py": INJECT_NEW_MODULE})
     f = c6(r)
     check(len(f) == 1, f"the census is not limited to the modules it knows, got {len(f)}")
     check(any("Accumulator.fold.acc" in x.message for x in f),
@@ -561,7 +561,7 @@ def run(tmp: Path) -> None:
     # ── F-5: a registry that can rot silently is a note again ────────────────
     section("C6/F-5 a stale entry naming a site that no longer exists is a finding")
     reg = dict(json.loads((REPO / "tools" / "ledger.json").read_text())[LC.ACCUM_KEY])
-    reg["src/nous_gone.py:vanished.total"] = {"verdict": "registered",
+    reg["src/psyche_gone.py:vanished.total"] = {"verdict": "registered",
                                               "reason": "a site that was deleted long ago"}
     r = make_src_repo(tmp, registry=reg)
     f = c6(r)
@@ -569,7 +569,7 @@ def run(tmp: Path) -> None:
 
     section("C6/F-5 a verdict that no longer matches the source is a finding")
     reg = dict(json.loads((REPO / "tools" / "ledger.json").read_text())[LC.ACCUM_KEY])
-    reg["src/nous_field.py:build_activation_field.total"] = {
+    reg["src/psyche_field.py:build_activation_field.total"] = {
         "verdict": "fsum", "reason": "claims to be exactly rounded, and is not"}
     r = make_src_repo(tmp, registry=reg)
     f = c6(r)
@@ -578,7 +578,7 @@ def run(tmp: Path) -> None:
 
     section("C6/F-5 a site converted to fsum but still registered as naive is a finding")
     reg = dict(json.loads((REPO / "tools" / "ledger.json").read_text())[LC.ACCUM_KEY])
-    reg["src/nous_coalitions.py:form_coalitions.strength"] = {
+    reg["src/psyche_coalitions.py:form_coalitions.strength"] = {
         "verdict": "registered", "reason": "stale: this site was converted by BUG-0b1"}
     r = make_src_repo(tmp, registry=reg)
     f = c6(r)
@@ -587,7 +587,7 @@ def run(tmp: Path) -> None:
 
     section("C6/F-5 an empty or decorative reason is a finding")
     reg = dict(json.loads((REPO / "tools" / "ledger.json").read_text())[LC.ACCUM_KEY])
-    reg["src/nous_field.py:build_activation_field.total"] = {"verdict": "registered",
+    reg["src/psyche_field.py:build_activation_field.total"] = {"verdict": "registered",
                                                             "reason": "it is fine"}
     r = make_src_repo(tmp, registry=reg)
     f = c6(r)
@@ -596,24 +596,24 @@ def run(tmp: Path) -> None:
 
     section("C6/F-5 an unknown verdict is a finding")
     reg = dict(json.loads((REPO / "tools" / "ledger.json").read_text())[LC.ACCUM_KEY])
-    reg["src/nous_field.py:build_activation_field.total"] = {
+    reg["src/psyche_field.py:build_activation_field.total"] = {
         "verdict": "safe", "reason": "there is no 'safe' verdict; shape-present is not safe"}
     r = make_src_repo(tmp, registry=reg)
     f = c6(r)
     check(any("is not one of" in x.message for x in f), "vocabulary enforced")
 
     # ── F-7: ASSERTED NEGATIVE — 0d fixed nothing, and the record must not drift ──
-    section("C6/F-7 ASSERTED NEGATIVE: nous_field.py's two sites are STILL naive after 0d")
-    field_src = (REPO / "src" / "nous_field.py").read_text(encoding="utf-8")
+    section("C6/F-7 ASSERTED NEGATIVE: psyche_field.py's two sites are STILL naive after 0d")
+    field_src = (REPO / "src" / "psyche_field.py").read_text(encoding="utf-8")
     check("total[node] = total.get(node, 0.0) + act" in field_src,
           "field.total is still a naive accumulation in the source")
     check("merged_flow[rid] = merged_flow.get(rid, 0.0) + fv" in field_src,
           "field.merged_flow is still a naive accumulation in the source")
-    total_site = by_key.get("src/nous_field.py:build_activation_field.total")
+    total_site = by_key.get("src/psyche_field.py:build_activation_field.total")
     check(total_site is not None and total_site.exact is False,
           "the census still classifies field.total as naive")
     entry = (LC.load_ledger(REPO)[LC.ACCUM_KEY] or {}).get(
-        "src/nous_field.py:build_activation_field.total") or {}
+        "src/psyche_field.py:build_activation_field.total") or {}
     check(entry.get("verdict") == "registered", "field.total is registered, not converted")
     check("order-PINNED" in (entry.get("reason") or ""),
           "its reason states the order-pinned argument, not a safety claim")
@@ -930,7 +930,7 @@ def run(tmp: Path) -> None:
                         ("non-UTF-8", b'x = "\xff\xfe"\n'),
                         ("unparseable", b"def f(:\n")):
         r = make_src_repo(tmp)
-        (r / "src" / "nous_bad.py").write_bytes(blob)
+        (r / "src" / "psyche_bad.py").write_bytes(blob)
         raised = None
         try:
             LC.scan_float_accumulations(r)
@@ -951,12 +951,12 @@ def run(tmp: Path) -> None:
     (r / "tools" / "ledger.json").write_text(json.dumps(led, indent=2))
     check(not any("RESTS ON THE ABSENCE" in f.message for f in c6(r)),
           "a bound on a symbol that is genuinely absent is silent")
-    (r / "src" / "nous_new.py").write_text("def g():\n    return _absent_helper(1)\n")
+    (r / "src" / "psyche_new.py").write_text("def g():\n    return _absent_helper(1)\n")
     fs = [f for f in c6(r) if "RESTS ON THE ABSENCE" in f.message]
     check(len(fs) == 1 and "the reason is now FALSE" in fs[0].message,
           "the moment the symbol appears, the entry's reason is declared FALSE — the "
           "registry stops being able to hold a silently-stale absence claim")
-    led["float_accumulations"][key]["bound_on_absence"][0]["dismissed"] = ["src/nous_new.py:2"]
+    led["float_accumulations"][key]["bound_on_absence"][0]["dismissed"] = ["src/psyche_new.py:2"]
     (r / "tools" / "ledger.json").write_text(json.dumps(led, indent=2))
     check(not any("RESTS ON THE ABSENCE" in f.message for f in c6(r)),
           "and a human can dismiss an occurrence only by RECORDING it, in writing")
@@ -994,7 +994,7 @@ def run(tmp: Path) -> None:
           "the second occurrence is not swallowed by the first")
 
     section("C6 a src/ module that does not parse is reported, never skipped")
-    r = make_src_repo(tmp, extra={"src/nous_broken.py": "def f(:\n    pass\n"})
+    r = make_src_repo(tmp, extra={"src/psyche_broken.py": "def f(:\n    pass\n"})
     # CONTRACT CHANGED BY D-021 FIX 3. This previously expected a C6 FINDING, i.e. exit 1:
     # "the census ran and the repository is inconsistent". That was wrong — the census did
     # not run. An unparseable module is "the tool could not run", which is exit 2, and the
@@ -1104,7 +1104,7 @@ def run(tmp: Path) -> None:
     r = make_src_repo(tmp, registry=["not", "an", "object"])
     f = c6(r)
     check(len(f) == 1 and "must be an object" in f[0].message, "list registry rejected")
-    r = make_src_repo(tmp, registry={"src/nous_field.py:build_activation_field.total":
+    r = make_src_repo(tmp, registry={"src/psyche_field.py:build_activation_field.total":
                                      "a bare string instead of an entry"})
     f = c6(r)
     check(any("must be an object with verdict and reason" in x.message for x in f),
@@ -1124,8 +1124,8 @@ def run(tmp: Path) -> None:
               ("laundered", INJECT_LAUNDERED, "_injected_laundered"),
               ("integer", INJECT_INTEGER_TALLIES, None),      # contributes 0 findings
               ("multiplicative", INJECT_MULTIPLICATIVE, None)]
-    modules = ["nous_store.py", "nous_field.py", "nous_activation.py",
-               "nous_coalitions.py", "nous_workspace.py", "nous_perceive.py"]
+    modules = ["psyche_store.py", "psyche_field.py", "psyche_activation.py",
+               "psyche_coalitions.py", "psyche_workspace.py", "psyche_perceive.py"]
     battery_ok = True
     battery_planted = 0
     for round_no in range(30):
@@ -1157,7 +1157,7 @@ def run(tmp: Path) -> None:
     section("C6 INTEGRITY: the battery actually planted things (a no-op battery proves nothing)")
     r = make_src_repo(tmp)
     for i, (_, body, symbol) in enumerate(shapes):
-        p = r / "src" / "nous_store.py"
+        p = r / "src" / "psyche_store.py"
         p.write_text(p.read_text(encoding="utf-8") + body.replace("_injected_", f"_i{i}_"),
                      encoding="utf-8")
     f = c6(r)
@@ -1391,7 +1391,7 @@ def run(tmp: Path) -> None:
         return r
 
     def add_comment(d):
-        f = d / "src" / "nous_field.py"
+        f = d / "src" / "psyche_field.py"
         f.write_text("# a harmless comment\n" + f.read_text(encoding="utf-8"),
                      encoding="utf-8")
 
@@ -1404,7 +1404,7 @@ def run(tmp: Path) -> None:
     # DIRECTION 1 — irrelevant edit: dismissals must HOLD.
     r = c6_on(add_comment)
     check(r.returncode == 0 and "RESTS ON THE ABSENCE" not in r.stdout,
-          f"a comment inserted at the top of nous_field.py produces NO finding "
+          f"a comment inserted at the top of psyche_field.py produces NO finding "
           f"(exit {r.returncode}) — the key ignores line position, which is the whole "
           f"defect this brick closes")
     # RULE FOUR: the same edit against the pre-fix tool must go RED, or the assertion
@@ -1419,7 +1419,7 @@ def run(tmp: Path) -> None:
 
     # DIRECTION 2 — the dismissed EXPRESSION changes: the dismissal must STOP applying.
     def change_expr(d):
-        f = d / "src" / "nous_field.py"
+        f = d / "src" / "psyche_field.py"
         t = f.read_text(encoding="utf-8")
         f.write_text(t.replace("        for rid, fv in res.flow.items():",
                                "        res_alias = res\n"
@@ -1433,7 +1433,7 @@ def run(tmp: Path) -> None:
 
     # DIRECTION 3 — the enclosing SCOPE is renamed: must not silently carry over.
     def rename_scope(d):
-        f = d / "src" / "nous_field.py"
+        f = d / "src" / "psyche_field.py"
         f.write_text(f.read_text(encoding="utf-8").replace(
             "def build_activation_field(", "def build_activation_field_v2(", 1),
             encoding="utf-8")
@@ -1454,8 +1454,8 @@ def run(tmp: Path) -> None:
         import json as _j
         f = d / "tools" / "ledger.json"
         led = _j.loads(f.read_text(encoding="utf-8"))
-        e = led["float_accumulations"]["src/nous_field.py:build_activation_field.merged_flow"]
-        e["bound_on_absence"][0]["dismissed"] = ["src/nous_field.py:123 — old format"]
+        e = led["float_accumulations"]["src/psyche_field.py:build_activation_field.merged_flow"]
+        e["bound_on_absence"][0]["dismissed"] = ["src/psyche_field.py:123 — old format"]
         f.write_text(_j.dumps(led, indent=2, ensure_ascii=False), encoding="utf-8")
     r = c6_on(legacy)
     check(r.returncode == 1 and "LINE-NUMBER format" in r.stdout,

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """
-Build docs/outreach/slides/nous_slides.pptx (~12 slides) for the Nous prototype.
+Build docs/outreach/slides/psyche_slides.pptx (~12 slides) for the Psyche prototype.
 
 Hard rules honored here (same as the report):
   - Numbers are verbatim from docs/TEST_OUTPUT.txt: 130 passed across 56 test
     functions; per-suite 45 / 35 / 19 / 13 / 18.
-  - Methodology-first framing. Nous is an engineering prototype AND a
+  - Methodology-first framing. Psyche is an engineering prototype AND a
     testing-methodology case study; never a mind, consciousness, AGI, or a
     validated cognitive model. Cognitive meaningfulness is not claimed.
   - Neuroscience is conceptual inspiration only.
@@ -14,7 +14,7 @@ Hard rules honored here (same as the report):
 On-slide text is terse; the detail lives in python-pptx speaker notes.
 
 Run with the venv that has python-pptx + Pillow:
-    /tmp/nous_venv/bin/python build_slides.py
+    /tmp/psyche_venv/bin/python build_slides.py
 """
 import os
 from PIL import Image
@@ -25,7 +25,7 @@ from pptx.dml.color import RGBColor
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 FIG = os.path.normpath(os.path.join(HERE, "..", "..", "diagrams", "rendered"))
-OUT = os.path.join(HERE, "nous_slides.pptx")
+OUT = os.path.join(HERE, "psyche_slides.pptx")
 
 # palette
 INK = RGBColor(0x1A, 0x1A, 0x1A)
@@ -132,7 +132,7 @@ s = slide()
 band = s.shapes.add_shape(1, 0, Inches(2.55), prs.slide_width, Inches(2.4))
 band.fill.solid(); band.fill.fore_color.rgb = ACCENT; band.line.fill.background()
 tf = textbox(s, 0.8, 2.7, SW - 1.6, 1.0)
-setrun(tf.paragraphs[0], "Nous", 54, bold=True, color=WHITE)
+setrun(tf.paragraphs[0], "Psyche", 54, bold=True, color=WHITE)
 tf = textbox(s, 0.8, 3.75, SW - 1.6, 1.1)
 setrun(tf.paragraphs[0],
        "A dependency-free memory-and-activation substrate, and a software-testing-methodology case study",
@@ -144,7 +144,7 @@ setrun(tf.paragraphs[0],
        "An engineering prototype. Not a mind, a consciousness, an AGI, or a validated cognitive model.",
        13, italic=True, color=GREY)
 notes(s,
-      "One honest sentence: Nous is a small, dependency-free Python prototype of a graph memory and "
+      "One honest sentence: Psyche is a small, dependency-free Python prototype of a graph memory and "
       "spreading-activation substrate, and equally a case study in how adversarial, property-based testing "
       "caught a sequence of real structural bugs. The talk is methodology-first. Everything cognitive on top "
       "of the substrate is exploratory and is labeled as such. Nothing here claims a mind, consciousness, AGI, "
@@ -331,7 +331,7 @@ setrun(p, "“This part is proven; that part is not, and here is the failing tes
 footer(s, "Conclusion.")
 notes(s,
       "The honest next step is to stop validating the cognitive layer against hand-built inputs and instead "
-      "test it against a measurable cognitive effect whose direction is known independently of Nous, for "
+      "test it against a measurable cognitive effect whose direction is known independently of Psyche, for "
       "example semantic priming [10, 11]: does pre-activating a related concept measurably raise a target's "
       "activation? Then fix the source-grouping that collapses same-domain basins, and build the broadcast "
       "phase that the 'thought' selection currently stands in for. The ethos is the whole point: claim only "
