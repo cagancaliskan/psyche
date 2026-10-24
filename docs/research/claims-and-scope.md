@@ -86,7 +86,7 @@ A new idea joins the line only if the answer to all three questions is yes:
 If any answer is no, the idea is parked: it is recorded and not started.
 
 ```mermaid
-%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%
 flowchart TD
     idea["A new idea"] --> q1{"Answers a research<br/>question directly?"}
     q1 -- "yes" --> q2{"Finished before<br/>Gate C?"}

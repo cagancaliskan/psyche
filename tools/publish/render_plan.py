@@ -133,7 +133,7 @@ SPLIT_HINT = re.compile(r"(?<!\\)<!--[^\S\n]*(?:\n[\s>]*)?generated", re.I)
 OPEN_END_DAYS = 61      # how far past the plan's latest dated point an open end is drawn
 # The first line inside every generated flowchart fence: SVG text labels, which GitHub
 # cannot clip the way it clips HTML labels measured before their font has loaded.
-FLOW_INIT = '%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%'
+FLOW_INIT = '%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%'
 FLOW_LABEL_WIDTH = 22   # characters per label line, as the reader sees them
 FLOW_LABEL_LINES = 3    # lines per label
 ELLIPSIS = "\u2026"
@@ -338,11 +338,11 @@ def _drawn_spans(plan: dict) -> List[Tuple[date, date, str]]:
         else:
             end = horizon if start < horizon else start + timedelta(days=OPEN_END_DAYS)
         if s is None and e is None:
-            note = " (dates not fixed)"
+            note = " *"
         elif s is None:
-            note = " (start not fixed)"
+            note = " *"
         elif e is None:
-            note = " (end not fixed)"
+            note = " *"
         else:
             note = ""
         spans.append((start, end, note))
@@ -372,7 +372,7 @@ def render_plan_gantt(plan: dict) -> str:
         if gid and gid not in placed:
             g = plan["gates"][gate_index[gid]]
             d = core.parse_iso_date(g["date"])
-            lines.append(milestone(g, d) if d else milestone(g, end, " (date not fixed)"))
+            lines.append(milestone(g, d) if d else milestone(g, end, " *"))
             placed.add(gid)
     # Every gate is drawn: one no phase leads to sits at its date or, undated, at the
     # horizon with a note, never silently dropped.
@@ -382,7 +382,7 @@ def render_plan_gantt(plan: dict) -> str:
         lines.append(f"    section {gantt_text('Gates')}")
         for g in loose:
             d = core.parse_iso_date(g["date"])
-            lines.append(milestone(g, d) if d else milestone(g, horizon, " (date not fixed)"))
+            lines.append(milestone(g, d) if d else milestone(g, horizon, " *"))
     due = [(i, d) for i, d in enumerate(plan["deadlines"]) if d["due"] is not None]
     if due:
         lines.append(f"    section {gantt_text('Deadlines')}")

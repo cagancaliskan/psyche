@@ -212,7 +212,7 @@ page predicts their content or their timing.
 ## How the pieces fit
 
 ```mermaid
-%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%
 flowchart LR
   sub["Stage 1<br/>The substrate"]
   meth["Method, tooling<br/>and one lesson"]

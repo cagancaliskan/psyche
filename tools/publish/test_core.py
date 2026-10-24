@@ -1215,11 +1215,11 @@ def test_gantt() -> None:
     # next open phase runs a further 61 days, to 2027-08-15.
     check(RP.OPEN_END_DAYS == 61, "the horizon margin is the documented 61 days")
     shown = _decoded_lines(g)
-    check("    Paper (end not fixed) :ph3, 2027-04-15, 2027-06-15" in shown,
+    check("    Paper * :ph3, 2027-04-15, 2027-06-15" in shown,
           "an open end is drawn to the plan-derived horizon")
-    check("    Write-up (dates not fixed) :ph4, 2027-06-15, 2027-08-15" in shown,
+    check("    Write-up * :ph4, 2027-06-15, 2027-08-15" in shown,
           "an undated phase follows the previous bar for the fixed span")
-    check("    Gate C Paper (date not fixed) :milestone, gt2, 2027-06-15, 0d" in shown,
+    check("    Gate C Paper * :milestone, gt2, 2027-06-15, 0d" in shown,
           "an undated gate sits at its phase's drawn end and says so")
     check("    Novelty review and setup :active, ph0, 2026-10-23, 2026-11-15" in shown,
           "the active phase carries mermaid's lowercase 'active' tag")
@@ -1237,7 +1237,7 @@ def test_gantt() -> None:
     p["phases"][3]["gate"] = None   # gate C (undated) is now reached by no phase
     g3 = RP.render_plan_gantt(p)
     check(problems_of(p) == [] and "    section Gates" in _decoded_lines(g3)
-          and "    Gate C Paper (date not fixed) :milestone, gt2, 2027-06-15, 0d"
+          and "    Gate C Paper * :milestone, gt2, 2027-06-15, 0d"
           in _decoded_lines(g3),
           "an undated gate no phase leads to is drawn at the horizon, not dropped")
 
@@ -1317,7 +1317,7 @@ def _flow_nodes(flow: str) -> dict:
 
 def test_gate_flow() -> None:
     section("gate flow: Mermaid that GitHub renders without clipping")
-    want_init = '%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%'
+    want_init = '%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%'
     check(RP.FLOW_INIT == want_init, "the init line is exactly the agreed one")
     real = core.load_plan(REPO)
     hostile = plan()

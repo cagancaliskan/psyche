@@ -35,7 +35,7 @@ Every test follows the same four steps. What the exploration step presents, what
 manipulation step, and what is measured afterwards differ from test to test.
 
 ```mermaid
-%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%
 flowchart LR
     SETUP["Setup<br/>environment and<br/>agent initialised"]
     EXPLORE["Exploration<br/>pre-generated,<br/>same for every agent"]

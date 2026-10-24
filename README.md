@@ -19,7 +19,7 @@ Documentation site: **<https://cagancaliskan.github.io/psyche/>** · Wiki:
 ## The stages
 
 ```mermaid
-%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%
 flowchart LR
   s1["Stage 1<br/>The substrate<br/>foundation, paused"]
   s2["Stage 2<br/>Spiking cognitive maps<br/>active"]
@@ -119,12 +119,14 @@ gantt
     section #80;3
     #83;caling, ablations and the energy estimate :ph3, 2027-03-01, 2027-04-15
     section #80;4
-    #80;aper (end not fixed) :ph4, 2027-04-15, 2027-06-15
-    #71;ate D Paper (date not fixed) :milestone, gt3, 2027-06-15, 0d
+    #80;aper * :ph4, 2027-04-15, 2027-06-15
+    #71;ate D Paper * :milestone, gt3, 2027-06-15, 0d
     section #80;5
-    #80;ublic release (dates not fixed) :ph5, 2027-06-15, 2027-08-15
+    #80;ublic release * :ph5, 2027-06-15, 2027-08-15
 ```
 <!-- generated:plan-gantt:end -->
+
+Items marked \* in the chart have no fixed date yet; they are drawn up to a horizon derived from the plan, not to a date.
 
 The phase table, the layers and the paper submission deadline are on the
 [roadmap](docs/research/roadmap.md); each phase's outputs are listed in
@@ -224,7 +226,7 @@ The [engineering standards](docs/research/engineering.md) and the
 ## Repository map
 
 ```mermaid
-%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%
 flowchart TB
   subgraph S2["Stage 2"]
     plan["tools/<br/>research_plan.json"]

@@ -45,7 +45,7 @@ not edited by hand.
 
 <!-- generated:gate-flow:start -->
 ```mermaid
-%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%
 flowchart LR
     g0["Gate A: Novelty<br/>2026-11-15 · upcoming"]
     g1["Gate B: Comparisons<br/>2026-12-31 · upcoming"]

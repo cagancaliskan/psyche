@@ -69,7 +69,7 @@ The release tooling is built when the earliest release is due. Until then, no co
 moves to this repository at all.
 
 ```mermaid
-%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%
 flowchart LR
   head["Private head<br/>current work,<br/>never released"]
   tag["Tagged older<br/>version, complete<br/>and working"]

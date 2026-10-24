@@ -94,7 +94,7 @@ agent uses the same ones, so every agent receives the same exploration data.
   commands, expected run times and the hardware they were measured on.
 
 ```mermaid
-%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%
 flowchart LR
   cfg["Config file<br/>parameters and seeds"]
   run["Run<br/>one command"]

@@ -111,7 +111,7 @@ The evaluation is model-agnostic. Every agent receives the same pre-generated ex
 the same environments and is scored by the same battery and the same metrics.
 
 ```mermaid
-%%{init: {"htmlLabels": false, "flowchart": {"htmlLabels": false}}}%%
+%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%
 flowchart TD
     ENV["Environments<br/>seeded, deterministic"]
     EXP["Shared exploration<br/>pre-generated,<br/>same for every agent"]
