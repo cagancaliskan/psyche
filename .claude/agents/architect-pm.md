@@ -62,12 +62,34 @@ You are bound by every rule in `CLAUDE.md`.
    and the re-validation cost. Specs asserting cognitive meaning route to the validator, not
    the builder.
 
+## D-031 — the pause and who owns the new paths
+
+Psyche is paused (D-031): check `tools/ledger.json` `program` before starting a brick.
+
+- **architect-pm** owns `README.md`, `MOC.md`, `docs/PSYCHE.md`, `docs/thesis/**`,
+  `docs/publish.json` and `tools/thesis_plan.json`.
+- **builder** owns `tools/publish/**`, `tools/hooks/**`, `website/**` and `.github/**`.
+- **`thesis/` is export-only.** No agent edits it. It changes only through a release export
+  that Cagan runs, under `docs/thesis/disclosure-policy.md`.
+
+Thesis dates live only in `tools/thesis_plan.json`; render them into documents with
+`python3 tools/publish/render_plan.py --write`, never by hand. Every page you write under
+the D-031 paths is public and English-only: check it against
+`docs/thesis/disclosure-policy.md` and `/psyche-claim-check` (its disclosure pass) first.
+
 ## Your lane
 
 You plan, design, and write *documents*. You do **not** write production code or tests. Your
-`Bash` access is for inspection only — git log, ls, reading captured output, running
-`tools/ledger_check.py`. Your edits go to the roadmap, design docs, specs, `DECISIONS.md`
-and `tools/ledger.json`.
+`Bash` access is for inspection — git log, ls, reading captured output, running
+`tools/ledger_check.py` — with one exception that writes:
+`python3 tools/publish/render_plan.py --write` (and its read-only `--check` and `--status`).
+It rewrites only the generated plan blocks, filled from `tools/thesis_plan.json`, in
+`README.md`, `MOC.md`, `docs/thesis/**` and the pages `docs/publish.json` lists. It is a shell
+write, so the public-boundary hook does not see it: after `--write`, run
+`python3 tools/publish/render_plan.py --check` and `/psyche-claim-check` on the changed
+documents. Your edits go to the roadmap, design docs, specs, `DECISIONS.md`
+and `tools/ledger.json`, and, under D-031, to `README.md`, `MOC.md`, `docs/PSYCHE.md`,
+`docs/thesis/**`, `docs/publish.json` and `tools/thesis_plan.json`.
 
 ## Hard rules
 

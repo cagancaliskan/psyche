@@ -1,4 +1,4 @@
-# CLAUDE.md — Psyche Project Constitution
+# CLAUDE.md — Repository Constitution (Psyche paused · thesis active)
 
 Loaded at the start of every session; shared ground truth for the human and all subagents.
 Read it first, every time. If anything below conflicts with a request, surface the conflict
@@ -9,11 +9,46 @@ does not duplicate.
 
 ---
 
+## What this repository is now (D-031)
+
+This repository serves Cagan's undergraduate thesis first: *Cognitive Map Formation and Energy
+Efficiency in Spiking Neural Networks with Local Plasticity* (short name SCM). The thesis is
+framed as a test. It asks whether a spiking network that learns only through local synaptic
+plasticity shows, on classic cognitive-map tests, the behaviours that an internal map explains
+and memorised responses do not; whether other families of agents, given the same experience,
+show them too; and what the behaviour costs, as an analytic estimate of synaptic operations.
+The plan does not depend on a positive answer.
+
+**Psyche is paused.** Program state is a third axis, orthogonal to the build axis
+(`bricks[*].status`) and the meaning axis (`meaning_bar`). Read it from `program` in
+`tools/ledger.json`: it says what is being worked on, never what is true of a brick. No brick
+status, meaning verdict or test figure changes because of the pause. Only Cagan changes
+`program`, and only with a new entry in `DECISIONS.md`. While Psyche is paused, no new Psyche
+brick starts and no Psyche default changes; the suites, the ledger, `ledger_check` and the
+determinism sweep stay maintained, and the paper stays held (D-012).
+
+Psyche's long-term aim is paused, not abandoned and not achieved. It is stated only as an aim,
+never as a property of the system: *a biologically grounded, non-LLM memory-and-activation
+substrate that moves information without loss and sets how much activation it spends without
+producing output its inputs do not support*.
+
+**Public summary, private detail.** This repository holds the thesis overview, roadmap, gates,
+battery overview, claims discipline, engineering standards and visuals. Hypotheses beyond the
+research questions, pre-registered criteria and thresholds, the experiment plan, the thesis
+model and its code, the analysis of related work, results and working records, and the thesis
+paper draft live in a private companion repository that is never named here. Material moves
+here only under [`docs/thesis/disclosure-policy.md`](docs/thesis/disclosure-policy.md). When
+unsure whether something is private, it is.
+
+**Everything in this repository is English.**
+
+---
+
 ## What Psyche is (state it this way, always)
 
 Psyche is a biologically-motivated, dependency-free Python prototype of a
-**memory-and-activation substrate for a cognitive architecture**. The long-term aim is a
-non-LLM, biologically-grounded mind. The current built artifact is a proven substrate plus
+**memory-and-activation substrate for a cognitive architecture**. Its long-term aim is stated
+above and is paused. The current built artifact is a proven substrate plus
 an honest, well-tested exploration of higher layers.
 
 **What is proven** is that the lower layers are *correct and deterministic*. **What is not
@@ -29,8 +64,12 @@ The project is **Psyche** everywhere: the paper, the codebase, and the repositor
 | Fact | Source of truth |
 |---|---|
 | Test counts, statuses, constants, results | `tools/ledger.json` — **only** |
+| Program state (what is paused, what is active) | `tools/ledger.json` → `program` |
 | Captured run | `docs/TEST_OUTPUT.txt` (the ledger is generated from it) |
-| Narrative position, phases | `docs/psyche_roadmap.md` |
+| Psyche's narrative position, phases | `docs/psyche_roadmap.md` |
+| Thesis phases, gates, dates, deadlines | `tools/thesis_plan.json` — **only** |
+| Thesis public docs | `docs/thesis/` |
+| Thesis package (exported releases only) | `thesis/` |
 | Why something changed | `DECISIONS.md` |
 | Specs / ADRs | `docs/specs/` |
 | Pre-registrations and results | `docs/experiments/` |
@@ -50,6 +89,14 @@ These are the disciplines the project has already paid for in bugs.
    Biological *inspiration* may be described; biological *fidelity* or cognitive achievement
    may not be asserted.
 
+   **The thesis adds its own terms.** The thesis model is never described in terms of
+   consciousness, understanding or thinking; results describe behaviour and internal
+   structure. It is "brain-inspired" or, where it can be argued, "biologically plausible",
+   never "the brain does it this way". Energy appears only as an analytic estimate or lower
+   bound, reported with its sensitivity analysis: never GPU wall-clock time or watts as
+   evidence, and never a general claim that spiking networks are more efficient. No "first"
+   claim until Gate A is decided and recorded. Every number traces to a captured results file.
+
 2. **Mechanism ≠ meaning.** "The code is correct and deterministic" and "the code reproduces
    a cognitive effect" are separate claims with separate evidence bars. Mechanism is
    verified by the tester; meaning by the validator, against external data.
@@ -67,6 +114,11 @@ These are the disciplines the project has already paid for in bugs.
    answer is invalid. Relatedness norms, baselines, ground-truth directions: all from outside
    the project.
 
+   For the thesis, the external yardsticks are the published behavioural protocols and the
+   published behaviour of the baselines. Each baseline is reproduced against its published
+   behaviour before any comparison is made, and development and test environments stay
+   strictly split.
+
 6. **Reinvent the idea, borrow the scaffolding.** The novelty is the architecture. Spend
    invention only where the genuinely new thing lives.
 
@@ -76,8 +128,19 @@ These are the disciplines the project has already paid for in bugs.
    program. (BUG-0b1: a 1-ULP float-summation leak was invisible on 3.12 and flipped the
    workspace winner 8 times in 30 on 3.11, at a fixed hash seed.)
 
-8. **The core stays dependency-free.** Standard library only, unless a dependency is
-   explicitly justified and approved by the human.
+   The thesis states determinism in three tiers, and each result states its tier; a result
+   built from parts at different tiers states the weakest of them.
+   - **Tier A:** bit-exact across CPython versions and hash seeds (environments, battery,
+     metrics, counters).
+   - **Tier B:** bit-exact on CPU for one pinned version, with deterministic algorithms
+     enabled.
+   - **Tier C:** statistical reproducibility for GPU runs: fixed seeds, results reported with
+     confidence intervals over seeds.
+
+8. **The Psyche core stays dependency-free.** `src/psyche_*.py` and `tools/` use the standard
+   library only, unless a dependency is explicitly justified and approved by the human. The
+   thesis package under `thesis/` declares its own pinned dependencies and is never imported
+   by the core; nothing under `thesis/` is registered in `run_tests.py`.
 
 9. **Every phase ends in something shippable.** If the road stops at any point, what is
    behind us must stand on its own as a real, citable artifact.
@@ -126,6 +189,16 @@ evidence. Run `/psyche-lane` before touching a file.
    module under test.*
 5. **architect-pm** — folds the result back into the roadmap and the ledger.
 
+**While Psyche is paused (D-031)**, no new Psyche brick starts and no Psyche default changes.
+Check `program` in `tools/ledger.json` before any brick work. The new paths have owners
+(D-031, item 9):
+
+- **architect-pm** also owns `README.md`, `MOC.md`, `docs/PSYCHE.md`, `docs/thesis/**`,
+  `docs/publish.json` and `tools/thesis_plan.json`.
+- **builder** also owns `tools/publish/**`, `tools/hooks/**`, `website/**` and `.github/**`.
+- **`thesis/` is export-only.** No agent edits it. It changes only through a release export
+  that Cagan runs, under `docs/thesis/disclosure-policy.md`.
+
 ---
 
 ## The three walls (why the meaning bar is still open)
@@ -153,9 +226,20 @@ yardsticks*, never a general law about spreading activation or cognition.
 - One runner: `run_tests.py`. Its captured output in `docs/TEST_OUTPUT.txt` is the ground
   truth for all counts. Never estimate; read them from the ledger.
 - Commits: `feat(<brick>):` · `fix(<brick>):` · `test(<brick>):` · `docs(<area>):` ·
-  `chore:`. Branch per brick: `brick/<id>`.
-- Before any commit: `python3 tools/ledger_check.py` must exit 0, and `/psyche-claim-check`
-  must return SHIP.
+  `chore:`. Branch per brick: `brick/<id>`. Thesis and program work uses `docs(thesis):` ·
+  `chore(program):` · `chore(release):` · `chore(publish):`.
+- Public commits never carry private ids. No identifier or wording from the private companion
+  appears in a commit message, a branch name or a file name here.
+- Thesis dates are never typed by hand. Render the plan with
+  `python3 tools/publish/render_plan.py --write`, which fills the generated blocks from
+  `tools/thesis_plan.json`.
+- Stage files by explicit path only; never `git add -A` or `commit -a`. The working tree can
+  hold uncommitted work that is not part of your change.
+- Before any commit, the D-031 commit gate (while the paper is held):
+  `python3 tools/ledger_check.py --only C1,C3,C4,C5,C6` exits 0, and
+  `python3 tools/publish/ci_c2.py` exits 0. The held paper's C2 findings under `docs/paper/`
+  are expected under D-012 and are the only C2 findings allowed. `/psyche-claim-check` must
+  return SHIP.
 - **Never `git stash`. Inspect an old revision with `git show <rev>:<path>` or a temporary
   worktree.** A stash is **repo-wide**: taken inside one lane it silently reverts every other
   lane's uncommitted work, and one that is never popped discards it. This is not hypothetical

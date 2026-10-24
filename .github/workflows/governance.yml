@@ -1,0 +1,421 @@
+# The governance gate (D-031 §2.8), run on every push and pull request.
+#
+# The Pages and wiki workflows call this file through workflow_call, so nothing is published
+# past a red gate. Every step is standard-library Python; nothing is installed beyond the
+# interpreter. While the paper is held (D-012), C2 runs through tools/publish/ci_c2.py, which
+# tolerates findings under docs/paper/ only. tools/ledger_check.py itself is not changed.
+#
+# Two jobs. `governance` runs every repository check and never references the disclosure
+# secret. `disclosure` is the only job that does.
+#
+# Why the secret is base64 on one line. The runner masks a secret in the whole log of every
+# job that holds it: job setup, checkout and every step, not only the step that reads it. It
+# registers the whole value and also each line of a multi-line value as a separate mask,
+# trimmed, and it masks every occurrence, inside longer strings too. A denylist stored as
+# plain lines would therefore turn the public log into an oracle: a short entry that happened
+# to occur inside a commit SHA, an object count or any other printed text would show there as
+# ***, and comparing that line with the public SHA would give the entry away. So the secret
+# DISCLOSURE_DENYLIST_B64 holds the denylist file base64-encoded on one line, and the masker
+# holds only that long base64 string, which no log line contains. The first steps of the
+# disclosure job decode it into a file under RUNNER_TEMP that only the runner user can read
+# (the runner empties RUNNER_TEMP at the start and end of every job), and both checks read
+# that file; the decoded entries never reach the masker. A value with whitespace or a line
+# break in it is rejected before the repository is checked out, so a secret stored in the
+# wrong format stops the job before anything derived from the repository is printed.
+#
+# To make the value from the denylist file (prints one line; paste it as the secret):
+#     python3 -c 'import base64,sys; print(base64.b64encode(open(sys.argv[1],"rb").read()).decode())' DENYLIST_FILE
+#
+# The name states the format on purpose, and it is the only name this file reads. A workflow
+# that handed this value straight to check_disclosure.py or leak_check.py through
+# --denylist-env would read the one base64 line as one plain entry that matches nothing, and
+# pass. A workflow that read a plain multi-line secret instead would put every entry back in
+# the masker for its whole job. So a workflow here that scans with the list has to decode
+# DISCLOSURE_DENYLIST_B64 the way the disclosure job below does and pass the file with
+# --denylist. That is a rule, not a description: the governance job checks every workflow in
+# this directory for it and fails on a plain DISCLOSURE_DENYLIST secret or on --denylist-env.
+# A secret stored under the plain name is never read here; the run warns, or fails where the
+# scan is required, and names the secret it does read.
+#
+# What masking no longer covers. With the list in base64, a decoded entry that a tool printed
+# would reach the public log in clear text: nothing masks it. The tools report a hit by entry
+# number and never print the matched text, and tools/publish/test_checks.py asserts that with
+# invented terms. The disclosure job runs those tests on the checked-out code first and runs
+# neither scan unless they pass, so the output contract is enforced by these tests, not by
+# masking. That stops an accidental change to a tool's output, not a deliberate one, since a
+# pull request can change the tests too. The secret reaches only runs on this repository's
+# own branches, which only someone with write access can push; fork and Dependabot pull
+# requests never receive it.
+#
+# Third-party actions are pinned to full commit SHAs; the tag is in the trailing comment.
+# The governance job checks that for every workflow in this directory.
+name: governance
+
+on:
+  push:
+  pull_request:
+  workflow_call:
+    inputs:
+      require-disclosure:
+        description: >-
+          Fail, instead of warning and skipping, when the DISCLOSURE_DENYLIST_B64 secret is
+          not available to the run. Defaults to true, so a publishing caller that forgets to
+          pass the secret is stopped rather than waved through.
+        type: boolean
+        required: false
+        default: true
+    secrets:
+      DISCLOSURE_DENYLIST_B64:
+        description: >-
+          The private denylist, base64-encoded on one line (see the header of this file).
+          Required in practice whenever require-disclosure is true.
+        required: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  governance:
+    name: governance
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: read
+    steps:
+      - name: Check out the repository (full history)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        id: py
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      # Each check runs whenever the interpreter is in place, even after an earlier check
+      # failed, so one run reports every red gate instead of only the first.
+      - name: ledger_check (C1, C3, C4, C5, C6)
+        if: ${{ !cancelled() && steps.py.outcome == 'success' }}
+        run: python3 -B tools/ledger_check.py --only C1,C3,C4,C5,C6
+
+      - name: C2 with only the held paper tolerated (D-012)
+        if: ${{ !cancelled() && steps.py.outcome == 'success' }}
+        run: python3 -B tools/publish/ci_c2.py
+
+      - name: test_ledger
+        if: ${{ !cancelled() && steps.py.outcome == 'success' }}
+        run: python3 -B tools/test_ledger.py
+
+      - name: tools/publish tests (core)
+        if: ${{ !cancelled() && steps.py.outcome == 'success' }}
+        run: python3 -B tools/publish/test_core.py
+
+      - name: tools/publish tests (checks)
+        if: ${{ !cancelled() && steps.py.outcome == 'success' }}
+        run: python3 -B tools/publish/test_checks.py
+
+      - name: tools/publish tests (hooks)
+        if: ${{ !cancelled() && steps.py.outcome == 'success' }}
+        run: python3 -B tools/publish/test_hooks.py
+
+      - name: Rendered thesis plan matches tools/thesis_plan.json
+        if: ${{ !cancelled() && steps.py.outcome == 'success' }}
+        run: python3 -B tools/publish/render_plan.py --check
+
+      - name: Claims on surfaces outside ledger_check
+        if: ${{ !cancelled() && steps.py.outcome == 'success' }}
+        run: python3 -B tools/publish/check_copy.py
+
+      # tools/publish/stage.py stages the site build's input into two directories, both
+      # gitignored: the pages into website/src/content/docs, and the plan, the public ledger
+      # figures, the sidebar and the stage record into website/src/data. A tracked copy in
+      # either would be a second, ungoverned source of the same text or the same figures
+      # (website/src/data/ledger.public.json repeats numbers whose only source is
+      # tools/ledger.json). .gitignore does not stop a forced add; this step does. No
+      # trailing slash: the pathspec then also matches a tracked file or symlink named
+      # exactly like either directory, not only files beneath one.
+      - name: No staged site content is tracked
+        if: ${{ !cancelled() && steps.py.outcome == 'success' }}
+        run: |
+          tracked="$(git ls-files -- website/src/content/docs website/src/data)"
+          if [ -n "${tracked}" ]; then
+            echo "::error title=Staged content is tracked::website/src/content/docs and website/src/data are staged for the site build by tools/publish/stage.py and must stay untracked."
+            printf '%s\n' "${tracked}"
+            exit 1
+          fi
+          echo "OK: nothing at or under website/src/content/docs or website/src/data is tracked."
+
+      # A tag can be moved to other code after it was reviewed; a commit SHA cannot. So every
+      # action or reusable workflow a workflow here names carries a full 40-character SHA,
+      # the Pages and wiki workflows included. A local reusable workflow (./...) is this
+      # repository's own code at the same commit and needs no pin. The check reads the
+      # block style every workflow here is written in, one reference per line; a line that
+      # names the key in any other form (a flow mapping, the value on the next line) is an
+      # error rather than a line it skips. Finding no workflow file at all is an error too.
+      - name: Every action is pinned by full commit SHA
+        if: ${{ !cancelled() && steps.py.outcome == 'success' }}
+        run: |
+          python3 -B - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          # Spelled in two parts, so this script's own lines are not read as a reference.
+          key = "uses" + ":"
+          ref_re = re.compile(r"^\s*(?:-\s+)?" + key + r"\s*(.*?)\s*(?:#.*)?$")
+          pinned_re = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_./-]+@[0-9a-f]{40}")
+
+          files = sorted(pathlib.Path(".github/workflows").glob("*.y*ml"))
+          if not files:
+              print("::error title=No workflows found::.github/workflows holds no workflow file")
+              sys.exit(1)
+          bad = []
+          seen = 0
+          for path in files:
+              for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+                  if key not in line or line.lstrip().startswith("#"):
+                      continue
+                  m = ref_re.match(line)
+                  if not m:
+                      bad.append(f"{path}:{n}: the key appears in a form this check does not read")
+                      continue
+                  seen += 1
+                  ref = m.group(1).strip("'\"")
+                  if ref.startswith("./"):
+                      continue
+                  if not pinned_re.fullmatch(ref):
+                      bad.append(f"{path}:{n}: {ref or '(no value on this line)'}")
+          for row in bad:
+              print(f"::error title=Action not pinned by SHA::{row}")
+          if bad:
+              sys.exit(1)
+          print(f"OK: {seen} action reference(s) in {len(files)} workflow file(s), every "
+                f"external one pinned to a full commit SHA.")
+          PY
+
+      # The rule from the header, checked for every workflow here, the Pages and wiki
+      # workflows included: the denylist reaches a job only as DISCLOSURE_DENYLIST_B64,
+      # decoded to a file. A plain DISCLOSURE_DENYLIST secret would put each entry in the
+      # masker for the whole job; --denylist-env would either need that plain secret or read
+      # the base64 line as one entry that matches nothing. Expression contexts are
+      # case-insensitive, so the secret name is matched without case. argparse accepts any
+      # unambiguous prefix of an option, and every option that begins "--denylist-" is a
+      # prefix of --denylist-env alone, so that prefix is what the check looks for. Comment
+      # lines are skipped; they explain the rule and do not run.
+      - name: No workflow reads the denylist as plain text
+        if: ${{ !cancelled() && steps.py.outcome == 'success' }}
+        run: |
+          python3 -B - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          # Spelled in parts, so this script's own lines are not read as findings.
+          plain = "DISCLOSURE_" + "DENYLIST"
+          env_option = "--denylist" + "-"
+          secret_re = re.compile(r"secrets\s*(?:\.\s*|\[\s*['\"])" + plain + r"(?![A-Za-z0-9_])",
+                                 re.IGNORECASE)
+
+          files = sorted(pathlib.Path(".github/workflows").glob("*.y*ml"))
+          if not files:
+              print("::error title=No workflows found::.github/workflows holds no workflow file")
+              sys.exit(1)
+          bad = []
+          for path in files:
+              for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+                  if line.lstrip().startswith("#"):
+                      continue
+                  if secret_re.search(line):
+                      bad.append(f"{path}:{n}: reads the plain {plain} secret; read "
+                                 f"{plain}_B64 and decode it to a file instead")
+                  if env_option in line:
+                      bad.append(f"{path}:{n}: passes the list through an environment "
+                                 f"variable; decode {plain}_B64 to a file and pass --denylist")
+          for row in bad:
+              print(f"::error title=Denylist read as plain text::{row}")
+          if bad:
+              sys.exit(1)
+          print(f"OK: none of {len(files)} workflow file(s) names a plain {plain} secret "
+                f"or passes the list through an environment variable.")
+          PY
+
+  disclosure:
+    name: disclosure
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      # Before the checkout on purpose: setting up the interpreter prints nothing derived
+      # from the repository, so a secret in the wrong format (see the header) fails the job
+      # before any repository text reaches the log.
+      - name: Set up Python 3.12
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      # The denylist is private and never committed. It reaches CI only as a secret, read by
+      # this one step of this one job. Without it the end-state scan cannot run, and then:
+      #   - a caller that kept require-disclosure true (the Pages and wiki gates) fails;
+      #   - a push to the default branch fails once the repository variable
+      #     DISCLOSURE_REQUIRED is set to 'true' (after the secret is configured);
+      #   - anything else (forks, Dependabot, pull requests, a repository where the secret
+      #     is not set yet) skips the scan with a visible warning, and the pull request
+      #     leak check below still runs its structural rules.
+      # `inputs` is empty on push and pull_request events, so only a caller sets the first.
+      # A value that is not one line of base64 of UTF-8 text, or that decodes to something
+      # that is not a text file, is an error whether or not the check is required: a list
+      # stored in the wrong format is never read as "no list".
+      - name: Decode the private denylist
+        id: denylist
+        env:
+          DISCLOSURE_DENYLIST_B64: ${{ secrets.DISCLOSURE_DENYLIST_B64 }}
+          REQUIRE_FROM_CALLER: ${{ inputs.require-disclosure }}
+          REQUIRED_VAR: ${{ vars.DISCLOSURE_REQUIRED }}
+          EVENT_NAME: ${{ github.event_name }}
+          GIT_REF: ${{ github.ref }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+        run: |
+          required=""
+          if [ "${REQUIRE_FROM_CALLER}" = "true" ]; then
+            required="the calling workflow set require-disclosure"
+          elif [ "${REQUIRED_VAR}" = "true" ] && [ "${EVENT_NAME}" = "push" ] \
+               && [ -n "${DEFAULT_BRANCH}" ] && [ "${GIT_REF}" = "refs/heads/${DEFAULT_BRANCH}" ]; then
+            required="DISCLOSURE_REQUIRED is true and this is a push to the default branch"
+          fi
+          if [ -z "${DISCLOSURE_DENYLIST_B64}" ]; then
+            if [ -n "${required}" ]; then
+              echo "::error title=Disclosure check cannot run::The DISCLOSURE_DENYLIST_B64 secret is not available to this run, and the check is required (${required}). Only that name is read; a secret stored under another name, or as plain lines, is not."
+              exit 1
+            fi
+            echo "::warning title=Disclosure check skipped::The DISCLOSURE_DENYLIST_B64 secret is not available to this run (only that name is read; a secret stored under another name, or as plain lines, is not). The end-state scan is skipped; a pull request's leak check runs without the DENYLIST rule."
+            echo "available=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+          umask 077
+          python3 -I -B - <<'PY'
+          import base64
+          import binascii
+          import os
+          import sys
+
+
+          def fail(why):
+              # Never quotes the value or anything decoded from it.
+              print(f"::error title=Denylist secret unusable::DISCLOSURE_DENYLIST_B64 {why} "
+                    f"It must be the denylist file base64-encoded on one line; the header "
+                    f"of .github/workflows/governance.yml shows how to make it.")
+              sys.exit(1)
+
+
+          value = os.environ["DISCLOSURE_DENYLIST_B64"].strip()
+          if not value:
+              fail("is blank.")
+          if any(ch.isspace() for ch in value):
+              fail("has whitespace or a line break in it, so it is not one line of base64.")
+          try:
+              text = base64.b64decode(value, validate=True).decode("utf-8")
+          except (binascii.Error, ValueError):
+              fail("is not base64 of UTF-8 text.")
+          if any((ord(ch) < 32 and ch not in "\t\n\r") or ord(ch) == 127 for ch in text):
+              fail("decodes to bytes with control characters, so it is not a text file.")
+          if not text.strip():
+              fail("decodes to empty text.")
+          path = os.path.join(os.environ["RUNNER_TEMP"], "disclosure-denylist.txt")
+          fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+          with os.fdopen(fd, "w", encoding="utf-8") as fh:
+              fh.write(text)
+          os.chmod(path, 0o600)
+          PY
+          echo "available=true" >> "${GITHUB_OUTPUT}"
+
+      # Full history: the pull request leak check reads every commit in the range.
+      - name: Check out the repository (full history)
+        id: checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # The scans below report a hit by entry number and never print the matched text, and
+      # with the list in base64 nothing masks a decoded entry that a tool did print (see the
+      # header). These tests assert that output contract with invented terms, on the code
+      # just checked out, and neither scan runs unless they pass. They run whenever a scan
+      # would: the list is available, or this is a pull request (its leak check runs either
+      # way). The governance job runs the same tests on every event; here they are a gate.
+      - name: Output contract of the scanners (tools/publish/test_checks.py)
+        id: contract
+        if: ${{ steps.denylist.outputs.available == 'true' || github.event_name == 'pull_request' }}
+        run: python3 -B tools/publish/test_checks.py
+
+      # Scanned: the sources the site and the wiki publish from (the thesis pages, the
+      # Psyche overview page, the thesis package, the site's own sources) plus the manifest
+      # and the plan file, whose strings reach the site. The list is named path by path, not
+      # as whole top-level directories: a walk of website/ would also read
+      # website/package-lock.json, which is not published content, so it does not belong in
+      # an end-state scan of what is published (the pull request leak check still reads it;
+      # see the comment on that step for how the private list was narrowed).
+      # Not scanned, although docs/publish.json publishes them: docs/ARCHITECTURE.md and
+      # docs/METHODOLOGY.md. They are Psyche's own public record, public before the thesis
+      # existed, and they use some words that are on the private list in Psyche's own
+      # sense, about Psyche's own mechanisms, not the thesis. A commit that touches them and
+      # reaches the default branch through a pull request is still read by the leak check
+      # below, with the list whenever the secret is available to that run (never for a fork
+      # or Dependabot pull request, and not before the secret is set); a direct push is not
+      # leak-checked at all.
+      # Build output (website/src/content/docs and website/src/data, staged and gitignored;
+      # the built site; the wiki pages) is absent here. A workflow that builds and publishes
+      # scans its own output before it publishes.
+      - name: Disclosure check (public summary, private detail)
+        if: ${{ steps.denylist.outputs.available == 'true' && steps.contract.outcome == 'success' }}
+        run: |
+          scan=(
+            README.md MOC.md docs/thesis docs/PSYCHE.md thesis
+            website/src website/README.md docs/publish.json tools/thesis_plan.json
+          )
+          python3 -B tools/publish/check_disclosure.py \
+            --denylist "${RUNNER_TEMP}/disclosure-denylist.txt" "${scan[@]}"
+
+      # A push publishes history, not only the end state: a term added in one commit and
+      # removed in the next is still public. On a pull request, every commit between the
+      # base and the head is read: added lines, messages, author fields, file names. With
+      # the list when it is available; without it the structural rules (language, home
+      # paths, private tags and ids) still run, and the run says so. Runs after a red scan
+      # too, so one run reports both, but never after a red output-contract test. The SHAs
+      # come in through the environment, never pasted into the script.
+      # Every path is read, website/package-lock.json included: no path is exempt. The
+      # lockfile once gave DENYLIST hits no page edit could clear, and the choice made was
+      # to fix the list, not the scan: the owner narrowed the over-broad private entries, so
+      # they no longer match lockfile package names, version numbers, 'git clone' or the
+      # Markdown 'H1', and leak_check.py carries no path exemption.
+      - name: Leak check over the pull request's commits
+        if: ${{ !cancelled() && github.event_name == 'pull_request' && steps.checkout.outcome == 'success' && steps.contract.outcome == 'success' }}
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          HAVE_DENYLIST: ${{ steps.denylist.outputs.available }}
+        run: |
+          if [ -z "${BASE_SHA}" ] || [ -z "${HEAD_SHA}" ]; then
+            echo "::error title=Leak check cannot run::The pull request event carries no base or head SHA."
+            exit 1
+          fi
+          case "${HAVE_DENYLIST}" in
+            true)
+              denylist=(--denylist "${RUNNER_TEMP}/disclosure-denylist.txt")
+              ;;
+            false)
+              echo "::warning title=Leak check without the denylist::The DISCLOSURE_DENYLIST_B64 secret is not available to this run, so the DENYLIST rule does not run; the structural rules do."
+              denylist=(--no-denylist)
+              ;;
+            *)
+              echo "::error title=Leak check cannot run::The denylist step left no result, so whether the list is available is unknown."
+              exit 1
+              ;;
+          esac
+          python3 -B tools/publish/leak_check.py --range "${BASE_SHA}..${HEAD_SHA}" "${denylist[@]}"

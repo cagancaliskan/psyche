@@ -7,7 +7,7 @@ skills: psyche-lane
 color: red
 hooks:
   PreToolUse:
-    - matcher: "Write|Edit|NotebookEdit|Bash"
+    - matcher: "Write|Edit|MultiEdit|NotebookEdit|Bash"
       hooks:
         - type: command
           command: "python3 ${CLAUDE_PROJECT_DIR}/tools/hooks/guard_tester_lane.py"
@@ -25,6 +25,39 @@ You may create and modify **test files and test harnesses only** — `tests/test
 You must **never** modify a production module (`src/psyche_*.py`). If you find a defect you
 report it precisely and hand back. You do **not** fix it. Fixing the thing you are testing
 reintroduces exactly the circularity this project exists to avoid.
+
+## D-031 — the pause and who owns the new paths
+
+Psyche is paused (D-031): check `tools/ledger.json` `program` before starting a brick.
+
+- **architect-pm** owns `README.md`, `MOC.md`, `docs/PSYCHE.md`, `docs/thesis/**`,
+  `docs/publish.json` and `tools/thesis_plan.json`.
+- **builder** owns `tools/publish/**`, `tools/hooks/**`, `website/**` and `.github/**`.
+- **`thesis/` is export-only.** No agent edits it. It changes only through a release export
+  that Cagan runs, under `docs/thesis/disclosure-policy.md`.
+
+None of these paths are yours. The lane hook blocks `thesis/`, `tools/publish/`,
+`tools/hooks/` (this lane's own guard included), `website/`, `.github/`, `.claude/` (this
+file included), `tools/thesis_plan.json` and `tools/ledger_check.py`, in this checkout and in
+any worktree under `.claude/worktrees/`; when you attack a hook or a publishing tool, you do
+it from your own test files.
+
+The hook sees Write, Edit, MultiEdit and NotebookEdit, and a Bash command that changes one of
+these paths, or `src/`, in the common shell forms: a redirection target, `tee`, `sed -i` and
+`perl -i`, `cp`/`mv`/`rm`/`ln`/`touch`/`truncate`/`chmod`, `dd of=`, the paths of
+`git checkout`/`restore`/`rm`/`mv`/`clean`/`checkout-index` (`git clean -fdx` with no path is
+the whole tree), a file a git option writes (`--output`, `format-patch -o`, `archive -o`),
+`find -delete`, also after `cd` and inside `$( )` or `bash -c`. Refused outright: `patch`,
+`git apply`, `git stash`, `git reset --hard`/`--merge`/`--keep`, `git merge`, `pull`,
+`rebase`, `cherry-pick`, `revert`, `read-tree`, `git checkout -f`, `git switch -f`, the
+non-reading forms of `git bisect`/`sparse-checkout`/`submodule`, any git subcommand the hook
+does not know (an alias included), and a path-changing command run by `xargs`. It does not
+see a write made from inside a program (`python -c`, a script, a test run, a git hook or a
+command set with `git -c`), a path held in a shell variable or built by brace expansion, or a
+branch switch (`git checkout <branch>`, `git switch <branch>`). Those are still lane
+violations; the hook is a backstop, not the rule. Reading stays open: `cat`, `grep`,
+`sed -n`, `git diff`, `git show`, `git log`, `git status`, and copying a module out to a
+scratch directory.
 
 ## Before you test
 

@@ -1,0 +1,92 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import MazeHero from '../components/MazeHero.astro';
+import NowLine from '../components/NowLine.tsx';
+import Timeline from '../components/Timeline.tsx';
+import TimelineList from '../components/TimelineList.astro';
+import plan from '../data/plan.json';
+import ledger from '../data/ledger.public.json';
+import { withBase } from '../lib/url.ts';
+import type { Plan } from '../lib/plan.ts';
+
+const p = plan as unknown as Plan;
+const t = ledger.tests;
+const interpreters: string[] = ledger.determinism.interpreters;
+const fmt = new Intl.NumberFormat('en-US');
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Psyche',
+    description: 'Public summary of an undergraduate thesis on cognitive maps in spiking networks that learn with local plasticity.',
+    template: 'splash',
+  }}
+>
+  <section class="sx-hero sx-landing">
+    <div>
+      <h1 class="sx-hero__title">{p.thesis.title}</h1>
+      <p class="sx-hero__level">{p.thesis.level}</p>
+      <p class="sx-hero__lead">
+        This site is the public summary of the thesis: what it asks, how it will be tested, and when each
+        decision falls. The model and the detailed plan stay private until submission.
+      </p>
+      <div class="sx-hero__actions">
+        <a class="sx-button" href={withBase('thesis/')}>Read the overview</a>
+        <a class="sx-link" href={withBase('battery/')}>Explore the test battery</a>
+      </div>
+    </div>
+    <MazeHero />
+  </section>
+
+  <NowLine client:load plan={p} />
+
+  <section class="sx-section">
+    <h2>Roadmap</h2>
+    <p>
+      {p.phases.length} phases and {p.gates.length} decision gates. Choose a phase to see what it delivers;
+      the full schedule is on the <a href={withBase('roadmap/')}>roadmap page</a>.
+    </p>
+    <Timeline client:visible plan={p} />
+    <TimelineList plan={p} />
+  </section>
+
+  <section class="sx-section">
+    <h2>What is public, and what is not yet</h2>
+    <div class="sx-split">
+      <div>
+        <h3>Public now</h3>
+        <ul>
+          <li>The overview and the research questions</li>
+          <li>The roadmap and the decision gates</li>
+          <li>The test battery's paradigms and fairness rules</li>
+          <li>The claims discipline and engineering standards</li>
+          <li>Psyche's code, tests and published record</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Withheld until submission</h3>
+        <ul>
+          <li>The model and its code</li>
+          <li>Hypotheses beyond the research questions</li>
+          <li>Pre-registered criteria, committed here by hash only</li>
+          <li>The experiment plan and its order</li>
+          <li>The analysis of related work</li>
+        </ul>
+      </div>
+    </div>
+    <p>Releases follow a fixed rule: complete, working, older versions only. <a href={withBase('thesis/disclosure-policy/')}>Read the disclosure policy</a>.</p>
+  </section>
+
+  <section class="sx-section">
+    <h2>Psyche, paused</h2>
+    <p>
+      Psyche is the dependency-free memory-and-activation substrate this repository was built for. It is
+      paused while the thesis takes priority. Its code, tests and published record stay here and stay
+      verified: {t.suites} suites, {fmt.format(t.assertions)} assertions and {t.failures} failures on
+      {`CPython ${interpreters[0]} to ${interpreters[interpreters.length - 1]}`}.
+    </p>
+    <p>
+      <a href={withBase('status/')}>See Psyche's status</a>, or read <a href={withBase('psyche/overview/')}>what Psyche is</a>.
+    </p>
+  </section>
+</StarlightPage>

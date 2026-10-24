@@ -1,10 +1,15 @@
-# Psyche has NO third-party dependencies.
+# The Psyche core has NO third-party dependencies.
 #
-# Every module and every test runs on the Python standard library alone
-# (tested on CPython 3.13; expected to work on 3.8+). This file is intentionally
-# empty of packages: there is nothing to `pip install`.
+# The core modules (src/psyche_*.py), their test suites and the tools under tools/ run on
+# the Python standard library alone (the core and its suites are swept on CPython 3.10-3.14;
+# see "determinism" in tools/ledger.json). This file is intentionally empty of packages: there is nothing to
+# `pip install` for them.
 #
-# To run the tests:
+# The thesis package under thesis/ is separate. It will declare its own pinned dependencies
+# inside thesis/ when its first release arrives, is never imported by the core, and is not
+# run by run_tests.py. Nothing has been released there yet; see thesis/README.md.
+#
+# To run the Psyche tests:
 #     python3 run_tests.py
 # or a single suite (absolute PYTHONPATH so subprocess determinism probes resolve):
 #     PYTHONPATH="$PWD/src" python3 tests/test_psyche_store.py

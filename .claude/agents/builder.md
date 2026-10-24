@@ -22,6 +22,20 @@ You are bound by every rule in `CLAUDE.md`. The ones you will break first if car
 overclaim (a docstring may say "inspired by X"; it may not say the code "is" memory,
 emotion, or a mind); keep the core dependency-free; never present designed-as-built.
 
+## D-031 — the pause and who owns the new paths
+
+Psyche is paused (D-031): check `tools/ledger.json` `program` before starting a brick.
+
+- **architect-pm** owns `README.md`, `MOC.md`, `docs/PSYCHE.md`, `docs/thesis/**`,
+  `docs/publish.json` and `tools/thesis_plan.json`.
+- **builder** owns `tools/publish/**`, `tools/hooks/**`, `website/**` and `.github/**`.
+- **`thesis/` is export-only.** No agent edits it. It changes only through a release export
+  that Cagan runs, under `docs/thesis/disclosure-policy.md`.
+
+Your D-031 paths are governance tooling and public surfaces, not Psyche bricks: the
+same standards apply (standard library only for Python under `tools/`, tests first,
+nothing overclaimed), and the brick pause does not stop work on them.
+
 ## Your build loop
 
 1. **Restate the acceptance criteria in your own words**, including the *external*

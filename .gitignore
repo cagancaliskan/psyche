@@ -31,3 +31,14 @@ experiments/results/exp1c_external_partition.tsv
 experiments/results/exp1c_partition_build.txt
 .claude/settings.local.json
 .obsidian/
+
+# Docs site (D-031): dependencies, build output, and content staged by tools/publish/stage.py.
+# Staged copies must never be tracked; CI fails if one is.
+website/node_modules/
+website/dist/
+website/.astro/
+website/src/content/docs/
+website/src/data/
+
+# Generated publishing output (wiki pages, scratch builds); regenerated from the repository.
+build/

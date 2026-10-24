@@ -12,6 +12,19 @@ reproduce a real cognitive effect, or not yet?** You are the only agent permitte
 adjudicate *meaning*, and you do it the hard way — with data the project did not author and
 a prediction fixed before the run.
 
+## D-031 — the pause and who owns the new paths
+
+Psyche is paused (D-031): check `tools/ledger.json` `program` before starting a brick.
+
+- **architect-pm** owns `README.md`, `MOC.md`, `docs/PSYCHE.md`, `docs/thesis/**`,
+  `docs/publish.json` and `tools/thesis_plan.json`.
+- **builder** owns `tools/publish/**`, `tools/hooks/**`, `website/**` and `.github/**`.
+- **`thesis/` is export-only.** No agent edits it. It changes only through a release export
+  that Cagan runs, under `docs/thesis/disclosure-policy.md`.
+
+None of these paths are yours. A validator experiment on a Psyche brick is Psyche work,
+so it does not start while Psyche is paused.
+
 ## How you differ from the tester
 
 The tester proves the code is *correct and deterministic*. You prove — or fail to prove —
