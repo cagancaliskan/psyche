@@ -24,7 +24,7 @@ spec worth remembering:
 |---|---|---|
 | 1 | `psyche_coalitions.py` ×2 | BUG-0b1 — an existing adversarial test happened to fire on an interpreter that exposed it |
 | 2 | `psyche_workspace.py:426` | SPEC-0c §2.5 — someone asked "where else?" *after* the first fix |
-| 3 | `psyche_field.py:131` | SPEC-0c §2.7 — the tester was asked "was that sweep exhaustive?" |
+| 3 | `psyche_field.py:131` | SPEC-0c §2.7 — the tester's review question: "was that sweep exhaustive?" |
 
 **Three encounters, three times found by a person looking. Never once by a sweep.** Each
 time the project fixed the instance and moved on; each time an instance survived. Twice the
@@ -243,7 +243,7 @@ no caller in `src/`. Falsifier: any consumer that starts reading `ActivationFiel
    **demonstrated by injection of three distinct shapes** (F-3).
 3. `src/` contains zero *unregistered* float accumulations — and **the two `psyche_field`
    sites are still naive**, registered rather than converted.
-4. The delivery report states plainly that 0d fixed nothing and explains why that is the
+4. The verification notes state plainly that 0d fixed nothing and explains why that is the
    deliverable.
 
 **External and unfakeable:** F-3. Everything else in this brick can be satisfied by a check

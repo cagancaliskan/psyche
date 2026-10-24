@@ -11,7 +11,7 @@ Format:
 
 ```
 ## D-NNN · YYYY-MM-DD · <one-line title>
-**Decided by:** Cagan | architect-pm | tester | validator
+**Decided by:** Cagan (project lead) | architect-pm | tester | validator
 **Supersedes:** D-NNN or —
 **Context:** why this came up
 **Options:** what was on the table, with the tradeoff that mattered
@@ -179,9 +179,9 @@ decision entry rather than silence. The upside is that the determinism claim in 
 strengthens from "across randomized hash seeds" to "across randomized hash seeds and five
 CPython minor versions", which is the axis BUG-0b1 proved was load-bearing.
 
-## D-011 · 2026-07-25 · The 0b2 tester verdict is FAIL; three defects recorded, and two follow-on calls are OPEN for Cagan
-**Decided by:** tester (the verdict) · architect-pm (the record) · **the two follow-on calls below
-are NOT decided and belong to Cagan**
+## D-011 · 2026-07-25 · The 0b2 tester verdict is FAIL; three defects recorded, and two follow-on calls are OPEN for the project lead
+**Decided by:** tester (the verdict) · architect-pm (the record) · the two follow-on calls below
+are not decided here; they are the project lead's
 **Supersedes:** — (amends the "Tier 1 is not affected" sentence in BUG-0b1 §5, retracted in place)
 **Context:** the tester wrote an independent adversarial suite against SPEC-0b2 §6 and adjudicated
 the nine invariants. This entry records the verdict as fact, and separates cleanly what was decided
@@ -240,7 +240,7 @@ means" is determinism across process runs; DEFECT-A falsifies it at library defa
 - **architect-pm recommendation: (C), with (B) as the interim wording until the fix lands.** The fix
   is small and its shape is already established by BUG-0b1 (`math.fsum`, exactly rounded, therefore
   order-independent), and a foundation defect fixed is worth more than a foundation defect
-  documented. But it is a Phase 0 change with a real re-validation cost, so it is not an agent's
+  documented. But it is a Phase 0 change with a real re-validation cost, so it is not a lane's
   call.
 
 **OPEN CALL 2 — how is DEFECT-B fixed, given it is 0b2's own?**
@@ -350,12 +350,12 @@ Reported honestly, that is a far better paper than one in which everything passe
 
 ### Call 3 — routing outside both lanes
 
-- **`docs/paper/paper.tex` and `docs/paper/ieee/paper_ieee.tex`: HELD. The paper must not be
+- **The paper draft, in both its versions: HELD. The paper must not be
   submitted.** Its Tier-1 determinism claim is presently false. Fixing the counts is clerical and
   can happen at any time; the substantive revisions — the determinism claim, its scope, and the
   two methodological findings above — are a paper brick with its own gate. `ledger_check` C2 stays
   red on the paper until that lands, and that red is correct signal, not noise: it says the paper
-  is stale and must not ship. **Do not enable the pre-commit hook until the paper brick lands.**
+  is stale and must not ship. **Do not make C2 a commit requirement until the paper brick lands.**
 - **`docs/report/nous_report.tex`: QUARANTINED, permanently.** It is the source of the artifact
   published under DOI 10.5281/zenodo.20474613 on 2026-05-31. Its 130/56/5 figures are correct for
   what was published, and a published record is immutable by definition. It is never "corrected";
@@ -483,7 +483,7 @@ an instance of it remained on the same path. Corrected in `docs/BUG-0b1-*.md` §
 correction block) and §9 (a new postscript that also explains, for the first time, why the bug was
 invisible on 3.12 — the Neumaier change). The diagnosis, mechanism and applied fix were all correct;
 what was false was the **claim of completeness**. **Whether `0b1` keeps `PROVEN` given that is an
-OPEN CALL for Cagan** — the ledger note records the contest and nothing is re-labelled here.
+OPEN CALL for the project lead** — the ledger note records the contest and nothing is re-labelled here.
 
 **(b) SPEC-0c §1's falsifier did not cover this, and that is a spec defect, not just a code defect.**
 The original reproduction exercises only the activation accumulator, so the brick whose entire
@@ -522,8 +522,8 @@ path, so 1b, 1d-i and 1d-ii re-verification — already required by §2.4 — no
 look.
 
 ## D-015 · 2026-07-26 · The 0c tester verdict is FAIL on O-12; three findings recorded, two calls open
-**Decided by:** tester (the verdict) · architect-pm (the record) · **the two calls below are NOT
-decided and belong to Cagan**
+**Decided by:** tester (the verdict) · architect-pm (the record) · the two calls below are not
+decided here; they are the project lead's
 **Context:** the tester adversarially verified brick 0c against SPEC-0c §6 (O-1 … O-17, incl. O-4b),
 re-based the N-1 oracle, and re-adjudicated the 0b2 suite. This entry records the verdict as fact
 and separates cleanly what was decided from what is open.
@@ -583,8 +583,8 @@ Outside N-1's parameter sweep, which is why nothing saw it.
 
 **State of the tree.** Nothing is committed — correctly, since the commit sequence was conditioned
 on PASS. `tests/test_tester_0c_adversarial.py` is **not registered in `run_tests.py`**, so its 123
-assertions are outside the canonical capture; registering it is harness work and the tester was
-blocked from it by hook. The tester's `capture_run`/`ledger_sync` run has been **reverted by
+assertions are outside the canonical capture; registering it is harness work and `run_tests.py`
+is outside the tester's lane. The tester's `capture_run`/`ledger_sync` run has been **reverted by
 architect-pm**: it rewrote the ledger to 21 suites / 1,545 assertions from a run that *omitted the
 new suite*, and a ledger recording an incomplete capture is precisely the staleness the ledger
 exists to prevent. `tools/ledger.json` and `docs/TEST_OUTPUT.txt` are back at their committed
@@ -677,10 +677,11 @@ every `test_*.py` on disk must be registered in `run_tests.py` or listed in the 
 Verified against this repo: it flags `test_tester_0c_adversarial.py`. The four deliberately
 excluded data-dependent suites are now recorded with their reasons rather than assumed.
 
-**The hook-block was correct and the workflow was incomplete.** Keeping `run_tests.py` out of
+**The lane rule was correct and the workflow was incomplete.** Keeping `run_tests.py` out of
 the tester's hands stops a tester inflating the canonical count with its own suite — that
 safeguard stays. What was missing is an explicit registration step, in another lane, after a
-tester pass. That belongs in `psyche-brick` phase 5.
+tester pass. That belongs in the last step of a brick, where the architect-pm folds the result into
+the roadmap and the ledger.
 
 ### The labels
 
@@ -691,7 +692,7 @@ before, and not on the strength of 17 of 18.
 
 ## D-016 · 2026-07-26 · The 0c tester verdict is PASS; Phase 0 is eligible for re-labelling
 **Decided by:** tester (the verdict) · architect-pm (the record and the prose reconciliation)
-**The label restoration below is NOT decided and belongs to Cagan.**
+The label restoration below is not decided here; it is the project lead's.
 
 **The verdict (recorded, not decided). PASS.** All eighteen enumerated properties — O-1 … O-17
 including O-4b — hold under adversarial and loop-closed conditions. O-12, the single failure of the
@@ -707,7 +708,7 @@ not sign.
 3.10.17 / 3.11.15 / 3.12.4 / 3.13.14 / 3.14.4. Verified independently by architect-pm on 3.10.
 §1 case 1 (`0d7ceee443f9b93f`) and case 2 (`3e71cc2431921040`) are unmoved.
 
-**Three things the tester added that were not asked for, and each is worth keeping.**
+**Three additions the tester made beyond the spec, and each is worth keeping.**
 (i) The backstop guard's presence is now **machine-checked by AST** — a raising `If` on
 `math.isfinite(transmitted)` inside `spread_activation` — so SPEC-0c §4's "must not be removed as
 dead code" is *enforced* rather than requested. (ii) A **loop-closed third route** into the guard
@@ -718,39 +719,39 @@ the same shape but is *structurally single-term* — over 574 spreads on 60 host
 read twice per spread — so the field-merge finding must not be read as wider than it is.
 
 **Prose reconciliation (architect-pm).** The totals moved 21/1,455 → 22/1,727, which staled 39
-figures outside `docs/paper/`. All are reconciled: `README.md`, `docs/REPORT.md` (its per-suite
+figures outside the paper draft. All are reconciled: `README.md`, `docs/REPORT.md` (its per-suite
 table rebuilt from the ledger rather than patched), `docs/psyche_roadmap.md`, `docs/outreach/*`.
 **`ledger_check` C1/C3/C4/C5 are green and C2 now reports 16 findings, every one of them in
-`docs/paper/*.tex`** — the HELD paper (D-012), where red is correct signal.
+the paper draft** — HELD (D-012), where red is correct signal.
 
 **SPEC-0b2 §6 was deliberately NOT rewritten.** Its "83 assertions" is the figure at the FAIL pass;
 the suite now reports 104 after its 0c re-adjudication. The number is preserved under an explicit
 `ledger:allow-count` pragma with its reason, and a supersession note records what changed. **A
 verification record edited after the fact to reflect a later state is not a record.**
 
-**A process conflict the tester surfaced rather than resolved, and it was right to.** CONTRIBUTING.md
-requires `ledger_check` to exit 0 before any commit; the close-out sequence handed to it required
-reporting the C2 staleness without fixing it, since prose is architect-pm's lane. So commit
-`1b5780a` was made at exit 1. That is now resolved by this reconciliation, and the sequencing gap
-is real: **a tester close-out that moves the totals cannot satisfy the pre-commit gate on its own.**
-Either the gate tolerates C2-only findings during a lane hand-off, or the reconciliation must
-precede the commit. Recorded for Cagan; not resolved here.
+**A process conflict the tester surfaced rather than resolved, and that was right.**
+CONTRIBUTING.md requires `ledger_check` to exit 0 before any commit; the tester's close-out steps
+required reporting the C2 staleness without fixing it, since prose is architect-pm's lane. So
+commit `975f3c0` was made at exit 1. That is now resolved by this reconciliation, and the sequencing
+gap is real: **a tester close-out that moves the totals cannot satisfy the pre-commit gate on its
+own.** Either the gate tolerates C2-only findings during a lane hand-off, or the reconciliation must
+precede the commit. Recorded for the project lead; not resolved here.
 
-**OPEN CALL — restore Phase 0's labels?** All three conditions Cagan set are now met: O-12 closed in
+**OPEN CALL — restore Phase 0's labels?** All three conditions the project lead set are now met: O-12 closed in
 code, the 0c suite registered in `run_tests.py` (C5 green), and a complete five-interpreter capture
 taken. On the tester's evidence `0a` and `0b` are **ELIGIBLE** to return to `PROVEN`: ordering
 asserted against `creation_seq` through mutation batteries, purity and integrity intact, one bit
 pattern across fresh processes on both reproduction cases, order-perturbation invariance, and
 cross-interpreter bit-identity. **`0c`'s own status is also stale at `DESIGNED`** — it is built and
-tester-verified. Neither is changed here. Restoring a label on an agent's initiative is the
+tester-verified. Neither is changed here. Restoring a label on a lane's own initiative is the
 circularity this project exists to avoid, and the three prior status changes in this log were all
-Cagan's.
+the project lead's.
 
 **Also open, all minor, all recorded rather than actioned:** whether `0b1` keeps `PROVEN` given its
 completeness claim was false (D-014); whether `decay_per_hop` should be finiteness-validated as a
 third boundary (SPEC-0c §4, low urgency — the guard catches it loudly, and silence was the failure
-mode that mattered); and a stray untracked `_c5.tar.gz` at the repository root, which is not an
-agent's to delete.
+mode that mattered); and a stray untracked `_c5.tar.gz` at the repository root, which is not a
+lane's to delete.
 
 ## D-016 · 2026-07-25 · Phase 0 returns to PROVEN; floor joins the validated boundaries; the tester stops running capture_run
 **Decided by:** Cagan
@@ -817,7 +818,7 @@ blurs who committed what.
 **The actual fix is that the tester should never have been running those tools.**
 `capture_run` writes the ledger, and the ledger is a claim-bearing artifact — moving the
 canonical count is not the tester's to do, for exactly the reason `run_tests.py` is
-hook-blocked from it. Remove capture and sync from the tester's close-out; they belong to
+outside its lane. Remove capture and sync from the tester's close-out; they belong to
 architect-pm. Then the totals do not move at the tester's commit, C2 stays green, and the gate
 passes without being weakened.
 
@@ -870,7 +871,7 @@ refusals.
 tested on a **frozen** clock, and the numbers say why: on the library-default live clock, two
 *identical* `sigma=None` calls differ (`0.2433743747480014` vs `0.24337436243963237`), and over 60
 identical calls the spread is ≈ 2e-9 relative — about 1e9 ULP — from lazy decay between calls.
-**DEFECT-B's entire effect is inside that spread.** Cagan hit this and nearly filed a defect against
+**DEFECT-B's entire effect is inside that spread.** It nearly led to a defect being filed against
 a working engine. The suite now **asserts** the noise floor, so the reason every bit-exact test
 freezes the clock lives in the tests rather than in a deletable comment. *Establish the noise floor
 before believing the signal* generalises well past this brick.
@@ -883,7 +884,7 @@ located by sampling is the last sample, not the boundary.** Corrected in §6.9 a
 not taper" is now scoped to **equal-strength** fans, since unequal fans taper genuinely.
 
 **What stays open for 0b2, and the two floor questions are NOT one question.** The §5 default-flip
-decision (Cagan's). **D-008** — the floor's **SCALE-INVARIANCE** — open, and it is what **blocks the
+decision (the project lead's). **D-008** — the floor's **SCALE-INVARIANCE** — open, and it is what **blocks the
 flip**. Brick **0c-ii** — the floor's **FINITENESS** — registered, blocks nothing. They touch the
 same constant and are otherwise unrelated: validating `floor` for finiteness leaves it as absolute
 as it was, and making it relative leaves it as non-finite-able as it was. Stated in SPEC-0b2 §5,
@@ -925,16 +926,16 @@ C: episodic trace outside the store, eligibility computed from timestamps, credi
 through the existing `strengthen()`. Zero Tier-1 re-validation. Full tag/capture held as 2f-ii.
 
 The honest counter in the spec is that if the biological claim is the point, C is scaffolding
-that will be replaced. **The biological claim cannot be the point.** CONTRIBUTING.md rule 1: biological
-*inspiration* may be described; biological *fidelity* may not be asserted. Paying Tier-1
-re-validation now to buy fidelity buys a claim this project is constitutionally barred from
+that will be replaced. **The biological claim cannot be the point.** CONTRIBUTING.md rule 1:
+biological *inspiration* may be described; biological *fidelity* may not be asserted. Paying
+Tier-1 re-validation now to buy fidelity buys a claim this project is constitutionally barred from
 making. 2f's deliverable is a mechanism — temporal credit assignment — and C delivers it.
 
 Second ground, which makes C idiomatic rather than expedient: **computing from timestamps
 instead of storing is the substrate's own existing move.** `psyche_store` already does exactly
 this with lazy decay. C is consistent with the design philosophy, not a shortcut away from it.
 
-And the instinct behind it is correct and worth recording: *Phase 0 was restored four commits
+The reason is worth recording: *Phase 0 was restored four commits
 ago by four bricks of repair; I am not spending it on a timestamp.*
 
 **2f-ii stays registered, and its trigger is named:** it is paid for when a *behavioural* need
@@ -947,7 +948,7 @@ Leave-and-document is nearly right — removing it is a Tier-1 change to freshly
 for a cosmetic gain. But there is measured harm, not hypothetical: **that vestigial field
 already caused a documentation error today.** I framed this entire brick around a shipped
 integer ladder because `traversal_count` exists and looks exactly like Module 01's ladder. It
-misled the person commissioning the work, one turn ago.
+misled me when I commissioned the work.
 
 So: leave it, document at the declaration that it is written-never-read and is **not** the
 plasticity signal, and add an **asserted-negative that it remains unread in `src/`**. If anyone
@@ -955,7 +956,7 @@ starts reading it, the test goes red and forces a decision. That converts "docum
 "enforce it", which is this project's idiom, at the cost of one comment and one test with no
 Tier-1 change.
 
-### §4.3 — P_PRP is a caller-supplied scalar. And the justification correction is the best thing in the report.
+### §4.3 — P_PRP is a caller-supplied scalar. And the justification correction is the best thing in SPEC-2f.
 
 Adopted, on three grounds: it does not block 2f on NEUROMODULATION, which is unbuilt; a
 caller-supplied scalar can be **held fixed**, which is required to separate 2f's effect from
@@ -1002,16 +1003,16 @@ in tester files?*
 
 ### Order
 
-**0d lands before 2f.** As the report puts it: a gate installed after the traffic has passed is
+**0d lands before 2f.** As SPEC-0d puts it: a gate installed after the traffic has passed is
 a fifth manual hunt wearing a detector's name. 2f is the first brick built after the detector
 exists, which makes it the test of whether 0d does its only job.
 
-## D-021 · 2026-07-26 · 0d tester verdict is FAIL on F-6 — and the false claim was mine
+## D-021 · 2026-07-26 · 0d tester verdict is FAIL on F-6 — and the false claim was in the spec
 **Decided by:** tester (the verdict) · architect-pm (the record and the corrections)
 **Amends:** SPEC-0d §3.3, which asserted something false as the brick's headline argument
 
 **The verdict (recorded, not decided). FAIL on F-6.** Seven of eight invariants hold. The
-detector itself is sound: F-3 verified with the tester's own injections plus mine (three spec
+detector itself is sound: F-3 verified with the tester's own injections plus the architect-pm's (three spec
 shapes, nine more of the tester's, a brand-new module, a stale registry entry, exit 1 with
 injections and 0 clean), F-4 clean with a structural rather than name-based integer exemption,
 and F-1 demonstrated **loop-closed on the project's own git history** — `src/` extracted at three
@@ -1019,7 +1020,7 @@ pre-fix commits shows **all three manual hunts would have been caught on the day
 written**. That is the strongest single piece of evidence 0d could have produced, and nobody
 writing the scanner chose what is in those commits.
 
-**DEFECT 0d-1, and it is mine.** The registry entry for `psyche_field.py:124` read *"shape present,
+**DEFECT 0d-1, a spec defect.** The registry entry for `psyche_field.py:124` read *"shape present,
 symptom unreproduced"*, and **SPEC-0d §3.3 presented that pair as "the entire case for a
 detector."** The tester ran the entry's own falsifier and it fires: 2 distinct bit patterns over
 4! source orders, on 40 of 40 randomly generated convergent stores. Verified independently
@@ -1039,13 +1040,13 @@ shape, have the symptom, and still clear a probe a competent person designed to 
 Reproduction cannot be the gate. Only enumeration can. §3.3 is corrected in place, showing the
 wrong text and the right one, because a spec quietly amended teaches nothing.
 
-**FINDING 0d-3, also mine to fix.** `Clock.advance._t`'s reason claimed *"no term SET that could
+**FINDING 0d-3, also a spec correction.** `Clock.advance._t`'s reason claimed *"no term SET that could
 be permuted."* False, and it was the half a reader relies on — permuting a dt multiset moves `_t`
 (2.402012593713817 vs 2.4020125937138173, first multiset tried). The mechanical half is true
 (one `AugAssign` per call; **no caller of `advance()` in `src/` at all**). Corrected to the real
 and weaker argument: time order is *semantically* fixed. Both entries now carry falsifiers.
 
-**Both corrected reasons rest on bounds I verified rather than inherited.** `ActivationField.flow`
+**Both corrected reasons rest on bounds that were verified, not inherited.** `ActivationField.flow`
 has **no reader in `src/`**: `form_coalitions_from_field` reads only `field_.total`,
 `field_.broke_through` and `field_.dominant`; the `.flow` read inside `form_coalitions` is
 `ActivationResult.flow` from a single spread, and `form_coalitions` has **no caller in `src/`**.
@@ -1067,17 +1068,17 @@ C6 verifies a reason **exists**, is ≥24 characters, and that the verdict match
 cannot verify a reason is **true**. The builder's F-6 tests were the mechanical floor plus one
 substring match, and **structurally could not have caught 0d-1**. "C6 green + suite green" said
 nothing about whether the registry was true — which is precisely what failed. The division of
-labour is correct; the lesson is that a registry's *reasons* need a human adversary every time,
+labour is correct; the lesson is that a registry's *reasons* need an adversarial reading by hand every time,
 not once.
 
 **Not closed out.** No capture taken — the verdict is FAIL. `tests/test_tester_0d_adversarial.py`
 (270 assertions) is registered in `run_tests.py`; C5 and C6 are green; C2 holds at 16, all in the
-held paper. **The tester must re-verify F-6 against the corrected reasons — architect-pm cannot
-certify its own correction.**
+held paper. **The tester must re-verify F-6 against the corrected reasons — a correction is never
+certified by the role that made it.**
 
 **Still open and unanswered:** whether `tools/test_ledger.py` (the gate's own 139 assertions)
 joins the canonical count, extends C5 to scan `tools/`, or stays out. It changes what the
-headline figure means, so it is Cagan's.
+headline figure means, so it is the project lead's.
 
 ## D-022 · 2026-07-26 · 0d PASSES and the FOUNDATION ARC CLOSES; three standing rules recorded
 **Decided by:** tester (the verdict) · Cagan (the dispositions and the stop) · architect-pm (the record)
@@ -1135,15 +1136,15 @@ treating a negative observation as evidence of absence. Operational form: **a cl
 shown capable of failing before its silence counts as evidence.** In `docs/METHODOLOGY.md` beside
 the other two, and marked for the paper.
 
-**2. ON A FAIL, COMMIT THE EVIDENCE AND THE CORRECTIONS; NEVER THE STATUS.** Cagan's original
-instruction said commit nothing on a FAIL, and records here that it was wrong: leaving 1,335 lines
+**2. ON A FAIL, COMMIT THE EVIDENCE AND THE CORRECTIONS; NEVER THE STATUS.** The original
+rule said commit nothing on a FAIL; it was wrong, and this entry records that: leaving 1,335 lines
 of adversarial tests uncommitted would have discarded the pass's entire product to protect a label
 that was not going to change anyway. The status is what a FAIL withholds. The evidence is what a
 FAIL produces.
 
 **3. C6 VERIFIES THAT A REASON EXISTS, NEVER THAT IT IS TRUE — AND THIS GAP DOES NOT CLOSE.** It
 checks presence, a length floor, and that the verdict matches the AST. Truth is out of machine
-reach. **A registry's reasons therefore require a human adversary on EVERY pass, not once**, and
+reach. **A registry's reasons therefore need an adversarial reading by hand on EVERY pass, not once**, and
 each pass must *run* the falsifiers rather than read them. This is a standing obligation on every
 future tester pass that touches the registry, not a note about one brick. The evidence that it binds:
 the builder's own F-6 tests were the mechanical floor plus one substring match, and could not
@@ -1265,7 +1266,7 @@ It is now tracked.
 
 **C4 quarantine: GRANTED, on SUBJECT MATTER, with the reason recorded in the ledger.** This is the
 one document whose subject *is* the claim and whose entire content is the argument for why the
-project must never make it — the same class as `PAPER_CLAIM_INVENTORY.md`.
+project must never make it — the same class as the claims list kept with the held paper draft (D-012).
 
 **It was explicitly NOT granted on the strength of C4 currently passing on the file.** That silence
 is uninformative, for a reason discovered in Item 2: C4 matches by literal substring and is weaker
@@ -1283,15 +1284,15 @@ this project treats as how a gate rots. **The distinction is the point: C4's qua
 property of the SUBJECT; C2's would have been a property of a RUN.**
 
 **Scoping preserved exactly, not upgraded.** The assessment is verified against **arXiv:2308.08708
-Table 1 ONLY**. The published TiCS version could not be reached at verification time, and the
+Table 1 ONLY**. The published TiCS version was not available at verification time, and the
 document carries its own falsifier — *a copy of the published version showing an added, removed or
 reworded indicator*. It must **not** be described as "verified" until someone reads the published
 version.
 
 **STANDING RULE: the 0/14 figure is cited BY REFERENCE to that file and nowhere else — ever.** Not
-in the ledger, the roadmap, the paper, or conversation. The ledger's `2e` note, which asserted two
-days ago that the figure was "recorded nowhere", is corrected in place rather than left as a stale
-claim of my own making.
+in the ledger, the roadmap or the paper. The ledger's `2e` note, which asserted two
+days ago that the figure was "recorded nowhere", is corrected in place rather than left standing as a
+stale claim.
 
 **A finding raised in passing, and not silently fixed:** `claim_quarantine_paths` had **eight
 entries and no reasons field**, while `count_quarantine_paths` has had one all along — so the
@@ -1321,10 +1322,10 @@ breaks the match.
 
 **The evading forms are precisely the sentences someone writes when overclaiming** — an unhedged
 assertion attracts an intensifier, and "clearly", "undeniably", "in every sense" are what
-enthusiasm sounds like. C4 guards CONTRIBUTING.md **rule 1**, the rule this project's entire credibility
-rests on, so **every "C4 passes" in the record has covered less than it appeared to.** That is not
-a reason to distrust the existing record — no forbidden claim has been found by any other means
-either — but it is a reason the record's *strength* was overstated.
+enthusiasm sounds like. C4 guards CONTRIBUTING.md **rule 1**, the rule this project's entire
+credibility rests on, so **every "C4 passes" in the record has covered less than it appeared to.**
+That is not a reason to distrust the existing record — no forbidden claim has been found by any
+other means either — but it is a reason the record's *strength* was overstated.
 
 Registered as **`0f`, DESIGNED, scheduled BEFORE the paper capture alongside `0e`.** Not fixed now:
 it is not 2f's problem and must not delay 2f. The fix is a brick rather than an edit because the
@@ -1373,7 +1374,7 @@ narrows silently every time the code grows past it.
 
 **Date:** 2026-07-26 · **Lane:** architect-pm · **Status:** decided
 
-Tester PASS on SPEC-2f step zero (`9c26356`), builder fix at `044008c`. Close-out.
+Tester PASS on SPEC-2f step zero (`e9e3016`), builder fix at `5bce7a8`. Close-out.
 
 ### 1. The capture omitted the primary evidence for the brick it was quoted beside
 
@@ -1390,14 +1391,14 @@ failures.** Completeness was then verified by an explicit name-by-name diff of
 zero missing, zero extra, order identical.
 
 **Three stale totals were in circulation and none survived.** 1,973 (the old capture), 1,992
-(my own figure, given to the builder in a brief, wrong because I had not verified it), and
+(the architect-pm's figure, written into the builder's spec note before it was verified), and
 2,281 (a correct measurement of a since-changed tree). The canonical number is read from the
-runner output and is **2,307**. *Do not inherit a number from a brief, including from mine.*
+runner output and is **2,307**. *Do not inherit a number from a spec note, including the architect-pm's own.*
 
-**I am choosing an instruction over a mechanism here, and the reasoning is on the record.**
-Three times this cycle I refused a written note in favour of a machine check, because in each
+**A written rule is chosen over a mechanism here, and the reasoning is on the record.**
+Three times this cycle a written note was refused in favour of a machine check, because in each
 case the trigger was future code someone else would write. Here the trigger is the next
-action and the brief is its instruction. The mechanical form — `capture_run.py` refusing on a
+capture, and a written rule for that step reaches it directly. The mechanical form — `capture_run.py` refusing on a
 runner/capture suite mismatch, as it already refuses on interpreter disagreement — is
 registered as **CC-12** and is **not built**.
 
@@ -1428,8 +1429,8 @@ constraint cited as current is the same failure class as a stale count.
 
 **An assertion must be shown capable of failing against the code it was written against.**
 
-The tester audited every assertion it had written for this brick against the pre-fix tool and
-found **2 of 12 passed on both sides** — one I flagged, one it found itself, and neither was
+The tester's audit ran every assertion written for this brick against the pre-fix tool and
+found **2 of 12 passed on both sides** — one flagged in review, one found by the tester's own audit, and neither was
 *wrong*, which is what makes them dangerous. A passing assertion reads as verification.
 
 This is the operational form of the third aphorism and it is stronger, because the tester made
@@ -1443,8 +1444,8 @@ mode is real.
 
 Into `CONTRIBUTING.md`'s repo conventions: inspect an old revision with `git show <rev>:<path>` or a
 temporary worktree. A stash is **repo-wide**, so one taken inside a lane reverts every other
-lane's uncommitted work. During this brick a stash at `044008c` swallowed 315 lines of
-`WORKING-NOTES.md` and nothing noticed; damage was bounded to that file and recovered,
+lane's uncommitted work. During this brick a stash at `5bce7a8` swallowed 315 lines of an
+uncommitted working file and nothing noticed; damage was bounded to that file and recovered,
 verified by diffing every path in the stash against `HEAD` and disk. On the same task the
 builder used `git show` and the tester used stash — **lane discipline that a routine git
 command can cross is not lane discipline.** The rule is about the command's blast radius, not
@@ -1479,7 +1480,7 @@ eligibility trace exists, and 2f still satisfies zero of SPEC-2e's five autonomy
 
 **Date:** 2026-07-27 · **Lane:** architect-pm · **Status:** decided
 
-Builder `1065c43` / `7886167` / `6411ef7`, tester PASS `19d3286`. Both lanes signed off.
+Builder `0cfba58` / `ca59468` / `2cfca65`, tester PASS `3f13bd7`. Both lanes signed off.
 
 ### 1. The status, on two axes, deliberately not collapsed
 
@@ -1531,18 +1532,18 @@ and that would waste the entire foundation arc that produced it.
 
 ### 3. A generalisation I proposed was refused, and the refusal was right
 
-I put it to the tester that three defects shared one root — C4's interpolation blindness
+I proposed that three defects shared one root — C4's interpolation blindness
 (0f), the text scan that cannot tell a mechanism from its negation, and the wrapped-string
 vacuity — all being "text matching that was never normalised."
 
-**The tester checked and reported back that this is only partly true, and the difference
+**The tester checked and found that this is only partly true, and the difference
 matters.** All three *are* substring matching on structured text, but they need **three
 different fixes**: tokenisation, parsing, and whitespace normalisation. Merging them would
 have produced a named class that looks closed when one third of it is — and a class that
 reads as closed is worse than three open defects, because nobody re-opens it.
 
-**The refusal is recorded, not just the outcome.** A direction from the person setting
-direction, overturned by evidence from the lane whose job is to check it, is the separation
+**The refusal is recorded, not just the outcome.** A direction from the project lead,
+overturned by evidence from the tester, whose job is to check it, is the separation
 of duties doing exactly what it exists for. It should be visible in the record that this
 happened, and how often. This is the second time.
 
@@ -1576,18 +1577,18 @@ conversion landed, so that registering added no aborting suite.
 
 ## D-028 — SPEC-2g is written; a stale status is corrected; nothing checks status against reality
 
-**Date:** 2026-07-27 · **Lane:** architect-pm · **Status:** spec written, **one decision open and it is Cagan's**
+**Date:** 2026-07-27 · **Lane:** architect-pm · **Status:** spec written, **one decision open, for the project lead**
 
 ### 1. Two ledger corrections, and the shape they share
 
-**`0e` read `DESIGNED` for two passes after it was fixed** at `d8debc2` and tester-verified
-at `c23c591`. Corrected to **`PROVEN`**, on 0d's precedent: it is a tool, so the meaning axis
+**`0e` read `DESIGNED` for two passes after it was fixed** at `f8bb547` and tester-verified
+at `a1d0844`. Corrected to **`PROVEN`**, on 0d's precedent: it is a tool, so the meaning axis
 is vacuous and `BUILT-UNVALIDATED` would imply a validation that can never arrive. Its
 functional claim is verified the only way a refusal can be — a deliberately-raising fixture
 suite must be **named**.
 
-**Four newly registered bricks carried `name: null`** because I wrote a `title` key the
-schema does not use, and nothing objected. My error, from the previous pass.
+**Four newly registered bricks carried `name: null`** because the previous ledger update wrote a `title` key the
+schema does not use, and no check objected.
 
 **THE SHAPE IS FAMILIAR AND IT IS C1'S.** `C3` verifies that a status label is a legal token
 and that documents agree with the ledger. **It never asks whether the ledger's status agrees
@@ -1595,20 +1596,20 @@ with what the code does.** That is the same one-link-short chain C1 has — *led
 verified, *capture == reality* never — which is exactly how the capture came to omit an
 entire suite while C1 and C5 stayed green. Registered as **CC-12 item 3**.
 
-Both misses were found by a human reading the ledger, and that is the point: **a register
+Both misses were found by reading the ledger by hand, and that is the point: **a register
 nobody can check is a register that decays at the speed of attention.** Fix shape, not
 decided: require each non-`DESIGNED` brick to name the commit and the suite that carry it,
 and fail when the named suite is absent from the capture. *"Is this brick really built"* is
 not checkable; *"does the artifact it names exist"* is.
 
-*(A small confirmation while landing this: C3 flagged my own new sentence in
-PAPER_CLAIM_INVENTORY, because it put a brick id beside a status token. That is the one check
+*(A small confirmation while landing this: C3 flagged a new sentence in
+the held paper draft (D-012), because it put a brick id beside a status token. That is the one check
 in this family working as intended, and the sentence was rephrased rather than pragma'd.)*
 
-### 2. SPEC-2g — three options, and the decision is Cagan's
+### 2. SPEC-2g — three options, and the decision is the project lead's
 
-This needs new arithmetic and at least one uncalibrated constant, so it goes to the human as
-options rather than as a decision I take.
+This needs new arithmetic and at least one uncalibrated constant, so the spec sets it out as
+options; the decision is taken separately (D-029).
 
 | | Mechanism | New constants | Prior art | Re-validation cost |
 |---|---|---|---|---|
@@ -1661,9 +1662,9 @@ reason: ownership sits with the brick that needs the coverage.
 
 ---
 
-## D-029 — 2g is Option C; the competitive mechanism becomes brick 2h; and a framing error of mine is corrected
+## D-029 — 2g is Option C; the competitive mechanism becomes brick 2h; and a framing error in the spec is corrected
 
-**Date:** 2026-07-27 · **Direction:** Cagan · **Lane:** architect-pm · **Status:** decided,
+**Date:** 2026-07-27 · **Decided by:** Cagan · **Lane:** architect-pm · **Status:** decided,
 ready for the builder
 
 ### 1. The decision
@@ -1671,9 +1672,9 @@ ready for the builder
 **Option C now — asymmetric depression with its own rate. The competitive / shared-budget
 mechanism becomes brick 2h, after.** SPEC-2g is re-scoped from three options to one.
 
-### 2. I was asked to check a premise before building on it, and it holds
+### 2. The premise was checked before building on it, and it holds
 
-Cagan's reading, which drove the decision: **B and C are not alternatives.** C is a *local*
+The project lead's reading, which drove the decision: **B and C are not alternatives.** C is a *local*
 rule (per-road, fast); B is a *global* constraint (across siblings, slow); the literature
 treats them as **complementary**.
 
@@ -1687,11 +1688,11 @@ interaction* — its whole subject is what a constraint does to a Hebbian rule's
 (**Carandini & Heeger 2012** concerns response normalisation, not plasticity, so it does not
 bear on this question directly.)
 
-**So presenting them as mutually exclusive was this spec's one framing error, it was mine, and
+**So presenting them as mutually exclusive was this spec's one framing error, and
 sequencing them is coherent.** The correction is written into SPEC-2g §1 rather than quietly
 applied.
 
-**One refinement that I would not have found without checking, and it moves a cost:** they are
+**One refinement that only the check found, and it moves a cost:** they are
 complementary in the sense of **composed**, not **independent**. Miller & MacKay's central
 result is that the *choice* of constraint changes what the local rule **converges to** —
 subtractive normalisation drives winner-take-all, multiplicative gives graded outcomes.
@@ -1699,8 +1700,8 @@ subtractive normalisation drives winner-take-all, multiplicative gives graded ou
 re-run 2g's graded-effect invariants under the new constraint. That cost is recorded in 2h's
 ledger note so it cannot be discovered late.
 
-**Epistemic status, stated rather than assumed.** This is assessed from knowledge of these
-sources, **not from re-reading them at verification time** — the same discipline the Butlin
+**Epistemic status, stated rather than assumed.** This rests on an earlier reading of these
+sources; they were **not re-read at verification time** — the same discipline the Butlin
 figure carries, and for the same reason. SPEC-2g §1.2 names what would confirm it and what
 would falsify it. It is **not load-bearing for 2g**, which is buildable and verifiable either
 way; it governs only the claim that 2h is a later *addition* rather than a *replacement*.
@@ -1748,22 +1749,22 @@ sibling order load-bearing where it was not, and re-opens 0a's integrity legs.
 
 ### 6. A gate bound its own author, and that is worth the line
 
-Landing D-028, **C3 flagged a sentence I had just written** in `PAPER_CLAIM_INVENTORY.md`,
-because it put a brick id beside a status token. I rephrased rather than reaching for a
+Landing D-028, **C3 flagged a sentence just added** to the held paper draft (D-012),
+because it put a brick id beside a status token. It was rephrased rather than given a
 pragma.
 
 **That is a gate working on its author**, which is the case that matters: a gate binds whoever
 is easiest to exempt, or it binds nobody. This project has spent a week learning that the
 author is exactly who a check must still bind — and the same week produced a false claim in a
-spec (D-021), an invented justification in a shipped module (2f-4), and two unverified claims
-in my own briefs. **The instruction to check §2's premise before building on it came from the
+spec (D-021), an unsupported justification in a shipped module (2f-4), and two unverified claims
+in spec notes. **Checking §2's premise before building on it came from the
 same recognition, and it found a real refinement.**
 
 ---
 
 ## D-030 — The project is Psyche everywhere; the name Nous is retired
 
-**Date:** 2026-10-23 · **Direction:** Cagan · **Lane:** none (a mechanical rename across every
+**Date:** 2026-10-23 · **Decided by:** Cagan · **Lane:** none (a mechanical rename across every
 lane, no behaviour changed) · **Status:** done
 
 ### 1. The decision
@@ -1774,7 +1775,7 @@ repository, the code and every file stayed Nous (the CONTRIBUTING.md branding li
 the roadmap `docs/psyche_roadmap.md`, the design notes `docs/design/psyche_*.md`, and the
 repository is `github.com/cagancaliskan/psyche`. The rename is whole-word, so `exogenous`,
 `synchronous` and the like are untouched. The social cards carry the Greek mark ψυχή in place of
-νοῦς, and the etymology line in `psyche_project_evaluation.md` now describes ψυχή.
+νοῦς, and an etymology line in a design note (since removed) described ψυχή.
 
 ### 2. What keeps the old name, on purpose
 
@@ -1806,7 +1807,155 @@ diff of the two outputs, with the names normalised, caught it. After the fix the
 again (2728 comparisons against the pre-change engine, 0 mismatches, as before), and the diff
 shows nothing beyond uuid road ids and the census digest, which hashes module paths.
 
-**Not regenerated here:** the paper PDFs (`PSYCHE_1ST_PAPER.pdf`, `psyche_ieee.pdf`) still print
-the removed "working name" footnote until they are recompiled on Overleaf; no TeX toolchain is on
-this machine. Ten of the twelve Mermaid PNGs mention the old name only in a source comment, so
+**Not regenerated here:** the paper draft's PDFs (held, D-012) still print
+the removed "working name" footnote until they are recompiled; they were not rebuilt in this
+change. Ten of the twelve Mermaid PNGs mention the old name only in a source comment, so
 they keep their original render.
+
+---
+
+## D-031 — Psyche becomes one project in stages: the substrate pauses, spiking cognitive maps become the active line
+
+**Date:** 2026-10-23 (framing settled 2026-10-24) · **Decided by:** Cagan · **Lane:** architect-pm
+(documents, plan file, ledger keys); builder (publishing tools, CI, docs site) ·
+**Status:** decided
+
+### 1. Context
+
+The substrate in `src/` reached a natural boundary. Its lower layers are proven, its higher
+layers are mechanism-verified, and its three attempts at a first cognitive claim each stopped on
+the external yardstick rather than on the mechanism. That lesson led to a new line of work built
+around external yardsticks from the start: a spiking network that learns only through local
+synaptic plasticity, evaluated on classic cognitive-map tests with published protocols, against
+baselines reproduced from their published behaviour, with an analytic estimate of the synaptic
+operations it needs. The substrate's development cannot continue in parallel at the pace the new
+line needs.
+
+### 2. The decision
+
+1. **Psyche is one project that grows in stages.** Stage 1, the substrate, is its foundation.
+   Stage 2, spiking cognitive maps, is the active line. Later stages build toward the project's
+   long-term aim (D-033).
+2. **The substrate is paused; the cognitive-map line is active.** `tools/ledger.json` gains a
+   `program` block that records this (`program.substrate`, `program.cognitive_map`). Program state
+   is a third axis, orthogonal to the build axis (`bricks[*].status`) and the meaning axis
+   (`meaning_bar`): it says what is being worked on, never what is true of a brick. No brick
+   status, meaning verdict or test figure changes because of the pause. Only the project lead changes
+   `program`, and only with a new entry here.
+3. **While the substrate is paused:** no new substrate brick starts and no substrate default
+   changes. The suites, the ledger, `ledger_check` and the determinism sweep stay maintained. The
+   paper stays HELD (D-012).
+4. **The substrate's aim, stated only as an aim and never as a property of the system:** a
+   biologically grounded, non-LLM memory-and-activation substrate that moves information without
+   loss and sets how much activation it spends without producing output its inputs do not
+   support. It is paused, not abandoned and not achieved.
+5. **Public summary, private detail.** This repository shows the cognitive-map line's overview,
+   roadmap, gates, battery overview, claims discipline, engineering standards and visuals.
+   Hypotheses, pre-registered thresholds, the experiment plan, the novelty analysis, the model
+   mechanism, logs, the paper and other working records live in a private companion repository
+   that is not named here. Material moves here only under `docs/research/disclosure-policy.md`:
+   complete, working, older tagged versions, never the current state.
+6. **One source for the research plan.** The public phases, gates, dates and deadlines live only
+   in `tools/research_plan.json`; documents, the wiki and the docs site render from it.
+7. **The spiking model's code** appears under `cogmap/` by export only, with its own pinned
+   dependencies. `src/` stays standard-library only and never imports it. Nothing under
+   `cogmap/` is registered in `run_tests.py`.
+8. **Everything in this repository is English.**
+9. **The commit gate while the paper is held:** `python3 tools/ledger_check.py --only
+   C1,C3,C4,C5,C6` exits 0, and every C2 finding lies in the held paper draft
+   (`python3 tools/publish/ci_c2.py` exits 0). `tools/ledger_check.py` itself is not changed.
+10. **Lanes for the new paths.** architect-pm owns `README.md`, `MOC.md`, `docs/PSYCHE.md`,
+    `docs/research/**`, `docs/publish.json` and `tools/research_plan.json`. builder owns
+    `tools/publish/**`, `website/**` and `.github/**`. Nobody edits `cogmap/` except through
+    a release export that the project lead runs.
+
+### 3. Options considered
+
+- Start the cognitive-map line in an unrelated repository: no restructure cost, but the
+  project's method, record and public presence stop serving the work that matters now, and the
+  line loses its origin.
+- Pause by demoting brick statuses, or by adding PAUSED to `valid_statuses`: conflates schedule
+  with the build axis. A paused proven brick is still proven, and C3 would stop adjudicating
+  paused bricks.
+- A program-level flag plus a one-project restructure, summary public and detail private:
+  chosen.
+
+### 4. Evidence and cost
+
+**Evidence at the pause:** 26 suites, 2645 assertions, 0 failures (capture of 2026-10-23,
+swept on CPython 3.10–3.14 under six hash seeds); `ledger_check` reports only the 16 held-paper
+C2 findings; `tools/test_ledger.py` passes.
+
+**Cost:** `README.md` is rewritten for the whole project and its former body moves to
+`docs/PSYCHE.md` as the substrate's record; the project rules, `MOC.md` and the roles' lane
+lists are edited; a publishing toolchain, a docs site and CI are added. Nothing under
+`src/`, `tests/` or `experiments/` changes, and no capture is re-run.
+
+---
+
+## D-032 — The ledger's 0g and 2g statuses are reconciled with their verified commits
+
+**Date:** 2026-10-23 · **Decided by:** Cagan (approved with the D-031 plan) · **Lane:**
+architect-pm · **Status:** done
+
+The pause would otherwise freeze two stale statuses. Both bricks were still `DESIGNED`
+although their work was built and tester-verified:
+
+- **0g** (dismissals keyed by content, not by line): fixed at `8805fdc`, the tester's own
+  assertion converted at `49218e0`, tester PASS at `12f5986` (instability attacked six ways;
+  the documented duplicate-in-scope limitation now asserted). It is a tool, so it follows the
+  0d/0e precedent exactly: the meaning axis is vacuous, and `PROVEN` means deterministic, pure
+  and functionally verified. **0g → PROVEN.**
+- **2g** (the depression path, SPEC-2g Option C): built at `e8d561b`, tester PASS at `43923b3`.
+  It follows the 2f-i precedent (D-027): the mechanism is tester-verified, the meaning verdict
+  is NOT-YET. Two tester findings stand on the record and neither blocks: 2g-1, the stated
+  "decided by the signature" argument is incomplete (the frozen trace entry is what actually
+  closes it); 2g-2, a strengthen-then-weaken round trip at one rate is not neutral except at
+  weight 0.5 (asserted, not adjudicated). **2g → BUILT-UNVALIDATED.**
+
+C3 was run against the reconciled ledger before this entry and stays clean. Each brick's
+earlier note is kept as written, with the reconciliation prepended.
+
+---
+
+## D-033 — AGI is Psyche's stated long-term aim; rule 1 bans the claim, not the word
+
+**Date:** 2026-10-24 · **Decided by:** Cagan · **Lane:** architect-pm · **Status:** decided
+
+### 1. Context
+
+Rule 1 of the project rules banned the word "AGI" outright, with "a mind", "conscious", "sentient"
+and "a validated cognitive model". The ban was written for the substrate: a
+memory-and-activation substrate (a graph store, spreading activation, a multi-source field,
+source clustering, and a workspace that prunes activated material no perceived input supports
+and broadcasts within a bounded budget). That work never aimed at general intelligence, so any
+use of the word risked overclaiming it. With Psyche reframed as one project in stages (D-031),
+AGI is the project's long-term aim, and leaving it unsaid misstates the project.
+
+### 2. The decision
+
+1. **AGI is named as Psyche's long-term aim:** artificial general intelligence, built from
+   original, brain-inspired components. It may appear in any text, as an aim. `program.aim` in
+   `tools/ledger.json` records it.
+2. **The claim stays forbidden.** No text says that Psyche or any current component is or
+   achieves AGI. C4's terms `is an AGI` and `achieves AGI` stay in `forbidden_claim_terms`
+   unchanged, so the checker still enforces this.
+3. **The rest of rule 1 is unchanged:** never "a mind", "conscious", "sentient" or "a validated
+   cognitive model"; biological inspiration may be described, biological fidelity or cognitive
+   achievement may not be asserted.
+4. **The substrate's own aim (D-031, item 4) is unchanged.** It is a statement about the
+   substrate, not about AGI.
+
+### 3. Options considered
+
+- Keep the word banned and describe the aim as general-purpose, brain-inspired intelligence:
+  safest with expert readers, but it hides the project's actual target.
+- Name the aim in one labelled place only: narrower; not chosen, because the target should be
+  stated plainly wherever it is relevant.
+- Allow the word as an aim everywhere and keep the claim banned: chosen.
+
+### 4. Cost
+
+Rule 1 of the project rules and the documents that restate it are reworded.
+`tools/ledger_check.py` and `forbidden_claim_terms` are unchanged. Documents that say the
+substrate is not AGI stay as written: that is still true.

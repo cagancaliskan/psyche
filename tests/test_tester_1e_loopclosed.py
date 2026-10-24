@@ -7,7 +7,7 @@ system-generated one. Here the instrument is driven by pairs the SELECTOR produc
 hand-placed targets), on a synthetic SWOW-like topology — loop-closure at the mechanism level.
 
 DATA-FREE: the "SWOW-like" graph is a synthetic adversarial fixture (legitimate mechanism
-testing per the task), NOT the real SWOW file (that is the validator's later graded run).
+testing per the spec), NOT the real SWOW file (that is the validator's later graded run).
 
 Properties attacked:
   - S0 integer-boundary: a W_gap = 1 (off-by-one) pair is NEVER admitted (no boundary leak);

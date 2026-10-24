@@ -254,7 +254,7 @@ nothing notices cannot support "the system failed to adapt".
 
 ### AOL-5 — Does generating a goal COST anything? · **ADDED — and it is what makes the other four unfakeable**
 
-**Not Cagan's; added deliberately, and it is load-bearing.**
+**Not the project lead's; added deliberately, and it is load-bearing.**
 
 **The evidence that it is needed is this project's own second wall.** 1e′ (the fan effect)
 died because **nothing in the system was scarce**: `spread_activation` gave every out-road

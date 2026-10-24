@@ -87,13 +87,13 @@ SUITES = [
     # 0c deterministic road ordering — TESTER-authored adversarial verification of SPEC-0c §6
     # (O-1..O-17 incl. O-4b). Data-free synthetic topologies; makes no meaning claim. Registered
     # by architect-pm, NOT by the tester: run_tests.py decides what the canonical count includes,
-    # so registration is a fact-of-record change and the lane hook blocks the tester from it —
+    # so registration is a fact-of-record change that lies outside the tester's lane —
     # correctly. ledger_check C5 fails if a suite on disk is neither registered here nor excused
     # in ledger.unregistered_suites.
     "test_tester_0c_adversarial.py",
     # 2f-i credit assignment + the 0e runner fix — TESTER-authored adversarial verification,
-    # written from scratch. Registered by architect-pm (a fact-of-record change the lane hook
-    # blocks the tester from) AFTER its conversion landed: registering it while it still
+    # written from scratch. Registered by architect-pm (a fact-of-record change outside the
+    # tester's lane) AFTER its conversion landed: registering it while it still
     # aborted would have added a second aborting suite to the canonical run.
     "test_tester_2f_adversarial.py",
     # 2c interoception — TESTER-authored adversarial verification + pilot fairness audit.

@@ -21,9 +21,9 @@ MEANING run (the 1e-selector analogue).
 ║   coalition, a flip, or any result-side signal. It exposes NO grading / flip /  ║
 ║   winner / effect-size function. The graded run — winner-set flips over the     ║
 ║   frozen trace, the direction test, the control, the verdict — is the           ║
-║   VALIDATOR'S separate later step, on the human's go-ahead. It is NOT here.      ║
+║   VALIDATOR'S separate later step, on the project lead's go-ahead. NOT here.     ║
 ║                                                                                ║
-║ WHAT THIS IS NOT (honest framing — CONTRIBUTING.md rules 1-2; EXP-2c §1.1)            ║
+║ WHAT THIS IS NOT (honest framing — CONTRIBUTING.md rules 1-2; EXP-2c §1.1)      ║
 ║   Building these stimuli establishes NO meaning. It does NOT claim the system    ║
 ║   feels, has a body, has emotions, interoception in the human sense, awareness, ║
 ║   or consciousness. "friction" is a derived telemetry signal (wall-vs-CPU       ║
@@ -58,7 +58,7 @@ THE REALISTIC BATTERY vs THE PILOT (EXP-2c §5.1/§5.3 — why this is NOT the p
   built-in property.
 
   *** DO NOT RUN THE CAPTURE-AND-FREEZE HERE. *** Producing the actual frozen trace/battery
-  artifacts + filling the §6.4 slots is gated on the tester's PASS and the human's word
+  artifacts + filling the §6.4 slots is gated on the tester's PASS and the project lead's word
   (EXP-2c §6.5 step 6). The data-free tests (test_exp2c_capture.py) run in run_tests.py; the
   live capture RUN stays OUT, exactly like the pilot.
 
@@ -481,8 +481,8 @@ def main() -> int:
     §6.4 slots. Computes NO flip-rate, NO winner, NO effect size — grading is deferred.
 
     *** This produces the frozen artifacts. Per EXP-2c §6.5 it is run ONLY in the gated freeze
-    step (after the tester's PASS and on the human's word), NEVER as part of grading and NEVER
-    by the test suite. ***
+    step (after the tester's PASS and on the project lead's word), NEVER as part of grading
+    and NEVER by the test suite. ***
     """
     battery_only = os.environ.get("BATTERY_ONLY", "") == "1"
 
@@ -491,7 +491,7 @@ def main() -> int:
     print("=" * 78)
     print("  This builds the FROZEN stimuli only (the 1e-selector analogue). It computes NO")
     print("  flip-rate, NO winner, NO effect size. The graded MEANING run is the validator's")
-    print("  separate later step, on the human's go-ahead. (EXP-2c §0 / §6.)")
+    print("  separate later step, on the project lead's go-ahead. (EXP-2c §0 / §6.)")
     print("=" * 78)
 
     # -- the deterministic battery (always; no live read) --

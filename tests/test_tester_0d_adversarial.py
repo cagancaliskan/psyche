@@ -308,16 +308,16 @@ def test_F1_LOOPCLOSED_the_detector_reports_the_three_hunts_on_the_trees_they_li
     # is in these commits, so a hit here cannot be a fixture agreeing with itself.
     # Keys name the files as they were in each commit, before the Psyche rename.
     cases = [
-        ("5d29071", "initial commit",
+        ("c172d0f", "initial commit",
          {"src/nous_activation.py:spread_activation.activation",     # DEFECT-A
           "src/nous_coalitions.py:form_coalitions.strength",         # BUG-0b1 site 1
           "src/nous_coalitions.py:form_coalitions_from_field.strength",  # BUG-0b1 site 2
           "src/nous_field.py:build_activation_field.total",          # SPEC-0c §2.7
           "src/nous_store.py:Road.valence.<return>"}),               # SPEC-0c §2.5 site 3
-        ("d51b1e5", "the parent of fix(0b1)",
+        ("53039ed", "the parent of fix(0b1)",
          {"src/nous_coalitions.py:form_coalitions.strength",
           "src/nous_coalitions.py:form_coalitions_from_field.strength"}),
-        ("e4df7df", "1d-ii, before 0c converted three sums",
+        ("8962ec1", "1d-ii, before 0c converted three sums",
          {"src/nous_workspace.py:select_winner.strength",            # survived a month
           "src/nous_workspace.py:Broadcast.total_strength_after.<return>",
           "src/nous_store.py:Road.valence.<return>"}),
@@ -1586,11 +1586,11 @@ def test_F8_L3_and_L7_interact_and_2f_is_where_it_lands():
 
 
 def _load_prefix_tool():
-    """The tool as it stood at 656c38a — the commit BEFORE 2f-0-1 and 2f-0-2 were fixed.
+    """The tool as it stood at f17d12c — the commit BEFORE 2f-0-1 and 2f-0-2 were fixed.
 
     Loaded under its own module name so it coexists with the current one in this process."""
     d = Path(tempfile.mkdtemp(prefix="prefix-tool-"))
-    src = subprocess.run(["git", "show", "656c38a:tools/ledger_check.py"],
+    src = subprocess.run(["git", "show", "f17d12c:tools/ledger_check.py"],
                          cwd=str(ROOT), capture_output=True, text=True)
     if src.returncode != 0:
         return None, d
@@ -1610,7 +1610,7 @@ def test_the_repointed_assertions_can_actually_fail():
     So the anti-dead-assertion rule stops being a habit and becomes a test: each claim below
     is run against BOTH tools and is required to FAIL on the old one. A claim that survives
     the pre-fix code is reported here rather than counted as verification."""
-    section("2f  every re-pointed assertion FAILS against the pre-fix tool (656c38a)")
+    section("2f  every re-pointed assertion FAILS against the pre-fix tool (f17d12c)")
     OLD, tmp = _load_prefix_tool()
     if OLD is None:
         note("the pre-fix commit is unreachable from this checkout; two-sided proof skipped")
@@ -1657,7 +1657,7 @@ def test_the_repointed_assertions_can_actually_fail():
             except Exception:
                 on_old = False
             check(not on_old and bool(fn(LC)),
-                  f"LIVE — fails on 656c38a, passes now: {label}")
+                  f"LIVE — fails on f17d12c, passes now: {label}")
 
         # The one that was DEAD, kept visible rather than quietly replaced. It is the reason
         # this whole test exists, and the record of it should not be a comment alone.
@@ -1853,7 +1853,7 @@ def main():
             print("   -", m)
     print("=" * 78)
     print("  TESTER VERDICT ON SPEC-2f STEP ZERO — PASS  (2026-07-26, re-verification)")
-    print("  Both findings fixed in 044008c and verified against the PRE-FIX tool,")
+    print("  Both findings fixed in 5bce7a8 and verified against the PRE-FIX tool,")
     print("  not merely against the current one. SPEC-0d §4 continues to hold in full.")
     print("=" * 78)
     print("    F-1  HOLDS       RE-RUN after the builder touched the fold a second time:")
@@ -1883,7 +1883,7 @@ def main():
     print("  2f-0-2 RE-POINTED the old assertion named scan_source and passed on BOTH tools:")
     print("                    it could not perturb its own property. Re-pointed at the")
     print("                    refusal record and the listing, and PROVED live by failing")
-    print("                    against 656c38a. 2 of 12 assertions for this brick were dead;")
+    print("                    against f17d12c. 2 of 12 assertions for this brick were dead;")
     print("                    both are named, neither is deleted.")
     print("=" * 78)
     print("  ROUTED TO ARCHITECT, not fixed here: the census digest and the LISTING digest")

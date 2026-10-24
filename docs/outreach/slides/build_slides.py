@@ -2,19 +2,19 @@
 """
 Build docs/outreach/slides/psyche_slides.pptx (~12 slides) for the Psyche prototype.
 
-Hard rules honored here (same as the report):
+Content rules (same as the report):
   - Numbers are verbatim from docs/TEST_OUTPUT.txt: 130 passed across 56 test
     functions; per-suite 45 / 35 / 19 / 13 / 18.
   - Methodology-first framing. Psyche is an engineering prototype AND a
     testing-methodology case study; never a mind, consciousness, AGI, or a
     validated cognitive model. Cognitive meaningfulness is not claimed.
   - Neuroscience is conceptual inspiration only.
-  - REUSES existing rendered figures in docs/diagrams/rendered/. Invents no new
-    charts and introduces no claim beyond docs/REPORT.md.
+  - Reuses the rendered figures in docs/diagrams/rendered/; every claim is taken
+    from docs/REPORT.md.
 On-slide text is terse; the detail lives in python-pptx speaker notes.
 
-Run with the venv that has python-pptx + Pillow:
-    /tmp/psyche_venv/bin/python build_slides.py
+Requires python-pptx and Pillow (pip install python-pptx pillow).
+Run:  python3 build_slides.py
 """
 import os
 from PIL import Image

@@ -1,0 +1,56 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { Aside } from '@astrojs/starlight/components';
+import BrickBoard from '../components/BrickBoard.astro';
+import ledger from '../data/ledger.public.json';
+import { withBase } from '../lib/url.ts';
+import { formatDay } from '../lib/plan.ts';
+import { stateLabel, type PublicLedger } from '../lib/ledger.ts';
+
+const led = ledger as unknown as PublicLedger;
+const t = led.tests;
+const fmt = new Intl.NumberFormat('en-US');
+const interpreters = led.determinism.interpreters;
+const seeds = led.determinism.hash_seeds;
+const substrate = led.program.substrate;
+const maps = led.program.cognitive_map;
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Substrate status',
+    description: "The substrate, Psyche's stage 1 and its foundation: what is built, what is verified, and what was stopped.",
+  }}
+>
+  <Aside type="note" title={`${stateLabel(substrate.state)} and maintained`}>
+    The substrate is Psyche's stage 1 and its foundation. Its development has been {substrate.state} since
+    {formatDay(substrate.since)} (decision {substrate.decision}), while stage 2, spiking cognitive maps, is
+    {maps.state}. No new work starts on the substrate; its tests and checks stay maintained.
+  </Aside>
+
+  <p>
+    The substrate is a dependency-free Python memory-and-activation substrate. What it shows is that its lower
+    layers are correct and deterministic. It makes no claim that any layer reproduces a cognitive effect: three
+    attempts to grade one were stopped before any graded run, each at a structurally distinct wall: semantic
+    priming was circular, the fan effect found the mechanism absent, and interoception found the signal flat.
+    The finding is scoped to this substrate and these three yardsticks. The recurring obstacle, the external
+    yardstick, is the lesson stage 2 is built around: classic behavioural tests with published protocols, and
+    baselines reproduced against their published behaviour.
+  </p>
+  <p>
+    The captured test run has {t.suites} suites, {fmt.format(t.assertions)} assertions and {t.failures} failures,
+    with identical counts on CPython {interpreters.join(', ')} and determinism probed under {seeds.length} hash seeds.
+    The meaning bar is {String(led.meaning_bar.status).toLowerCase()}.
+  </p>
+
+  <section class="sx-section">
+    <h2>Bricks</h2>
+    <BrickBoard />
+  </section>
+
+  <p>
+    Read more: <a href={withBase('substrate/overview/')}>The substrate</a>,
+    <a href={withBase('substrate/architecture/')}>Architecture</a> and
+    <a href={withBase('substrate/methodology/')}>Methodology</a>.
+  </p>
+</StarlightPage>

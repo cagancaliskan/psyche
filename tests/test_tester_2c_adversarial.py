@@ -11,7 +11,7 @@ It modifies NO production code. It reads src/ and experiments/ through their pub
 only. Where it must prove a NEGATIVE (no live read on the graded surface; no scalar echo; no
 covert battery tuning) it asserts the negative explicitly rather than trusting prose.
 
-The attack surface, mapped to the directive:
+The attack surface, mapped to the spec:
 
   JOB 1 — MECHANISM
     A. DEFAULT-OFF PURITY (the broadcast=False analogue). With body_sensor=None the cycle
@@ -736,7 +736,7 @@ def test_battery_is_not_a_100pct_flip_construction():
     # independent re-derivation disagreed with the pilot's self-report, that itself is a finding.
     check(n_flip == 34 and n_winner == 40,
           f"independent re-derivation reproduces the pilot's 34/40 = 85% over the real frozen "
-          f"range (got {n_flip}/{n_winner}) — the self-reported number is not fabricated")
+          f"range (got {n_flip}/{n_winner}) — the self-reported number is reproduced from the trace")
     # THE RED-FLAG ASSERTIONS:
     #  - not every percept flips (if all flip, the construction is rigged to always flip)
     check(n_flip < n_winner,

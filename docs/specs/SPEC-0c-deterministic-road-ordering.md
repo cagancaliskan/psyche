@@ -196,7 +196,7 @@ property:
 | Float semantics across CPython versions | still `sum()`-shaped at sibling sites, so version-dependent | uniform by construction |
 | Tester's N-1 git oracle | **breaks either way** — see the correction below | **breaks** (values change vs the pre-0b2 engine) |
 
-**The four grounds, in the order Cagan weighted them.**
+**The four grounds, in the order the project lead weighted them.**
 
 1. **DECISIVE — ordering alone leaves our own adversarial suite able to assert the
    pathology, truthfully.** Of the six asserted-negatives, only the cross-process ones flip
@@ -421,7 +421,7 @@ subject.
 
 ### 2.7 FINDING — a fourth order-dependent aggregate, in a module 0c never touched · **OPEN**
 
-The tester was asked whether the §2.5 sweep was exhaustive. **It was not.**
+The tester's review checked whether the §2.5 sweep was exhaustive. **It was not.**
 `src/psyche_field.py:131` and `:124`:
 
 ```python
@@ -543,7 +543,7 @@ unreachable **within the documented parameter domain**.
 > **Whether `decay_per_hop` should itself be validated is a third question** — separate from
 > σ (D-012) and from `energy` (D-015), and deliberately not answered here. It is low
 > urgency precisely because the guard catches it loudly rather than silently, which is the
-> failure mode that mattered. Flagged for Cagan; not decided by an agent.
+> failure mode that mattered. Flagged for the project lead; not decided within a lane.
 
 > **`floor` is the third boundary, and it is brick 0c-ii — but note there are TWO floor
 > questions and they are independent.** 0c-ii is the **finiteness** one: `floor=NaN`
@@ -882,7 +882,7 @@ behind (it did once, during the 0b2 pass). It should write to a temp directory i
    patterns (§5.1).
 3. The six asserted-negatives above have been retired and replaced per §6.1, with the
    replacement asserting the positive property.
-4. The delivery report states which previously-passing properties changed value and why —
+4. The verification notes state which previously-passing properties changed value and why —
    D-012's route back requires Phase 0 to return **stronger**, and "stronger" means the
    probes can now see the failure class that hid here.
 5. `0a` and `0b` return to `PROVEN` **only after** the tester re-verifies them; the builder

@@ -1,377 +1,343 @@
 # Psyche
 
-A **biologically-motivated, dependency-free Python prototype** of a memory-and-activation
-substrate for a cognitive architecture. Psyche implements, with no third-party
-dependencies, a **cognitive cycle that now closes end-to-end**: (1) a graph **substrate
-store** of concept *nodes* and weighted *roads* with synaptic-tagging/consolidation-*inspired*
-dynamics, lazy activity-dependent decay, and "sticky" closure of traumatic edges;
-(2) a deterministic **spreading-activation** engine that records per-edge flow and treats
-closed roads as *leaky-not-inert* (an intrusive-recall-like breakthrough); (3) a multi-source
-activation **field** that assigns each node to the source that activates it most; (4) a
-**source-clustering** pre-stage that groups nearby perceived sources before the field is built;
-and (5) a **workspace** stage that runs one competition among coalitions, prunes the bridged
-unperceived material from the winner, and performs a single **bounded broadcast** back onto
-the substrate that biases the next cycle — closing the loop
-*perceive → activate → cluster → compete → prune → broadcast → next cycle*.
+> An open research project building toward artificial general intelligence (AGI) from original,
+> brain-inspired components. It grows in stages; each stage is built test-first and kept as a
+> citable artifact.
 
-The substrate and activation layers are **proven** correct and deterministic. The
-source-clustering and workspace layers are **mechanism-verified** (independently and
-adversarially tester-verified for determinism, purity, integrity, and stability) but their
-**cognitive meaning is not claimed** — closing the loop is a *mechanism* result, not a
-cognitive one. The first behavioral cognitive claim has been **attempted three times and refused three
-times**, each for a structurally distinct reason, and each before any graded number existed:
-semantic priming was **circular** (the external norm *was* the edge weight), the fan effect
-found the **generating mechanism absent**, and interoception found the **signal flat** on
-realistic work. The meaning bar is still open, and the recurring obstacle is the external
-yardstick rather than the mechanism.
+Psyche is designed and built by its author as one long-running project. AGI is its long-term
+aim, stated as an aim: nothing built so far is general intelligence, and these pages make no such
+claim. The project advances one stage at a time. Stage 1, a dependency-free memory-and-activation
+substrate, is the foundation: it is archived with a DOI and it gave the project its method.
+Stage 2, spiking cognitive maps, is the active line of research. Later stages are not yet
+specified in public.
+
+Documentation site: **<https://cagancaliskan.github.io/psyche/>** · Wiki:
+**<https://github.com/cagancaliskan/psyche/wiki>**
 
 ---
 
-## What this is (and how to read it)
+## The stages
 
-Psyche is **an engineering prototype and a software-testing-methodology case study**. It is
-suitable as a technical-report artifact: a small, self-contained system built
-test-first, where adversarial testing caught a sequence of real structural bugs that the
-write-up ([docs/METHODOLOGY.md](docs/METHODOLOGY.md)) documents in detail.
+```mermaid
+%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%
+flowchart LR
+  s1["Stage 1<br/>The substrate<br/>foundation, paused"]
+  s2["Stage 2<br/>Spiking cognitive maps<br/>active"]
+  s3["Later stages<br/>toward AGI<br/>not yet specified"]
+  s1 --> s2 --> s3
+  classDef paused fill:#5f6b7a,stroke:#414a55,color:#ffffff
+  classDef active fill:#4f7a3f,stroke:#365429,color:#ffffff
+  classDef later fill:#3f6f94,stroke:#2b4f6b,color:#ffffff,stroke-dasharray:5 5
+  class s1 paused
+  class s2 active
+  class s3 later
+```
 
-It is **not** a validated cognitive model, **not** a claim of machine cognition, and **not**
-a "mind," "consciousness," or "AGI." The neuroscience it borrows vocabulary from
-(below) is **conceptual inspiration**, not an implemented or reproduced result. Where the
-system does something unproven, this documentation says so plainly.
+Each stage builds on the one before it:
 
-> Note on the `docs/design/` folder: it contains the project's **original aspirational
-> vision documents**, written *before* this code and using far grander language than the
-> code earns. They describe intent, not what is built. See
-> [docs/design/README.md](docs/design/README.md) for the disclaimer. The honest account of
-> the real system is here, in [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md), and in
-> [docs/METHODOLOGY.md](docs/METHODOLOGY.md).
+1. **Stage 1, the substrate (foundation; development paused since 2026-10-23, D-031).** A
+   dependency-free Python memory-and-activation substrate whose lower layers are proven correct
+   and deterministic. It produced the project's method, and its attempts at a first cognitive
+   claim taught the lesson stage 2 is built around: a claim needs an external yardstick.
+   [Read more below](#stage-1-the-substrate).
+2. **Stage 2, spiking cognitive maps (active since 2026-10-23).** A spiking network that learns
+   only through local synaptic plasticity, evaluated on classic cognitive-map tests with published
+   protocols, against baselines reproduced from their published behaviour.
+   [Read more below](#stage-2-spiking-cognitive-maps).
+3. **Later stages toward AGI.** They build on the same discipline and on the project's own
+   designs. They are not specified publicly yet.
 
----
-
-## Citation
-
-This work is archived on **Zenodo** with a permanent DOI:
-**<https://doi.org/10.5281/zenodo.20474613>**
-
-If you use or reference Psyche, please cite:
-
-> Caliskan, C. (2026). *Nous: Adversarial Testing of a Dependency-Free Memory-and-Activation
-> Substrate for Cognitive Architectures.* Zenodo. https://doi.org/10.5281/zenodo.20474613
-
-The **report is open access under CC BY 4.0**; the **code is MIT-licensed** (see
-[LICENSE](LICENSE)). A machine-readable [`CITATION.cff`](CITATION.cff) is provided at the
-repository root.
+The decisions behind this structure are D-031 and D-033 in [DECISIONS.md](DECISIONS.md).
 
 ---
 
-## Scope: three assurance tiers (kept strictly distinct)
+## Stage 2: spiking cognitive maps
 
-Not everything in the repository carries the same assurance, and the project's first discipline
-is to never let one tier borrow the credibility of another. Three tiers are in play, from
-strongest to weakest.
+> **Cognitive Map Formation and Energy Efficiency in Spiking Neural Networks with Local
+> Plasticity**
 
-### Tier 1 — `PROVEN` (substrate + activation)
+### The line in one minute
 
-The substrate store and the spreading-activation engine are verified for three properties:
+Classic animal experiments, from Tolman's mazes onward, describe behaviour such as learning a
+maze without reward, taking a detour and finding a shortcut. Tolman argued that an internal map
+of the environment explains such behaviour better than memorised stimulus-response associations
+do. This line of research asks three questions:
 
-- **Determinism:** identical results across process runs, including under randomized hash
-  seeds (`PYTHONHASHSEED`) checked in fresh subprocesses. This matters because the natural
-  implementations leak set-iteration order (over uuid4 keys) into results.
-- **Integrity:** the graph's indices, adjacency, dedup, and designations stay mutually
-  consistent across every mutation; a full-graph scan finds no drift.
-- **Purity:** reads never mutate stored state. Lazy time-decay is computed as a read-only
-  *view*; only writes persist it. (This is load-bearing: a read that silently re-opened a
-  "closed" traumatic edge would corrupt state over time. A test asserts it cannot.)
+- Does a brain-inspired network of spiking neurons that learns only through local synaptic
+  plasticity show, on classic cognitive-map tests, the behaviours that an internal map explains
+  and memorised responses do not?
+- Do other families of agents, given the same experience, show them too?
+- What does the behaviour cost, as an analytic estimate of synaptic operations?
 
-These are claims about **mechanism**: the code does exactly and only what it says, reproducibly.
+Every agent, the spiking model and the baseline agents alike, receives the same pre-generated
+exploration of the same environments and is scored by the same test battery, built from classic
+paradigms: latent learning, detour, shortcut, structural transfer and transitive inference. Each
+agent is reported on three axes: behaviour on the battery, the structure of its internal
+representations, and the estimated synaptic operations.
 
-> **Open defect, stated here rather than in a footnote (2026-07-25).** The determinism bullet above
-> is **contested for the activation engine**. An independent adversarial pass found that convergent
-> accumulation is a naive sequential float add whose term order comes from iterating a set of uuid4
-> ids, so on graphs where **three or more** contributions reach the same node, fresh processes
-> disagree in the last place: at library defaults, 48 processes produced two results differing by
-> 1 ULP. It holds bit-exactly at in-degree ≤ 2, the substrate store is not affected, and the
-> project's existing probes could not have seen it because they compare `round(x, 9)`. It is the
-> same bug class as the one described under "Determinism is scoped to the interpreters it was swept
-> on" below, one layer upstream, and it is **not yet fixed**. Full record:
-> [docs/BUG-0b1-coalition-strength-determinism.md](docs/BUG-0b1-coalition-strength-determinism.md)
-> §8. Whether Tier 1 keeps the `PROVEN` label while it stands is an open decision in
-> [DECISIONS.md](DECISIONS.md) (D-011), not something quietly resolved in a README.
+The plan does not rest on its riskiest part. The environments, the battery and the comparisons
+form a safe base that stands on its own; if the spiking model falls short, a documented account
+of where and why is kept as a result.
 
-### Tier 2 — tester-verified mechanism (the closed cognitive cycle)
+What it does not claim: nothing about cognition beyond the measurable class of behaviour the
+battery tests, nothing about how animals solve the task, and no priority. Energy enters only as
+an analytic estimate, never as a hardware reading. There are no results yet; these pages describe
+a plan, and they state questions, not answers.
 
-Coalition formation, the multi-source field, **source-clustering**, and the **workspace**
-(competition + pruning + bounded broadcast) make the cycle close end-to-end. They are
-independently and adversarially **tester-verified** for the same hard properties as Tier 1 —
-determinism across processes, purity, integrity — plus the stability properties the feedback
-write requires (the broadcast does not diverge and does not lock in; see below). This is a
-**mechanism** result only: the loop runs, deterministically, and does exactly what it says.
+The full overview, with the research questions and the evaluation pipeline, is in
+[docs/research/README.md](docs/research/README.md).
 
-What changed since the earlier draft of this README:
+### Status
 
-- **The cycle now closes.** The old "strongest coalition = the thought" placeholder is **gone**.
-  A real workspace competition selects one winner, prunes the bridged unperceived material from
-  it, and a single **bounded broadcast** writes the winner's reinforcement back onto the
-  substrate to bias the next cycle.
-- **The old over-swallow known limitation is resolved at the mechanism level.** Source-clustering
-  groups nearby perceived sources before the field is built, and the workspace prunes the
-  bridged unperceived domain from the winner. A **residual corner case** remains and is shipped
-  as an explicit asserted-negative (see "Known limitation" below).
+<!-- generated:status-line:start -->
+**Now:** P0 Novelty review and setup (2026-10-23 to 2026-11-15) · **Next gate:** A Novelty, 2026-11-15
+<!-- generated:status-line:end -->
 
-**Crucially, Tier 2 makes no cognitive claim.** Closing an information loop with bounded
-feedback is an internal substrate property, **not** priming, awareness, or understanding. The
-status of these layers is therefore `BUILT · UNVALIDATED`: mechanism-verified, meaning not yet
-earned.
+The status line, the roadmap chart and the gate table in this section are generated from
+[`tools/research_plan.json`](tools/research_plan.json), the only source of the line's dates. No
+date is typed by hand.
 
-### Tier 3 — disciplined-exploratory (experiment scaffolding)
+### Roadmap
 
-A separate body of pre-registered experiment scaffolding (a SWOW association-norm loader, a
-fan-effect characterization, and a graded semantic-priming harness) lives under `experiments/`
-and is genuinely depended upon by the structural check below. It is honest and
-pre-registered, but it is a **distinct, lower** tier: it is **not** `PROVEN` and it has **not**
-had a validator pass. It is an *instrument*; its existence does not establish a cognitive
-result. (The instruments' **mechanism** suites — `test_harness.py`, `test_priming_instrument.py`,
-`test_priming_1e.py` — were since brought into the canonical runner and are tester-verified, per
-SPEC-1e §10. The data-dependent **experiment-result** scripts stay out: they need the ~53 MB
-SWOW file and make meaning claims.)
+The work runs in phases, from a novelty review to a paper and a public release. Most phases close
+at a decision gate.
 
-One structural check has already been run on this scaffolding and is reported as the honest
-negative it is: the source-clustering grouping was compared against an **independent standard
-partition** of the SWOW graph (a different clustering-algorithm family). It beat the
-no-clustering control decisively (sign test 170/200 probes, p ≈ 6e-25) but **missed the
-pre-registered absolute bar** (mean ARI 0.228 < 0.30 — it under-merges relative to a coarse
-standard partition). Verdict: **NOT YET**. This is reported as *agreement with an independent
-standard partition*, not ground-truth recovery, and it does not move the source-clustering layer
-out of `BUILT · UNVALIDATED`.
+<!-- generated:plan-gantt:start -->
+```mermaid
+gantt
+    dateFormat YYYY-MM-DD
+    axisFormat %b %Y
+    section #80;0
+    #78;ovelty review and setup :active, ph0, 2026-10-23, 2026-11-15
+    #71;ate A Novelty :milestone, gt0, 2026-11-15, 0d
+    section #80;1
+    #69;nvironments, battery and baselines :ph1, 2026-11-16, 2026-12-31
+    #71;ate B Comparisons :milestone, gt1, 2026-12-31, 0d
+    section #80;2
+    #83;piking model :ph2, 2027-01-01, 2027-02-28
+    #71;ate C Spiking model :milestone, gt2, 2027-02-28, 0d
+    section #80;3
+    #83;caling, ablations and the energy estimate :ph3, 2027-03-01, 2027-04-15
+    section #80;4
+    #80;aper * :ph4, 2027-04-15, 2027-06-15
+    #71;ate D Paper * :milestone, gt3, 2027-06-15, 0d
+    section #80;5
+    #80;ublic release * :ph5, 2027-06-15, 2027-08-15
+```
+<!-- generated:plan-gantt:end -->
 
-### The line that matters
+Items marked \* in the chart have no fixed date yet; they are drawn up to a horizon derived from the plan, not to a date.
 
-**"The mechanism is correct and deterministic" is proven (Tier 1) or tester-verified
-(Tier 2); "the mechanism reproduces a cognitive phenomenon" has not been shown.** The meaning
-bar remains open after three structurally distinct refusals — see "Limitations & future work".
+The phase table, the layers and the paper submission deadline are on the
+[roadmap](docs/research/roadmap.md); each phase's outputs are listed in
+[`tools/research_plan.json`](tools/research_plan.json).
+
+### Decision gates
+
+A gate is a fixed point in the plan where a decision is taken against criteria written in
+advance. The question and the fallback are public; the criteria are written before the work
+they judge and stay private until submission. Public status reads `upcoming` or `decided`,
+without the verdict.
+
+<!-- generated:gates-table:start -->
+| Gate | Title | Date | Status | Question |
+|---|---|---|---|---|
+| A | Novelty | 2026-11-15 | upcoming | Is this line's combination of aims new, or is its difference from the closest published work written down and defensible? |
+| B | Comparisons | 2026-12-31 | upcoming | Do the environments, the battery and the baseline agents run, and do the baselines reproduce the behaviour their papers report? |
+| C | Spiking model | 2027-02-28 | upcoming | Does the spiking model meet its pre-registered behavioural criteria on the battery? |
+| D | Paper | one week before the submission deadline | upcoming | Are all figures, the multi-seed results and the ablations in, and have external readers' comments been worked in? |
+<!-- generated:gates-table:end -->
+
+Each gate is described on [Decision gates](docs/research/gates.md).
+
+### Public and private
+
+- **Public here:** the overview, roadmap, gates, test battery, claims discipline and engineering
+  standards of this line, plus the substrate's full record.
+- **Private until release:** hypotheses beyond the research questions, the criteria, the
+  experiment plan, the model, and the related-work analysis. They are developed privately.
+- **Released later:** the line's code reaches [`cogmap/`](cogmap/README.md) only as older,
+  complete, working versions, under the
+  [disclosure policy](docs/research/disclosure-policy.md).
+
+---
+
+## Stage 1: the substrate
+
+The substrate is a dependency-free Python prototype of a memory-and-activation substrate, and the
+foundation of Psyche. A graph store of concept nodes and weighted roads feeds a deterministic
+spreading-activation engine, a multi-source activation field and a source-clustering stage. A
+workspace then runs one competition, prunes activated material that no perceived input supports,
+and broadcasts back within a bounded budget, which biases the next cycle. The cycle closes end to
+end: perceive, activate, cluster, compete, prune, broadcast.
+
+Its aim, stated only as an aim and never as a property of the system, is a substrate that moves
+information without loss and spends only the activation its inputs support, without producing
+output its inputs do not support.
+
+**What is established.** Its assurance comes in three tiers, kept strictly apart. The store and
+the activation layers are proven correct and deterministic. The closed cycle is tester-verified
+as mechanism. The experiment scaffolding is exploratory. Every registered suite passes with zero
+failures on five CPython minor versions under six hash seeds; the counts live in
+[`tools/ledger.json`](tools/ledger.json), and the captured run is
+[docs/TEST_OUTPUT.txt](docs/TEST_OUTPUT.txt).
+
+**What is not claimed.** No cognitive meaning is claimed for the closed cycle. Three attempts at a
+first cognitive claim were each stopped before any graded number existed, each at a structurally
+distinct wall: semantic priming was circular, the fan effect found the mechanism absent, and
+interoception found the signal flat. The finding is scoped to this substrate and these three
+yardsticks. The recurring obstacle was the external yardstick, not the mechanism, and stage 2 is
+built around that lesson.
+
+The full record is in [docs/PSYCHE.md](docs/PSYCHE.md). The substrate is archived on Zenodo:
+**<https://doi.org/10.5281/zenodo.20474613>** (see [Citation](#citation)). Its development has been
+paused since 2026-10-23 while stage 2 runs; its code, suites, ledger and record stay maintained.
+How the substrate led to stage 2 is told in [docs/research/origins.md](docs/research/origins.md).
+
+---
+
+## How the work is built
+
+The substrate produced a way of working that every stage keeps.
+
+- **One ledger, one checker.** Every count and status that a document quotes lives in one file,
+  [`tools/ledger.json`](tools/ledger.json), and [`tools/ledger_check.py`](tools/ledger_check.py)
+  fails when a document disagrees with it. The research line keeps its public plan the same way,
+  in one file, and every page that shows a phase, gate or date is rendered from it.
+- **Separate lanes.** A builder writes the code; the tester writes hostile tests, separately from
+  the code they attack, and never changes production code; a validator judges meaning against
+  external data. A passing count is a count; the tester's verdict is the verdict.
+- **Adversarial and loop-closed tests.** Tests are written to break a claim, not to confirm it.
+  Loop-closed tests drive each stage with input produced by the stage before it, not with
+  friendly hand-chosen input.
+- **Determinism, scoped to what was swept.** Results are checked bit for bit in fresh processes,
+  across randomised hash seeds and every CPython minor version available, and the claim names
+  exactly what was swept.
+- **Pre-registration.** Predictions and criteria are fixed before the work they judge. A stop
+  caught this way before a graded run is kept as a result.
+- **Decision records.** Every decision that shapes the project is a dated entry in
+  [DECISIONS.md](DECISIONS.md), appended and never rewritten.
+
+The [engineering standards](docs/research/engineering.md) and the
+[methodology](docs/METHODOLOGY.md) give the detail.
+
+---
+
+## Repository map
+
+```mermaid
+%%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%
+flowchart TB
+  subgraph S2["Stage 2"]
+    plan["tools/<br/>research_plan.json"]
+    rdocs["docs/research/<br/>public summary"]
+    pkg["cogmap/<br/>released versions"]
+  end
+  subgraph S1["Stage 1"]
+    suites["tests/<br/>suites"]
+    core["src/<br/>substrate code"]
+    record["docs/PSYCHE.md<br/>and the record"]
+  end
+  subgraph GOV["Governance"]
+    ci[".github/<br/>CI checks"]
+    ledger["tools/ledger.json<br/>and its checker"]
+  end
+  readme["README.md"]
+  site["Docs site<br/>and wiki"]
+  priv["Private detail<br/>held elsewhere"]
+
+  plan --> readme
+  plan --> rdocs
+  rdocs --> site
+  record --> site
+  suites --> core
+  suites --> ledger
+  ci --> ledger
+  ledger --> record
+  ledger --> rdocs
+  priv -.-> pkg
+
+  classDef active fill:#4f7a3f,stroke:#365429,color:#ffffff
+  classDef paused fill:#5f6b7a,stroke:#414a55,color:#ffffff
+  classDef gov fill:#3f6f94,stroke:#2b4f6b,color:#ffffff
+  classDef released fill:#8a5a2b,stroke:#5f3d1c,color:#ffffff
+  classDef priv fill:#6b4f86,stroke:#4a365d,color:#ffffff,stroke-dasharray:5 5
+  class plan,rdocs,readme,site active
+  class pkg released
+  class core,suites,record paused
+  class ledger,ci gov
+  class priv priv
+```
+
+What the arrows mean:
+
+- The research plan renders the status, roadmap and gate blocks in this README and in
+  `docs/research/`.
+- The suites test the substrate code, and their captured run feeds the ledger.
+- The ledger's checker holds the substrate record and the research pages to the ledger; CI runs
+  the checks on every push and pull request.
+- The docs site and the wiki are built from the governed pages.
+- `cogmap/` receives only released versions of the line's code; the dashed arrow is a release
+  under the disclosure policy.
+
+| Path | Purpose | Stage | State |
+|---|---|---|---|
+| `src/` | The substrate's core modules, standard library only | 1 | paused |
+| `tests/` | The substrate's builder suites and adversarial tester suites, kept passing | 1 | maintained |
+| `experiments/` | The substrate's exploratory experiment scaffolding and its captured results | 1 | frozen |
+| `docs/PSYCHE.md` | The substrate's record, formerly this README | 1 | maintained |
+| `docs/` (substrate record) | Architecture, methodology, specs and the archived report; the paper draft is held (D-012) and kept outside this repository | 1 | maintained |
+| `docs/research/` | The public summary of the cognitive-map line | 2 | active |
+| `tools/research_plan.json` | The only source of the line's phases, gates and dates | 2 | active |
+| `cogmap/` | Released versions of the spiking model, filled only by release | 2 | export-only |
+| `tools/` | The ledger and its checker, the capture tools, the publishing tools | both | active |
+| `website/` | The docs site, built from the governed pages | both | active |
+| `.github/` | CI workflows that run the checks | both | active |
 
 ---
 
 ## Running the tests
 
-Pure standard library: nothing to install (Python 3.8+; the current capture is swept across
-CPython 3.10, 3.11, 3.12, 3.13 and 3.14, with 3.14 as the transcript interpreter).
+The substrate's suites run on the Python standard library alone; there is nothing to install.
 
 ```bash
-# all 26 suites, with the correct PYTHONPATH handled for you:
+# every registered suite, with the correct PYTHONPATH handled for you:
 python3 run_tests.py
 
-# or a single suite directly (absolute PYTHONPATH so the determinism subprocess
-# probes resolve their imports regardless of working directory):
-PYTHONPATH="$PWD/src" python3 tests/test_psyche_store.py
+# documents against the ledger; C2 is left out while the paper is held (D-012, D-031):
+python3 tools/ledger_check.py --only C1,C3,C4,C5,C6
 ```
 
-The suites use a tiny built-in harness, **not** pytest: each prints `RESULT: N passed,
-M failed` and exits non-zero on any failure. Do not run them under pytest: pytest would
-collect the `test_*` functions but would not register a logical `check(...)` failure as a
-failed assertion, so it could report green on a real failure. Run them as scripts (or via
-`run_tests.py`).
-
-### Real results
-
-Captured verbatim in [docs/TEST_OUTPUT.txt](docs/TEST_OUTPUT.txt). Every suite passes with
-zero failures. These counts are mirrored in [`tools/ledger.json`](tools/ledger.json), which is
-the single source of truth; `tools/ledger_check.py` fails the build if any document disagrees
-with it.
-
-| Suite | Layer / role | Checks passed |
-|---|---|---:|
-| `test_psyche_store.py` | substrate store | **67** |
-| `test_psyche_activation.py` | spreading activation | **102** |
-| `test_psyche_coalitions.py` | coalition formation | **19** |
-| `test_psyche_field.py` | multi-source field | **13** |
-| `test_psyche_source_clustering.py` | source-clustering (1c) | **49** |
-| `test_psyche_workspace.py` | workspace competition + pruning (1d-i) | **96** |
-| `test_psyche_workspace_broadcast.py` | bounded broadcast + feedback (1d-ii) | **63** |
-| `test_psyche_perceive.py` | perception + closed end-to-end cycle | **19** |
-| `test_psyche_bodysensor.py` | body-state sensor + modulation hook (2c) | **49** |
-| `test_psyche_credit.py` | temporal credit assignment + depression path (2f-i, 2g) | **133** |
-| `test_tester_1c_adversarial.py` | tester: adversarial 1c | **73** |
-| `test_tester_1c_mutation_battery.py` | tester: 1c randomized mutation battery | **5** |
-| `test_tester_1d_i_adversarial.py` | tester: adversarial 1d-i | **107** |
-| `test_tester_1d_ii_adversarial.py` | tester: adversarial 1d-ii | **110** |
-| `test_tester_1e_selector_adversarial.py` | tester: 1e blind selector | **92** |
-| `test_tester_1e_instrument_adversarial.py` | tester: 1e broadcast-Δ instrument | **76** |
-| `test_tester_1e_loopclosed.py` | tester: 1e loop-closure | **58** |
-| `test_tester_0b2_adversarial.py` | tester: adversarial 0b2 normalization overlay | **104** |
-| `test_tester_0d_adversarial.py` | tester: adversarial 0d float-accumulation detector | **342** |
-| `test_tester_0b2_reverify.py` | tester: independent 0b2 re-verification | **246** |
-| `test_tester_0c_adversarial.py` | tester: adversarial 0c road ordering + fsum | **150** |
-| `test_tester_2f_adversarial.py` | tester: adversarial 2f-i, 0e, 0g and 2g | **196** |
-| `test_tester_2c_adversarial.py` | tester: adversarial 2c interoception | **350** |
-| `test_harness.py` | experiment harness mechanism | **17** |
-| `test_priming_instrument.py` | priming instrument mechanism | **42** |
-| `test_priming_1e.py` | blind three-arm selector mechanism | **67** |
-| **Total** | **26 suites** | **2,645 passed, 0 failed** |
-
-That total is **2,645 assertions across 26 suites, 0 failures**, including the builder suites
-above and the **independent tester-authored adversarial suites** (`test_tester_*`), which add
-hostile and loop-closed checks: cross-process determinism in fresh interpreters under
-`PYTHONHASHSEED ∈ {0,1,2,3,7,42}`, randomized mutation batteries interleaved with integrity
-scans, no-divergence / no-lock-in stability of the broadcast write, and the resolved
-over-swallow case now driven through the live cycle (formerly an asserted-negative limitation,
-now a real pass).
-
-**A passing count is not a verdict.** When `test_tester_0b2_adversarial.py` first ran (2026-07-25),
-it had 83 passing checks and the tester's verdict on the brick it examines was **FAIL**: seven of
-nine specified invariants held and two did not. Its three defects were recorded as *asserted
-negatives* — checks that passed because the defect was present and were designed to turn red the
-moment it was fixed, so that a fix had to come back through the same suite. The defects, their
-scope, and which of them the change introduced versus inherited are recorded in
-[docs/specs/SPEC-0b2-conserved-activation.md](docs/specs/SPEC-0b2-conserved-activation.md) §6. All
-three were later closed (DEFECT-A by brick 0c, the other two by follow-up fixes); those checks now
-assert the fix, the suite now has 104, and a second, independent pass, `test_tester_0b2_reverify.py`,
-returned **PASS** on all nine invariants on 2026-07-26 (§9 of the same spec). Read the verdict, not
-the count.
-
-**Determinism is scoped to the interpreters it was swept on.** A cross-process determinism
-failure lived undetected in `Coalition.strength` for a month because the suite was only ever
-run on one CPython minor version: float summation over a uuid4-keyed dict is
-order-dependent, so two identical coalitions differed by one ULP and that resolved the
-competition before the `creation_seq` tie-break could run. It was invisible on 3.12 and
-flipped the winner 10 times in 30 on 3.10, at a *fixed* hash seed. Fixed with `math.fsum`;
-see [docs/BUG-0b1-coalition-strength-determinism.md](docs/BUG-0b1-coalition-strength-determinism.md).
-Captures are now produced by `tools/capture_run.py`, which sweeps every CPython on the
-machine and refuses to capture if they disagree. **The current capture was swept across five
-CPython minor versions — 3.10, 3.11, 3.12, 3.13 and 3.14 — on macOS (Darwin arm64), all
-producing identical per-suite counts and identical verdicts.** The determinism claim is
-therefore scoped to those five versions and to `PYTHONHASHSEED ∈ {0,1,2,3,7,42}`, and
-`tools/ledger.json` records that scope so it cannot silently narrow.
+The suites use a small built-in harness and run as scripts, not under pytest. The package under
+`cogmap/` is separate: it installs with its own pinned dependencies once a version is released,
+and `run_tests.py` never runs it.
 
 ---
 
-## Project size (measured)
+## Documentation
 
-| | Files | Lines (`wc -l`) | Non-blank, non-comment (approx.) |
-|---|---:|---:|---:|
-| Source modules (`src/`) | 8 | — | — |
-| Test suites in the canonical runner (`tests/` + `experiments/`) | 21 | — | — |
-| **Python total** | **29** | — | — |
-
-Line counts are deliberately not tabulated here any more: they were hand-maintained, they
-went stale, and nothing depends on them. Run `wc -l src/*.py tests/*.py` for current figures.
-Assertion counts, which *are* load-bearing, live in [`tools/ledger.json`](tools/ledger.json)
-and are checked against every document by `tools/ledger_check.py`.
+- **Docs site:** <https://cagancaliskan.github.io/psyche/>, built from the pages listed in
+  [`docs/publish.json`](docs/publish.json).
+- **Wiki:** <https://github.com/cagancaliskan/psyche/wiki>, generated from the same pages.
+- **In this repository:** the [research overview](docs/research/README.md), the
+  [substrate record](docs/PSYCHE.md), its [architecture](docs/ARCHITECTURE.md) and
+  [methodology](docs/METHODOLOGY.md), and the [map of content](MOC.md).
 
 ---
 
-## Project structure
+## Citation
 
-```
-psyche/
-├── README.md               ← you are here
-├── LICENSE                 ← MIT
-├── requirements.txt        ← standard library only (no dependencies)
-├── run_tests.py            ← runs all 26 suites with the correct absolute PYTHONPATH
-├── src/                    ← the 8 modules
-│   ├── psyche_store.py               substrate store (Layer 1): graph, IDs, decay, closure
-│   ├── psyche_activation.py          deterministic spreading activation + flow
-│   ├── psyche_field.py               multi-source activation field (basins)
-│   ├── psyche_coalitions.py          coalition formation (flow-cut & by-basin)
-│   ├── psyche_source_clustering.py   source-clustering pre-stage (group nearby sources)
-│   ├── psyche_workspace.py           workspace: competition + pruning + bounded broadcast
-│   ├── psyche_perceive.py            perception + the closed end-to-end cycle
-│   └── psyche_bodysensor.py          body-state sensor + default-off decay modulation (2c)
-├── tests/                  ← the test suites (built-in harness; run as scripts)
-│   ├── test_psyche_*.py              builder suites (one per module)
-│   └── test_tester_*.py            independent tester-authored adversarial suites
-├── experiments/            ← Tier 3 disciplined-exploratory scaffolding (NOT in run_tests.py)
-└── docs/
-    ├── ARCHITECTURE.md         as-built technical reference
-    ├── METHODOLOGY.md          the adversarial-testing development history
-    ├── TEST_OUTPUT.txt         verbatim captured test run (the source of the numbers above)
-    ├── psyche_roadmap.md         the living roadmap (current state, tiers, next step)
-    ├── specs/                  ADRs / specs the architect writes for the builder
-    ├── design/                 the original *aspirational* vision docs (see its README)
-    └── diagrams/               Mermaid (.mmd) diagrams
-```
+The substrate is archived on **Zenodo** with a permanent DOI:
+**<https://doi.org/10.5281/zenodo.20474613>**
 
----
+If you use or reference it, please cite:
 
-## Background (conceptual inspiration, not implementation)
+> Caliskan, C. (2026). *Nous: Adversarial Testing of a Dependency-Free Memory-and-Activation
+> Substrate for Cognitive Architectures.* Zenodo. https://doi.org/10.5281/zenodo.20474613
 
-Psyche **borrows vocabulary and structure** from the following bodies of work. These are
-*inspirations that shaped the design's framing*; Psyche does **not** implement, validate, or
-reproduce any of these theories or their biological results, and makes **no claim of
-biological fidelity**.
-
-- **Complementary Learning Systems** (McClelland, O'Reilly): the fast/slow,
-  experience-then-consolidate split that motivates separating *activation* (what lights up
-  now) from *consolidation* (what later gets reinforced).
-- **Synaptic Tagging and Capture** (Frey, Morris): the framing behind treating
-  reinforcement as a *gated, budgeted* event, which is why spreading activation here is a
-  pure read and never strengthens what it touches.
-- **Global Workspace Theory** (Baars, Dehaene): the source of the *coalitions compete, one
-  is broadcast* vocabulary. Coalition *formation*, a one-winner *competition*, and a single
-  *bounded broadcast* back onto the substrate now all exist as mechanism — but this borrows the
-  *framing* only. No claim of conscious access, ignition, or global availability in the
-  theory's sense is made; the broadcast is an internal, bounded conduction bias, nothing more.
-- **LIDA cognitive cycle:** the *perceive → attend → broadcast* staging the end-to-end cycle
-  is loosely shaped after. The cycle now closes (the broadcast biases the next pass), but the
-  resemblance is structural framing, not an implementation or validation of the LIDA model.
-- **Yerkes–Dodson** (arousal / inverted-U): appears in the design notes as motivation for
-  emotionally-modulated plasticity; in the code this shows up only as charge-modulated
-  strengthening, and is best read as design-level aspiration rather than a realized model.
-
-The honest verb throughout is *"inspired by"* / *"borrows the framing of"*: never
-*"implements"* or *"models"* in any validated sense.
-
----
-
-## Limitations & future work
-
-- **Cognitive meaningfulness above the substrate is unestablished:** The field, clustering, and
-  workspace layers are deterministic, pure, and tester-verified as *mechanism*, but there is no
-  evidence yet that the "thought" they produce is cognitively meaningful. Closing the loop is a
-  mechanism result, not a cognitive one.
-- **The over-swallow known limitation is resolved at the mechanism level — with a residual
-  corner case shipped as an asserted-negative.** Source-clustering groups nearby perceived
-  sources before basins are built, and the workspace prunes the bridged unperceived domain from
-  the winner (the old "incoherent thought on clustered input" is gone, verified through the live
-  cycle). The pruning rule is a **parameter-free cohesion-valley / relative-attachment
-  watershed**, not literal domain-membership: an unnamed domain bridged into the named region *at
-  least as strongly as its own internal cohesion* has no valley and is therefore **kept**, so
-  over-swallow can recur in that specific topology. This divergence is always **safe-direction**
-  (it over-includes an unnamed domain; it never over-prunes a perceived member) and is documented
-  as a standing asserted-negative test rather than hidden.
-- **The "strongest coalition = the thought" placeholder is gone.** It has been replaced by a real
-  workspace competition (one winner, by activation density with a min-size guard), pruning, and a
-  single bounded broadcast that biases the next cycle.
-- **Several constants are uncalibrated guesses on probation:** notably the closed-road
-  breakthrough threshold/leak fraction, the coalition flow-cut fraction, the source-clustering
-  proximity threshold, and the broadcast gain (it inherits `strengthen()`'s default and is **not**
-  tuned to any cognitive outcome). The tests pin the *qualitative* regime, never the magnitudes,
-  and nothing downstream may depend on these numbers.
-- **Perception is exact/substring token matching:** no embeddings, no fuzzy semantics. It is
-  the minimal step that makes activation sources *input-derived* rather than hand-placed.
-- **Backward spread is not implemented:** activation follows directed out-roads only (v1).
-
-**The first behavioral cognitive claim is still open, and three attempts have been refused —
-each before any graded number existed, each for a different structural reason.**
-
-- **Semantic priming (1e) — CIRCULAR.** The substrate encodes SWOW association strength *as*
-  the edge weight, so "related targets activate more" would have been the weight map read back
-  out. The weight-blind leverage stratum the design needed populated at N = 7 against a floor of
-  30, and the fallback margin was arithmetically unreachable. Frozen NO-GO.
-- **Fan effect (1e′) — MECHANISM ABSENT.** The engine gives every out-road the source's full
-  activation, with no division across out-edges and no per-source budget, so the fan response is
-  flat to the last digit. There is no fan-dependent signal to grade. Frozen NO-GO.
-- **Interoception (2c) — SIGNAL FLAT.** The body-state signal is a stall fraction, and a
-  realistic `think()` is CPU-bound, so it sits at ≈ 0 and is scale-invariant. Any gradable band
-  would have to be manufactured, which is forbidden. Recorded NOT-YET; the *mechanism* is
-  tester-verified and is not the defect.
-
-**The pattern is itself the finding**: the substrate and the cycle are real and verified, and the
-recurring hard problem is finding an external yardstick the mechanism can both produce and be
-graded against without circularity. That is the anti-circularity discipline working — three
-unwinnable graded runs caught before any of them produced an uninterpretable "pass" — and it is
-scoped to *this substrate and these three yardsticks*, not offered as a general claim about
-spreading-activation models.
+The archived title uses the project's earlier name (D-030). The **report is open access under
+CC BY 4.0**; the **code is MIT-licensed** (see [LICENSE](LICENSE)). A machine-readable
+[`CITATION.cff`](CITATION.cff) is provided at the repository root.
 
 ---
 

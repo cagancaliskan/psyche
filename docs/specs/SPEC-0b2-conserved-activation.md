@@ -281,7 +281,7 @@ falloff **saturates**: past out-degree ~10 the curve is essentially flat
 capped, and most of it is spent between F = 1 and F = 2. Sharpening it with a smaller `c`
 makes the F = 1 → 2 drop steeper without extending the graded range.
 
-**Three candidate resolutions. This is Cagan's call, and the discipline says the principle
+**Three candidate resolutions. This is the project lead's call, and the discipline says the principle
 comes before the data.**
 
 1. **σ fixed, floor revisited.** Keep σ = 1.0 on its stated principle and treat `floor` —
@@ -322,7 +322,7 @@ absolute activation floor is not scale-invariant, and scale-invariance is a prop
 project already treats as load-bearing everywhere else (1c's relative proximity threshold,
 1d-i's parameter-free watershed). A relative floor is the same argument applied one layer
 down. But this changes the spreading horizon, and the horizon is what 1c and 1d were
-verified against — so it is a real cost and it is the human's to accept.
+verified against — so it is a real cost and it is the project lead's to accept.
 
 ---
 
@@ -580,7 +580,7 @@ report states plainly that no cognitive claim has been earned and that the defau
 > **(b)** DEFECT-C resolved by a stated policy on σ's domain (validate and reject, or define
 > `inf` explicitly as the neutral value), because the current behaviour contradicts §2's own text;
 > **(c)** DEFECT-A adjudicated — it is 0b's, not 0b2's, so it is a *separate brick* and its status
-> call belongs to Cagan (D-011), but 0b2's N-2 cannot pass while it stands;
+> call belongs to the project lead (D-011), but 0b2's N-2 cannot pass while it stands;
 > **(d)** the tester's suite re-run, with the three asserted-negatives flipping red and being
 > rewritten as positive assertions of the restored properties.
 
@@ -613,7 +613,7 @@ characterization on a synthetic star, not a graded behavioral result against hum
    **Amended:** that second pass is not only a cost, it is the *cause* of DEFECT-B (§6.5) — the two
    reads happen at different clock instants. Any fix that reads each road once, or caches the
    decayed view for the expansion, removes both the cost and the defect. That is a design
-   observation, not a decision; the decision is Cagan's (D-011).
+   observation, not a decision; the decision is the project lead's (D-011).
 5. **Conservation is per-source, not global.** A source shares its own budget across its own
    out-roads. There is still no *system-wide* activation budget, so this does not give the
    architecture a global capacity limit and must not be described as one.
@@ -680,7 +680,7 @@ scoped to **equal-strength** fans, since unequal fans taper genuinely.
 
 ### 9.3 What stays open for 0b2 — and the two floor questions are NOT the same question
 
-- **The §5 default-flip decision.** Open. Cagan's.
+- **The §5 default-flip decision.** Open. The project lead's.
 - **D-008 — the floor's SCALE-INVARIANCE.** Open, and it is what **blocks the default flip**.
 - **Brick 0c-ii — the floor's FINITENESS.** Registered, blocks nothing.
 

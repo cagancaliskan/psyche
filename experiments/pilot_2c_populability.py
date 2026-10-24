@@ -9,12 +9,12 @@
 ║   fraction of percepts? The pre-registered floor is 30% (SPEC-2c decision 5).   ║
 ║                                                                                ║
 ║   - >= 30%: GO — report the fraction + trace hash + STOP (the validator's        ║
-║     graded run follows on the human's word).                                    ║
+║     graded run follows on the project lead's word).                             ║
 ║   - <  30%: honest NOT-YET ("couplable in principle, but real telemetry does     ║
 ║     not move selection"). The floor is NOT loosened; the range is NOT widened;   ║
 ║     nothing is redesigned to manufacture a pass.                                ║
 ║                                                                                ║
-║ WHAT THIS IS NOT (honest framing — SPEC-2c §0.1 / §2.1; CONTRIBUTING.md rules 1-2)     ║
+║ WHAT THIS IS NOT (honest framing — SPEC-2c §0.1/§2.1; CONTRIBUTING.md rules 1-2) ║
 ║   This measures a TELEMETRY-GROUNDED MODULATION MECHANISM. It is NOT a claim of  ║
 ║   consciousness, sentience, interoceptive awareness, or "feeling." The friction  ║
 ║   value is a DERIVED SIGNAL from the perf_counter/process_time pair. The claim,  ║
@@ -403,7 +403,7 @@ def main() -> int:
         print(f"\n  VERDICT: GO — {fraction:.1%} >= {POPULABILITY_FLOOR:.0%}. The loop's emergent")
         print("    selection IS moved by real telemetry across its observed range for at least")
         print("    the pre-registered fraction of percepts. STOP HERE: the validator's graded")
-        print("    meaning run follows on the human's word. (This is NOT itself a meaning claim;")
+        print("    meaning run follows on the project lead's word. (This is NOT itself a meaning claim;")
         print("    it clears the populability gate so a meaning run is worth running.)")
     else:
         print(f"\n  VERDICT: NOT-YET — {fraction:.1%} < {POPULABILITY_FLOOR:.0%}. Honest finding:")

@@ -1709,7 +1709,7 @@ def test_O12_ASSERTED_NEGATIVE_the_fsum_reduction_raises_where_the_old_engine_re
     the exception that escapes is stdlib's, not the engine's diagnostic ValueError.
 
     Arguably an improvement — refusing beats poisoning — but it is a NEUTRAL-PATH BEHAVIOUR
-    CHANGE at extreme energy, and SPEC-0c §7 done-means item 4 requires the delivery report
+    CHANGE at extreme energy, and SPEC-0c §7 done-means item 4 requires the verification notes
     to state which previously-passing behaviours changed value and why. This test is that
     statement, in executable form.
     """

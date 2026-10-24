@@ -1,0 +1,52 @@
+{
+  "_README": [
+    "THE PUBLICATION MANIFEST (D-031): the only list of repository documents that may reach a public surface (the docs site and the generated wiki).",
+    "A page is published only if tools/publish/core.py's publishable_guard accepts its src: the file exists, is Markdown, is not under never_publish, is not a file C3 skips by name",
+    "(a path ending in psyche_roadmap.md or DECISIONS.md), sits outside every directory ledger_check skips (SKIP_DIRS and every hidden directory), is in neither claim_quarantine_paths nor count_quarantine_paths of tools/ledger.json,",
+    "carries no ledger ignore-file pragma, is in the tree of the commit being published and does not differ from that commit on disk.",
+    "So only text that ledger_check's C2, C3 and C4 actually govern, as a commit holds it, can be published. Adding a page here never bypasses the guard.",
+    "slug is the site route below site_base; wiki is the generated wiki page name. Relative links to these sources are rewritten to those targets;",
+    "links to any other tracked file become GitHub links pinned to the publishing commit, and a dead relative link fails the build.",
+    "never_publish entries ending in / are directory prefixes; the others are files. Each must be a canonical relative path (no leading / or ./, no backslash), or the manifest is refused.",
+    "Matching is case-insensitive, so it can only refuse more, never less. tools/publish/render_plan.py also renders generated blocks in the pages listed here."
+  ],
+  "site_base": "/psyche/",
+  "repo": "cagancaliskan/psyche",
+  "sections": [
+    {
+      "title": "Cognitive maps (active)",
+      "pages": [
+        {"src": "docs/research/README.md", "slug": "research", "wiki": "Research-Overview"},
+        {"src": "docs/research/origins.md", "slug": "research/origins", "wiki": "Research-Origins"},
+        {"src": "docs/research/roadmap.md", "slug": "research/roadmap", "wiki": "Research-Roadmap"},
+        {"src": "docs/research/gates.md", "slug": "research/gates", "wiki": "Research-Gates"},
+        {"src": "docs/research/test-battery.md", "slug": "research/test-battery", "wiki": "Research-Test-Battery"},
+        {"src": "docs/research/claims-and-scope.md", "slug": "research/claims-and-scope", "wiki": "Research-Claims-and-Scope"},
+        {"src": "docs/research/engineering.md", "slug": "research/engineering", "wiki": "Research-Engineering"},
+        {"src": "docs/research/glossary.md", "slug": "research/glossary", "wiki": "Research-Glossary"},
+        {"src": "docs/research/reading-list.md", "slug": "research/reading-list", "wiki": "Research-Reading-List"},
+        {"src": "docs/research/disclosure-policy.md", "slug": "research/disclosure-policy", "wiki": "Research-Disclosure-Policy"}
+      ]
+    },
+    {
+      "title": "Substrate (foundation)",
+      "pages": [
+        {"src": "docs/PSYCHE.md", "slug": "substrate/overview", "wiki": "Substrate-Overview", "title": "The substrate"},
+        {"src": "docs/ARCHITECTURE.md", "slug": "substrate/architecture", "wiki": "Substrate-Architecture", "title": "Architecture"},
+        {"src": "docs/METHODOLOGY.md", "slug": "substrate/methodology", "wiki": "Substrate-Methodology", "title": "Methodology"}
+      ]
+    }
+  ],
+  "never_publish": [
+    "docs/design/",
+    "docs/paper/",
+    "docs/report/",
+    "docs/specs/",
+    "docs/experiments/",
+    "docs/psyche_roadmap.md",
+    "docs/CONSCIOUSNESS-YARDSTICK.md",
+    "DECISIONS.md",
+    "MOC.md",
+    "docs/outreach/"
+  ]
+}

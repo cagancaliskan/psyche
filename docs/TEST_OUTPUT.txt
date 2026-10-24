@@ -1,7 +1,7 @@
 ======================================================================
   PSYCHE — CAPTURED TEST OUTPUT (verbatim)
 ======================================================================
-Generated : 2026-10-23 12:26:52 +0300
+Generated : 2026-10-24 18:09:23 +0300
 Machine   : Darwin 24.5.0 arm64
 Python    : Python 3.14.4   (primary — this transcript)
 Swept     : python3.10 (3.10.17), python3.11 (3.11.15), python3.12 (3.12.4), python3.13 (3.13.14), python3.14 (3.14.4)
@@ -1032,9 +1032,9 @@ F-1  a second, independent scanner corroborates the shape counts
   NOTE: the sixth naive site (road.charges) is only visible with one-hop alias tracking; the second scanner not seeing it is the expected difference, and it is why the corroboration is a cross-check and not a duplicate
 
 F-1  LOOP-CLOSED: run the census on the project's OWN pre-fix trees
-    5d29071 initial commit                     10 sites, all naive
-    d51b1e5 the parent of fix(0b1)             12 sites, all naive
-    e4df7df 1d-ii, before 0c converted three sums 12 sites, all naive
+    c172d0f initial commit                     10 sites, all naive
+    53039ed the parent of fix(0b1)             12 sites, all naive
+    8962ec1 1d-ii, before 0c converted three sums 12 sites, all naive
 
 F-2  the populated registry leaves zero unregistered candidates
 
@@ -1108,7 +1108,7 @@ F-6  every entry names a real site and carries a non-decorative reason
   NOTE: this is the strongest property a machine can check about a reason. That the bound is STATED is checkable; that it is TRUE is F-6, and is measured below — where one of the five bounds turns out to be false.
 
 F-6  DEFECT 0d-1 — run the merged_flow entry's OWN stated falsifier
-    road 7ff806aa..  terms=4  patterns=['e726f9cbd519d83f', 'e826f9cbd519d83f']  fsum=e726f9cbd519d83f
+    road 78a5eb15..  terms=4  patterns=['e726f9cbd519d83f', 'e826f9cbd519d83f']  fsum=e726f9cbd519d83f
   NOTE: scope of the consequence: ActivationField.flow has NO reader anywhere in src/ today, so the moving bits reach no decision. That is a bound worth writing into the entry — it is not a reason to call the symptom unreproduced.
 
 F-6  entry 1/6 flow — re-measure the model entry's single-term bound
@@ -1139,9 +1139,11 @@ F-8  ASSERTED NEGATIVE: nothing outside src/ is claimed
 
 F-8  the real repository HAS such accumulations outside src/
     ungated  tools/capture_run.py:105  builtin-sum
-    ungated  tools/ledger_check.py:89  aug-add
-    ungated  tools/ledger_check.py:146  aug-add
-    ungated  tools/ledger_check.py:179  builtin-sum
+    ungated  tools/ledger_check.py:106  aug-add
+    ungated  tools/ledger_check.py:163  aug-add
+    ungated  tools/ledger_check.py:196  builtin-sum
+    ungated  tools/ledger_check.py:447  aug-add
+    ungated  tools/ledger_check.py:506  aug-add
   NOTE: this is SPEC-0d's decided scope, not a defect. It is asserted here so 'C6 green' is never read as a whole-repository guarantee.
 
 DETERMINISM  one census, five CPython minor versions x six hash seeds
@@ -1159,7 +1161,7 @@ F-6  FINDING 0d-5 — the absence bound under-reports on dynamic access
 F-8  CONVERTED: L3 is CLOSED, and the compounding with L7 is what remains
   NOTE: SPEC-2f's recorded warning — 'write the trace update on its own line' — is now OBSOLETE as a requirement and should be struck by architect-pm. It is not the tester's file to edit; recorded here so the instruction does not outlive its reason and get cited as a live constraint.
 
-2f  every re-pointed assertion FAILS against the pre-fix tool (656c38a)
+2f  every re-pointed assertion FAILS against the pre-fix tool (f17d12c)
   NOTE: a second dead assertion was found by the same audit and is marked CONVERTED at its site: `a = a, = (a + x,)` reports 1 on both tools, so it never tested the path-exclusivity it claimed to. 2 of 12 for this brick; both now named.
 
 2f  --list-accumulations is a CONSUMED interface, attacked as one
@@ -1182,7 +1184,7 @@ ROBUSTNESS  CONVERTED: the NUL byte no longer diverges by interpreter
   RESULT: 342 passed, 0 failed
 ==============================================================================
   TESTER VERDICT ON SPEC-2f STEP ZERO — PASS  (2026-07-26, re-verification)
-  Both findings fixed in 044008c and verified against the PRE-FIX tool,
+  Both findings fixed in 5bce7a8 and verified against the PRE-FIX tool,
   not merely against the current one. SPEC-0d §4 continues to hold in full.
 ==============================================================================
     F-1  HOLDS       RE-RUN after the builder touched the fold a second time:
@@ -1212,7 +1214,7 @@ ROBUSTNESS  CONVERTED: the NUL byte no longer diverges by interpreter
   2f-0-2 RE-POINTED the old assertion named scan_source and passed on BOTH tools:
                     it could not perturb its own property. Re-pointed at the
                     refusal record and the listing, and PROVED live by failing
-                    against 656c38a. 2 of 12 assertions for this brick were dead;
+                    against f17d12c. 2 of 12 assertions for this brick were dead;
                     both are named, neither is deleted.
 ==============================================================================
   ROUTED TO ARCHITECT, not fixed here: the census digest and the LISTING digest
@@ -1234,14 +1236,14 @@ ROBUSTNESS  CONVERTED: the NUL byte no longer diverges by interpreter
 ==========================================================================
 
 P-0 noise floor: on a LIVE clock, identical sigma=None calls DISAGREE
-  live-clock spread over 60 identical calls: 1.8756877251391302e-07  (7.707e-07 relative, ~6757877232 ULP)
+  live-clock spread over 60 identical calls: 1.7766856991174862e-07  (7.300e-07 relative, ~6401184842 ULP)
   NOTE: N-5 and all byte-identity claims below run on Clock(simulated=True). This is a property of 0a's lazy decay, not of the 0b2 overlay.
 
 N-1a the neutral value is byte-identical to omitting the parameter (exception path included)
   compared 1989; 0 of them exercised the EXCEPTION path
 
 N-1b byte-identity vs the ACTUAL pre-overlay engine recovered from git
-  recovered pre-overlay engine at 5d2907102216
+  recovered pre-overlay engine at c172d0fe9011
   compared 2298, of which 351 at the 2-contribution boundary; 692 skipped as outside the oracle's valid region
 
 N-1i exhaustive: every divergence from the pre-overlay engine is one of four DECIDED 0c changes — none is the overlay's
@@ -1647,7 +1649,7 @@ O-17 the assertion count is a property of the code, not of the environment
   everything closes one third of the class while looking like it closed all.
 
   0d SUITE CONVERTED after four aborted passes: 338 assertions, 0 failures.
-  Census 14/8 -> 15/9, each conversion failing against cce3dc5.
+  Census 14/8 -> 15/9, each conversion failing against 9081da9.
 
   ONE NEW FINDING, 2f-5, not blocking: bound_on_absence DISMISSALS are keyed
   path:line and rot on any edit above them — one comment line fires a false

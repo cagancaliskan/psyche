@@ -1,0 +1,147 @@
+{
+  "_README": [
+    "THE RESEARCH PLAN: the only source for the public phases, gates, dates and deadlines of Psyche's current research line, spiking cognitive maps (D-031).",
+    "README.md, docs/research/, the wiki and the docs site render from it: python3 tools/publish/render_plan.py --write.",
+    "Public granularity only. Criteria, thresholds, experiment ids, venues and funding live in the private companion,",
+    "keyed by these ids. tools/publish/core.py validates this file against a key allowlist, so no other field can exist.",
+    "A date that differs from its baseline_date needs a changelog entry. Status words are lowercase on purpose."
+  ],
+  "schema_version": 1,
+  "as_of": "2026-10-23",
+  "timezone": "Europe/Istanbul",
+  "line": {
+    "title": "Cognitive Map Formation and Energy Efficiency in Spiking Neural Networks with Local Plasticity",
+    "short_name": "SCM"
+  },
+  "vocabulary": {
+    "phase": ["planned", "active", "done"],
+    "gate": ["upcoming", "decided"],
+    "deadline": ["upcoming", "met", "missed"]
+  },
+  "phases": [
+    {
+      "id": "P0",
+      "title": "Novelty review and setup",
+      "start": "2026-10-23",
+      "end": "2026-11-15",
+      "gate": "A",
+      "status": "active",
+      "outputs": ["novelty decision recorded", "development environment"]
+    },
+    {
+      "id": "P1",
+      "title": "Environments, battery and baselines",
+      "start": "2026-11-16",
+      "end": "2026-12-31",
+      "gate": "B",
+      "status": "planned",
+      "outputs": ["three environment families", "the five-test battery", "baseline agents reproduced against their published behaviour", "the safe base complete"]
+    },
+    {
+      "id": "P2",
+      "title": "Spiking model",
+      "start": "2027-01-01",
+      "end": "2027-02-28",
+      "gate": "C",
+      "status": "planned",
+      "outputs": ["a spiking agent that learns with local plasticity, running on the battery"]
+    },
+    {
+      "id": "P3",
+      "title": "Scaling, ablations and the energy estimate",
+      "start": "2027-03-01",
+      "end": "2027-04-15",
+      "gate": null,
+      "status": "planned",
+      "outputs": ["the complete multi-seed result set", "figures generated from code"]
+    },
+    {
+      "id": "P4",
+      "title": "Paper",
+      "start": "2027-04-15",
+      "end": null,
+      "end_rule": "the submission deadline (not yet announced)",
+      "gate": "D",
+      "status": "planned",
+      "outputs": ["a submitted paper", "an anonymous review artifact"]
+    },
+    {
+      "id": "P5",
+      "title": "Public release",
+      "start": null,
+      "start_rule": "after submission",
+      "end": null,
+      "end_rule": "set by the disclosure policy",
+      "gate": null,
+      "status": "planned",
+      "outputs": ["the battery and the energy estimate, released after submission", "the model, released after the review decision"]
+    }
+  ],
+  "gates": [
+    {
+      "id": "A",
+      "title": "Novelty",
+      "baseline_date": "2026-11-15",
+      "date": "2026-11-15",
+      "status": "upcoming",
+      "question": "Is this line's combination of aims new, or is its difference from the closest published work written down and defensible?",
+      "if_missed": "Reposition the contribution and record the decision before work continues."
+    },
+    {
+      "id": "B",
+      "title": "Comparisons",
+      "baseline_date": "2026-12-31",
+      "date": "2026-12-31",
+      "status": "upcoming",
+      "question": "Do the environments, the battery and the baseline agents run, and do the baselines reproduce the behaviour their papers report?",
+      "if_missed": "Extend briefly, then narrow the baseline set to the strongest published reference."
+    },
+    {
+      "id": "C",
+      "title": "Spiking model",
+      "baseline_date": "2027-02-28",
+      "date": "2027-02-28",
+      "status": "upcoming",
+      "question": "Does the spiking model meet its pre-registered behavioural criteria on the battery?",
+      "if_missed": "Shift the submission target; the work proceeds on the safe base and the failure analysis."
+    },
+    {
+      "id": "D",
+      "title": "Paper",
+      "baseline_date": null,
+      "date": null,
+      "date_rule": "one week before the submission deadline",
+      "status": "upcoming",
+      "question": "Are all figures, the multi-seed results and the ablations in, and have external readers' comments been worked in?",
+      "if_missed": "A workshop paper and a preprint; a later main-track venue."
+    }
+  ],
+  "deadlines": [
+    {
+      "id": "paper-submission",
+      "title": "Paper submission to a major peer-reviewed ML venue",
+      "due": null,
+      "estimate": "spring 2027 (unconfirmed)",
+      "status": "upcoming"
+    }
+  ],
+  "layers": [
+    {
+      "id": "L1",
+      "title": "Safe base",
+      "summary": "Environments, the battery, baseline comparisons, analysis and the report. The line stands on this even if the spiking model does not work."
+    },
+    {
+      "id": "L2",
+      "title": "Main goal",
+      "summary": "The spiking model with local plasticity, evaluated on the battery, with an analytic estimate of its synaptic operations."
+    },
+    {
+      "id": "L3",
+      "title": "Failure analysis",
+      "summary": "If the main goal falls short, a documented account of where and why, kept as a result in its own right."
+    }
+  ],
+  "commitments": [],
+  "changelog": []
+}

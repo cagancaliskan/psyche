@@ -1,20 +1,19 @@
-# Phase 2B — Working Notes (internal build log; survives context compaction)
+# Phase 2B — Working Notes
 
-> ALL numbers below are MEASURED (scripts in /tmp during exploration). Earlier drafts of
-> this file contained figures from CANCELLED runs (csv.DictReader crash) — those were
-> fabricated and have been purged. If a number isn't reproduced by a committed script or a
-> captured result file, it does not belong here.
+> Every number below was measured (by exploration scripts that were not committed). Figures in
+> earlier drafts that did not come from a completed run (the csv.DictReader crash cancelled those
+> runs) were removed. A number not reproduced by a committed script or a captured result file
+> does not belong here.
 
-## TASK (verbatim intent)
-Pre-registered GRADED SEMANTIC PRIMING on SWOW English. Work in psyche/experiments/. DO NOT
-modify src/ or tests/. Reuse 2A harness.py (build_graph_from_spec, retrieval_strength,
-run_trials) UNCHANGED; may ADD additive helpers. Disciplines: deterministic by construction
-(Clock simulated), pure reads, adversarial cross-process determinism (PYTHONHASHSEED in
-{0,1,2,3,7,42,123,999}) on FINAL numbers, capture every number verbatim to results/,
-predictions PRINTED BEFORE results, verdicts computed from data, engine NEVER modified,
-null = honest finding. Commit on NEW branch phase-2b-priming:
-"Phase 2B: pre-registered graded semantic priming on SWOW (honest)."
-Start branch: phase-2a-fan-effect (2A=780f96f, clean working tree).
+## Scope
+Phase 2B: a pre-registered graded semantic priming experiment on SWOW English, inside
+psyche/experiments/, with src/ and tests/ left unchanged. Reuse the 2A harness.py functions
+(build_graph_from_spec, retrieval_strength, run_trials) unchanged; additive helpers only.
+Disciplines: deterministic by construction (simulated Clock), pure reads, adversarial
+cross-process determinism (PYTHONHASHSEED in {0,1,2,3,7,42,123,999}) on the final numbers,
+every number captured verbatim to results/, predictions printed before results, verdicts
+computed from data, the engine never modified, and a null result reported as an honest finding.
+Branch: phase-2b-priming, from phase-2a-fan-effect (2A=ff11575, clean working tree).
 
 ## DATA — measured
 - experiments/data/strength.SWOW-EN.R123.20180827.csv (53 MB, UTF-8). NOT committed (license
@@ -89,4 +88,4 @@ Start branch: phase-2a-fan-effect (2A=780f96f, clean working tree).
 ## STATUS LOG
 - Verified schema/size/edge-cases; csv crash -> manual TSV. Measured cue-core (too dense) +
   full graph + unrelated availability. Locked pre-registration (full graph, K=4, mapping,
-  within-prime, defaults). NEXT: write swow.py + smoke test, then harness helper + priming.py.
+  within-prime, defaults). Then: write swow.py + smoke test, then harness helper + priming.py.

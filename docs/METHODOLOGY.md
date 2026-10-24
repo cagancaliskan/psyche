@@ -244,7 +244,7 @@ recharacterization of the original six. Two changes of process are worth recordi
 are themselves methodological:
 
 1. **Verification split across two independent roles.** Each brick was built by a builder and then
-   **independently re-verified by a separate adversarial tester** that writes its *own* hostile and
+   **independently re-verified in a separate adversarial tester role**, with its *own* hostile and
    loop-closed suites (`test_tester_1c_*`, `test_tester_1d_i_*`, `test_tester_1d_ii_*` — not the
    builder's). "Mechanism" is what the tester verifies; a "cognitive claim" would be routed to a
    separate validator against external data. None of the bricks below makes a cognitive claim, so
@@ -275,7 +275,7 @@ are themselves methodological:
   domain-membership. The tester's adjudication (the "C1 adjudication" checks) established
   decisively that the two rules **diverge**: an unnamed multi-node domain bridged into the named
   region *at least as strongly as its own internal cohesion* has no valley and is **kept**, so
-  over-swallow can recur in that topology. This was **accepted as the intended design** (a human
+  over-swallow can recur in that topology. This was **accepted as the intended design** (Cagan's
   decision), because the divergence is always **safe-direction** — it can over-include an unnamed
   domain but can never over-prune a perceived member — and it is documented as a standing
   asserted-negative rather than hidden. This is the methodology's own rule applied to itself: a
@@ -393,7 +393,7 @@ for one reason: **it runs.**
 
 Rule 3 was carried as a habit for three bricks, and a habit does not survive a green suite.
 The failure it was supposed to prevent then occurred in the file whose whole purpose is to
-prevent it. Verifying SPEC-2f step zero, the tester audited every assertion it had written
+prevent it. Verifying SPEC-2f step zero, the tester's audit ran every assertion written
 for the brick against the tool **as it stood before the fix** — and <!-- ledger:allow-count
 reason: "2 of 12" is the audit ratio for ONE brick's assertions (twelve claims examined
 two-sidedly, two found dead), not a suite count and not the captured total. C2 correctly

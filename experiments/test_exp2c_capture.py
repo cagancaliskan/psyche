@@ -293,7 +293,7 @@ def test_bridge_n_spans_the_full_documented_range_not_a_crossover_window():
 
 
 def test_battery_is_structurally_distinct_from_the_pilot_battery():
-    section("B5 §5.3 DISTINCTNESS (the directive): the realistic battery is provably NOT the "
+    section("B5 §5.3 DISTINCTNESS (the scope note): the realistic battery is provably NOT the "
             "pilot battery — different seed, different count, no contested midnode, asymmetric "
             "random domains (vs the pilot's mirror-symmetric near neighbors)")
     realistic = cap.build_realistic_battery(cap.BATTERY_SEED_REALISTIC, cap.PERCEPT_COUNT_REALISTIC)

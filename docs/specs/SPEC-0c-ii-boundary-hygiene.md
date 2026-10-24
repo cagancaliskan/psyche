@@ -121,7 +121,7 @@ delivery claiming otherwise is claiming a brick it did not build.
 
 1. B-1 … B-8 hold, tester-verified, on all five interpreters.
 2. `ledger_check` C6 (0d) passes — any new accumulation registered or `fsum`.
-3. The delivery report states that this closes **boundary hygiene**, not the floor's
+3. The verification notes state that this closes **boundary hygiene**, not the floor's
    semantics, and names D-008 as still open.
 
 **External and unfakeable:** B-3 at `hop_budget=0`. That is the exact call that returns a

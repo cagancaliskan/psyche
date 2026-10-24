@@ -2,7 +2,7 @@
 """ledger_check.py — make documentation staleness a build failure.
 
 This project has shipped four different assertion counts across five documents
-(README.md: 618, docs/outreach/*: 130, PAPER_CLAIM_INVENTORY: 1372, TEST_OUTPUT: 1372),
+(README.md: 618, docs/outreach/*: 130, the paper's claim inventory: 1372, TEST_OUTPUT: 1372),
 and docs/ARCHITECTURE.md still describes a seven-module system that has had eight
 modules for a month. None of that was caught, because nothing checks prose against
 fact. This does.
@@ -60,10 +60,27 @@ from typing import Dict, Iterable, List, Optional, Set, Tuple
 LEDGER_REL = Path("tools/ledger.json")
 CAPTURE_REL = Path("docs/TEST_OUTPUT.txt")
 
+# Directory names never walked. Every hidden directory (a path component starting with ".")
+# is skipped as well, by rule rather than by name: local tool, editor and environment state
+# lives there, never a governed document. ".git" and ".venv" also stay listed by name.
 SKIP_DIRS = {
     ".git", "__pycache__", ".venv", "venv", "node_modules", "dist", "build",
-    ".obsidian",
 }
+
+
+def is_hidden_dir(name: str) -> bool:
+    """A directory component that is hidden: its name starts with "."."""
+    return name.startswith(".")
+
+
+def in_skipped_dir(rel_parts: Iterable[str]) -> bool:
+    """True when a repository-relative path lies under a directory this tool never walks:
+    a component named in SKIP_DIRS, or any hidden directory. Only the directory components
+    are tested for the hidden rule; the last component is the file itself."""
+    parts = list(rel_parts)
+    if any(part in SKIP_DIRS for part in parts):
+        return True
+    return any(is_hidden_dir(part) for part in parts[:-1])
 
 ALLOW_CLAIM = "ledger:allow-claim"
 ALLOW_COUNT = "ledger:allow-count"
@@ -192,10 +209,7 @@ def walk_markdown(root: Path) -> Iterable[Path]:
     canonical total moved twice underneath it."""
     for pattern in ("*.md", "*.tex"):
         for p in sorted(root.rglob(pattern)):
-            rel = p.relative_to(root).as_posix()
-            if any(rel == d or rel.startswith(d.rstrip("/") + "/") for d in SKIP_DIRS):
-                continue
-            if any(part in SKIP_DIRS for part in p.relative_to(root).parts):
+            if in_skipped_dir(p.relative_to(root).parts):
                 continue
             yield p
 
@@ -431,7 +445,7 @@ def check_forbidden_claims(root: Path, ledger: dict) -> List[Finding]:
 
     targets = list(walk_markdown(root))
     targets += [p for p in sorted(root.rglob("*.py"))
-                if not any(part in SKIP_DIRS for part in p.relative_to(root).parts)]
+                if not in_skipped_dir(p.relative_to(root).parts)]
 
     for path in targets:
         rel = path.relative_to(root).as_posix()
@@ -1107,7 +1121,7 @@ def scan_float_refusals(root: Path) -> List[Refusal]:
     if not src.is_dir():
         return out
     for p in sorted(src.rglob("*.py")):
-        if any(part in SKIP_DIRS for part in p.relative_to(root).parts):
+        if in_skipped_dir(p.relative_to(root).parts):
             continue
         rel = p.relative_to(root).as_posix()
         try:
@@ -1128,7 +1142,7 @@ def scan_float_accumulations(root: Path) -> Tuple[List[Accumulation], List[Findi
     if not src.is_dir():
         return sites, problems
     for p in sorted(src.rglob("*.py")):
-        if any(part in SKIP_DIRS for part in p.relative_to(root).parts):
+        if in_skipped_dir(p.relative_to(root).parts):
             continue
         rel = p.relative_to(root).as_posix()
         try:
@@ -1252,7 +1266,7 @@ def _absence_occurrences(root: Path, kind: str, symbol: str) -> List[Tuple[str, 
     if not src.is_dir():
         return hits
     for f in sorted(src.rglob("*.py")):
-        if any(part in SKIP_DIRS for part in f.relative_to(root).parts):
+        if in_skipped_dir(f.relative_to(root).parts):
             continue
         rel = f.relative_to(root).as_posix()
         try:

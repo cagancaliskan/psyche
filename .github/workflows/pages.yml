@@ -1,0 +1,168 @@
+# Docs site (D-031). Builds website/ from the governed documents of ONE commit
+# (tools/publish/stage.py reads every page and data file from HEAD, never from a dirty disk)
+# and deploys it to GitHub Pages under /psyche/. The governance workflow runs first: the site
+# never deploys from a tree that fails it. Pull requests build but never deploy.
+#
+# The private denylist reaches CI only as DISCLOSURE_DENYLIST_B64: one line of base64, so
+# the log masker holds a single string no log line contains (a plain multi-line secret would
+# mask each private term as *** wherever output mentions it, turning the public log into an
+# oracle for the list). It is decoded to a 0600 file by tools/publish/decode_denylist.py in
+# ONE job, `disclosure`, which prints nothing but the scan's own output (paths, line numbers,
+# entry numbers). The build job never receives it.
+name: pages
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs/**"
+      - "website/**"
+      - "tools/**"
+      - "README.md"
+      - "MOC.md"
+      - ".github/workflows/pages.yml"
+      - ".github/workflows/governance.yml"
+  pull_request:
+    paths:
+      - "docs/**"
+      - "website/**"
+      - "tools/**"
+      - ".github/workflows/pages.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  governance:
+    uses: ./.github/workflows/governance.yml
+    with:
+      require-disclosure: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit
+
+  build:
+    needs: governance
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: website/.nvmrc
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install site dependencies
+        working-directory: website
+        run: npm ci
+
+      - name: Unit tests (plan, maze and battery logic)
+        working-directory: website
+        run: npm test
+
+      - name: Stage from this commit, type-check and build
+        working-directory: website
+        run: npm run build
+
+      - name: No staged copy is tracked
+        run: |
+          if [ -n "$(git ls-files -- website/src/content/docs website/src/data)" ]; then
+            echo "a staged copy is tracked; staged content must stay generated" >&2
+            exit 1
+          fi
+
+      # What the disclosure job scans: the HTML of the research and custom pages. Not
+      # included on purpose: dist/substrate/ (the substrate's own pre-existing record, which
+      # uses some denylisted words in the substrate's sense), dist/pagefind/ (the search
+      # index of every page) and dist/_astro/ (library bundles, whose code legitimately
+      # contains common words). The research sources and docs/PSYCHE.md are
+      # disclosure-scanned by the governance workflow; docs/ARCHITECTURE.md and
+      # docs/METHODOLOGY.md are deliberately not, and only the pull request leak check reads
+      # changes to them.
+      - name: Keep the research pages for the disclosure scan
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: research-pages
+          path: |
+            website/dist/index.html
+            website/dist/roadmap/
+            website/dist/battery/
+            website/dist/status/
+            website/dist/research/
+          if-no-files-found: error
+          retention-days: 1
+
+      - name: Upload the site
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: website/dist
+
+  disclosure:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out (tools only)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: tools/publish
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Fetch the built research pages
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: research-pages
+          path: built
+
+      - name: Disclosure scan of the built research pages
+        env:
+          DISCLOSURE_DENYLIST_B64: ${{ secrets.DISCLOSURE_DENYLIST_B64 }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
+        run: |
+          umask 077
+          list="$RUNNER_TEMP/disclosure-denylist.txt"
+          rc=0
+          python3 -B tools/publish/decode_denylist.py "$list" || rc=$?
+          if [ "$rc" = "3" ]; then
+            if [ "$IS_PR" = "true" ]; then
+              echo "::warning title=Disclosure scan skipped::the denylist secret is not available to this pull request"
+              exit 0
+            fi
+            echo "::error title=Disclosure scan cannot run::a deploy is not allowed without the disclosure scan"
+            exit 1
+          fi
+          [ "$rc" = "0" ] || exit "$rc"
+          python3 -B tools/publish/check_disclosure.py --denylist "$list" built
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
+    needs: [build, disclosure]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

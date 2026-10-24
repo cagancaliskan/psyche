@@ -17,7 +17,7 @@ already PASS; nothing here adjudicates mechanism, and **the graded run does not 
 > sets the level; CPU-bound `think()` produces ≈ 0 friction). **Decision 1 (provenance):** §6.1's prior wording
 > ("friction from real contention during real work") was **false** and is **corrected** — the signal is a
 > yield-influenced friction number, **not** a machine-contention measurement. **Decision 2 (band design):** the
-> human required either a revision toward genuine contention-driven variation **or** an honest fallback; the physics
+> project lead required either a revision toward genuine contention-driven variation **or** an honest fallback; the physics
 > (§6.1.1) proves real contention-driven width is **not obtainable on a realistic Nous workload without
 > manufacturing waits** (forbidden), so the resolution is the **HONEST FALLBACK** — *the timing-pair friction
 > signal does not vary meaningfully from real machine contention on this workload* — recorded as an honest
@@ -56,7 +56,7 @@ freeze sequencing:
   realistic-trace capture/range/freeze procedure, the readout, the effect-size threshold, the control, the
   conjunctive verdict, the falsifier, both binding guards, and the anti-circularity audit. It computes **no**
   `think()` runs on the battery, **no** flip-rate, **no** effect size, **no** graded output of any kind. The
-  graded run happens later, on the human's separate go-ahead.
+  graded run happens later, on the project lead's separate go-ahead.
 - The **realistic telemetry trace** and the **realistic-percept battery** are *stimulus construction* — the
   analogue of EXP-1e's blind, seeded, hashed pair-list selection (permitted before the graded number). Capturing
   the trace honestly from real `perf_counter`/`process_time` telemetry, and constructing the battery from a
@@ -143,13 +143,13 @@ strictly increasing in `decay_per_hop`, and the number of hops surviving the `fl
 flagging that SPEC-2c's prose labels `decay_per_hop` the opposite way ("higher decay → more local").** That prose
 label is **wrong about the engine**; the engine's real behavior is *higher decay → more broad.*
 
-### 2.2 The principled direction (prior art — verified, not fabricated)
+### 2.2 The principled direction (prior art — verified against the sources)
 
 What *should* high friction / high system load do to cognition? The established principle is **attentional
 narrowing under arousal**:
 
 - **Easterbrook, J. A. (1959). "The effect of emotion on cue utilization and the organization of behavior,"
-  *Psychological Review* 66(3), 183–201 — the cue-utilization hypothesis.** *Verified (WebSearch, 2026-06-21:
+  *Psychological Review* 66(3), 183–201 — the cue-utilization hypothesis.** *Verified (2026-06-21:
   the paper, author, journal, and the core claim all confirmed across multiple independent sources, incl. the
   Frontiers 2014 "Redefining the Easterbrook hypothesis" review.)* *Establishes (in human cognition, not Nous):*
   as physiological/emotional **arousal increases, the range of cues utilized NARROWS** — attention is
@@ -301,7 +301,7 @@ the realistic friction range is therefore an **honest measure of whether realist
 realistic selection** — which is exactly the meaning question (SPEC-2c §2), **not** the pilot's
 populability-on-contrived-inputs question.
 
-### 5.3 Concrete distinctness from the pilot (documented, per the directive)
+### 5.3 Concrete distinctness from the pilot (documented, per the scope note)
 
 | Property | Pilot battery (`build_battery`, contrived-to-flip) | Realistic battery (this §5, honest) |
 |---|---|---|
@@ -328,7 +328,7 @@ busy-spin-vs-sleep alternation, whose friction spanned `[0.000000 .. 0.999202]` 
 spanning a **representative continuous-workload friction band**, captured honestly from real telemetry.
 
 > **READ §6.1 + §6.1.1 FIRST (2026-06-21).** The realistic-trace design carried the caveat the tester surfaced and
-> the human resolved: the as-written capture's band is **yield-dominated, not contention-tracking** (§6.1,
+> the project lead resolved: the as-written capture's band is **yield-dominated, not contention-tracking** (§6.1,
 > corrected provenance), and a real-contention-driven span is **not obtainable on this workload without
 > manufacturing waits** (§6.1.1, the HONEST FALLBACK). The capture/range/freeze protocol below (§6.2–§6.5) is
 > retained as the *as-designed* procedure and as the precise description of the artifact the as-written capture
@@ -387,7 +387,7 @@ interoception signal as designed on this substrate's workload**, not papered ove
 
 ### 6.1.1 BAND DESIGN DECISION (Decision 2, 2026-06-21): HONEST FALLBACK — real contention-driven variation is NOT achievable on this workload without manufacturing waits
 
-**The decision the human required between (revise toward genuine contention-driven width) and (honest fallback) is
+**The decision the project lead required between (revise toward genuine contention-driven width) and (honest fallback) is
 resolved by the physics of the signal. The decision is: HONEST FALLBACK — the timing-pair friction signal does not
 vary meaningfully from real machine contention on a realistic Nous workload, and that is recorded as the honest
 finding.** The full reasoning, fixed before any graded number:
@@ -422,7 +422,7 @@ deliberately-extreme busy-spin-vs-sleep error in a new costume, and they are **e
 anti-manufacture guard (do **not** widen the band with artificial sleeps/allocations/hand-tuned delays; the
 variation must come from real compute contention, of which this workload has ~none).
 
-**(5) The interpretability consequence (the human's Decision-2 reasoning, adopted).** A narrow, yield-dominated
+**(5) The interpretability consequence (the project lead's Decision-2 reasoning, adopted).** A narrow, yield-dominated
 band makes the test **asymmetrically uninterpretable**: a NOT-YET could not separate *"telemetry does not couple"*
 from *"friction barely varied from contention, so modulation could not be seen even if it existed"*; and an EARNED
 would be the strange claim that *a near-constant, sleep-pinned variable moved selection.* The test needs enough
@@ -528,14 +528,14 @@ BATTERY PARAMETERS (FIXED HERE, NOT reserved): BATTERY_SEED_REALISTIC=20260622 �
 > percept battery and its SHA-256 — is unaffected by the band problem and remains valid stimulus construction; but
 > with no contention-tracking trace to grade against, the freeze as a whole is held.)
 
-### 6.5 EXACT capture/hash/freeze procedure (for the orchestrator if Python/git is sandboxed for the validator)
+### 6.5 EXACT capture/hash/freeze procedure (if the validator cannot run it, another lane runs it verbatim)
 
-Per the directive's SANDBOX NOTE, the exact procedure is specified here so the orchestrator can execute the
-trace capture + hashing + the freeze commit if the validator's Python/Bash/git is denied — still **before any
+The exact procedure is specified here so that, if the validator cannot run it, another lane can execute the
+trace capture + hashing + the freeze commit verbatim — still **before any
 graded number** (the EXP-1e deferred-hash pattern). The capture is **stimulus construction**, not grading.
 
-A capture-only script (`experiments/exp2c_capture.py`, to be written by the builder OR run inline by the
-orchestrator) MUST do exactly the following, and **MUST NOT** call `think()` to grade (no flip-rate / effect size):
+A capture-only script (`experiments/exp2c_capture.py`, to be written by the builder OR run inline by
+another lane) MUST do exactly the following, and **MUST NOT** call `think()` to grade (no flip-rate / effect size):
 
 1. **Capture the realistic telemetry trace (the one-time live boundary step; the only non-determinism):**
    - Build a **small fixed workload substrate** (separate from the graded battery) and a fixed rotation
@@ -569,9 +569,9 @@ orchestrator) MUST do exactly the following, and **MUST NOT** call `think()` to 
    with the §6.4 reserved slots **filled** from the printed values, plus the two committed JSON artifacts and the
    verbatim capture stdout under `experiments/results/`. Commit message must state plainly that **no graded number
    was computed** (e.g. `docs(2c): freeze EXP-2c realistic stimuli (trace+battery hashed) — pre-registration only,
-   no graded number`). If git is blocked for the validator, the orchestrator performs this commit.
+   no graded number`). If the validator cannot make this commit, another lane makes it verbatim.
 
-**STOP after the freeze commit. The graded run is a separate step on the human's go-ahead.**
+**STOP after the freeze commit. The graded run is a separate step on the project lead's go-ahead.**
 
 ---
 
@@ -734,7 +734,7 @@ flips-but-unrepeatable ⇒ VOID.
 
 - **(a) The ground-truth direction is external and frozen pre-method.** The signed direction (higher friction →
   narrower/more-local selection) comes from **Easterbrook (1959)** — external, published prior art on
-  attentional narrowing under arousal — verified to exist (WebSearch, 2026-06-21), **not** authored by the
+  attentional narrowing under arousal — verified to exist (2026-06-21), **not** authored by the
   project. The direction is fixed in §2.3 before any graded number.
 - **(b) The yardstick is real machine telemetry, external to the substrate and to SWOW.** B is computed **only**
   from the `perf_counter`/`process_time` timing pair (`compute_friction`), a live physical measurement the
@@ -783,7 +783,7 @@ non-circular* yardstick (live telemetry), with the direction fixed from external
 
 - **Easterbrook, J. A. (1959). "The effect of emotion on cue utilization and the organization of behavior,"
   *Psychological Review* 66(3), 183–201.** The cue-utilization hypothesis: higher arousal **narrows** the range
-  of cues utilized (central/dominant cues favored, peripheral excluded). *Verified (WebSearch, 2026-06-21).*
+  of cues utilized (central/dominant cues favored, peripheral excluded). *Verified 2026-06-21.*
   *Establishes the human DIRECTION* (higher load/arousal → narrower selection). *Nous tests* only the analogous
   emergent-selection direction under a telemetry-derived load scalar — **not** arousal, **not** attention, **not**
   emotion.
@@ -792,7 +792,7 @@ non-circular* yardstick (live telemetry), with the direction fixed from external
   the workspace** — the mechanistic shadow of a somatic marker, with **no** claim of somatic feeling.
 - **Candia-Rivera, D. (2026). "Interoceptive machine framework," *Cognitive Systems Research* (arXiv:2604.24527).**
   Distinguishes **interoceptive variables that influence control dynamics** from **passive telemetry that does
-  not** — the conceptual basis for the §11 pass-through guard. *Verified (WebSearch, 2026-06-21).* Borrowed only
+  not** — the conceptual basis for the §11 pass-through guard. *Verified 2026-06-21.* Borrowed only
   for the **control-coupling** criterion.
 - **Yerkes, R. M. & Dodson, J. D. (1908).** The arousal–performance inverted-U that Easterbrook's narrowing
   mechanism refines. Cited as lineage for *why* a load variable would shape processing — **not** as evidence Nous
@@ -817,13 +817,13 @@ real, external machine signal,"* **never** *"Nous feels its body"* and **never**
   transmission-multiplier semantics, §2.1).
 - **The contrived-to-flip pilot (the thing the realistic design is DISTINCT from):**
   `experiments/pilot_2c_populability.py`.
-- **Capture-only script (to be written by the builder OR run inline by the orchestrator; §6.5):**
+- **Capture-only script (to be written by the builder OR run inline by another lane; §6.5):**
   `experiments/exp2c_capture.py` — captures the realistic trace, serializes the realistic battery, hashes both,
   prints provenance. **Computes NO graded number.**
 - **Frozen realistic stimuli (committed in the follow-up freeze, BEFORE any graded number):**
   `experiments/results/exp2c_realistic_telemetry_trace.json` (+ SHA-256 in §6.4),
   `experiments/results/exp2c_realistic_percepts.json` (+ SHA-256 in §6.4), and the verbatim capture stdout.
-- **Graded runner (validator, written/run ONLY on the human's go-ahead, AFTER this freeze):** to grade
+- **Graded runner (validator, written/run ONLY on the project lead's go-ahead, AFTER this freeze):** to grade
   winner-flips on the frozen battery over the frozen trace in REPLAY, against the constant-friction control,
   across 6 hash seeds — and refuse to run on any non-matching hash.
 

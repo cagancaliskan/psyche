@@ -1123,9 +1123,9 @@ def test_exploratory_live_capture_band_is_realistic_not_pilot_extreme():
             "capture_real_telemetry() ONCE in-process (NO artifact written, NOT frozen) and "
             "confirm the real friction band the §6.1 workload produces is REALISTIC — i.e. it "
             "does NOT saturate to the pilot's ~0.999 busy-vs-idle extreme. This is the one "
-            "fairness property that cannot be checked statically; the directive permits a "
+            "fairness property that cannot be checked statically; the scope note permits a "
             "small exploratory capture to check the band. The frozen stimulus is NOT produced "
-            "here (that is gated on PASS + the human's word).")
+            "here (that is gated on PASS + the project lead's word).")
     # one honest live capture, in-process; we never serialize/write/freeze it.
     samples = cap.capture_real_telemetry()
     frictions = cap.frictions_from_trace(samples)

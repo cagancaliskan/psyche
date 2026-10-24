@@ -426,6 +426,28 @@ def run(tmp: Path) -> None:
     f = LC.check_forbidden_claims(r, LC.load_ledger(r))
     check(len(f) == 1, "one finding per line")
 
+    section("C2/C4 skip every hidden directory by rule, at any depth, and .git by name")
+    r = make_repo(tmp, files={
+        ".git/x.md": "It is conscious.\n",
+        ".local-tool/notes.md": "It is conscious. The run had 618 assertions.\n",
+        ".local-tool/sub/tool.py": '"""This module is a mind."""\n',
+        "docs/.cache/y.md": "It is a mind.\n",
+    })
+    check(LC.check_forbidden_claims(r, LC.load_ledger(r)) == [],
+          "no Markdown or Python file under a hidden directory is read by C4")
+    check(LC.check_prose_vs_ledger(r, LC.load_ledger(r)) == [],
+          "and none is read by C2")
+    check(".git" in LC.SKIP_DIRS and LC.in_skipped_dir((".git", "x.md"))
+          and LC.in_skipped_dir(("docs", ".cache", "y.md"))
+          and not LC.in_skipped_dir(("docs", "y.md")),
+          ".git stays named; any hidden component skips; a plain path does not")
+
+    section("C4 still reads a hidden FILE that sits in no hidden directory")
+    r = make_repo(tmp, files={"docs/.draft.md": "It is conscious.\n"})
+    f = LC.check_forbidden_claims(r, LC.load_ledger(r))
+    check(len(f) == 1 and f[0].path == "docs/.draft.md",
+          "the rule is about directories: a dot-named file is still governed")
+
     # ── C5 ───────────────────────────────────────────────────────────────────
     section("C5 passes when every suite on disk is registered")
     r = make_repo(tmp, files={"run_tests.py": 'S = ["test_a.py", "test_b.py"]\n',
@@ -1327,7 +1349,7 @@ def run(tmp: Path) -> None:
     old_dir = Path(tempfile.mkdtemp(prefix="prefix0e-"))
     got_old = {}
     for name in ("run_tests.py", "tools/capture_run.py", "tools/ledger_check.py"):
-        g = subprocess.run(["git", "show", f"1065c43:{name}"], cwd=str(REPO),
+        g = subprocess.run(["git", "show", f"0cfba58:{name}"], cwd=str(REPO),
                            capture_output=True, text=True)
         if g.returncode == 0:
             (old_dir / Path(name).name).write_text(g.stdout, encoding="utf-8")
@@ -1409,13 +1431,13 @@ def run(tmp: Path) -> None:
           f"defect this brick closes")
     # RULE FOUR: the same edit against the pre-fix tool must go RED, or the assertion
     # above is not evidence of anything.
-    old = c6_on(add_comment, use_rev="9c15249")
+    old = c6_on(add_comment, use_rev="83daef7")
     if old is None:
         note("pre-fix tool unavailable from git; the two-sided proof was skipped")
     else:
         check(old.returncode == 1 and "RESTS ON THE ABSENCE" in old.stdout,
               "LIVE: the SAME one-comment edit fires a false [C6] on the pre-fix tool "
-              "(9c15249). One comment line was the entire reproducer")
+              "(83daef7). One comment line was the entire reproducer")
 
     # DIRECTION 2 — the dismissed EXPRESSION changes: the dismissal must STOP applying.
     def change_expr(d):

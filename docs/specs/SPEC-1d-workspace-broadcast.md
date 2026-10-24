@@ -425,7 +425,7 @@ byte-identical across 6 seeds) is required, mirroring tester P2b.
 
 1. **No cognitive claim.** Passing §6 proves a selection-and-feedback **mechanism**, not a cognitive
    phenomenon. "The winner biases the next cycle" is an internal property; it is **not** priming and
-   **not** evidence of awareness. — stated in the delivery report and as a code comment, asserted as a
+   **not** evidence of awareness. — stated in the verification notes and as a code comment, asserted as a
    negative (no test or docstring asserts cognitive meaning for 1d).
 2. **The winner is a selected information structure, not "what the system is conscious of."** — an
    explicit framing assertion / comment; no overclaiming language anywhere (constraint 1).
@@ -462,9 +462,9 @@ byte-identical across 6 seeds) is required, mirroring tester P2b.
 
 ## 8. Decisions (RESOLVED 2026-06-20 — locked by Cagan)
 
-> Per CONTRIBUTING.md ("the human is the brain"), these were surfaced as choices, not decided unilaterally.
+> Per CONTRIBUTING.md ("the project lead decides"), these were surfaced as choices, not decided unilaterally.
 > All are now **locked** (every choice took the PM's recommendation). The builder implements to these;
-> they are not to be re-opened without the human.
+> they are not to be re-opened without the project lead.
 
 **LOCKED:**
 - **A → A2:** competition = activation **density-normalized by coalition size, with a minimum-size guard**; `creation_seq` tiebreaks reuse the `psyche_coalitions.py` pattern.
@@ -504,7 +504,7 @@ All three break ties on the existing stable key (`(-score, -size, min creation_s
 **Recommendation: A2 (density-normalized) with a minimum-size guard**, falling back to A3 only if the
 over-swallow flip (§6.1) proves to need internal-cohesion weighting that pruning alone doesn't give.
 A2 is a small, honest change from the placeholder, directly counters the size-bias that feeds
-over-swallow, and keeps the parameter surface minimal. **Lock at build** after Cagan picks.
+over-swallow, and keeps the parameter surface minimal. **Lock at build** after the project lead decides.
 
 ### Decision B — Broadcast mechanism + the boundedness rule
 
@@ -535,7 +535,7 @@ decay/normalization so the feedback is contractive — the homeostatic-plasticit
 in-grain, reuses proven write code, needs no substrate change, and produces exactly the durable trace
 1e will measure — while saturation makes boundedness mostly structural. B2 is the cleaner *idea* but
 costs a substrate change and a new neutrality exception; defer it unless 1e shows road-bias is too
-coarse. **Lock at build** after Cagan picks.
+coarse. **Lock at build** after the project lead decides.
 
 ### Decision C — Definition of "weakly bridged into an unperceived domain" (the pruning criterion)
 
@@ -567,7 +567,7 @@ relative-weakness available as a documented secondary refinement only if a later
 something genuinely fused. C1 is the principle that matches *why* over-swallow is a workspace problem
 (only the workspace knows perceived-vs-reached) and is the one that flips the case honestly without
 threshold-tuning. The anti-overcorrection control (§6.1) is mandatory to keep C1 from over-pruning.
-**Lock at build** after Cagan picks.
+**Lock at build** after the project lead decides.
 
 ### Decision D — Module boundary and how `think()` is rewired
 
@@ -587,11 +587,11 @@ threshold-tuning. The anti-overcorrection control (§6.1) is mandatory to keep C
 
 **Recommendation: D1.** It is the only option that keeps the purity nuance (constraint 4) cleanly
 testable, leaves the proven substrate-pure modules pure, and gives the acceptance suite two distinct
-modes to assert against. **Lock at build** after Cagan picks.
+modes to assert against. **Lock at build** after the project lead decides.
 
 ### Decision E — Decomposition: split 1d into 1d-i and 1d-ii?
 
-The brief recommends evaluating a split. Confirmed and recommended:
+The scope note recommends evaluating a split. Confirmed and recommended:
 
 - **1d-i — real competition + over-swallow pruning (pure selection; NO feedback).** Delivers
   Decisions A and C, the §6.1 over-swallow flip + anti-overcorrection control, §6.2's *pure-selection*

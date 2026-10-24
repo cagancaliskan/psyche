@@ -1,0 +1,171 @@
+# Every suite in run_tests.py on each CPython minor the project supports (CONTRIBUTING.md rule 7),
+# with the run's counts asserted against tools/ledger.json.
+#
+# A green run that disagrees with the ledger is a failure here: either the ledger is stale or a
+# suite stopped reporting. This workflow never writes the ledger or the capture; only
+# tools/capture_run.py and tools/ledger_sync.py do that, and they run locally.
+#
+# Every leg installs all five minors, not only its own. Several tester suites sweep the
+# interpreters themselves (they look up python3.10 ... python3.14 on PATH and require all
+# five), so a leg with one CPython fails, and reports fewer assertions, on a correct tree.
+# The matrix then varies only which minor is `python3`, the one that runs run_tests.py and
+# the in-process suites.
+#
+# Third-party actions are pinned to full commit SHAs; the tag is in the trailing comment.
+name: tests
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  run-tests:
+    name: run_tests (CPython ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      # Full history: tester suites read earlier revisions with git show and git log.
+      - name: Check out the repository (full history)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      # setup-python puts each install's bin/ (python3.X) on PATH.
+      - name: Install CPython 3.10 to 3.14 (the suites sweep every minor)
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: |
+            3.10
+            3.11
+            3.12
+            3.13
+            3.14
+          allow-prereleases: true
+
+      # Runs second, so its install is first on PATH and `python3` is the matrix minor.
+      - name: Make CPython ${{ matrix.python-version }} the primary python3
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python-version }}
+          allow-prereleases: true
+
+      - name: All five minors are on PATH and python3 is the matrix minor
+        env:
+          WANT: ${{ matrix.python-version }}
+        run: |
+          for v in 3.10 3.11 3.12 3.13 3.14; do
+            command -v "python$v" >/dev/null || { echo "::error title=Interpreter missing::python$v is not on PATH"; exit 1; }
+            echo "python$v -> $(command -v "python$v") ($("python$v" -c 'import sys; print(sys.version.split()[0])'))"
+          done
+          python3 -c 'import sys; print("python3 ->", sys.executable, sys.version)'
+          got="$(python3 -c 'import sys; print("%d.%d" % sys.version_info[:2])')"
+          if [ "${got}" != "${WANT}" ]; then
+            echo "::error title=Wrong primary interpreter::python3 is ${got}, the matrix leg is ${WANT}"
+            exit 1
+          fi
+
+      # bash with pipefail (set by `shell: bash`), so run_tests.py's exit code survives tee.
+      - name: Run every suite
+        id: run
+        run: python3 run_tests.py 2>&1 | tee "${RUNNER_TEMP}/run_tests.out"
+
+      # Parses the run the way ledger_check.parse_capture parses docs/TEST_OUTPUT.txt: one
+      # block per "# test_*.py" header, the first RESULT line in a block counts, and a header
+      # with no RESULT line is an aborted suite whose count is unknown, never zero (brick 0e).
+      # Runs after a red suite too (that is when the comparison matters most), but not when
+      # the suites never ran, which would only bury the real failure under a missing file.
+      # Totals and the per-suite breakdown must both match, so drift that cancels out across
+      # two suites is still caught.
+      - name: Counts agree with tools/ledger.json
+        if: ${{ !cancelled() && steps.run.outcome != 'skipped' }}
+        run: |
+          python3 -B - <<'PY'
+          import json
+          import os
+          import re
+          import sys
+
+          suite_re = re.compile(r"^#\s+(test_\S+\.py)\s*$")
+          result_re = re.compile(r"^\s*RESULT:\s+(\d+)\s+passed,\s+(\d+)\s+failed\s*$")
+
+          log_path = os.path.join(os.environ["RUNNER_TEMP"], "run_tests.out")
+          with open(log_path, encoding="utf-8", errors="replace") as fh:
+              lines = fh.read().splitlines()
+
+          per_suite = {}
+          failures = 0
+          aborted = []
+          current = None
+          for raw in lines:
+              m = suite_re.match(raw)
+              if m:
+                  if current is not None:
+                      aborted.append(current)
+                  current = m.group(1)
+                  continue
+              m = result_re.match(raw)
+              if m:
+                  failures += int(m.group(2))
+                  if current is not None:
+                      per_suite[current] = int(m.group(1))
+                      current = None
+          if current is not None:
+              aborted.append(current)
+
+          with open("tools/ledger.json", encoding="utf-8") as fh:
+              ledger = json.load(fh)["tests"]
+          expected = ledger.get("per_suite")
+
+          run = {
+              "suites": len(per_suite),
+              "assertions": sum(per_suite.values()),
+              "failures": failures,
+          }
+          print(f"run    : {run['suites']} suites, {run['assertions']} assertions, "
+                f"{run['failures']} failures (CPython {sys.version.split()[0]})")
+          print(f"ledger : {ledger['suites']} suites, {ledger['assertions']} assertions, "
+                f"{ledger['failures']} failures (captured on {ledger.get('captured_python', '?')})")
+
+          bad = False
+          if aborted:
+              bad = True
+              print(f"::error title=Suites aborted::{len(aborted)} suite(s) printed a header "
+                    f"and never a RESULT line: {', '.join(aborted)}")
+          for key in ("suites", "assertions", "failures"):
+              if run[key] != ledger[key]:
+                  bad = True
+                  print(f"::error title=Ledger mismatch::tests.{key}: the run reports "
+                        f"{run[key]}, tools/ledger.json says {ledger[key]}")
+          if not isinstance(expected, dict):
+              bad = True
+              print("::error title=Ledger mismatch::tools/ledger.json has no tests.per_suite "
+                    "object to compare the run against")
+              expected = {}
+          elif per_suite != expected:
+              bad = True
+              rows = [name for name in sorted(set(expected) | set(per_suite))
+                      if expected.get(name) != per_suite.get(name)]
+              print(f"::error title=Ledger mismatch::tests.per_suite: {len(rows)} suite(s) "
+                    f"differ between the run and tools/ledger.json")
+              for name in rows:
+                  print(f"  {name}: run {per_suite.get(name, 'absent')}, "
+                        f"ledger {expected.get(name, 'absent')}")
+          if bad:
+              sys.exit(1)
+          print("OK: the run's totals and per-suite counts equal tools/ledger.json "
+                "(tests.suites, tests.assertions, tests.failures, tests.per_suite).")
+          PY
