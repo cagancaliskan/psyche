@@ -79,9 +79,13 @@ h1#_top {
   border-radius: 2px;
 }
 
-/* The landing page carries its own h1 (the thesis title); drop Starlight's page title there. */
-body:has(.sx-landing) h1#_top {
+/* The landing page carries its own h1 (the thesis title); drop Starlight's title panel there,
+   and the rule it would leave above the hero. */
+body:has(.sx-landing) .content-panel:has(h1#_top) {
   display: none;
+}
+body:has(.sx-landing) .content-panel {
+  border-top: 0;
 }
 
 /* ---------- Site extension components (prefix sx-) ---------- */
@@ -272,6 +276,8 @@ body:has(.sx-landing) h1#_top {
   padding: 0.25rem 1.5rem 0.25rem 0;
 }
 .sx-split > div + div {
+  /* Starlight's markdown styles space every following sibling; the columns must align. */
+  margin-top: 0;
   padding: 0.25rem 0 0.25rem 1.5rem;
   border-inline-start: 1px solid var(--sx-hairline);
 }
@@ -333,36 +339,57 @@ body:has(.sx-landing) h1#_top {
   position: relative;
   height: var(--row);
 }
-.sx-timeline__bar {
+/* Each row is one button: a slim band on the date axis and its label beside it, so short
+   phases stay readable. The active phase is filled with the agent colour ("now"). */
+.sx-timeline__hit {
   position: absolute;
-  top: 0.35rem;
-  height: calc(var(--row) - 0.7rem);
-  border-radius: 0.3rem;
-  background: var(--sx-surface);
-  border: 1px solid var(--sx-hairline);
-  display: flex;
-  align-items: center;
-  padding: 0 0.6rem;
-  font-size: 0.875rem;
-  color: var(--sl-color-white);
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  cursor: pointer;
+  inset: 0;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
   font: inherit;
   text-align: start;
+  cursor: pointer;
 }
-.sx-timeline__bar[data-status='active'] {
+.sx-timeline__band {
+  position: absolute;
+  top: 0.65rem;
+  height: calc(var(--row) - 1.3rem);
+  border-radius: 0.3rem;
+  background: var(--sx-surface);
+  border: 1px solid var(--sx-structure);
+}
+.sx-timeline__band[data-status='active'] {
+  background: var(--sx-agent);
   border-color: var(--sx-agent);
-  box-shadow: inset 3px 0 0 var(--sx-agent);
 }
-.sx-timeline__bar[data-open='true'] {
+.sx-timeline__band[data-open='true'] {
   border-style: dashed;
 }
-.sx-timeline__bar[aria-pressed='true'] {
-  background: var(--sl-color-accent-low);
+.sx-timeline__hit:hover .sx-timeline__band {
+  border-color: var(--sx-agent);
+}
+.sx-timeline__hit[aria-pressed='true'] .sx-timeline__band {
+  box-shadow: 0 0 0 2px var(--sl-color-black), 0 0 0 4px var(--sx-agent);
+}
+.sx-timeline__label {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  white-space: nowrap;
+  font-size: 0.9rem;
+  color: var(--sl-color-gray-1);
+}
+.sx-timeline__hit[aria-pressed='true'] .sx-timeline__label {
+  color: var(--sl-color-white);
+  font-weight: 700;
 }
 .sx-timeline__gate {
+  pointer-events: none;
+  z-index: 1;
   position: absolute;
   top: calc(var(--row) / 2 - 0.45rem);
   width: 0.9rem;

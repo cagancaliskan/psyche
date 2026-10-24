@@ -151,5 +151,7 @@ export const HERO_PICTURE: readonly string[] = [
 ];
 export const HERO_START: Cell = [2, 2];
 export const HERO_GOAL: Cell = [10, 10];
-export const HERO_SEED = 1948;
+/** Chosen so the reward-free walk covers all four rooms and passes the goal's cell (pinned by
+ *  maze.test.ts): latent learning is about a space explored before any goal exists. */
+export const HERO_SEED = 15;
 export const HERO_STEPS = 220;

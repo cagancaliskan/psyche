@@ -82,8 +82,8 @@ const fmt = new Intl.NumberFormat('en-US');
     <p>
       Psyche is the dependency-free memory-and-activation substrate this repository was built for. It is
       paused while the thesis takes priority. Its code, tests and published record stay here and stay
-      verified: {t.suites} suites, {fmt.format(t.assertions)} assertions and {t.failures} failures on CPython
-      {interpreters[0]} to {interpreters[interpreters.length - 1]}.
+      verified: {t.suites} suites, {fmt.format(t.assertions)} assertions and {t.failures} failures on
+      {`CPython ${interpreters[0]} to ${interpreters[interpreters.length - 1]}`}.
     </p>
     <p>
       <a href={withBase('status/')}>See Psyche's status</a>, or read <a href={withBase('psyche/overview/')}>what Psyche is</a>.

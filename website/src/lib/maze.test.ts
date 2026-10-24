@@ -96,6 +96,15 @@ test('randomWalk is deterministic for a seed and only visits open cells', () => 
   assert.notDeepEqual(a, randomWalk(g, HERO_START, HERO_STEPS, HERO_SEED + 1));
 });
 
+test('the hero walk explores all four rooms and passes the goal before any goal exists', () => {
+  const g = parseGrid(HERO_PICTURE);
+  const walk = randomWalk(g, HERO_START, HERO_STEPS, HERO_SEED);
+  const room = ([r, c]: Cell) => (r <= 6 ? 0 : 2) + (c <= 5 ? 0 : 1);
+  const rooms = new Set(walk.filter(([r, c]) => r !== 7 && c !== 6).map(room));
+  assert.equal(rooms.size, 4);
+  assert.ok(walk.some(([r, c]) => r === HERO_GOAL[0] && c === HERO_GOAL[1]));
+});
+
 test('polyline and length helpers', () => {
   const p: Cell[] = [[0, 0], [0, 1], [1, 1]];
   assert.equal(polylinePoints(p), '0.5,0.5 1.5,0.5 1.5,1.5');

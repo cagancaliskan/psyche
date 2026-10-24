@@ -74,9 +74,9 @@ export function spans(plan: Plan): Span[] {
   let cursor: number | null = null;
   for (const phase of plan.phases) {
     const openStart = phase.start === null;
-    const from = phase.start !== null ? dayNumber(phase.start) : (cursor ?? dayNumber(plan.as_of));
+    const from: number = phase.start !== null ? dayNumber(phase.start) : (cursor ?? dayNumber(plan.as_of));
     const openEnd = phase.end === null;
-    const to = phase.end !== null ? dayNumber(phase.end) : from + OPEN_PHASE_DAYS;
+    const to: number = phase.end !== null ? dayNumber(phase.end) : from + OPEN_PHASE_DAYS;
     if (to < from) throw new Error(`phase ${phase.id} ends before it starts`);
     out.push({ phase, from, to, openStart, openEnd });
     cursor = to;

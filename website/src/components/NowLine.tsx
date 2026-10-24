@@ -25,7 +25,7 @@ export default function NowLine({ plan }: Props) {
       )}
       {gate ? (
         <p>
-          <strong>Next gate:</strong> {gate.id} {gate.title.toLowerCase()}, {formatDay(gate.date!)}
+          <strong>Next gate:</strong> Gate {gate.id} ({gate.title}), {formatDay(gate.date!)}
           {today !== null && (
             <>
               {' '}

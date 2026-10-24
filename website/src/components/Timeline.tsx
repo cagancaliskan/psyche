@@ -52,9 +52,15 @@ export default function Timeline({ plan }: Props) {
       <ol className="sx-timeline__rows">
         {rows.map((r) => {
           const left = fraction(r.from, range);
-          const width = Math.max(fraction(r.to, range) - left, 0.02);
+          const end = fraction(r.to, range);
+          const width = Math.max(end - left, 0.012);
           const g = r.phase.gate ? gates.get(r.phase.gate) : undefined;
           const gateDay = g?.date ? dayNumber(g.date) : null;
+          // Labels sit after the band (and its gate marker); late phases put them before it.
+          const labelAfter = end <= 0.6;
+          const labelStyle = labelAfter
+            ? { left: `calc(${pct(left + width)} + ${gateDay !== null ? '1rem' : '0.5rem'})` }
+            : { right: `calc(${pct(1 - left)} + 0.5rem)` };
           const when = r.phase.start && r.phase.end
             ? `${formatDay(r.phase.start)} to ${formatDay(r.phase.end)}`
             : r.phase.start
@@ -64,16 +70,22 @@ export default function Timeline({ plan }: Props) {
             <li key={r.phase.id} className="sx-timeline__row">
               <button
                 type="button"
-                className="sx-timeline__bar"
-                style={{ left: pct(left), width: pct(width) }}
-                data-status={r.phase.status}
-                data-open={r.openEnd || r.openStart ? 'true' : 'false'}
+                className="sx-timeline__hit"
                 aria-pressed={selected === r.phase.id}
                 aria-label={`${r.phase.id}: ${r.phase.title}, ${when}, ${r.phase.status}`}
                 onClick={() => setSelected(r.phase.id)}
               >
-                <span className="sx-timeline__id">{r.phase.id}</span>
-                {r.phase.title}
+                <span
+                  className="sx-timeline__band"
+                  style={{ left: pct(left), width: pct(width) }}
+                  data-status={r.phase.status}
+                  data-open={r.openEnd || r.openStart ? 'true' : 'false'}
+                  aria-hidden="true"
+                />
+                <span className="sx-timeline__label" style={labelStyle} aria-hidden="true">
+                  <span className="sx-timeline__id">{r.phase.id}</span>
+                  {r.phase.title}
+                </span>
               </button>
               {gateDay !== null && (
                 <span
@@ -110,7 +122,7 @@ export default function Timeline({ plan }: Props) {
         </ul>
         {gate && (
           <p>
-            Ends at gate {gate.id}, {gate.title.toLowerCase()}
+            Ends at Gate {gate.id} ({gate.title})
             {gate.date ? `, on ${formatDay(gate.date)}` : `, ${gate.date_rule}`}: {gate.question}
           </p>
         )}

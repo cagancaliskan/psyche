@@ -31,9 +31,9 @@
     {
       "title": "Psyche (paused)",
       "pages": [
-        {"src": "docs/PSYCHE.md", "slug": "psyche/overview", "wiki": "Psyche-Overview"},
-        {"src": "docs/ARCHITECTURE.md", "slug": "psyche/architecture", "wiki": "Psyche-Architecture"},
-        {"src": "docs/METHODOLOGY.md", "slug": "psyche/methodology", "wiki": "Psyche-Methodology"}
+        {"src": "docs/PSYCHE.md", "slug": "psyche/overview", "wiki": "Psyche-Overview", "title": "What Psyche is"},
+        {"src": "docs/ARCHITECTURE.md", "slug": "psyche/architecture", "wiki": "Psyche-Architecture", "title": "Architecture"},
+        {"src": "docs/METHODOLOGY.md", "slug": "psyche/methodology", "wiki": "Psyche-Methodology", "title": "Methodology"}
       ]
     }
   ],

@@ -24,7 +24,7 @@ const gates = new Map(plan.gates.map((g) => [g.id, g]));
             {g && (
               <>
                 <br />
-                Gate {g.id}, {g.title.toLowerCase()}: {g.date ? formatDay(g.date) : g.date_rule}
+                Gate {g.id} ({g.title}): {g.date ? formatDay(g.date) : g.date_rule}
               </>
             )}
           </li>
