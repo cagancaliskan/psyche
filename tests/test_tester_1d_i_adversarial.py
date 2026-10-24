@@ -423,7 +423,7 @@ def test_T4b_decisive_C1_not_C2_strong_bridge_into_unnamed():
     section("T4b DECISIVE C1-vs-C2: a strong bridge into an UNNAMED domain whose internal "
             "cohesion is EVEN STRONGER — pruned by membership; a pure weakness rule could "
             "not flip _small_mind, this watershed flips by domain not by a weakness cut")
-    # This is the exact discriminator the brief names. The bridge is strong (n=8) but the
+    # This is the exact discriminator SPEC-1d names. The bridge is strong (n=8) but the
     # unnamed domain's internal ties (n=30) are stronger, so the watershed pulls the unnamed
     # domain into its OWN community and prunes it. Replicates the _small_mind logic on a
     # fresh non-isomorphic graph (5-node unnamed domain).

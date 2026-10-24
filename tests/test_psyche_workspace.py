@@ -712,8 +712,8 @@ def test_competition_can_select_among_multiple_real_coalitions():
     section("A2 structural: competition selects ONE winner among MORE THAN ONE "
             "system-generated coalition (not a single-group branch)")
     # Loop-closed: an utterance naming two UNLINKED domains yields >=2 coalitions, proving
-    # the competition is exercised on a real multi-candidate field (per CONTRIBUTING.md's
-    # 'structurally-impossible branch' check).
+    # the competition is exercised on a real multi-candidate field (per the six-bug
+    # checklist's 'structurally-impossible branch' check).
     s, n = _small_mind()
     r = think(s, "coffee in the kitchen, writing code")
     check(len(r.coalitions) >= 2,

@@ -18,7 +18,7 @@ The first pass found three defects. All three are reported fixed:
   DEFECT-B (N-5) by the single-read materialisation of an expanding node's roads;
   DEFECT-C (N-7) by sigma validation at the boundary, later widened to `energy` (D-015).
 This pass asks whether §6 now holds *in full*, adversarially and loop-closed. It re-derives
-rather than inherits: the reference numbers quoted in the handoff are treated as claims to
+rather than inherits: the reference numbers quoted in the builder's report are treated as claims to
 be reproduced, not as inputs.
 
 THE NOISE FLOOR COMES FIRST, AND IT IS A TEST, NOT A COMMENT

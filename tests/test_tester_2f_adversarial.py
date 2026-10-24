@@ -718,7 +718,7 @@ def test_the_binding_bound_and_its_four_dismissals():
     b_note = (b.get("_inherited_weakness") or "").lower()
     check("dataflow" in b_note and ("getattr" in b_note or "__dict__" in b_note),
           "and the decline is recorded IN THE LEDGER where a reader would look, not only "
-          "in a delivery report")
+          "in the verification notes")
 
 
 def test_D7_structural_argument_attacked_at_the_source():
