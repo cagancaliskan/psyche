@@ -1,0 +1,82 @@
+---
+// What is public and what is withheld, side by side. Layout after "Us vs Them Comparison" by
+// olewandowski1; the divider's single travelling light after "Animated Beam" by dillionverma; cards
+// with the spotlight of "Spotlight" by kevingirelli (all 21st.dev).
+import { ArrowRight, Check, Lock } from 'lucide-react';
+import { withBase } from '@/lib/url.ts';
+import SectionHeader from './SectionHeader.astro';
+
+const publicNow = [
+  "The research line's overview and questions",
+  'The roadmap and the decision gates',
+  "The test battery's paradigms and fairness rules",
+  'The claims discipline and engineering standards',
+  "The substrate's code, tests and published record",
+];
+const withheld = [
+  'The spiking model and its code',
+  'Hypotheses beyond the research questions',
+  'Pre-registered criteria, committed here by hash only',
+  'The experiment plan and its order',
+  'The analysis of related work',
+];
+---
+
+<section class="sx-lp-section sx-lp-band not-content" aria-labelledby="sx-public-title">
+  <SectionHeader id="sx-public-title" title="What is public, and what is not yet" index="05" kicker="Disclosure" />
+  <div class="sx-pw" data-reveal>
+    <div class="sx-card sx-pw__card sx-pw__card--public">
+      <div class="sx-pw__head">
+        <p class="sx-pw__kicker">
+          <span class="sx-pw__glyph sx-pw__glyph--check"><Check className="size-3" strokeWidth={3} aria-hidden="true" /></span>
+          <span>Open</span>
+        </p>
+        <h3>Public now</h3>
+        <p class="sx-pw__sub">On this site and in the open repository.</p>
+      </div>
+      <ul class="sx-lp-plain sx-pw__list">
+        {
+          publicNow.map((text) => (
+            <li>
+              <span class="sx-pw__glyph sx-pw__glyph--check">
+                <Check className="size-3" strokeWidth={3} aria-hidden="true" />
+              </span>
+              <span>{text}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="sx-pw__foot">
+        The claims discipline sets what these pages may say.{' '}
+        <a class="sx-lp-link" href={withBase('research/claims-and-scope/')}>Read the claims and scope<ArrowRight className="sx-lp-link__icon" aria-hidden="true" /></a>
+      </p>
+    </div>
+    <div class="sx-pw__beam" aria-hidden="true"></div>
+    <div class="sx-card sx-pw__card sx-pw__card--withheld">
+      <div class="sx-pw__head">
+        <p class="sx-pw__kicker">
+          <span class="sx-pw__glyph sx-pw__glyph--lock"><Lock className="size-3" strokeWidth={2.5} aria-hidden="true" /></span>
+          <span>Private</span>
+        </p>
+        <h3>Withheld until release</h3>
+        <p class="sx-pw__sub">Kept private until a release moves it here.</p>
+      </div>
+      <ul class="sx-lp-plain sx-pw__list">
+        {
+          withheld.map((text) => (
+            <li>
+              <span class="sx-pw__glyph sx-pw__glyph--lock">
+                <Lock className="size-3" strokeWidth={2.5} aria-hidden="true" />
+              </span>
+              <span>{text}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="sx-pw__foot">
+        Releases follow a fixed rule: complete, working, older versions only.{' '}
+        <a class="sx-lp-link" href={withBase('research/disclosure-policy/')}>Read the disclosure policy<ArrowRight className="sx-lp-link__icon" aria-hidden="true" /></a>
+      </p>
+    </div>
+  </div>
+</section>

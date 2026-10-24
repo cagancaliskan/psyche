@@ -1,0 +1,18 @@
+---
+// The roadmap page's header: the current phase and next gate, then the phase timeline (its list
+// form on narrow screens), all rendered from the research plan.
+import Figure from './Figure.astro';
+import NowLine from '@/components/NowLine.tsx';
+import Timeline from '@/components/Timeline.tsx';
+import TimelineList from '@/components/TimelineList.astro';
+import plan from '@/data/plan.json';
+import type { Plan } from '@/lib/plan.ts';
+
+const p = plan as unknown as Plan;
+---
+
+<Figure kicker="Phases and gates" lead="Every date here is read from the research plan at build time. Choose a phase to see what it delivers." bare>
+  <NowLine client:visible plan={p} />
+  <Timeline client:visible plan={p} />
+  <TimelineList plan={p} />
+</Figure>

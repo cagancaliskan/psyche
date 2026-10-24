@@ -1,42 +1,193 @@
 ---
-// The landing figure: a reward-free exploration trail through two rooms, then a goal introduced
-// afterwards and the direct route to it — Tolman's latent-learning paradigm drawn as an illustration.
-// Rendered to static SVG at build time; the only motion is one CSS sequence on load, and
-// prefers-reduced-motion shows the final frame.
+// The landing hero: a full-width field of rooms behind the hero copy (the default slot), drawn as
+// thin linework on a faint coordinate lattice. The rooms on the left are a faded wing under the
+// copy; the rooms on the right are the arena, where a reward-free trail explores, a goal appears
+// afterwards, and the direct route to it is drawn: Tolman's latent learning, as an illustration.
+// The field is static SVG built here; the server markup is the final frame, so without script, or
+// with reduced motion, the finished picture shows. The inline script plays the sequence with the
+// Web Animations API: each cycle fades the last picture, draws the trail (0.4-7.4 s), shows the
+// goal (7.8-8.3 s), draws the route (8.6-10.2 s) and holds to 14 s. Cycle one skips the fade and
+// cycle three ends on the final frame. It pauses while the field is less than 15% visible or the
+// tab is hidden, and the Pause toggle (aria-pressed) stops it; after the last cycle the toggle
+// reads pressed and replays.
+import '../styles/hero.css';
 import {
-  HERO_GOAL,
-  HERO_PICTURE,
-  HERO_SEED,
-  HERO_START,
-  HERO_STEPS,
-  parseGrid,
-  pathLength,
-  polylinePoints,
-  randomWalk,
+  FIELD_GOAL,
+  FIELD_SEED,
+  FIELD_SPEC,
+  FIELD_START,
+  FIELD_STEPS,
+  arenaColumn,
+  cellPath,
+  closeLeftOf,
+  persistentWalk,
+  roomField,
   shortestPath,
-  wallCells,
+  wallLines,
 } from '../lib/maze.ts';
 
-const grid = parseGrid(HERO_PICTURE);
-const walls = wallCells(grid);
-const trail = randomWalk(grid, HERO_START, HERO_STEPS, HERO_SEED);
-const path = shortestPath(grid, HERO_START, HERO_GOAL);
-if (!path) throw new Error('hero goal unreachable');
-const trailLen = pathLength(trail);
-const pathLen = pathLength(path);
+const field = roomField(FIELD_SPEC, FIELD_SEED);
+const from = arenaColumn(FIELD_SPEC);
+const arena = closeLeftOf(field, from);
+const trail = persistentWalk(arena, FIELD_START, FIELD_STEPS, FIELD_SEED);
+const route = shortestPath(arena, FIELD_START, FIELD_GOAL);
+if (!route) throw new Error('hero goal unreachable');
+const { rows, cols } = field;
+// The arena's west wall is its first column of lines; the wing's lines stop one column before it.
+const west = from - 1;
+const pitch = FIELD_SPEC.size + 1;
+
+// The coordinate lattice: a line through every second cell centre, so each wall lies on one.
+let lattice = '';
+for (let r = 0; r < rows; r += 2) lattice += `M0 ${r + 0.5}h${cols}`;
+for (let c = 0; c < cols; c += 2) lattice += `M${c + 0.5} 0v${rows}`;
+
+// A dot where the arena's walls meet (each room corner).
+let joints = '';
+for (let r = 0; r < rows; r += pitch) for (let c = west; c < cols; c += pitch) joints += `M${c + 0.5} ${r + 0.5}h0`;
+
+// Coordinate labels along the arena's top wall and the field's east wall, as percentages of the
+// drawing, so the type stays a fixed size whatever the drawing's scale.
+const pct = (v: number, of: number) => `${((v + 0.5) / of) * 100}%`;
+const pad = (n: number) => String(n).padStart(2, '0');
+const xTicks: number[] = [];
+for (let c = west; c < cols; c += pitch) xTicks.push(c);
+const yTicks: number[] = [];
+for (let r = pitch; r < rows - 1; r += pitch) yTicks.push(r);
+
+// The arena band on narrow screens starts at the arena's west wall.
+const vars = `--field-cols:${cols};--field-rows:${rows};--arena-cols:${cols - west}`;
 ---
 
-<figure class="sx-maze is-animated">
-  <svg viewBox={`0 0 ${grid.cols} ${grid.rows}`} role="img" aria-labelledby="sx-maze-title">
-    <title id="sx-maze-title">
-      Illustration: an agent wanders two connected rooms without reward, then takes a direct route to a goal introduced afterwards.
-    </title>
-    <rect class="floor" x="0" y="0" width={grid.cols} height={grid.rows}></rect>
-    {walls.map(([r, c]) => <rect class="wall" x={c} y={r} width="1" height="1"></rect>)}
-    <polyline class="trail" points={polylinePoints(trail)} style={`--len:${trailLen + 1}`}></polyline>
-    <circle class="start" cx={HERO_START[1] + 0.5} cy={HERO_START[0] + 0.5} r="0.32"></circle>
-    <circle class="goal" cx={HERO_GOAL[1] + 0.5} cy={HERO_GOAL[0] + 0.5} r="0.34"></circle>
-    <polyline class="path" points={polylinePoints(path)} style={`--len:${pathLen + 1}`}></polyline>
-  </svg>
-  <figcaption>Latent learning, after Tolman: explore without reward, then reach a goal introduced afterwards. An illustration, not a result.</figcaption>
-</figure>
+<section class="sx-mazehero sx-landing not-content" style={vars}>
+  <div class="sx-mazehero__inner">
+    <div class="sx-mazehero__copy">
+      <slot />
+    </div>
+    <div class="sx-mazehero__field">
+      <div class="sx-mazehero__plot">
+        <svg
+          class="field"
+          viewBox={`0 0 ${cols} ${rows}`}
+          preserveAspectRatio="xMinYMid slice"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <defs>
+            <linearGradient id="sx-mazehero-fade" x1="0" y1="0" x2={west} y2="0" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#fff" stop-opacity="0.1"></stop>
+              <stop offset="0.7" stop-color="#fff" stop-opacity="0.32"></stop>
+              <stop offset="1" stop-color="#fff"></stop>
+            </linearGradient>
+            <mask id="sx-mazehero-wing" maskUnits="userSpaceOnUse" x="0" y="0" width={west + 1} height={rows}>
+              <rect width={west + 1} height={rows} fill="url(#sx-mazehero-fade)"></rect>
+            </mask>
+          </defs>
+          <path class="lattice" d={lattice}></path>
+          <path class="wing" d={wallLines(field, 0, west)} mask="url(#sx-mazehero-wing)"></path>
+          <path class="walls walls--halo" d={wallLines(field, west)}></path>
+          <path class="walls" d={wallLines(field, west)}></path>
+          <path class="joints" d={joints}></path>
+          <path class="trail" d={cellPath(trail)} pathLength="1"></path>
+          <circle class="start" cx={FIELD_START[1] + 0.5} cy={FIELD_START[0] + 0.5} r="0.36"></circle>
+          <circle class="goal goal--halo" cx={FIELD_GOAL[1] + 0.5} cy={FIELD_GOAL[0] + 0.5} r="0.95"></circle>
+          <circle class="goal" cx={FIELD_GOAL[1] + 0.5} cy={FIELD_GOAL[0] + 0.5} r="0.4"></circle>
+          <path class="route route--wide" d={cellPath(route)} pathLength="1"></path>
+          <path class="route route--halo" d={cellPath(route)} pathLength="1"></path>
+          <path class="route" d={cellPath(route)} pathLength="1"></path>
+        </svg>
+        <svg class="ticks" aria-hidden="true" focusable="false">
+          {
+            xTicks.map((c, i) => (
+              <text
+                x={pct(c, cols)}
+                y={pct(0, rows)}
+                dx={i === xTicks.length - 1 ? '-0.6em' : '0.6em'}
+                text-anchor={i === xTicks.length - 1 ? 'end' : 'start'}
+              >
+                {pad(c)}
+              </text>
+            ))
+          }
+          {
+            yTicks.map((r) => (
+              <text x={pct(cols - 1, cols)} y={pct(r, rows)} dx="-0.6em" text-anchor="end">
+                {pad(r)}
+              </text>
+            ))
+          }
+        </svg>
+      </div>
+    </div>
+    <div class="sx-mazehero__meta">
+      <p class="sx-mazehero__caption">
+        Latent learning, after Tolman: explore without reward, then reach a goal introduced afterwards. An illustration, not a result.
+      </p>
+      <button class="sx-mazehero__pause" type="button" aria-pressed="false" aria-label="Pause animation" hidden>
+        <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <rect x="6" y="4" width="4" height="16" rx="1" fill="currentColor"></rect>
+          <rect x="14" y="4" width="4" height="16" rx="1" fill="currentColor"></rect>
+        </svg>
+        <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+          <path d="M7 4.5v15a1 1 0 0 0 1.5.86l12.5-7.5a1 1 0 0 0 0-1.72L8.5 3.64A1 1 0 0 0 7 4.5z" fill="currentColor"></path>
+        </svg>
+        <span>Pause</span>
+      </button>
+    </div>
+  </div>
+  <script is:inline>
+    (() => {
+      const s = document.currentScript.parentNode;
+      const b = s.querySelector('.sx-mazehero__pause');
+      const m = matchMedia('(prefers-reduced-motion: reduce)');
+      if (m.matches || !s.animate) return;
+      const T = 14, f = 0.35 / T, S = 0.4 / T;
+      const k = (p, off, on, a, z, e) => [
+        { offset: 0, opacity: 1, [p]: on },
+        { offset: f, opacity: 0, [p]: on },
+        { offset: f, opacity: 0, [p]: off },
+        { offset: S, opacity: 1, [p]: off },
+        { offset: a / T, opacity: 1, [p]: off, easing: e },
+        { offset: z / T, opacity: 1, [p]: on },
+        { offset: 1, opacity: 1, [p]: on },
+      ];
+      const o = { duration: T * 1e3, iterations: 3 - S, iterationStart: S, fill: 'forwards' };
+      const A = [];
+      const run = (c, ...a) => s.querySelectorAll('.field .' + c).forEach((n) => A.push(n.animate(k(...a), o)));
+      run('trail', 'strokeDashoffset', 1, 0, 0.4, 7.4, 'cubic-bezier(.35,0,.45,1)');
+      run('goal', 'transform', 'scale(0)', 'scale(1)', 7.8, 8.3, 'cubic-bezier(.3,1.5,.6,1)');
+      run('route', 'strokeDashoffset', 1, 0, 8.6, 10.2, 'ease-in-out');
+      let paused = false, seen = true, done = false;
+      const sync = () => {
+        if (done) return;
+        const go = !paused && seen && !document.hidden;
+        A.forEach((x) => (go ? x.play() : x.pause()));
+      };
+      const end = () => {
+        done = paused = true;
+        A.forEach((x) => x.cancel());
+        s.classList.remove('is-moving');
+        b.setAttribute('aria-pressed', 'true');
+      };
+      A[0].onfinish = end;
+      b.onclick = () => {
+        paused = !paused;
+        b.setAttribute('aria-pressed', paused);
+        if (done && !paused) {
+          done = false;
+          s.classList.add('is-moving');
+        }
+        sync();
+      };
+      new IntersectionObserver((e) => {
+        seen = e[0].intersectionRatio >= 0.15;
+        sync();
+      }, { threshold: [0, 0.15] }).observe(s.querySelector('.sx-mazehero__field'));
+      document.addEventListener('visibilitychange', sync);
+      m.addEventListener('change', () => m.matches && (end(), (b.hidden = true)));
+      s.classList.add('is-moving');
+      b.hidden = false;
+      sync();
+    })();
+  </script>
+</section>

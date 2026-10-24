@@ -1,0 +1,62 @@
+---
+// The battery cards: one per test, each showing the step that defines it (the direct route, the
+// detour, the shortcut, the shared layout, the test pair), as a hairline card with the spotlight
+// hover. Rendered on the server; a small script draws each route once when its card is seen.
+// Used on the landing and on the Test battery docs page; the layout follows the width it is given.
+import '@/styles/docs-visuals.css';
+import '@/styles/battery.css';
+import { TestPicture } from '@/components/battery/Pictures.tsx';
+import { TESTS } from '@/lib/battery.ts';
+import { withBase } from '@/lib/url.ts';
+
+const cards = TESTS.map((test) => {
+  const index = test.steps.length - 1;
+  return { test, index, caption: test.steps[index].caption, href: withBase(`battery/#${test.id.toLowerCase()}`) };
+});
+---
+
+<div class="sx-test-cards-wrap not-content">
+  <ol class="sx-test-cards" data-sx-test-cards>
+    {
+      cards.map(({ test, index, caption, href }) => (
+        <li class="sx-test-card sx-spot" data-spot>
+          <div class="sx-test-card__frame">
+            <TestPicture test={test} index={index} decorative idPrefix={`sx-teaser-${test.id.toLowerCase()}`} />
+          </div>
+          <h3 class="sx-test-card__name">
+            <a href={href}><span class="sx-test-card__id">{test.id}</span> {test.name}</a>
+          </h3>
+          <p class="sx-test-card__caption">{caption}</p>
+        </li>
+      ))
+    }
+  </ol>
+</div>
+
+<script>
+  import '@/components/docs/motion.ts';
+
+  for (const list of document.querySelectorAll<HTMLElement>('[data-sx-test-cards]')) {
+    if (!('IntersectionObserver' in window) || !matchMedia('(prefers-reduced-motion: no-preference)').matches) break;
+    const cards = list.querySelectorAll<HTMLElement>('.sx-test-card');
+    const seen = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const card = entry.target as HTMLElement;
+          seen.unobserve(card);
+          card.removeAttribute('data-wait');
+          card.setAttribute('data-draw', '');
+          card.addEventListener('animationend', () => card.removeAttribute('data-draw'), { once: true });
+        }
+      },
+      { threshold: 0.6 },
+    );
+    for (const card of cards) {
+      if (card.querySelector('.draw')) {
+        card.setAttribute('data-wait', '');
+        seen.observe(card);
+      }
+    }
+  }
+</script>

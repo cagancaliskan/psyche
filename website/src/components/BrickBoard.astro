@@ -1,7 +1,10 @@
 ---
-// The substrate's bricks (stage 1) grouped by build status, read from the staged public projection of
-// tools/ledger.json. Nothing here is typed by hand: names and statuses come from the ledger.
+// The substrate's bricks (stage 1) as one card per build status, read from the staged public
+// projection of tools/ledger.json. Nothing here is typed by hand: names, statuses and counts come
+// from the ledger.
 import ledger from '../data/ledger.public.json';
+import '../styles/docs-visuals.css';
+import '../styles/plan.css';
 
 interface Brick {
   id: string;
@@ -9,61 +12,62 @@ interface Brick {
   status: string;
 }
 
-const groups: { status: string; heading: string; note: string; collapsed?: boolean }[] = [
-  { status: 'PROVEN', heading: 'Proven', note: 'Deterministic, integrity-preserving and pure, verified in a separate tester pass.' },
-  { status: 'BUILT-UNVALIDATED', heading: 'Built; meaning not validated', note: 'The mechanism is tester-verified; no cognitive claim is made.' },
-  { status: 'NO-GO', heading: 'Stopped before a graded run', note: 'Attempts at a cognitive claim stopped before any graded number existed, each at its own wall: a circular yardstick, or a mechanism the effect needs that the engine lacks.' },
-  { status: 'DESIGNED', heading: 'Designed, not built', note: 'Specified only. Paused with the rest of the substrate.', collapsed: true },
+const groups: { status: string; tone: string; heading: string; note: string; collapsed?: boolean }[] = [
+  { status: 'PROVEN', tone: 'proven', heading: 'Proven', note: 'Deterministic, integrity-preserving and pure, verified in a separate tester pass.' },
+  { status: 'BUILT-UNVALIDATED', tone: 'built', heading: 'Built; meaning not validated', note: 'The mechanism is tester-verified; no cognitive claim is made.' },
+  { status: 'NO-GO', tone: 'stopped', heading: 'Stopped before a graded run', note: 'Attempts at a cognitive claim stopped before any graded number existed, each at its own wall: a circular yardstick, or a mechanism the effect needs that the engine lacks.' },
+  { status: 'DESIGNED', tone: 'designed', heading: 'Designed, not built', note: 'Specified only. Paused with the rest of the substrate.', collapsed: true },
 ];
 const bricks = (ledger.bricks as Brick[]).slice();
 const shown = new Set(groups.map((g) => g.status));
 const other = bricks.filter((b) => !shown.has(b.status));
+const cards = [
+  ...groups.map((g) => ({ ...g, items: bricks.filter((b) => b.status === g.status) })),
+  ...(other.length > 0 ? [{ status: 'OTHER', tone: 'other', heading: 'Other states', note: 'States outside the four above, as the ledger records them.', items: other }] : []),
+].filter((c) => c.items.length > 0);
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
 ---
 
-<div class="sx-board">
-  {
-    groups.map((g) => {
-      const items = bricks.filter((b) => b.status === g.status);
-      if (items.length === 0) return null;
-      const list = (
-        <ul>
-          {items.map((b) => (
-            <li>
-              <code>{b.id}</code>
-              {b.name}
-            </li>
-          ))}
-        </ul>
-      );
-      return (
-        <section>
-          <h3>{g.heading} ({items.length})</h3>
-          <p class="sx-gates__meta">{g.note}</p>
-          {g.collapsed ? (
-            <details>
-              <summary>Show the list</summary>
-              {list}
-            </details>
-          ) : (
-            list
-          )}
-        </section>
-      );
-    })
-  }
-  {
-    other.length > 0 && (
-      <section>
-        <h3>Other states ({other.length})</h3>
-        <ul>
-          {other.map((b) => (
-            <li>
-              <code>{b.id}</code>
-              {b.name} ({b.status.toLowerCase()})
-            </li>
-          ))}
-        </ul>
-      </section>
-    )
-  }
+<div class="sx-bricks not-content">
+  <div class="sx-bricks__grid">
+    {
+      cards.map((c) => {
+        const list = (
+          <ul class="sx-bricks__list">
+            {c.items.map((b) => (
+              <li>
+                <code class="sx-bricks__id">{b.id}</code> <span>{c.tone === 'other' ? `${b.name} (${b.status.toLowerCase()})` : b.name}</span>
+              </li>
+            ))}
+          </ul>
+        );
+        return (
+          <section class="sx-bricks__card sx-spot" data-spot data-tone={c.tone} aria-labelledby={`sx-bricks-${slug(c.status)}`}>
+            <div class="sx-bricks__head">
+              <h3 class="sx-bricks__title" id={`sx-bricks-${slug(c.status)}`}>
+                <span class="sx-bricks__dot" aria-hidden="true" />
+                <span>{c.heading}</span>
+              </h3>
+              <p class="sx-bricks__count">
+                {c.items.length} <span class="sr-only">{c.items.length === 1 ? 'brick' : 'bricks'}</span>
+              </p>
+            </div>
+            <p class="sx-bricks__note">{c.note}</p>
+            {'collapsed' in c && c.collapsed ? (
+              <details class="sx-disclosure">
+                <summary>Show the list</summary>
+                {list}
+              </details>
+            ) : (
+              list
+            )}
+          </section>
+        );
+      })
+    }
+  </div>
 </div>
+
+<script>
+  import './docs/motion.ts';
+</script>

@@ -1,0 +1,348 @@
+/*
+ * Typography for the staged documentation pages.
+ *
+ * Unbounded for the page title and section headings, Instrument Sans for reading and for h3,
+ * Martian Mono for section indices, table headers and code. Most rules target Starlight's Markdown
+ * output (`.sl-markdown-content`) only on pages that carry neither `.sx-landing` nor `.sx-wide`,
+ * skip elements that have a class or sit inside `.not-content`, and have zero specificity, so the
+ * custom pages and the site's components keep their own styles. Three groups reach further on
+ * purpose: the page title (every page that shows one), prose links (every page but the landing)
+ * and Mermaid figures (wherever they render). Colours come only from the theme tokens, so light
+ * and dark switch by themselves.
+ */
+
+@layer components {
+  /* ---- Page title ---- */
+  :where(h1#_top) {
+    font-family: var(--sx-font-display);
+    font-size: clamp(2rem, 1.6rem + 1.8vw, 2.75rem);
+    font-weight: 400;
+    letter-spacing: -0.025em;
+    line-height: 1.08;
+    color: var(--sl-color-white);
+    text-wrap: balance;
+  }
+
+  /* ---- Reading size, leading and measure ----
+     The measure is in rem, not ch: Instrument Sans has a wide zero, so 66ch would run to about 95
+     characters. 33rem at 17px holds about 66. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content) {
+    --sx-measure: 33rem;
+    --sl-text-h2: clamp(1.5rem, 1.2rem + 1.1vw, 2rem);
+    --sl-text-h3: 1.25rem;
+    --sl-text-h4: 1.0625rem;
+    counter-reset: sx-h2;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > :is(p, ul, ol, dl, blockquote):not([class])) {
+    max-inline-size: var(--sx-measure);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :is(p, li, dd, blockquote):not([class], .not-content *)) {
+    text-wrap: pretty;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :is(strong, b):not([class], .not-content *)) {
+    color: var(--sl-color-white);
+    font-weight: 600;
+  }
+
+  /* ---- Headings ----
+     h2 in the display face with a mono section index above it and a hairline across the column;
+     h3 and h4 in the sans. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :is(h2, h3, h4, h5, h6):not(.not-content *)) {
+    color: var(--sl-color-white);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content h2:not(.not-content *)) {
+    font-family: var(--sx-font-display);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :is(h3, h4, h5, h6):not(.not-content *)) {
+    font-family: var(--sl-font);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper:is(.level-h2, .level-h3)) {
+    text-wrap: balance;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper.level-h2) {
+    counter-increment: sx-h2;
+    margin-block-start: 3.5rem;
+    padding-block-start: 1.25rem;
+    border-block-start: 1px solid var(--sx-hairline);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper.level-h2)::before {
+    content: counter(sx-h2, decimal-leading-zero);
+    content: counter(sx-h2, decimal-leading-zero) / '';
+    display: block;
+    margin-block-end: 0.875rem;
+    color: var(--sx-structure);
+    font-family: var(--sl-font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    line-height: 1;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper.level-h2:first-child) {
+    margin-block-start: 0;
+    padding-block-start: 0;
+    border-block-start: 0;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper:is(.level-h3, .level-h4)) {
+    margin-block-start: 2.25rem;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper.level-h2 + .sl-heading-wrapper.level-h3) {
+    margin-block-start: 1.5rem;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper + :not(.sl-heading-wrapper)) {
+    margin-block-start: 0.875rem;
+  }
+  /* The section-link icon: muted, ink on hover. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .sl-anchor-link) {
+    color: var(--sx-muted);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .sl-anchor-link:hover) {
+    color: var(--sl-color-white);
+  }
+
+  /* ---- Lists ---- */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content li:not([class], .not-content *))::marker {
+    color: var(--sx-structure);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content li + li:not([class], .not-content *)) {
+    margin-block-start: 0.375rem;
+  }
+
+  /* ---- Links: ink text over a quiet underline; the underline turns signal on hover and focus ---- */
+  :where(body:not(:has(.sx-landing)) .sl-markdown-content a:not([class], .not-content *)) {
+    color: var(--sl-color-white);
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: color-mix(in oklab, var(--sl-color-white) 32%, transparent);
+    text-underline-offset: 0.22em;
+  }
+  :where(body:not(:has(.sx-landing)) .sl-markdown-content a:not([class], .not-content *):is(:hover, :focus-visible)) {
+    color: var(--sl-color-white);
+    text-decoration-color: var(--sx-agent);
+    text-decoration-thickness: 2px;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :where(body:not(:has(.sx-landing)) .sl-markdown-content a:not([class], .not-content *)) {
+      transition: text-decoration-color 180ms var(--sx-ease);
+    }
+  }
+
+  /* ---- Inline code: mono on the raised surface ---- */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :not(pre) > code:not([class], .not-content *)) {
+    margin-block: 0;
+    padding: 0.125em 0.45em;
+    border-radius: 10px;
+    background-color: var(--sx-surface-2);
+    box-shadow: inset 0 0 0 1px var(--sx-hairline);
+    color: var(--sl-color-white);
+    font-family: var(--sl-font-mono);
+    font-size: 0.8em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content a:not([class]) > code:not([class])) {
+    color: inherit;
+  }
+
+  /* ---- Code blocks: the same hairline card as tables and figures ---- */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code) {
+    --ec-brdRad: 13px;
+    --ec-brdCol: var(--sx-hairline);
+    --ec-codeBg: var(--sx-surface);
+    --ec-codeFontFml: var(--sl-font-mono);
+    --ec-uiFontFml: var(--sl-font-mono);
+    --ec-focusBrd: var(--sx-agent);
+    --ec-frm-shdCol: transparent;
+    --ec-frm-edBg: var(--sx-surface);
+    --ec-frm-edTabBarBg: var(--sx-surface-2);
+    --ec-frm-edTabBarBrdBtmCol: var(--sx-hairline);
+    --ec-frm-edActTabBg: var(--sx-surface);
+    --ec-frm-edActTabIndTopCol: var(--sx-agent);
+    --ec-frm-trmBg: var(--sx-surface);
+    --ec-frm-trmTtbBg: var(--sx-surface-2);
+    --ec-frm-trmTtbBrdBtmCol: var(--sx-hairline);
+  }
+
+  /* ---- Tables: hairline cards with a mono header row and tabular figures, after "Table" by
+     originui (21st.dev). The table hugs its content and grows to the column; a table wider than
+     the column scrolls inside its card. ---- */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content table:not([class], .not-content *)) {
+    inline-size: fit-content;
+    max-inline-size: 100%;
+    overflow-x: auto;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 14px;
+    border-collapse: separate;
+    border-spacing: 0;
+    background-color: var(--sx-surface);
+    box-shadow: var(--sx-card-edge);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :is(th, td):not([class], .not-content *)) {
+    padding: 0.625rem 1rem;
+    border-block-end: 1px solid var(--sx-hairline);
+    vertical-align: top;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content tbody > tr:last-child > td:not([class], .not-content *)) {
+    border-block-end: 0;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content th:not([class], .not-content *)) {
+    background-color: var(--sx-surface-2);
+    color: var(--sx-muted);
+    font-family: var(--sl-font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    vertical-align: bottom;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content tbody > tr:not([class], .not-content *):hover > td) {
+    background-color: color-mix(in oklab, var(--sx-surface-2) 60%, transparent);
+  }
+
+  /* ---- Blockquotes: a structure bar at the start edge ---- */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content blockquote:not([class], .not-content *)) {
+    margin-inline: 0;
+    padding-block: 0.125rem;
+    padding-inline: 1.25rem 0;
+    border-inline-start: 2px solid var(--sx-structure);
+    color: var(--sl-color-gray-2);
+  }
+
+  /* ---- Rules ---- */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content hr:not([class], .not-content *)) {
+    margin-block: 2.5rem;
+    border: 0;
+    border-block-start: 1px solid var(--sx-hairline);
+  }
+  /* A section heading already draws its own hairline, so a break right before one would double it. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > hr:not([class]):has(+ .sl-heading-wrapper.level-h2)) {
+    display: none;
+  }
+
+  /* ---- Images: hairline cards ---- */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :is(img, video):not([class], .not-content *)) {
+    border: 1px solid var(--sx-hairline);
+    border-radius: 14px;
+    background-color: var(--sx-surface);
+  }
+
+  /* ---- Mermaid figures ----
+     A hairline card on a faint coordinate grid; nodes on the card surface with a cold hairline,
+     text in ink, edges and arrowheads in the structure colour. In timelines the bars take a
+     structure tint, the active phase the signal tint, and the today line the signal colour.
+     astro-mermaid injects unlayered rules for pre.mermaid, and Mermaid writes its own rules, some
+     !important, into every SVG; declarations marked !important inside this layer win over both. A
+     small script in astro.config.mjs removes the colours Mermaid also copies onto shapes as inline
+     styles. Mermaid sizes its boxes for the font it is given (set in astro.config.mjs), so these
+     rules change colour only, never type. */
+  .sl-markdown-content pre.mermaid {
+    --sx-node-stroke: color-mix(in oklab, var(--sx-structure) 45%, var(--sx-hairline));
+    margin-block: 2rem !important;
+    padding: clamp(1rem, 3vw, 1.75rem) !important;
+    border: 1px solid var(--sx-hairline) !important;
+    border-radius: 14px !important;
+    background-color: var(--sx-surface) !important;
+    background-image:
+      linear-gradient(var(--sx-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--sx-grid) 1px, transparent 1px) !important;
+    background-size: 24px 24px !important;
+    background-position: -1px -1px !important;
+    box-shadow: var(--sx-card-edge);
+    animation: none !important;
+  }
+  @media (scripting: enabled) {
+    .sl-markdown-content pre.mermaid:not([data-processed]) {
+      color: transparent;
+    }
+  }
+  .sl-markdown-content pre.mermaid svg :is(text, tspan) {
+    fill: var(--sl-color-white) !important;
+  }
+  .sl-markdown-content pre.mermaid .nodeLabel {
+    color: var(--sl-color-white) !important;
+  }
+  /* Flowcharts */
+  .sl-markdown-content pre.mermaid .node :is(rect, polygon, circle, ellipse, path) {
+    fill: var(--sx-surface) !important;
+    stroke: var(--sx-node-stroke) !important;
+    stroke-width: 1px !important;
+  }
+  .sl-markdown-content pre.mermaid .cluster rect {
+    fill: color-mix(in oklab, var(--sx-surface-2) 55%, transparent) !important;
+    stroke: var(--sx-hairline) !important;
+    stroke-width: 1px !important;
+  }
+  .sl-markdown-content pre.mermaid .cluster :is(text, tspan) {
+    fill: var(--sx-muted) !important;
+  }
+  .sl-markdown-content pre.mermaid :is(.flowchart-link, .edgePath .path, path.relation, .transition) {
+    stroke: var(--sx-structure) !important;
+  }
+  .sl-markdown-content pre.mermaid :is(marker path, .marker, .arrowMarkerPath, .arrowheadPath) {
+    fill: var(--sx-structure) !important;
+    stroke: var(--sx-structure) !important;
+  }
+  .sl-markdown-content pre.mermaid :is(.edgeLabel rect, .labelBkg) {
+    fill: var(--sx-surface) !important;
+    background-color: var(--sx-surface) !important;
+    opacity: 1 !important;
+  }
+  .sl-markdown-content pre.mermaid .edgeLabel :is(text, tspan) {
+    fill: var(--sx-muted) !important;
+  }
+  /* Timelines (gantt) */
+  .sl-markdown-content pre.mermaid .section {
+    opacity: 1 !important;
+  }
+  .sl-markdown-content pre.mermaid :is(.section0, .section2) {
+    fill: color-mix(in oklab, var(--sx-structure) 6%, transparent) !important;
+  }
+  .sl-markdown-content pre.mermaid :is(.section1, .section3) {
+    fill: transparent !important;
+  }
+  .sl-markdown-content pre.mermaid :is(.sectionTitle, .sectionTitle0, .sectionTitle1, .sectionTitle2, .sectionTitle3) {
+    fill: var(--sx-muted) !important;
+  }
+  .sl-markdown-content pre.mermaid .grid .tick {
+    stroke: var(--sx-hairline) !important;
+    opacity: 1 !important;
+  }
+  .sl-markdown-content pre.mermaid .grid .tick text {
+    fill: var(--sx-muted) !important;
+    stroke: none !important;
+  }
+  .sl-markdown-content pre.mermaid :is(.task, .task0, .task1, .task2, .task3) {
+    fill: color-mix(in oklab, var(--sx-structure) 18%, var(--sx-surface)) !important;
+    stroke: color-mix(in oklab, var(--sx-structure) 60%, var(--sx-surface)) !important;
+    stroke-width: 1px !important;
+  }
+  .sl-markdown-content pre.mermaid :is(.active0, .active1, .active2, .active3) {
+    fill: color-mix(in oklab, var(--sx-agent) 22%, var(--sx-surface)) !important;
+    stroke: var(--sx-agent) !important;
+  }
+  .sl-markdown-content pre.mermaid :is(.done0, .done1, .done2, .done3) {
+    fill: var(--sx-surface-2) !important;
+    stroke: var(--sx-hairline) !important;
+  }
+  .sl-markdown-content pre.mermaid :is(.crit0, .crit1, .crit2, .crit3) {
+    fill: color-mix(in oklab, var(--sx-spike) 18%, var(--sx-surface)) !important;
+    stroke: var(--sx-spike) !important;
+  }
+  .sl-markdown-content pre.mermaid .today {
+    stroke: var(--sx-agent) !important;
+  }
+  .sl-markdown-content pre.mermaid .vert {
+    stroke: var(--sx-structure) !important;
+  }
+}

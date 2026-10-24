@@ -1,0 +1,14 @@
+---
+// The gates page's header: the decision gates in order, from the research plan, with the next
+// upcoming gate marked.
+import Figure from './Figure.astro';
+import GateStepper from '@/components/GateStepper.astro';
+import plan from '@/data/plan.json';
+import type { Plan } from '@/lib/plan.ts';
+
+const p = plan as unknown as Plan;
+---
+
+<Figure kicker="Decision gates" lead="Each gate is decided against criteria written before the work it judges. Public status shows only whether a gate is decided." bare>
+  <GateStepper plan={p} />
+</Figure>

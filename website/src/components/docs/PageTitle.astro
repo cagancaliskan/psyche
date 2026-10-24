@@ -1,0 +1,17 @@
+---
+// Page title for every Starlight page. Docs pages listed in ./visuals.ts get a visual header
+// under the title, read by the route id Starlight resolves for the page.
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+import { visualFor } from './visuals.ts';
+
+const Visual = visualFor(Astro.locals.starlightRoute.id);
+---
+
+<Default />
+{
+  Visual && (
+    <div class="not-content sx-dv-slot">
+      <Visual />
+    </div>
+  )
+}

@@ -1,0 +1,86 @@
+---
+// The decision gates in order, each with its date or the rule that will set it, its status, the
+// question it decides and what happens if it is missed. The next upcoming gate is marked in spike
+// amber from the plan's as_of date at build time; a small script moves the mark to match the
+// reader's today.
+import { formatDay, nextGate, type Plan } from '../lib/plan.ts';
+import '../styles/docs-visuals.css';
+import '../styles/plan.css';
+
+interface Props {
+  plan: Plan;
+}
+const { plan } = Astro.props;
+const next = nextGate(plan, plan.as_of)?.id ?? null;
+const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+---
+
+<div class="sx-gs-wrap not-content" data-gate-stepper data-tz={plan.timezone}>
+  <ol class="sx-gs" aria-label="Decision gates in order">
+    {
+      plan.gates.map((g) => {
+        const isNext = g.id === next;
+        const moved = g.date !== null && g.baseline_date !== null && g.date !== g.baseline_date;
+        return (
+          <li
+            class="sx-gs__item"
+            data-state={g.status}
+            data-date={g.date ?? ''}
+            data-next={isNext ? '' : undefined}
+            aria-current={isNext ? 'step' : undefined}
+          >
+            <div class="sx-gs__rail" aria-hidden="true">
+              <span class="sx-gs__mark">{g.id}</span>
+              <span class="sx-gs__line" />
+            </div>
+            <article class="sx-gs__card sx-spot" data-spot>
+              <h3>Gate {g.id}: {g.title}</h3>
+              <p class="sx-gs__meta">
+                <span class="sx-gs__when">
+                  {g.date ? <time datetime={g.date}>{formatDay(g.date)}</time> : label(g.date_rule ?? 'date not yet fixed')}
+                  {moved && <span> (moved from {formatDay(g.baseline_date!)})</span>}
+                </span>{' '}
+                <span class="sx-chip" data-tone={g.status}>{label(g.status)}</span> <span class="sx-chip" data-tone="next" data-next-chip hidden={!isNext}>Next</span>
+              </p>
+              <p class="sx-gs__question">{g.question}</p>
+              <details class="sx-gs__miss sx-disclosure">
+                <summary>If missed</summary>
+                <p>{g.if_missed}</p>
+              </details>
+            </article>
+          </li>
+        );
+      })
+    }
+  </ol>
+</div>
+
+<script>
+  import { todayIn } from '../lib/plan.ts';
+  import './docs/motion.ts';
+
+  // Move the "next gate" mark to the first upcoming dated gate on or after the reader's today.
+  for (const root of document.querySelectorAll<HTMLElement>('[data-gate-stepper]')) {
+    let today: string;
+    try {
+      today = todayIn(root.dataset.tz ?? 'UTC', new Date());
+    } catch {
+      continue;
+    }
+    const items = [...root.querySelectorAll<HTMLElement>('.sx-gs__item')];
+    let best: HTMLElement | null = null;
+    for (const item of items) {
+      const date = item.dataset.date ?? '';
+      if (item.dataset.state !== 'upcoming' || date === '' || date < today) continue;
+      if (best === null || date < (best.dataset.date ?? '')) best = item;
+    }
+    for (const item of items) {
+      const on = item === best;
+      item.toggleAttribute('data-next', on);
+      if (on) item.setAttribute('aria-current', 'step');
+      else item.removeAttribute('aria-current');
+      const chip = item.querySelector<HTMLElement>('[data-next-chip]');
+      if (chip) chip.hidden = !on;
+    }
+  }
+</script>

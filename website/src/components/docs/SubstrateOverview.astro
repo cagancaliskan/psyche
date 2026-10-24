@@ -1,0 +1,24 @@
+---
+// The substrate overview's header: the captured test run as headline numbers read from the ledger
+// projection, then the layer stack.
+import LayerStack from './LayerStack.astro';
+import StatsBand from '@/components/ui/StatsBand.astro';
+import ledger from '@/data/ledger.public.json';
+import type { PublicLedger } from '@/lib/ledger.ts';
+
+const led = ledger as unknown as PublicLedger;
+const t = led.tests;
+const { interpreters, hash_seeds } = led.determinism;
+
+// Every number in the band is read from the ledger projection.
+const stats = [
+  { label: 'Suites', value: t.suites },
+  { label: 'Assertions', value: t.assertions },
+  { label: 'Failures', value: t.failures },
+  { label: 'CPython versions', value: interpreters.length, detail: interpreters.join(', ') },
+  { label: 'Hash seeds', value: hash_seeds.length, detail: hash_seeds.join(', ') },
+];
+---
+
+<StatsBand items={stats} />
+<LayerStack />

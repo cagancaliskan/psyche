@@ -1,0 +1,125 @@
+---
+// One project, in stages. Layout after "Scroll Reveal Content A" by abui (21st.dev): a numbered
+// block per stage with a rail that fills as it scrolls into view, and a figure card beside it.
+import { ArrowUpRight } from 'lucide-react';
+import ledger from '@/data/ledger.public.json';
+import { formatDay } from '@/lib/plan.ts';
+import { stateLabel, type ProgramLine, type PublicLedger } from '@/lib/ledger.ts';
+import { withBase } from '@/lib/url.ts';
+import DeterminismMatrix from './DeterminismMatrix.astro';
+import LatentLearningFigure from './LatentLearningFigure.astro';
+import SectionHeader from './SectionHeader.astro';
+
+const led = ledger as unknown as PublicLedger;
+const when = (line: ProgramLine) => `Since ${formatDay(line.since)}, decision ${line.decision}`;
+
+const stages = [
+  {
+    key: 'substrate',
+    number: '01',
+    state: led.program.substrate.state,
+    badge: stateLabel(led.program.substrate.state),
+    when: when(led.program.substrate),
+    title: 'Stage 1: the substrate',
+    lead: 'A dependency-free Python memory-and-activation substrate whose lower layers are proven correct and deterministic.',
+    note: 'Its three attempts to grade a cognitive effect each stopped before any graded number, at the external yardstick; that lesson shaped stage 2.',
+    figure: 'Determinism scope',
+    links: [
+      { href: withBase('substrate/overview/'), text: 'What the substrate is' },
+      { href: withBase('status/'), text: "The substrate's status" },
+      { href: 'https://doi.org/10.5281/zenodo.20474613', text: 'The archived release on Zenodo' },
+    ],
+  },
+  {
+    key: 'cognitive_map',
+    number: '02',
+    state: led.program.cognitive_map.state,
+    badge: stateLabel(led.program.cognitive_map.state),
+    when: when(led.program.cognitive_map),
+    title: 'Stage 2: spiking cognitive maps',
+    lead: 'Does a spiking network that learns only through local synaptic plasticity show, on classic cognitive-map tests, the behaviours that an internal map explains and memorised responses do not?',
+    note: 'The summary is public here; the detail stays private until release.',
+    figure: 'Latent learning, T1',
+    links: [
+      { href: withBase('research/'), text: 'The research overview' },
+      { href: withBase('roadmap/'), text: 'The roadmap and gates' },
+    ],
+  },
+  {
+    key: 'later',
+    number: '03+',
+    state: 'later',
+    badge: 'Not yet specified',
+    when: null,
+    title: 'Later stages: toward AGI',
+    lead: "Later stages build toward the long-term aim on the same discipline and on the project's own designs.",
+    note: 'They are not specified publicly yet.',
+    figure: 'Unmapped',
+    links: [],
+  },
+];
+---
+
+<section class="sx-lp-section sx-lp-band not-content" aria-labelledby="sx-stages-title">
+  <SectionHeader id="sx-stages-title" title="One project, in stages" index="01" kicker="Stages">
+    <p>Each stage stands on the one before it and is kept as a citable artifact, so the work behind it stays usable wherever the road stops.</p>
+  </SectionHeader>
+  <ol class="sx-reveal">
+    {
+      stages.map((s) => (
+        <li class="sx-reveal__item" data-state={s.state}>
+          <div class="sx-reveal__text" data-reveal>
+            <p class="sx-reveal__number" aria-hidden="true">
+              {s.number}
+            </p>
+            <div class="sx-reveal__row">
+              <div class="sx-reveal__rail" aria-hidden="true">
+                <span class="sx-reveal__fill" />
+              </div>
+              <div class="sx-reveal__body">
+                <p class="sx-reveal__meta">
+                  <span class="sx-reveal__badge">{s.badge}</span>
+                  {s.when && (
+                    <>
+                      {' '}
+                      <span>{s.when}</span>
+                    </>
+                  )}
+                </p>
+                <h3>{s.title}</h3>
+                <p class="sx-reveal__lead">{s.lead}</p>
+                <p class="sx-reveal__note">{s.note}</p>
+                {s.links.length > 0 && (
+                  <ul class="sx-reveal__links">
+                    {s.links.map((l) => (
+                      <li>
+                        <a class="sx-lp-link" href={l.href}>
+                          {l.text}
+                          <ArrowUpRight className="sx-lp-link__icon" strokeWidth={1.75} aria-hidden="true" />
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </div>
+          </div>
+          <div class="sx-reveal__figure sx-card" data-reveal>
+            <p class="sx-fig-label" aria-hidden="true">
+              <span>Fig. {s.number}</span> <span>{s.figure}</span>
+            </p>
+            {s.key === 'substrate' && (
+              <DeterminismMatrix interpreters={led.determinism.interpreters} seeds={led.determinism.hash_seeds} />
+            )}
+            {s.key === 'cognitive_map' && <LatentLearningFigure />}
+            {s.key === 'later' && (
+              <div class="sx-reveal__empty" aria-hidden="true">
+                <span>Not yet mapped</span>
+              </div>
+            )}
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</section>

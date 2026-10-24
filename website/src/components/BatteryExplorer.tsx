@@ -1,115 +1,149 @@
-import { useState } from 'react';
-import { TESTS, type ChainStep, type GridStep, type Test } from '../lib/battery.ts';
-import { polylinePoints, wallCells, type Grid } from '../lib/maze.ts';
+import { useEffect, useRef, useState, type FocusEvent, type MouseEvent, type PointerEvent } from 'react';
+import { Pause, Play } from 'lucide-react';
+import '@/styles/docs-visuals.css';
+import '@/styles/battery.css';
+import { TestPicture } from '@/components/battery/Pictures.tsx';
+import { TESTS, type Test } from '@/lib/battery.ts';
+
+/** Time each step stays on screen while a card steps on its own. */
+const STEP_MS = 3000;
+const THRESHOLDS = Array.from({ length: 11 }, (_, i) => i / 10);
 
 /**
- * Five paradigm illustrations. Every change of picture is a response to a button press; nothing
- * moves on its own. The caption is announced to screen readers when the step changes.
+ * The paradigm illustrations, one spotlight card each, with mono step chips under the picture. A
+ * card in view steps through its pictures on its own unless the reader prefers reduced motion;
+ * hovering pauses it, and any click or keyboard focus inside it stops it until Play is pressed.
+ * The caption is announced only while the reader is in control.
  */
 export default function BatteryExplorer() {
   return (
-    <ol className="sx-battery">
+    <div className="sx-test-stack not-content">
       {TESTS.map((t) => (
-        <li key={t.id} id={t.id.toLowerCase()}>
-          <Illustration test={t} />
-          <div>
-            <h3>
-              {t.id}: {t.name}
-            </h3>
-            <p className="sx-battery__paradigm">{t.paradigm}</p>
-            <p>{t.summary}</p>
-          </div>
-        </li>
+        <TestCard key={t.id} test={t} />
       ))}
-    </ol>
+    </div>
   );
 }
 
-function Illustration({ test }: { test: Test }) {
-  const [step, setStep] = useState(0);
-  const steps = test.steps;
-  const current = steps[step];
+interface View {
+  step: number;
+  prev: number | null;
+  animate: boolean;
+}
+
+function TestCard({ test }: { test: Test }) {
+  const count = test.steps.length;
+  const [view, setView] = useState<View>({ step: 0, prev: null, animate: false });
+  // null until the browser says; the toggle is rendered meanwhile so the step row does not shift.
+  const [motion, setMotion] = useState<boolean | null>(null);
+  const [stopped, setStopped] = useState(false);
+  const [inView, setInView] = useState(false);
+  const [hover, setHover] = useState(false);
+  const [onToggle, setOnToggle] = useState(false);
+  const card = useRef<HTMLElement>(null);
+  const toggle = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    const query = window.matchMedia('(prefers-reduced-motion: no-preference)');
+    const update = () => setMotion(query.matches);
+    update();
+    query.addEventListener('change', update);
+    return () => query.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    const el = card.current;
+    if (!el || !('IntersectionObserver' in window)) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[entries.length - 1];
+        const viewport = entry.rootBounds?.height ?? window.innerHeight;
+        const needed = 0.5 * Math.min(entry.boundingClientRect.height, viewport);
+        setInView(entry.isIntersecting && entry.intersectionRect.height >= needed);
+      },
+      { threshold: THRESHOLDS },
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  const autoplay = motion === true && !stopped;
+  const running = autoplay && inView && !(hover && !onToggle);
+
+  useEffect(() => {
+    if (!running) return;
+    const timer = window.setInterval(() => {
+      setView((v) => ({ step: (v.step + 1) % count, prev: v.step, animate: true }));
+    }, STEP_MS);
+    return () => window.clearInterval(timer);
+  }, [running, count]);
+
+  const show = (i: number) => setView((v) => (v.step === i ? v : { step: i, prev: v.step, animate: true }));
+  const fromToggle = (target: EventTarget | null) => !!toggle.current && target instanceof Node && toggle.current.contains(target);
+  const onClick = (e: MouseEvent) => {
+    if (!fromToggle(e.target)) setStopped(true);
+  };
+  const onFocus = (e: FocusEvent) => {
+    if (!fromToggle(e.target)) setStopped(true);
+  };
+  const onPointerEnter = (e: PointerEvent) => {
+    if (e.pointerType !== 'touch') setHover(true);
+  };
+
+  const current = test.steps[view.step];
+  const id = test.id.toLowerCase();
+  const [w, h] = test.kind === 'chain' ? [2 + (test.nodes.length - 1) * 1.6, 3] : test.kind === 'grid' ? [test.steps[0].grid.cols, test.steps[0].grid.rows] : [test.grid.cols, test.grid.rows];
   return (
-    <figure className="sx-illustration">
-      {test.kind === 'grid' && <GridPicture step={current as GridStep} />}
-      {test.kind === 'chain' && <ChainPicture nodes={test.nodes} step={current as ChainStep} />}
-      {test.kind === 'transfer' && (
-        <TransferPicture grid={test.grid} marks={test.marks} symbols={test.symbols[(current as { set: 0 | 1 }).set]} />
-      )}
-      <div className="sx-step-controls" role="group" aria-label={`${test.name} illustration steps`}>
-        {steps.map((s, i) => (
-          <button key={s.label} type="button" aria-pressed={i === step} onClick={() => setStep(i)}>
-            {s.label}
-          </button>
-        ))}
+    <article
+      ref={card}
+      id={id}
+      className="sx-spot"
+      data-spot
+      onClick={onClick}
+      onFocus={onFocus}
+      onPointerEnter={onPointerEnter}
+      onPointerLeave={() => setHover(false)}
+    >
+      <div className="sx-test-text">
+        <h2>
+          <span className="sx-test-text__id">{test.id}</span> {test.name}
+        </h2>
+        <p className="sx-test-text__paradigm">{test.paradigm}</p>
+        <p>{test.summary}</p>
       </div>
-      <figcaption aria-live="polite">{current.caption}</figcaption>
-    </figure>
-  );
-}
-
-function GridPicture({ step }: { step: GridStep }) {
-  const g = step.grid;
-  const doors = new Set((step.doors ?? []).map(([r, c]) => `${r},${c}`));
-  return (
-    <svg viewBox={`0 0 ${g.cols} ${g.rows}`} role="img" aria-label={step.caption}>
-      <rect className="floor" x={0} y={0} width={g.cols} height={g.rows} />
-      {wallCells(g).map(([r, c]) =>
-        doors.has(`${r},${c}`) ? (
-          <rect key={`d${r},${c}`} className="door" x={c + 0.12} y={r + 0.12} width={0.76} height={0.76} rx={0.12} />
-        ) : (
-          <rect key={`w${r},${c}`} className="wall" x={c} y={r} width={1} height={1} />
-        ),
-      )}
-      {step.trail && <polyline className="trail" points={polylinePoints(step.trail)} />}
-      {step.path && <polyline className="path" points={polylinePoints(step.path)} />}
-      {step.start && <circle className="start-dot" cx={step.start[1] + 0.5} cy={step.start[0] + 0.5} r={0.28} fill="none" stroke="currentColor" strokeWidth={0.12} />}
-      {step.goal && <circle className="goal" cx={step.goal[1] + 0.5} cy={step.goal[0] + 0.5} r={0.32} />}
-    </svg>
-  );
-}
-
-function ChainPicture({ nodes, step }: { nodes: string[]; step: ChainStep }) {
-  const x = (i: number) => 1 + i * 1.6;
-  const y = 1.4;
-  return (
-    <svg viewBox={`0 0 ${2 + (nodes.length - 1) * 1.6} 3`} role="img" aria-label={step.caption}>
-      {step.pairs.map(([a, b]) => (
-        <line key={`${a}-${b}`} className="edge" x1={x(a)} y1={y} x2={x(b)} y2={y} />
-      ))}
-      {step.query && (
-        <path
-          className="query"
-          d={`M ${x(step.query[0])} ${y - 0.45} Q ${(x(step.query[0]) + x(step.query[1])) / 2} ${y - 1.45} ${x(step.query[1])} ${y - 0.45}`}
-        />
-      )}
-      {nodes.map((n, i) => (
-        <g key={n}>
-          <circle className="node" cx={x(i)} cy={y} r={0.42} />
-          <text className="node-label" x={x(i)} y={y}>
-            {n}
-          </text>
-        </g>
-      ))}
-    </svg>
-  );
-}
-
-function TransferPicture({ grid, marks, symbols }: { grid: Grid; marks: readonly (readonly [number, number])[]; symbols: string[] }) {
-  return (
-    <svg viewBox={`0 0 ${grid.cols} ${grid.rows}`} role="img" aria-label={`Layout labelled ${symbols.join(', ')}`}>
-      <rect className="floor" x={0} y={0} width={grid.cols} height={grid.rows} />
-      {wallCells(grid).map(([r, c]) => (
-        <rect key={`w${r},${c}`} className="wall" x={c} y={r} width={1} height={1} />
-      ))}
-      {marks.map(([r, c], i) => (
-        <g key={`${r},${c}`}>
-          <circle className="node" cx={c + 0.5} cy={r + 0.5} r={0.42} />
-          <text className="node-label" x={c + 0.5} y={r + 0.5}>
-            {symbols[i]}
-          </text>
-        </g>
-      ))}
-    </svg>
+      <figure className="sx-test-fig" data-animate={view.animate ? '' : undefined}>
+        <div className="sx-test-fig__frame" style={{ aspectRatio: `${Math.min(w / h, 2.2).toFixed(3)}` }}>
+          <TestPicture key={view.step} test={test} index={view.step} prev={view.prev} idPrefix={`sx-page-${id}`} />
+        </div>
+        <div className="sx-test-controls">
+          <ol className="sx-steps" aria-label={`${test.name}: steps`}>
+            {test.steps.map((s, i) => (
+              <li key={s.label} data-state={i < view.step ? 'done' : i === view.step ? 'current' : 'next'}>
+                <button type="button" aria-pressed={i === view.step} onClick={() => show(i)}>
+                  <span className="sx-steps__n" aria-hidden="true">
+                    {i + 1}
+                  </span>{' '}
+                  {s.label}
+                </button>
+              </li>
+            ))}
+          </ol>
+          {motion !== false && (
+            <button
+              ref={toggle}
+              type="button"
+              className="sx-test-toggle"
+              onClick={() => setStopped((s) => !s)}
+              onPointerEnter={() => setOnToggle(true)}
+              onPointerLeave={() => setOnToggle(false)}
+            >
+              {stopped ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
+              {stopped ? 'Play' : 'Pause'} <span className="sr-only">{test.id} steps</span>
+            </button>
+          )}
+        </div>
+        <figcaption aria-live={autoplay ? 'off' : 'polite'}>{current.caption}</figcaption>
+      </figure>
+    </article>
   );
 }

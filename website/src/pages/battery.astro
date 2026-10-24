@@ -1,21 +1,40 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import BatteryExplorer from '../components/BatteryExplorer.tsx';
-import { withBase } from '../lib/url.ts';
+import BatteryExplorer from '@/components/BatteryExplorer.tsx';
+import { TESTS } from '@/lib/battery.ts';
+import { withBase } from '@/lib/url.ts';
+import '@/styles/docs-visuals.css';
 ---
 
 <StarlightPage
   frontmatter={{
     title: 'The test battery',
     description: 'Five classic cognitive-map paradigms, illustrated step by step.',
+    tableOfContents: false,
   }}
 >
   <p>
     The battery is built from five classic behavioural paradigms. Each asks for behaviour that memorised
     stimulus and response cannot explain. The pictures below are illustrations of the paradigms, not
-    results; step through them with the buttons. Protocol details and pass criteria are pre-registered and
-    stay private until release. The text version, with the fairness rules, is in <a
-      href={withBase('research/test-battery/')}>Test battery</a>.
+    results. A card in view steps through them on its own unless you prefer reduced motion; choose a step,
+    or press Pause, to take over. Protocol details and pass criteria are pre-registered and stay private
+    until release. The text version, with the fairness rules, is in <a href={withBase('research/test-battery/')}>Test battery</a>.
   </p>
+  <nav class="sx-test-jump not-content" aria-label="Tests in the battery">
+    <p class="sx-kicker sx-test-jump__kicker" aria-hidden="true">Jump to a test</p>
+    <ol>
+      {
+        TESTS.map((t) => (
+          <li>
+            <a href={`#${t.id.toLowerCase()}`}><span class="sx-test-jump__id">{t.id}</span> {t.name}</a>
+          </li>
+        ))
+      }
+    </ol>
+  </nav>
   <BatteryExplorer client:visible />
 </StarlightPage>
+
+<script>
+  import '@/components/docs/motion.ts';
+</script>

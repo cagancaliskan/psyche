@@ -1,0 +1,43 @@
+---
+// The substrate's determinism scope as a grid of lit cells: CPython versions by hash seeds, read
+// from the ledger. Every cell is a pass.
+import { Check } from 'lucide-react';
+
+interface Props {
+  interpreters: readonly string[];
+  seeds: readonly number[];
+}
+const { interpreters, seeds } = Astro.props;
+---
+
+<figure class="sx-matrix">
+  <table style={`--seeds: ${seeds.length}`}>
+    <caption class="sr-only">Determinism scope: CPython versions by hash seeds</caption>
+    <thead>
+      <tr>
+        <td></td>
+        <th scope="colgroup" colspan={seeds.length}>Hash seed</th>
+      </tr>
+      <tr>
+        <th scope="col">CPython</th>
+        {seeds.map((s) => <th scope="col">{s}</th>)}
+      </tr>
+    </thead>
+    <tbody>
+      {
+        interpreters.map((v) => (
+          <tr>
+            <th scope="row">{v}</th>
+            {seeds.map(() => (
+              <td>
+                <Check className="sx-matrix__tick" size={13} strokeWidth={2.5} aria-hidden="true" />
+                <span class="sr-only">passes</span>
+              </td>
+            ))}
+          </tr>
+        ))
+      }
+    </tbody>
+  </table>
+  <figcaption>Every registered suite passes with zero failures on each CPython version, under each hash seed.</figcaption>
+</figure>

@@ -1,0 +1,107 @@
+---
+// A band of headline numbers in a hairline grid, after "Stats Band" by kuratlielia (21st.dev):
+// mono labels with an index, large display figures with tabular digits, one spotlight card.
+// The server renders the final numbers. In view, and only when motion is welcome, each number
+// counts up from zero once, as "Number Ticker" by dillionverma (21st.dev) does, with an eased
+// frame loop instead of a spring library; screen readers always get the final value. An optional
+// default slot becomes a caption under the band.
+import '../../styles/docs-visuals.css';
+import '../../styles/plan.css';
+
+interface Item {
+  label: string;
+  value: number;
+  detail?: string;
+}
+interface Props {
+  items: Item[];
+  title?: string;
+}
+const { items, title } = Astro.props;
+const fmt = new Intl.NumberFormat('en-US');
+const index = (i: number) => String(i + 1).padStart(2, '0');
+const titleId = title ? `sx-stats-${title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}` : undefined;
+---
+
+<section
+  class="sx-stats not-content"
+  data-stats-band
+  aria-labelledby={titleId}
+  aria-label={title ? undefined : 'Key numbers'}
+>
+  {title && <h2 id={titleId} class="sx-stats__title">{title}</h2>}
+  <div class="sx-stats__frame sx-spot" data-spot>
+    <div class="sx-stats__clip">
+      <dl class="sx-stats__grid" style={`--count: ${Math.min(items.length, 5)}`}>
+        {
+          items.map((item, i) => (
+            <div class="sx-stats__item">
+              <dt class="sx-stats__label">
+                <span class="sx-stats__index" aria-hidden="true">{index(i)}</span> <span>{item.label}</span>
+              </dt>
+              <dd class="sx-stats__figure">
+                <span class="sr-only">{fmt.format(item.value)}</span>
+                <span class="sx-stats__number" aria-hidden="true">
+                  <span class="sx-stats__sizer">{fmt.format(item.value)}</span>
+                  <span class="sx-stats__live" data-count-to={item.value}>{fmt.format(item.value)}</span>
+                </span>
+              </dd>
+              {item.detail && <dd class="sx-stats__detail">{item.detail}</dd>}
+            </div>
+          ))
+        }
+      </dl>
+    </div>
+  </div>
+  {Astro.slots.has('default') && <p class="sx-stats__caption"><slot /></p>}
+</section>
+
+<script>
+  import '../docs/motion.ts';
+
+  const DURATION = 1600;
+  const STAGGER = 90;
+  const fmt = new Intl.NumberFormat('en-US');
+  const ease = (t: number) => 1 - (1 - t) ** 3;
+  const numbers = (band: Element) => [...band.querySelectorAll<HTMLElement>('[data-count-to]')];
+  const show = (node: HTMLElement, share: number) => {
+    node.textContent = fmt.format(Math.round(Number(node.dataset.countTo) * share));
+  };
+
+  function countUp(band: Element) {
+    const nodes = numbers(band);
+    const start = performance.now();
+    const frame = (now: number) => {
+      let running = false;
+      nodes.forEach((node, i) => {
+        const t = Math.min(1, Math.max(0, (now - start - i * STAGGER) / DURATION));
+        show(node, ease(t));
+        if (t < 1) running = true;
+      });
+      if (running) requestAnimationFrame(frame);
+    };
+    requestAnimationFrame(frame);
+  }
+
+  const bands = [...document.querySelectorAll('[data-stats-band]')];
+  const motionOk = matchMedia('(prefers-reduced-motion: no-preference)').matches;
+  if (bands.length > 0 && motionOk && 'IntersectionObserver' in window) {
+    const seen = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          seen.unobserve(entry.target);
+          countUp(entry.target);
+        }
+      },
+      { threshold: 0.4 },
+    );
+    for (const band of bands) {
+      for (const node of numbers(band)) show(node, 0);
+      seen.observe(band);
+    }
+    addEventListener('beforeprint', () => {
+      for (const band of bands) for (const node of numbers(band)) show(node, 1);
+    });
+  }
+</script>
