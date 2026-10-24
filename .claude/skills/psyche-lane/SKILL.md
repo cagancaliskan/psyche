@@ -18,12 +18,55 @@ If no lane was given, infer it from the task and **state your inference out loud
 acting**. If the task spans two lanes, that is not a licence to do both — it is a signal to
 do the first, hand off, and say so.
 
+## D-031 — the pause and the new paths
+
+Psyche is paused (D-031): check `tools/ledger.json` `program` before starting a brick. While
+it is paused, no new Psyche brick starts and no Psyche default changes; `/psyche-brick` stops
+and asks Cagan.
+
+The thesis restructure added paths, and each has one owner (D-031, item 9):
+
+| Path | Owner |
+|---|---|
+| `README.md`, `MOC.md`, `docs/PSYCHE.md`, `docs/thesis/**`, `docs/publish.json`, `tools/thesis_plan.json` | architect-pm |
+| `tools/publish/**`, `tools/hooks/**`, `website/**`, `.github/**` | builder |
+| `thesis/` | **export-only: no agent edits it.** It changes only through a release export that Cagan runs, under `docs/thesis/disclosure-policy.md`. |
+
+Two hooks enforce part of this, and only part. The tester lane's hook blocks `thesis/`,
+`tools/publish/`, `tools/hooks/`, `website/`, `.github/`, `.claude/`,
+`tools/thesis_plan.json` and `tools/ledger_check.py`, and the same paths inside a nested
+worktree under `.claude/worktrees/`. It sees Write, Edit, MultiEdit and NotebookEdit, and a
+Bash command that changes a blocked path in the common shell forms (a redirection target,
+`tee`, `sed -i`, `cp`/`mv`/`rm`/`ln`/`touch`/`chmod`, `dd of=`, the paths of
+`git checkout`/`restore`/`rm`/`mv`/`clean`/`checkout-index`, a file a git option writes,
+`find -delete`). Refused outright: `patch`, `git apply`, `git stash`, `git reset --hard`,
+`git merge`, `pull`, `rebase`, `cherry-pick`, `revert`, `read-tree`, `git checkout -f`, any
+git subcommand the hook does not know (an alias included), and a path-changing command run
+by `xargs`. It does not see a write made from inside a program (`python -c`, a script, a test
+run, a git hook or a command set with `git -c`), a path held in a shell variable or built by
+brace expansion, or a branch switch (`git checkout <branch>`, `git switch <branch>`).
+
+The public-boundary hook blocks `thesis/src/` and `thesis/tests/` outright, and a move of a
+directory that holds them; the English-only public paths refuse new text with Turkish letters,
+private identifiers or the private marker, and `CLAUDE.md`, `website/`, `tools/publish/` and
+`.github/` refuse Turkish letters, as the push-time leak check does. It sees writes through
+Write, Edit, MultiEdit and NotebookEdit and through the MCP file tools its matcher names
+(`write_file`, `edit_file`, `edit_block`, `create_file`, `move_file`, `create_directory`,
+`write_pdf`, as Desktop Commander and the reference filesystem server name them). It does not
+see shell writes, `render_plan.py --write` among them, or writes through any other tool.
+
+Both hooks bind only sessions launched in this repository's root: they are wired in this
+repository's `.claude/settings.json` and in the tester's agent file, and a session rooted in
+a parent folder loads neither. Run D-031 work from the repository root; from anywhere else,
+writes here are unguarded. A hook is a backstop, not the rule: the rule is the table.
+
 ---
 
 ## architect-pm — plans, sequences, specifies
 
 **May:** write and edit `docs/psyche_roadmap.md`, `docs/specs/**`, `DECISIONS.md`, design
-notes. Read anything. Run read-only shell (`git log`, `ls`, `cat`).
+notes, and the D-031 documents in the table above. Read anything. Run read-only shell
+(`git log`, `ls`, `cat`).
 
 **May not:** write or edit any file under `src/`, `tests/`, or `experiments/`. Decide a
 question that shapes the project's direction — those go to Cagan with options, tradeoffs,
@@ -39,7 +82,8 @@ A spec without a falsifier is not a spec.
 
 ## builder — implements, test-first
 
-**May:** write and edit `src/**` and its own `tests/test_psyche_*.py`. Run the suite.
+**May:** write and edit `src/**` and its own `tests/test_psyche_*.py`, and the D-031
+tooling paths in the table above. Run the suite.
 
 **May not:** write `tests/test_tester_*.py` (the tester's files). Mark anything as built
 that is not tested. Weaken an assertion or hand-place an input to make a test pass. Claim a
@@ -72,7 +116,9 @@ comparison resolve on an intrinsic integer before it resolves on a float.
 
 ## tester — adversary, verdict-giver
 
-**May:** create and edit `tests/test_tester_*.py` and test harnesses only.
+**May:** create and edit `tests/test_tester_*.py` and test harnesses only. None of the
+D-031 paths in the table above are yours, including the hooks and the publishing tools you
+may be asked to attack.
 
 **May not — this is absolute:** modify any production module. If you find a defect you
 report it precisely and hand back. Fixing the thing you are testing reintroduces exactly the

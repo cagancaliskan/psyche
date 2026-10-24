@@ -12,6 +12,33 @@ and enforces the hand-off between them. **Do not run two lanes in one pass.** Th
 the separation is that the role writing the mechanism is never the role certifying it;
 collapsing that inside one context destroys the evidence even if the code is fine.
 
+## Preflight — is Psyche paused? (D-031)
+
+Psyche is paused (D-031): check `tools/ledger.json` `program` before starting a brick. The
+live value:
+
+```!
+cd "${CLAUDE_PROJECT_DIR}" && python3 - <<'PY' 2>/dev/null || echo "program.psyche.state = (unreadable): treat as paused"
+import json,pathlib
+p=(json.loads(pathlib.Path("tools/ledger.json").read_text()).get("program") or {}).get("psyche")
+if not isinstance(p, dict):
+    print("program.psyche.state = (missing): treat as paused")
+else:
+    print(f"program.psyche.state = {p.get('state')} (since {p.get('since')}, {p.get('decision')})")
+PY
+```
+
+**If the state above is `paused`, or missing, or unreadable: stop here and ask Cagan.** Do
+not create the branch, do not delegate to any lane, do not draft a spec. Tell him in one or
+two plain sentences that Psyche is paused under D-031, what this brick would start, and ask
+whether he wants to resume Psyche or keep it paused. Only Cagan resumes it, with a new
+`DECISIONS.md` entry that sets `program.psyche.state` to `active`; no agent edits `program`.
+
+Upkeep the pause itself allows (keeping the suites, the ledger, `ledger_check` and the
+determinism sweep working) is not a brick and does not run through this skill.
+
+Continue to Phase 0 only when the state is `active`.
+
 ## Phase 0 — orient
 
 Run `/psyche-orient`. Confirm from the live output that this brick's dependencies are

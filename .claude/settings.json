@@ -10,6 +10,8 @@
       "Bash(python3 tools/ledger_check.py:*)",
       "Bash(python3 tools/ledger_sync.py:*)",
       "Bash(python3 tools/test_ledger.py)",
+      "Bash(python3 tools/publish/render_plan.py:*)",
+      "Bash(python3 tools/publish/ci_c2.py:*)",
       "Bash(git status:*)",
       "Bash(git log:*)",
       "Bash(git diff:*)",
@@ -33,6 +35,19 @@
             "type": "command",
             "command": "python3 ${CLAUDE_PROJECT_DIR}/tools/hooks/session_start_ledger.py",
             "timeout": 30
+          }
+        ]
+      }
+    ],
+
+    "PreToolUse": [
+      {
+        "matcher": "^(Write|Edit|MultiEdit|NotebookEdit|mcp__.+__(write_file|edit_file|edit_block|create_file|move_file|create_directory|write_pdf))$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "f=\"${CLAUDE_PROJECT_DIR}/tools/hooks/guard_public_boundary.py\"; [ -f \"$f\" ] || exit 0; exec python3 \"$f\"",
+            "timeout": 15
           }
         ]
       }

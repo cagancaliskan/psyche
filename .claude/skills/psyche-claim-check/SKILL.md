@@ -11,12 +11,21 @@ Target: **$ARGUMENTS**
 
 ## Step 1 — the automated pass
 
+The D-031 commit gate while the paper is held (D-012): every check except C2 must be clean,
+and C2 may report only the held paper.
+
 ```!
-cd "${CLAUDE_PROJECT_DIR}" && python3 tools/ledger_check.py 2>&1 | head -40 || echo "(ledger_check not installed)"
+cd "${CLAUDE_PROJECT_DIR}" && { out=$(python3 tools/ledger_check.py --only C1,C3,C4,C5,C6 2>&1); rc=$?; printf '%s\n' "$out" | head -40; echo "ledger_check --only C1,C3,C4,C5,C6: exit $rc"; }
 ```
 
-Anything above is a hard finding. Fix it or add an explicit pragma with a reason — never
-silence it without one.
+```!
+cd "${CLAUDE_PROJECT_DIR}" && { out=$(python3 tools/publish/ci_c2.py 2>&1); rc=$?; printf '%s\n' "$out" | head -40; echo "tools/publish/ci_c2.py: exit $rc"; }
+```
+
+Both must exit 0. `ci_c2.py` tolerates C2 findings only under `docs/paper/`; a stale count
+anywhere else fails it. Exit 1 is a finding; exit 2 is a tool error, and a tool error is a
+**HOLD**, never a pass. Fix every finding or add an explicit pragma with a reason — never
+silence one without it.
 
 ## Step 2 — the judgement pass
 
@@ -85,8 +94,54 @@ If this is leaving the repository (email, abstract, submission, post):
   framing: *"the architecture satisfies indicator X, assessed against Butlin et al."* is
   checkable and modest. Anything about minds is neither.
 
+## Step 4 — disclosure pass (D-031)
+
+**Scope.** Questions 1–6 apply to text about the thesis (the SCM work), wherever it appears,
+and to anything under the D-031 public paths (`README.md`, `MOC.md`, `docs/PSYCHE.md`,
+`docs/thesis/**`, `thesis/**`, `website/**`, `tools/thesis_plan.json`). Psyche's own public
+record is not thesis detail: its pre-registrations and results under `docs/experiments/`, its
+experiment ids (1e, 1e′, 2c and the like) and the held paper under `docs/paper/` are judged by
+Steps 1–3, even where a D-031 page mentions them. Questions 7 and 8 apply to every target. If
+the target holds no thesis text and touches no D-031 path, say so in one line and answer 7
+and 8 only.
+
+This repository holds the public summary of the thesis; the detail stays private until
+submission and moves here only under `docs/thesis/disclosure-policy.md`. Read the target and
+answer each question **in writing**. **Any yes is a HOLD.** When unsure whether something is
+private, it is.
+
+1. **Hypotheses.** Does it state a hypothesis beyond the level of the research questions? A
+   research question may be asked; a prediction, an expected direction or an expected outcome
+   may not be stated.
+2. **Thresholds and criteria.** Does it give a threshold, a pass criterion or any numeric
+   criterion for a thesis test, gate or comparison?
+3. **Experiments.** Does it name a thesis experiment id or any other private identifier, or
+   give the order in which the thesis experiments run?
+4. **The model.** Does it describe the thesis model's mechanism, or name its files, modules,
+   classes or functions?
+5. **Positioning.** Does it position the thesis against a named model or a named competing
+   system?
+6. **Venues and funding.** Does it name a venue for the thesis work (a conference, workshop
+   or journal) while venue names are withheld, or a funding programme? They are withheld
+   now: the public pages say only "a major peer-reviewed ML venue". Naming one is Cagan's
+   call.
+7. **The private repository.** Does it name the private companion repository, or point to it
+   by path, URL or remote?
+8. **Language.** Does it contain Turkish text, even a single Turkish letter? Everything in
+   this repository is English; proper names are written in ASCII.
+
+The PreToolUse guard (`tools/hooks/guard_public_boundary.py`) already refuses Turkish letters,
+private identifiers and the private marker in the English-only public paths as they are
+written through Write, Edit, MultiEdit, NotebookEdit and the MCP file tools its matcher
+names, in sessions launched in the repository root. It cannot judge questions 1–7, it never
+sees commit messages, shell writes (`render_plan.py --write` among them), writes through any
+other tool, or text leaving the repository, and a session rooted in a parent folder does not
+run it at all. This pass does not depend on it.
+
+A disclosure finding is fixed by deleting or generalising the text, never by a pragma.
+
 ## Output
 
 A verdict — **SHIP** or **HOLD** — followed by a numbered list of every change required, each
 with the exact replacement text. If SHIP, say in one line what the strongest claim in the
-text is and what evidence backs it.
+text is and what evidence backs it, and confirm that Step 4 found nothing.

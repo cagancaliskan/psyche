@@ -1,0 +1,55 @@
+{
+  "_README": [
+    "THE PUBLICATION MANIFEST (D-031): the only list of repository documents that may reach a public surface (the docs site and the generated wiki).",
+    "A page is published only if tools/publish/core.py's publishable_guard accepts its src: the file exists, is Markdown, is not under never_publish, is not a file C3 skips by name",
+    "(a path ending in psyche_roadmap.md or DECISIONS.md), sits outside ledger_check's SKIP_DIRS, is in neither claim_quarantine_paths nor count_quarantine_paths of tools/ledger.json,",
+    "carries no ledger ignore-file pragma, is in the tree of the commit being published and does not differ from that commit on disk.",
+    "So only text that ledger_check's C2, C3 and C4 actually govern, as a commit holds it, can be published. Adding a page here never bypasses the guard.",
+    "slug is the site route below site_base; wiki is the generated wiki page name. Relative links to these sources are rewritten to those targets;",
+    "links to any other tracked file become GitHub links pinned to the publishing commit, and a dead relative link fails the build.",
+    "never_publish entries ending in / are directory prefixes; the others are files. Each must be a canonical relative path (no leading / or ./, no backslash), or the manifest is refused.",
+    "Matching is case-insensitive, so it can only refuse more, never less. tools/publish/render_plan.py also renders generated blocks in the pages listed here."
+  ],
+  "site_base": "/psyche/",
+  "repo": "cagancaliskan/psyche",
+  "sections": [
+    {
+      "title": "Thesis",
+      "pages": [
+        {"src": "docs/thesis/README.md", "slug": "thesis", "wiki": "Thesis-Overview"},
+        {"src": "docs/thesis/roadmap.md", "slug": "thesis/roadmap", "wiki": "Thesis-Roadmap"},
+        {"src": "docs/thesis/gates.md", "slug": "thesis/gates", "wiki": "Thesis-Gates"},
+        {"src": "docs/thesis/test-battery.md", "slug": "thesis/test-battery", "wiki": "Thesis-Test-Battery"},
+        {"src": "docs/thesis/claims-and-scope.md", "slug": "thesis/claims-and-scope", "wiki": "Thesis-Claims-and-Scope"},
+        {"src": "docs/thesis/engineering.md", "slug": "thesis/engineering", "wiki": "Thesis-Engineering"},
+        {"src": "docs/thesis/glossary.md", "slug": "thesis/glossary", "wiki": "Thesis-Glossary"},
+        {"src": "docs/thesis/reading-list.md", "slug": "thesis/reading-list", "wiki": "Thesis-Reading-List"},
+        {"src": "docs/thesis/psyche-and-the-thesis.md", "slug": "thesis/psyche-and-the-thesis", "wiki": "Psyche-and-the-Thesis"},
+        {"src": "docs/thesis/disclosure-policy.md", "slug": "thesis/disclosure-policy", "wiki": "Thesis-Disclosure-Policy"}
+      ]
+    },
+    {
+      "title": "Psyche (paused)",
+      "pages": [
+        {"src": "docs/PSYCHE.md", "slug": "psyche/overview", "wiki": "Psyche-Overview"},
+        {"src": "docs/ARCHITECTURE.md", "slug": "psyche/architecture", "wiki": "Psyche-Architecture"},
+        {"src": "docs/METHODOLOGY.md", "slug": "psyche/methodology", "wiki": "Psyche-Methodology"}
+      ]
+    }
+  ],
+  "never_publish": [
+    "docs/design/",
+    "docs/paper/",
+    "docs/report/",
+    "docs/specs/",
+    "docs/experiments/",
+    "docs/psyche_roadmap.md",
+    "docs/CONSCIOUSNESS-YARDSTICK.md",
+    "DECISIONS.md",
+    "CLAUDE-CODE-PROMPTS.md",
+    "CLAUDE.md",
+    "MOC.md",
+    "INSTALL.md",
+    "docs/outreach/"
+  ]
+}
