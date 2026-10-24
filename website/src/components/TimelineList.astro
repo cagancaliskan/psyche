@@ -1,31 +1,36 @@
 ---
-// The research roadmap as an ordered list: the narrow-screen and no-script form of the timeline.
-import { formatDay, type Plan } from '../lib/plan.ts';
+// The research roadmap as an ordered list: the narrow-screen form of the timeline. It shows only
+// where the timeline has too little width (see .sx-tll in plan.css).
+import { formatDay, phaseWhen, type Plan } from '../lib/plan.ts';
+import '../styles/plan.css';
 
 interface Props {
   plan: Plan;
 }
 const { plan } = Astro.props;
 const gates = new Map(plan.gates.map((g) => [g.id, g]));
+const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 ---
 
-<div class="sx-timeline-list">
-  <ol aria-label="Research phases in order">
+<div class="sx-tll-wrap not-content">
+  <ol class="sx-tll" aria-label="Research phases in order">
     {
       plan.phases.map((p) => {
         const g = p.gate ? gates.get(p.gate) : undefined;
         return (
-          <li data-status={p.status}>
-            <strong>
-              {p.id}: {p.title}
-            </strong>
-            <br />
-            {p.start ? formatDay(p.start) : p.start_rule} to {p.end ? formatDay(p.end) : p.end_rule} ({p.status})
+          <li class="sx-tll__item" data-status={p.status} data-open={p.start === null || p.end === null ? 'true' : 'false'}>
+            <span class="sx-tll__mark" aria-hidden="true" />
+            <p class="sx-tll__head">
+              <span class="sx-tll__id">{p.id}</span> <strong>{p.title}</strong>
+            </p>
+            <p class="sx-tll__when">
+              <span>{phaseWhen(p)}</span> <span class="sx-chip" data-tone={p.status === 'active' ? 'now' : p.status}>{label(p.status)}</span>
+            </p>
             {g && (
-              <>
-                <br />
-                Gate {g.id} ({g.title}): {g.date ? formatDay(g.date) : g.date_rule}
-              </>
+              <p class="sx-tll__gate">
+                <span class="sx-diamond" aria-hidden="true" />
+                <span>Gate {g.id} ({g.title}): {g.date ? formatDay(g.date) : g.date_rule}</span>
+              </p>
             )}
           </li>
         );

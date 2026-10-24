@@ -137,3 +137,16 @@ export function formatDay(iso: string): string {
   const d = new Date(dayNumber(iso) * DAY);
   return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' });
 }
+
+/**
+ * A phase's dates in words: "1 March 2027 to 15 April 2027", or the plan's own rule wherever a
+ * date is not fixed yet.
+ */
+export function phaseWhen(phase: PlanPhase): string {
+  const from = phase.start ? formatDay(phase.start) : null;
+  const to = phase.end ? formatDay(phase.end) : null;
+  if (from && to) return `${from} to ${to}`;
+  if (from) return `${from} to ${phase.end_rule ?? 'an end not yet fixed'}`;
+  const start = `Starts ${phase.start_rule ?? 'on a date not yet fixed'}`;
+  return to ? `${start}, ends ${to}` : `${start}; end ${phase.end_rule ?? 'not yet fixed'}`;
+}

@@ -1,69 +1,34 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import MazeHero from '../components/MazeHero.astro';
-import NowLine from '../components/NowLine.tsx';
-import Timeline from '../components/Timeline.tsx';
-import TimelineList from '../components/TimelineList.astro';
-import plan from '../data/plan.json';
-import ledger from '../data/ledger.public.json';
-import { withBase } from '../lib/url.ts';
-import { formatDay, type Plan } from '../lib/plan.ts';
-import { stateLabel, type PublicLedger } from '../lib/ledger.ts';
+import MazeHero from '@/components/MazeHero.astro';
+import NowLine from '@/components/NowLine.tsx';
+import Timeline from '@/components/Timeline.tsx';
+import TimelineList from '@/components/TimelineList.astro';
+import BatteryTeaser from '@/components/battery/BatteryTeaser.astro';
+import StatsBand from '@/components/ui/StatsBand.astro';
+import HowBuilt from '@/components/landing/HowBuilt.astro';
+import PublicWithheld from '@/components/landing/PublicWithheld.astro';
+import SectionHeader from '@/components/landing/SectionHeader.astro';
+import StageReveal from '@/components/landing/StageReveal.astro';
+import plan from '@/data/plan.json';
+import ledger from '@/data/ledger.public.json';
+import type { PublicLedger } from '@/lib/ledger.ts';
+import type { Plan } from '@/lib/plan.ts';
+import { withBase } from '@/lib/url.ts';
+import '@/styles/landing.css';
 
 const p = plan as unknown as Plan;
 const led = ledger as unknown as PublicLedger;
 const t = led.tests;
-const interpreters = led.determinism.interpreters;
-const substrate = led.program.substrate;
-const maps = led.program.cognitive_map;
+const { interpreters, hash_seeds } = led.determinism;
 const aim = led.aim.trim().replace(/\.$/, '');
-const fmt = new Intl.NumberFormat('en-US');
 
-// The stage arc. Stage states and dates come from the ledger's program block; the words are
-// hand-written and governed by tools/publish/check_copy.py.
-const stages = [
-  {
-    mark: '1',
-    state: substrate.state,
-    badge: stateLabel(substrate.state),
-    when: `since ${formatDay(substrate.since)}, decision ${substrate.decision}`,
-    title: 'Stage 1: the substrate',
-    copy: [
-      "The foundation, and where Psyche began: a dependency-free Python memory-and-activation substrate. A graph store of concept nodes and weighted roads, deterministic spreading activation, a multi-source activation field, source clustering, and a workspace that runs one competition and broadcasts back within a bounded budget. Its lower layers are proven correct and deterministic.",
-      "It also gave the project its method: one ledger as the single source of truth, separate builder, tester and validator lanes, adversarial and loop-closed tests, determinism checked across hash seeds and interpreters, and pre-registered experiments. Its three attempts to grade a cognitive effect each stopped before any graded number, and each time the obstacle was the external yardstick. That lesson shaped stage 2.",
-    ],
-    links: [
-      { href: withBase('substrate/overview/'), text: 'What the substrate is' },
-      { href: withBase('status/'), text: "The substrate's status" },
-      { href: 'https://doi.org/10.5281/zenodo.20474613', text: 'The archived release on Zenodo' },
-    ],
-  },
-  {
-    mark: '2',
-    state: maps.state,
-    badge: stateLabel(maps.state),
-    when: `since ${formatDay(maps.since)}, decision ${maps.decision}`,
-    title: 'Stage 2: spiking cognitive maps',
-    copy: [
-      'Does a spiking network that learns only through local synaptic plasticity show, on classic cognitive-map tests, the behaviours that an internal map explains and memorised responses do not? Do other families of agents, given the same experience, show them too? What does the behaviour cost, as an analytic estimate of synaptic operations?',
-      "The line is built around the substrate's lesson: classic behavioural tests with published protocols, and baselines reproduced against their published behaviour. The summary is public here; the detail stays private until release.",
-    ],
-    links: [
-      { href: withBase('research/'), text: 'The research overview' },
-      { href: withBase('roadmap/'), text: 'The roadmap and gates' },
-    ],
-  },
-  {
-    mark: '3+',
-    state: 'later',
-    badge: 'Not yet specified',
-    when: null,
-    title: 'Later stages: toward AGI',
-    copy: [
-      "Later stages build toward the long-term aim on the same discipline and on the project's own designs. They are not specified publicly yet.",
-    ],
-    links: [],
-  },
+const stats = [
+  { label: 'Suites', value: t.suites },
+  { label: 'Assertions', value: t.assertions },
+  { label: 'Failures', value: t.failures },
+  { label: 'CPython versions', value: interpreters.length, detail: `${interpreters[0]} to ${interpreters[interpreters.length - 1]}` },
+  { label: 'Hash seeds', value: hash_seeds.length, detail: hash_seeds.join(', ') },
 ];
 ---
 
@@ -75,116 +40,50 @@ const stages = [
     template: 'splash',
   }}
 >
-  <section class="sx-hero sx-landing">
-    <div>
-      <h1 class="sx-hero__title">Psyche</h1>
-      <p class="sx-hero__aim">An open research project. Its long-term aim: {aim}.</p>
-      <p class="sx-hero__lead">
-        Psyche grows in stages, each built test-first and kept as a citable artifact. The substrate laid the
-        foundation and the method; the current stage asks whether a spiking network that learns only through
-        local plasticity shows the behaviours that an internal map explains. This site is the public summary:
-        what is asked, how it will be tested, and when each decision falls.
-      </p>
-      <div class="sx-hero__actions">
-        <a class="sx-button" href={withBase('research/')}>Read the research overview</a>
-        <a class="sx-link" href={withBase('battery/')}>Explore the test battery</a>
+  <div class="sx-landing not-content">
+    <MazeHero>
+      <h1 class="sx-lp-title">Psyche</h1>
+      <p class="sx-lp-aim">Its long-term aim: {aim}.</p>
+      <p class="sx-lp-lead">An open research project that grows in stages, each built test-first and kept as a citable artifact.</p>
+      <div class="sx-lp-actions">
+        <a class="sx-lp-btn sx-lp-btn--primary" href={withBase('research/')}>Read the research overview</a>
+        <a class="sx-lp-btn sx-lp-btn--quiet" href={withBase('battery/')}>Explore the test battery</a>
       </div>
+    </MazeHero>
+  </div>
+
+  <div class="sx-lp-now">
+    <NowLine client:idle plan={p} label="Now in stage 2" />
+  </div>
+
+  <StageReveal />
+
+  <section class="sx-lp-section not-content" aria-labelledby="sx-battery-title">
+    <SectionHeader id="sx-battery-title" title="The test battery">
+      <p>The classic behavioural paradigms the battery is built from, drawn as illustrations, not results.</p>
+    </SectionHeader>
+    <BatteryTeaser />
+  </section>
+
+  <section class="sx-lp-section" aria-labelledby="sx-roadmap-title">
+    <div class="not-content">
+      <SectionHeader id="sx-roadmap-title" title="Stage 2 roadmap">
+        <p>The current research line, <cite>{p.line.title}</cite>, runs in {p.phases.length} phases with {p.gates.length} decision gates. Choose a phase to see what it delivers; the full schedule is on the <a class="sx-lp-a" href={withBase('roadmap/')}>roadmap page</a>.</p>
+      </SectionHeader>
     </div>
-    <MazeHero />
-  </section>
-
-  <NowLine client:load plan={p} label="Now in stage 2" />
-
-  <section class="sx-section" aria-labelledby="sx-stages-title">
-    <h2 id="sx-stages-title">One project, in stages</h2>
-    <p>
-      Each stage stands on the one before it and is kept as a citable artifact, so the work behind it stays
-      usable wherever the road stops.
-    </p>
-    <ol class="sx-stages">
-      {
-        stages.map((s) => (
-          <li data-state={s.state}>
-            <div class="sx-stages__rail" aria-hidden="true">
-              <span class="sx-stages__mark">{s.mark}</span>
-              <span class="sx-stages__line"></span>
-            </div>
-            <div class="sx-stages__body">
-              <h3>{s.title}</h3>
-              <p class="sx-stages__meta">
-                <span class="sx-stages__badge">{s.badge}</span>
-                {s.when && <span>{s.when}</span>}
-              </p>
-              {s.copy.map((para) => (
-                <p>{para}</p>
-              ))}
-              {s.links.length > 0 && (
-                <ul class="sx-stages__links">
-                  {s.links.map((l) => (
-                    <li>
-                      <a href={l.href}>{l.text}</a>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          </li>
-        ))
-      }
-    </ol>
-  </section>
-
-  <section class="sx-section">
-    <h2>Stage 2 roadmap</h2>
-    <p>
-      The current research line, <cite>{p.line.title}</cite>, runs in {p.phases.length} phases with {p.gates.length}
-      decision gates. Choose a phase to see what it delivers; the full schedule is on the
-      <a href={withBase('roadmap/')}>roadmap page</a>.
-    </p>
     <Timeline client:visible plan={p} />
     <TimelineList plan={p} />
   </section>
 
-  <section class="sx-section">
-    <h2>What is public, and what is not yet</h2>
-    <div class="sx-split">
-      <div>
-        <h3>Public now</h3>
-        <ul>
-          <li>The research line's overview and questions</li>
-          <li>The roadmap and the decision gates</li>
-          <li>The test battery's paradigms and fairness rules</li>
-          <li>The claims discipline and engineering standards</li>
-          <li>The substrate's code, tests and published record</li>
-        </ul>
-      </div>
-      <div>
-        <h3>Withheld until release</h3>
-        <ul>
-          <li>The spiking model and its code</li>
-          <li>Hypotheses beyond the research questions</li>
-          <li>Pre-registered criteria, committed here by hash only</li>
-          <li>The experiment plan and its order</li>
-          <li>The analysis of related work</li>
-        </ul>
-      </div>
-    </div>
-    <p>
-      Releases follow a fixed rule: complete, working, older versions only.
-      <a href={withBase('research/disclosure-policy/')}>Read the disclosure policy</a>.
-    </p>
-  </section>
+  <HowBuilt />
 
-  <section class="sx-section">
-    <h2>The substrate, maintained</h2>
-    <p>
-      The substrate's development is {substrate.state}, and its record stays here and stays verified: {t.suites}
-      suites, {fmt.format(t.assertions)} assertions and {t.failures} failures on
-      {`CPython ${interpreters[0]} to ${interpreters[interpreters.length - 1]}`}.
-    </p>
-    <p>
-      <a href={withBase('status/')}>See the substrate's status</a>, or read
-      <a href={withBase('substrate/overview/')}>what the substrate is</a>.
-    </p>
+  <PublicWithheld />
+
+  <section class="sx-lp-section not-content" aria-labelledby="sx-substrate-title">
+    <SectionHeader id="sx-substrate-title" title="The substrate, maintained">
+      <p>The substrate's development is {led.program.substrate.state}, and its record stays here and stays verified.</p>
+    </SectionHeader>
+    <StatsBand items={stats} />
+    <p class="sx-lp-more"><a class="sx-lp-a" href={withBase('status/')}>See the substrate's status</a>, or read <a class="sx-lp-a" href={withBase('substrate/overview/')}>what the substrate is</a>.</p>
   </section>
 </StarlightPage>

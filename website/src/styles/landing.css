@@ -1,0 +1,372 @@
+/*
+ * The landing page (src/pages/index.astro and src/components/landing/). Site tokens only, so light
+ * and dark switch through the variables. The layer statement repeats global.css's order, so the
+ * order holds whichever stylesheet the browser reads first.
+ */
+@layer base, starlight, theme, components, utilities;
+
+@layer components {
+  /* Hero copy, placed by MazeHero in its text column. */
+  .sx-lp-title {
+    margin: 0;
+    font-family: var(--sx-font-display);
+    font-size: clamp(2.75rem, 1.7rem + 4.4vw, 4.6rem);
+    line-height: 1;
+    color: var(--sl-color-white);
+  }
+  .sx-lp-aim {
+    max-width: 28rem;
+    margin: 1rem 0 0;
+    font-family: var(--sx-font-display);
+    font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.6rem);
+    line-height: 1.3;
+    color: var(--sl-color-gray-1);
+    text-wrap: balance;
+  }
+  .sx-lp-lead {
+    max-width: 28rem;
+    margin: 1rem 0 0;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--sl-color-gray-2);
+    text-wrap: pretty;
+  }
+  .sx-lp-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 1.75rem;
+  }
+  .sx-lp-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.6rem 0.9rem;
+    border: 1px solid transparent;
+    border-radius: 0.5rem;
+    font-size: 0.9375rem;
+    font-weight: 700;
+    line-height: 1.3;
+    text-decoration: none;
+  }
+  .sx-lp-btn--primary {
+    background: var(--sl-color-white);
+    color: var(--sl-color-black);
+  }
+  .sx-lp-btn--primary:hover {
+    background: var(--sl-color-gray-2);
+    color: var(--sl-color-black);
+  }
+  .sx-lp-btn--quiet {
+    border-color: var(--sl-color-gray-4);
+    background: color-mix(in srgb, var(--sl-color-black) 75%, transparent);
+    color: var(--sl-color-white);
+  }
+  .sx-lp-btn--quiet:hover {
+    border-color: var(--sx-agent);
+    color: var(--sl-color-white);
+  }
+
+  .sx-lp-now {
+    margin-top: 0.5rem;
+  }
+
+  /* Sections and their headings. */
+  .sx-lp-section {
+    margin-top: clamp(3.5rem, 2rem + 5vw, 5.5rem);
+  }
+  .sx-lp-head {
+    max-width: 46rem;
+    margin-bottom: 1.75rem;
+  }
+  .sx-lp-head h2 {
+    margin: 0;
+    font-size: clamp(1.65rem, 1.3rem + 1.3vw, 2.25rem);
+    line-height: 1.15;
+    color: var(--sl-color-white);
+    text-wrap: balance;
+  }
+  .sx-lp-head p {
+    max-width: 62ch;
+    margin: 0.75rem 0 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--sl-color-gray-2);
+    text-wrap: pretty;
+  }
+  .sx-lp-more {
+    margin: 1.25rem 0 0;
+    color: var(--sl-color-gray-2);
+  }
+  .sx-lp-plain {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .sx-lp-plain > li {
+    margin: 0;
+  }
+
+  /* Links in landing copy: underlined in the structure colour, the agent colour on hover. */
+  .sx-lp-a {
+    color: var(--sl-color-white);
+    font-weight: 700;
+    text-decoration: underline;
+    text-decoration-color: var(--sx-structure);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.22em;
+  }
+  .sx-lp-a:hover {
+    color: var(--sx-agent);
+    text-decoration-color: var(--sx-agent);
+  }
+
+  /* One project, in stages: a numbered block per stage with a rail beside its text and a figure
+     beside it. The rail fills as the block scrolls into view; without scroll-driven animation
+     support, or with reduced motion, it is drawn full. */
+  .sx-reveal {
+    display: grid;
+    gap: clamp(2.5rem, 1.5rem + 3vw, 4rem);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  /* global.css caps every list item in the content column at 72ch, unlayered. */
+  .sx-reveal > .sx-reveal__item {
+    max-width: none !important;
+  }
+  .sx-reveal__item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem 3rem;
+    margin: 0;
+    view-timeline-name: --sx-stage;
+  }
+  @media (min-width: 64rem) {
+    .sx-reveal__item {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 21rem);
+      align-items: center;
+    }
+  }
+  .sx-reveal__number {
+    display: flex;
+    justify-content: center;
+    width: 2.5rem;
+    margin: 0 0 0.5rem;
+    font-family: var(--sx-font-display);
+    font-size: 1.6rem;
+    line-height: 1;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+    color: var(--sx-muted);
+  }
+  .sx-reveal__row {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    gap: 0 1rem;
+  }
+  .sx-reveal__rail {
+    position: relative;
+  }
+  .sx-reveal__rail::before,
+  .sx-reveal__fill {
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc(50% - 1px);
+    width: 2px;
+    border-radius: 1px;
+  }
+  .sx-reveal__rail::before {
+    content: '';
+    background: var(--sx-hairline);
+  }
+  .sx-reveal__fill {
+    background: var(--sx-structure);
+    transform-origin: top;
+  }
+  .sx-reveal__item[data-state='active'] .sx-reveal__fill {
+    background: var(--sx-agent);
+  }
+  .sx-reveal__item[data-state='active'] .sx-reveal__number {
+    color: var(--sx-agent);
+  }
+  .sx-reveal__item[data-state='later'] .sx-reveal__rail::before {
+    width: 0;
+    background: none;
+    border-inline-start: 2px dashed var(--sl-color-gray-4);
+  }
+  .sx-reveal__item[data-state='later'] .sx-reveal__fill {
+    display: none;
+  }
+  .sx-reveal__body {
+    min-width: 0;
+    padding-bottom: 0.25rem;
+  }
+  .sx-reveal__body h3 {
+    margin: 0;
+    font-size: clamp(1.3rem, 1.15rem + 0.5vw, 1.55rem);
+    line-height: 1.2;
+    color: var(--sl-color-white);
+  }
+  .sx-reveal__body > p {
+    max-width: 60ch;
+    margin: 0.75rem 0 0;
+    line-height: 1.65;
+  }
+  .sx-reveal__body > p.sx-reveal__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--sx-muted);
+  }
+  .sx-reveal__badge {
+    padding: 0.1rem 0.6rem;
+    border: 1px solid var(--sx-structure);
+    border-radius: 999px;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    line-height: 1.5;
+    color: var(--sl-color-white);
+  }
+  /* The active stage is "now": filled with the agent colour, text in the page background colour. */
+  .sx-reveal__item[data-state='active'] .sx-reveal__badge {
+    border-color: var(--sx-agent);
+    background: var(--sx-agent);
+    color: var(--sl-color-black);
+  }
+  .sx-reveal__item[data-state='later'] .sx-reveal__badge {
+    border-style: dashed;
+    color: var(--sx-muted);
+  }
+  .sx-reveal__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem 1.25rem;
+    list-style: none;
+    margin: 0.9rem 0 0;
+    padding: 0;
+  }
+  .sx-reveal__links > li {
+    margin: 0;
+  }
+  .sx-reveal__figure {
+    width: 100%;
+    max-width: 21rem;
+    padding-inline-start: 3.5rem;
+  }
+  @media (max-width: 30rem) {
+    .sx-reveal__figure {
+      padding-inline-start: 0;
+    }
+  }
+  @media (min-width: 64rem) {
+    .sx-reveal__figure {
+      justify-self: end;
+      padding-inline-start: 0;
+    }
+  }
+  .sx-reveal__empty {
+    aspect-ratio: 9 / 7;
+    border: 2px dashed var(--sl-color-gray-4);
+    border-radius: 0.75rem;
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .sx-reveal__fill {
+        animation-name: sx-reveal-grow;
+        animation-duration: auto;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: --sx-stage;
+        animation-range: cover 10% cover 50%;
+      }
+      .sx-lp-maze .path {
+        stroke-dasharray: 1 1.1;
+        animation-name: sx-reveal-draw;
+        animation-duration: auto;
+        animation-timing-function: linear;
+        animation-fill-mode: both;
+        animation-timeline: --sx-stage;
+        animation-range: cover 25% cover 50%;
+      }
+    }
+  }
+  @keyframes sx-reveal-grow {
+    from {
+      transform: scaleY(0);
+    }
+    to {
+      transform: scaleY(1);
+    }
+  }
+  @keyframes sx-reveal-draw {
+    from {
+      stroke-dashoffset: 1.05;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  /* Stage 1 figure: CPython versions by hash seeds, every cell ticked. */
+  .sx-matrix {
+    margin: 0;
+  }
+  .sx-matrix table {
+    display: table;
+    width: auto;
+    margin: 0 -0.3rem;
+    border-collapse: separate;
+    border-spacing: 0.3rem;
+    font-size: 0.8125rem;
+    font-variant-numeric: tabular-nums;
+  }
+  .sx-matrix :is(th, td) {
+    padding: 0;
+    border: 0;
+    background: none;
+    text-align: center;
+    vertical-align: middle;
+  }
+  .sx-matrix th {
+    font-weight: 700;
+    color: var(--sx-muted);
+  }
+  .sx-matrix tbody th,
+  .sx-matrix thead tr + tr th:first-child {
+    padding-inline-end: 0.4rem;
+    text-align: end;
+  }
+  .sx-matrix tbody td {
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid color-mix(in srgb, var(--sx-structure) 50%, transparent);
+    border-radius: 0.35rem;
+    background: color-mix(in srgb, var(--sx-structure) 14%, transparent);
+    color: var(--sx-structure);
+  }
+  .sx-matrix__tick {
+    display: inline-block;
+    vertical-align: middle;
+  }
+  .sx-matrix figcaption,
+  .sx-lp-maze figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--sx-muted);
+  }
+
+  /* Stage 2 figure: the battery's T1 picture (styled by battery.css). */
+  .sx-lp-maze {
+    margin: 0;
+  }
+  .sx-lp-maze .sx-pic {
+    height: auto;
+    overflow: hidden;
+    border-radius: 0.5rem;
+  }
+}

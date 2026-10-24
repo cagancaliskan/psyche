@@ -1,0 +1,856 @@
+/*
+ * Roadmap and status pieces: the now strip, the phase timeline, the gate stepper, the stats band
+ * and the brick cards. Imported by the components that use them. The layer statement repeats the
+ * one in global.css, so the order holds whichever stylesheet the browser reads first.
+ */
+@layer base, starlight, theme, components, utilities;
+
+@layer components {
+  /* Custom pages that need more room than prose. */
+  body:has(.sx-wide) {
+    --sl-content-width: 56rem;
+  }
+
+  /* global.css caps every paragraph and list item in page content at a reading measure, outside any
+     layer. These pieces lay out their own widths (a timeline row must span the whole axis), so the
+     cap is lifted for them; only an important declaration in a layer outranks an unlayered one. */
+  :is(.sx-tl-wrap, .sx-tll-wrap, .sx-gs-wrap, .sx-bricks, .sx-nowchips) :is(p, li) {
+    max-width: none !important;
+  }
+
+  /* ---------- Chips ---------- */
+
+  /* Status chip: a pill with an indicator dot, after "Status" by diceui (21st.dev), without the pulse. */
+  .sx-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.1rem 0.6rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 999px;
+    background: var(--sl-color-black);
+    color: var(--sl-color-white);
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.45;
+    white-space: nowrap;
+  }
+  .sx-chip[hidden] {
+    display: none;
+  }
+  .sx-chip::before {
+    content: '';
+    flex: none;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    border: 1.5px solid var(--sx-structure);
+  }
+  .sx-chip:is([data-tone='done'], [data-tone='decided'])::before {
+    background: var(--sx-structure);
+  }
+  .sx-chip[data-tone='now'] {
+    border-color: var(--sx-agent);
+  }
+  .sx-chip[data-tone='now']::before {
+    border-color: var(--sx-agent);
+    background: var(--sx-agent);
+  }
+  .sx-chip[data-tone='next'] {
+    border-color: var(--sx-agent);
+    background: var(--sx-agent);
+    color: var(--sl-color-black);
+  }
+  .sx-chip[data-tone='next']::before {
+    border-color: var(--sl-color-black);
+    background: var(--sl-color-black);
+  }
+
+  /* Disclosure used by the gate cards and the collapsed brick list. */
+  .sx-disclosure > summary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    list-style: none;
+    cursor: pointer;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--sx-muted);
+  }
+  .sx-disclosure > summary::-webkit-details-marker {
+    display: none;
+  }
+  .sx-disclosure > summary::before {
+    content: '';
+    width: 0.4rem;
+    height: 0.4rem;
+    border-inline-end: 2px solid currentColor;
+    border-block-end: 2px solid currentColor;
+    transform: rotate(-45deg);
+    transition: transform 0.15s ease-out;
+  }
+  .sx-disclosure[open] > summary::before {
+    transform: rotate(45deg);
+  }
+  .sx-disclosure > summary:hover {
+    color: var(--sl-color-white);
+  }
+  .sx-disclosure > summary:focus-visible {
+    outline: 2px solid var(--sx-agent);
+    outline-offset: 3px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sx-disclosure > summary::before {
+      transition: none;
+    }
+  }
+
+  /* ---------- Now strip ---------- */
+
+  /* Two-part chips, after "Status Badge" by serafimcloud (21st.dev). */
+  .sx-nowchips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem 0.75rem;
+    margin: 0.75rem 0 2.25rem;
+  }
+  .sx-pair {
+    display: inline-flex;
+    align-items: stretch;
+    max-width: 100%;
+    margin: 0;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 1.25rem;
+    background: var(--sx-surface);
+    font-size: 0.9rem;
+    line-height: 1.35;
+    overflow: hidden;
+  }
+  .sx-pair__key {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.4rem 0.75rem;
+    border-inline-end: 1px solid var(--sx-hairline);
+    background: var(--sl-color-black);
+    color: var(--sl-color-white);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+  .sx-pair__key::before {
+    content: '';
+    flex: none;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--sx-structure);
+  }
+  .sx-pair[data-tone='now'] .sx-pair__key {
+    border-color: var(--sx-agent);
+    background: var(--sx-agent);
+    color: var(--sl-color-black);
+  }
+  .sx-pair[data-tone='now'] .sx-pair__key::before {
+    background: var(--sl-color-black);
+  }
+  .sx-pair__val {
+    display: inline-flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.25rem 0.6rem;
+    min-width: 0;
+    padding: 0.4rem 0.85rem;
+    color: var(--sl-color-gray-1);
+    font-variant-numeric: tabular-nums;
+  }
+  .sx-pair__days {
+    padding: 0 0.5rem;
+    border: 1px solid var(--sx-agent);
+    border-radius: 999px;
+    color: var(--sx-agent);
+    font-size: 0.8rem;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* ---------- Phase timeline ---------- */
+
+  /* Pill bands on a date axis. Month gridlines and the today chip follow "Gantt Chart" by klyv-ui
+     (21st.dev). Below 36rem of width the list form below takes over. */
+  .sx-tl-wrap,
+  .sx-tll-wrap {
+    container: sx-plan / inline-size;
+  }
+  .sx-tl {
+    --row: 2.75rem;
+    position: relative;
+    margin: 1.25rem 0 0.5rem;
+  }
+  .sx-tl__axis {
+    position: relative;
+    height: 1.6rem;
+    border-bottom: 1px solid var(--sx-structure);
+    font-size: 0.8125rem;
+    color: var(--sx-muted);
+  }
+  .sx-tl__tick {
+    position: absolute;
+    bottom: 0.3rem;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+  .sx-tl__body {
+    position: relative;
+    padding-bottom: 1.9rem;
+  }
+  .sx-tl__gridline {
+    position: absolute;
+    top: 0;
+    bottom: 0.6rem;
+    width: 0;
+    border-inline-start: 1px dashed var(--sx-hairline);
+  }
+  .sx-tl__rows {
+    position: relative;
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0 0;
+  }
+  .sx-tl__row {
+    position: relative;
+    height: var(--row);
+    margin: 0;
+  }
+  .sx-tl__hit {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 0.5rem;
+    background: transparent;
+    color: inherit;
+    font: inherit;
+    text-align: start;
+    cursor: pointer;
+  }
+  .sx-tl__hit:hover {
+    background: var(--sx-surface);
+  }
+  .sx-tl__hit:focus-visible {
+    outline: 2px solid var(--sx-agent);
+    outline-offset: 2px;
+  }
+  .sx-tl__band {
+    position: absolute;
+    top: calc(50% - 0.6rem);
+    height: 1.2rem;
+    border: 1.5px solid var(--sx-structure);
+    border-radius: 999px;
+    background: var(--sx-surface);
+  }
+  .sx-tl__band[data-status='done'] {
+    background: var(--sx-structure);
+  }
+  .sx-tl__band[data-status='active'] {
+    border-color: var(--sx-agent);
+    background: var(--sx-agent);
+  }
+  .sx-tl__band[data-open='true'] {
+    border-style: dashed;
+  }
+  .sx-tl__hit[aria-pressed='true'] .sx-tl__band {
+    box-shadow:
+      0 0 0 2px var(--sl-color-black),
+      0 0 0 3.5px var(--sl-color-white);
+  }
+  .sx-tl__label {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.9rem;
+    line-height: 1.2;
+    color: var(--sl-color-gray-1);
+    text-wrap: balance;
+  }
+  .sx-tl__label[data-side='before'] {
+    text-align: end;
+  }
+  .sx-tl__id {
+    margin-inline-end: 0.4rem;
+    font-weight: 700;
+    color: var(--sx-structure);
+  }
+  .sx-tl__hit[aria-pressed='true'] .sx-tl__label {
+    color: var(--sl-color-white);
+    font-weight: 700;
+  }
+  .sx-tl__gate {
+    pointer-events: none;
+    z-index: 1;
+    position: absolute;
+    top: calc(50% - 0.45rem);
+    width: 0.9rem;
+    height: 0.9rem;
+    transform: translateX(-50%) rotate(45deg);
+    border: 2px solid var(--sx-structure);
+    background: var(--sl-color-black);
+  }
+  .sx-tl__today {
+    pointer-events: none;
+    z-index: 2;
+    position: absolute;
+    top: 0;
+    bottom: 1.6rem;
+    width: 0;
+    border-inline-start: 2px solid var(--sx-agent);
+    box-shadow:
+      -1px 0 0 var(--sl-color-black),
+      1px 0 0 var(--sl-color-black);
+  }
+  .sx-tl__today-chip {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    transform: translateX(-50%);
+    padding: 0 0.5rem;
+    border-radius: 999px;
+    background: var(--sx-agent);
+    color: var(--sl-color-black);
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1.45;
+    white-space: nowrap;
+  }
+  .sx-tl__today[data-align='start'] .sx-tl__today-chip {
+    transform: translateX(-2px);
+  }
+  .sx-tl__today[data-align='end'] .sx-tl__today-chip {
+    transform: translateX(-100%);
+  }
+
+  /* The chosen phase, as a card. */
+  .sx-tl__card {
+    margin-top: 0.75rem;
+    padding: 1.1rem 1.25rem 1.2rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 0.75rem;
+    background: var(--sx-surface);
+  }
+  .sx-tl__card-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.75rem;
+  }
+  .sx-tl__card-id {
+    display: inline-grid;
+    place-items: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.4rem;
+    border: 1.5px solid var(--sx-structure);
+    border-radius: 0.45rem;
+    background: var(--sl-color-black);
+    color: var(--sl-color-white);
+    font-family: var(--sx-font-display);
+    font-size: 1.05rem;
+    font-weight: 600;
+  }
+  .sx-tl__card[data-status='active'] .sx-tl__card-id {
+    border-color: var(--sx-agent);
+    background: var(--sx-agent);
+    color: var(--sl-color-black);
+  }
+  .sx-tl__card h3 {
+    margin: 0;
+    font-family: var(--sx-font-display);
+    font-size: 1.3rem;
+    font-weight: 560;
+    line-height: 1.2;
+    color: var(--sl-color-white);
+  }
+  .sx-tl__when {
+    margin: 0.6rem 0 0;
+    font-size: 0.9rem;
+    color: var(--sx-muted);
+  }
+  .sx-tl__kicker {
+    margin: 0.9rem 0 0;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+  .sx-tl__outputs {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0.4rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sx-tl__outputs li {
+    position: relative;
+    margin: 0;
+    padding-inline-start: 1.15rem;
+  }
+  .sx-tl__outputs li::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.55em;
+    width: 0.45rem;
+    height: 0.45rem;
+    border: 1.5px solid var(--sx-structure);
+    border-radius: 50%;
+  }
+  .sx-tl__gateline {
+    display: flex;
+    align-items: baseline;
+    gap: 0.65rem;
+    margin: 0.9rem 0 0;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--sx-hairline);
+  }
+  .sx-diamond {
+    flex: none;
+    display: inline-block;
+    width: 0.6rem;
+    height: 0.6rem;
+    transform: rotate(45deg);
+    border: 2px solid var(--sx-structure);
+  }
+
+  /* Narrow screens and no width to spare: the same phases as a list. */
+  .sx-tll {
+    display: none;
+    position: relative;
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+  }
+  .sx-tll::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: 0.45rem;
+    top: 0.6rem;
+    bottom: 0.6rem;
+    border-inline-start: 2px solid var(--sx-structure);
+  }
+  .sx-tll__item {
+    position: relative;
+    margin: 0;
+    padding: 0 0 1.1rem 2rem;
+  }
+  .sx-tll__mark {
+    position: absolute;
+    inset-inline-start: 0;
+    top: 0.3rem;
+    width: 1.05rem;
+    height: 1.05rem;
+    border: 2px solid var(--sx-structure);
+    border-radius: 50%;
+    background: var(--sl-color-black);
+  }
+  .sx-tll__item[data-status='done'] .sx-tll__mark {
+    background: var(--sx-structure);
+  }
+  .sx-tll__item[data-status='active'] .sx-tll__mark {
+    border-color: var(--sx-agent);
+    background: var(--sx-agent);
+  }
+  .sx-tll__item[data-open='true'] .sx-tll__mark {
+    border-style: dashed;
+  }
+  .sx-tll__head {
+    margin: 0;
+    line-height: 1.3;
+    color: var(--sl-color-white);
+  }
+  .sx-tll__id {
+    margin-inline-end: 0.35rem;
+    font-weight: 700;
+    color: var(--sx-structure);
+  }
+  .sx-tll__head strong {
+    font-family: var(--sx-font-display);
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .sx-tll__when {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.3rem 0.6rem;
+    margin: 0.3rem 0 0;
+    font-size: 0.9rem;
+    color: var(--sx-muted);
+  }
+  .sx-tll__gate {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    margin: 0.3rem 0 0;
+    font-size: 0.9rem;
+  }
+  @container sx-plan (max-width: 36rem) {
+    .sx-tl {
+      display: none;
+    }
+    .sx-tll {
+      display: block;
+    }
+  }
+
+  /* ---------- Gate stepper ---------- */
+
+  /* Gates in order, after "Stepper" by kevingirelli (21st.dev): side by side from 52rem of width,
+     a vertical rail below that. The next upcoming gate takes the agent colour. */
+  .sx-gs-wrap {
+    container: sx-gates / inline-size;
+    margin-top: 1.25rem;
+  }
+  .sx-gs {
+    display: grid;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .sx-gs__item {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    column-gap: 1rem;
+    margin: 0;
+  }
+  .sx-gs__rail {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .sx-gs__mark {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 2px solid var(--sx-structure);
+    border-radius: 0.45rem;
+    background: var(--sl-color-black);
+    color: var(--sl-color-white);
+    font-family: var(--sx-font-display);
+    font-size: 1.2rem;
+    font-weight: 600;
+  }
+  .sx-gs__line {
+    flex: 1;
+    width: 0;
+    min-height: 1rem;
+    border-inline-start: 2px solid var(--sx-structure);
+  }
+  .sx-gs__item:last-child .sx-gs__line {
+    display: none;
+  }
+  .sx-gs__card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
+    min-width: 0;
+    margin-bottom: 1rem;
+    padding: 1rem 1.1rem 1.05rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 0.75rem;
+    background: var(--sx-surface);
+  }
+  .sx-gs__item:last-child .sx-gs__card {
+    margin-bottom: 0;
+  }
+  .sx-gs__card h3 {
+    margin: 0;
+    font-family: var(--sx-font-display);
+    font-size: 1.2rem;
+    font-weight: 560;
+    line-height: 1.2;
+    color: var(--sl-color-white);
+  }
+  .sx-gs__meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.5rem;
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--sx-muted);
+  }
+  .sx-gs__when {
+    flex-basis: 100%;
+    color: var(--sl-color-gray-1);
+    font-weight: 700;
+  }
+  .sx-gs__question {
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  .sx-gs__miss {
+    margin-top: auto;
+    padding-top: 0.35rem;
+  }
+  .sx-gs__miss p {
+    margin: 0.4rem 0 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--sx-muted);
+  }
+  .sx-gs__item[data-state='decided'] .sx-gs__mark {
+    background: var(--sx-structure);
+    color: var(--sl-color-black);
+  }
+  .sx-gs__item[data-next] .sx-gs__mark {
+    border-color: var(--sx-agent);
+    background: var(--sx-agent);
+    color: var(--sl-color-black);
+  }
+  .sx-gs__item[data-next] .sx-gs__card {
+    border-color: var(--sx-agent);
+    box-shadow: 0 0 0 1px var(--sx-agent);
+  }
+  @container sx-gates (min-width: 52rem) {
+    .sx-gs {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      column-gap: 1rem;
+    }
+    .sx-gs__item {
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: auto 1fr;
+      row-gap: 0.85rem;
+    }
+    .sx-gs__rail {
+      flex-direction: row;
+    }
+    .sx-gs__line {
+      width: auto;
+      height: 0;
+      min-height: 0;
+      margin-inline: 0.5rem -1rem;
+      border-inline-start: 0;
+      border-top: 2px solid var(--sx-structure);
+    }
+    .sx-gs__card {
+      margin-bottom: 0;
+    }
+  }
+
+  /* ---------- Stats band ---------- */
+
+  /* After "Stats Band" by kuratlielia (21st.dev), divided layout: a hairline grid ruled above and
+     below. The server renders final numbers; a small script counts up once, in view. */
+  .sx-stats {
+    container: sx-stats / inline-size;
+    margin: 0 0 1.75rem;
+  }
+  .sx-stats__title {
+    margin: 0 0 0.9rem;
+    font-family: var(--sx-font-display);
+    font-size: 1.7rem;
+    font-weight: 560;
+    line-height: 1.2;
+    color: var(--sl-color-white);
+  }
+  .sx-stats__frame {
+    overflow: hidden;
+    border-block: 1px solid var(--sx-hairline);
+  }
+  .sx-stats__grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    margin: 0 -1px -1px 0;
+    padding: 0;
+  }
+  @container sx-stats (min-width: 30rem) {
+    .sx-stats__grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  @container sx-stats (min-width: 46rem) {
+    .sx-stats__grid {
+      grid-template-columns: repeat(var(--count, 4), minmax(0, 1fr));
+    }
+  }
+  .sx-stats__item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    margin: 0;
+    padding: 1rem 1.1rem 1.15rem;
+    border-inline-end: 1px solid var(--sx-hairline);
+    border-block-end: 1px solid var(--sx-hairline);
+  }
+  .sx-stats__label {
+    margin: 0;
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--sx-muted);
+  }
+  .sx-stats__figure {
+    margin: 0;
+    font-family: var(--sx-font-display);
+    font-size: clamp(2rem, 1.6rem + 2cqi, 2.75rem);
+    font-weight: 500;
+    line-height: 1.05;
+    color: var(--sl-color-white);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .sx-stats__number {
+    display: inline-grid;
+  }
+  .sx-stats__number > * {
+    grid-area: 1 / 1;
+  }
+  .sx-stats__sizer {
+    visibility: hidden;
+  }
+  .sx-stats__detail {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.4;
+    color: var(--sx-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .sx-stats__caption {
+    max-width: 68ch;
+    margin: 0.75rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--sx-muted);
+  }
+
+  /* ---------- Brick cards (status page) ---------- */
+
+  /* Status columns as cards with a count, after "Quarterly Roadmap Columns" by olewandowski1
+     (21st.dev). Each status has its own marker shape, so colour is never the only cue. */
+  .sx-bricks {
+    container: sx-bricks / inline-size;
+    margin-top: 1rem;
+  }
+  .sx-bricks__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+  @container sx-bricks (min-width: 40rem) {
+    .sx-bricks__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  .sx-bricks__card {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin: 0;
+    padding: 1rem 1.15rem 1.1rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 0.75rem;
+    background: var(--sx-surface);
+  }
+  .sx-bricks__card[data-tone='designed'] {
+    border-style: dashed;
+  }
+  .sx-bricks__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+  .sx-bricks__title {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0.3rem 0 0;
+    font-family: var(--sx-font-display);
+    font-size: 1.2rem;
+    font-weight: 560;
+    line-height: 1.25;
+    color: var(--sl-color-white);
+  }
+  .sx-bricks__dot {
+    flex: none;
+    width: 0.75rem;
+    height: 0.75rem;
+    border: 2px solid var(--sx-structure);
+    border-radius: 50%;
+    background: var(--sx-structure);
+  }
+  [data-tone='built'] .sx-bricks__dot {
+    background: transparent;
+  }
+  [data-tone='stopped'] .sx-bricks__dot {
+    border-color: var(--sl-color-gray-3);
+    border-radius: 0.15rem;
+    background: var(--sl-color-gray-3);
+  }
+  [data-tone='designed'] .sx-bricks__dot,
+  [data-tone='other'] .sx-bricks__dot {
+    border-style: dashed;
+    border-color: var(--sl-color-gray-3);
+    background: transparent;
+  }
+  .sx-bricks__count {
+    margin: 0;
+    font-family: var(--sx-font-display);
+    font-size: 2.25rem;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--sl-color-white);
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  .sx-bricks__note {
+    margin: 0.55rem 0 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--sx-muted);
+  }
+  .sx-bricks__card > .sx-disclosure {
+    margin-top: 0.85rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--sx-hairline);
+  }
+  .sx-bricks__list {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    gap: 0.4rem 0.75rem;
+    margin: 0.85rem 0 0;
+    padding: 0.75rem 0 0;
+    border-top: 1px solid var(--sx-hairline);
+    list-style: none;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  .sx-disclosure > .sx-bricks__list {
+    margin-top: 0.6rem;
+    padding-top: 0;
+    border-top: 0;
+  }
+  .sx-bricks__list li {
+    display: grid;
+    grid-column: 1 / -1;
+    grid-template-columns: 4.75rem minmax(0, 1fr);
+    grid-template-columns: subgrid;
+    margin: 0;
+  }
+  .sx-bricks__id {
+    align-self: start;
+    justify-self: start;
+    padding: 0.05rem 0.35rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 0.3rem;
+    background: var(--sl-color-black);
+    color: var(--sl-color-white);
+    font-family: var(--__sl-font-mono);
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+}

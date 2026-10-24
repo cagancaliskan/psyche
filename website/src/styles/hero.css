@@ -1,0 +1,208 @@
+/*
+ * The landing hero (MazeHero.astro): a full-width field of rooms. A faded wing sits behind the
+ * copy; the arena on the right holds the agent's trail, the goal and the finished route.
+ * Layering (a decorative field absolutely behind, a radial fade under the copy, the copy above)
+ * follows "Hero Section with Animated Grid" by shadcnui-blocks (21st.dev, hero-07), without its
+ * animated squares. The caption is an outline chip after "Chip" by preetsuthar17, and the pause
+ * control an outline toggle after "Mute Toggle Button" by sean0205 (both 21st.dev), in plain CSS.
+ */
+
+/* Repeats global.css's order, so this file keeps that order even if it loads before it. */
+@layer base, starlight, theme, components, utilities;
+
+@layer components {
+  /* The section is 100vw wide, which counts the scrollbar; clip the sliver it would scroll. */
+  body:has(.sx-landing) {
+    overflow-x: clip;
+  }
+
+  .sx-mazehero {
+    /* The copy's left edge: the content column's, inside a field capped at 44rem tall. */
+    --sx-field-max: calc(44rem * var(--field-cols) / var(--field-rows));
+    --sx-hero-pad: max(var(--sl-content-pad-x, 1rem), (min(100vw, var(--sx-field-max)) - 67.5rem) / 2);
+    /* The field's own height: its aspect, kept between 26rem and 44rem. */
+    --sx-field-h: clamp(26rem, min(100vw, var(--sx-field-max)) * var(--field-rows) / var(--field-cols), 44rem);
+    position: relative;
+    width: 100vw;
+    margin-inline: calc(50% - 50vw);
+    margin-block: 0 1rem;
+  }
+  .sx-mazehero__inner {
+    position: relative;
+    isolation: isolate;
+  }
+
+  /* Narrow screens: the copy, then the field as a band, then its caption. */
+  .sx-mazehero__copy {
+    position: relative;
+    z-index: 1;
+    box-sizing: border-box;
+    max-width: calc(36rem + 2 * var(--sx-hero-pad));
+    padding: 0.5rem var(--sx-hero-pad) 0;
+  }
+  .sx-mazehero__field {
+    position: relative;
+    z-index: 0;
+    overflow: hidden;
+    margin-top: 2rem;
+  }
+  .sx-mazehero__field svg {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .sx-mazehero__meta {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.85rem var(--sx-hero-pad) 0;
+  }
+
+  /* Under 52rem the band shows the arena only: the drawing is widened and shifted so the arena's
+     columns fill it. */
+  @media (width < 52rem) {
+    .sx-mazehero__field svg {
+      width: calc(100% * var(--field-cols) / var(--arena-cols));
+      margin-inline-start: calc(-100% * (var(--field-cols) - var(--arena-cols)) / var(--arena-cols));
+    }
+  }
+
+  /* 64rem and up: the copy sits over the faded wing, the field behind it at its own height
+     (centred if the copy runs taller), so a tall copy never crops the arena. */
+  @media (min-width: 64rem) {
+    .sx-mazehero__inner {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 1.75rem;
+      box-sizing: border-box;
+      max-width: var(--sx-field-max);
+      min-height: var(--sx-field-h);
+      margin-inline: auto;
+      padding: 2.5rem var(--sx-hero-pad);
+    }
+    .sx-mazehero__copy,
+    .sx-mazehero__meta {
+      max-width: 28rem;
+      padding: 0;
+    }
+    .sx-mazehero__field {
+      position: absolute;
+      inset-inline: 0;
+      top: 50%;
+      height: var(--sx-field-h);
+      margin: 0;
+      transform: translateY(-50%);
+    }
+    /* Its top and bottom edges fade into the page, as the wing fades on the left. */
+    .sx-mazehero__field svg {
+      position: absolute;
+      inset: 0;
+      height: 100%;
+      mask-image: linear-gradient(transparent, #000 1.5rem, #000 calc(100% - 1.5rem), transparent);
+    }
+    /* A soft fade in the page colour under the copy. */
+    .sx-mazehero__field::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(
+        ellipse 36rem 80% at calc(var(--sx-hero-pad) + 12rem) 50%,
+        var(--sl-color-black) 45%,
+        transparent 100%
+      );
+    }
+  }
+
+  /* The drawing. Walls in the structure colour; the agent's trail, goal and route in its own. */
+  .sx-mazehero .wing,
+  .sx-mazehero .walls {
+    fill: var(--sx-structure);
+    opacity: 0.4;
+  }
+  .sx-mazehero .trail,
+  .sx-mazehero .route {
+    fill: none;
+    stroke: var(--sx-agent);
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .sx-mazehero .trail {
+    stroke-width: 0.14;
+    stroke-opacity: 0.55;
+  }
+  .sx-mazehero .route {
+    stroke-width: 0.3;
+  }
+  .sx-mazehero .goal {
+    fill: var(--sx-agent);
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .sx-mazehero .start {
+    fill: var(--sl-color-black);
+    stroke: var(--sl-color-white);
+    stroke-width: 0.14;
+  }
+  /* Only while the sequence plays; the static picture needs no dashes. */
+  .sx-mazehero.is-moving .trail,
+  .sx-mazehero.is-moving .route {
+    stroke-dasharray: 1 1;
+  }
+
+  .sx-mazehero__caption {
+    margin: 0;
+    padding: 0.3rem 0.8rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 0.9rem;
+    background: var(--sl-color-black);
+    color: var(--sx-muted);
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    max-width: 28rem;
+  }
+
+  .sx-mazehero__pause {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 2.25rem;
+    padding: 0 0.85rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 0.4rem;
+    background: var(--sl-color-black);
+    color: var(--sl-color-white);
+    font: inherit;
+    font-size: 0.875rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .sx-mazehero__pause[hidden] {
+    display: none;
+  }
+  .sx-mazehero__pause:hover {
+    background: var(--sx-surface);
+  }
+  .sx-mazehero__pause[aria-pressed='true'] {
+    background: var(--sx-surface);
+    border-color: var(--sx-structure);
+  }
+  .sx-mazehero__pause svg {
+    width: 0.9rem;
+    height: 0.9rem;
+    flex-shrink: 0;
+  }
+  /* The icon shows the state without relying on colour: pause bars while it plays, a play
+     triangle once pressed. */
+  .sx-mazehero__pause .i-play,
+  .sx-mazehero__pause[aria-pressed='true'] .i-pause {
+    display: none;
+  }
+  .sx-mazehero__pause[aria-pressed='true'] .i-play {
+    display: block;
+  }
+}

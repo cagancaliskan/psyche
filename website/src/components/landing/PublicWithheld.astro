@@ -1,0 +1,71 @@
+---
+// Layout after "Us vs Them Comparison" by olewandowski1 (21st.dev).
+import { ArrowRight, Check, Lock } from 'lucide-react';
+import { withBase } from '@/lib/url.ts';
+import SectionHeader from './SectionHeader.astro';
+
+const publicNow = [
+  "The research line's overview and questions",
+  'The roadmap and the decision gates',
+  "The test battery's paradigms and fairness rules",
+  'The claims discipline and engineering standards',
+  "The substrate's code, tests and published record",
+];
+const withheld = [
+  'The spiking model and its code',
+  'Hypotheses beyond the research questions',
+  'Pre-registered criteria, committed here by hash only',
+  'The experiment plan and its order',
+  'The analysis of related work',
+];
+---
+
+<section class="sx-lp-section not-content" aria-labelledby="sx-public-title">
+  <SectionHeader id="sx-public-title" title="What is public, and what is not yet" />
+  <div class="grid gap-4 sm:grid-cols-2">
+    <div class="flex flex-col rounded-xl border border-sx-structure bg-card">
+      <div class="p-6 pb-5">
+        <h3 class="text-lg text-ink">Public now</h3>
+        <p class="mt-1 text-sm text-muted-foreground">On this site and in the open repository.</p>
+      </div>
+      <ul class="sx-lp-plain flex flex-1 flex-col gap-3 border-t border-border p-6">
+        {
+          publicNow.map((text) => (
+            <li class="flex items-start gap-3">
+              <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded bg-sx-structure text-paper">
+                <Check className="size-3.5" strokeWidth={3} aria-hidden="true" />
+              </span>
+              <span class="text-[0.95rem] text-ink">{text}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="border-t border-border px-6 py-4 text-sm text-muted-foreground">
+        The claims discipline sets what these pages may say.{' '}
+        <a class="sx-lp-a inline-flex items-center gap-1" href={withBase('research/claims-and-scope/')}>Read the claims and scope<ArrowRight className="size-3.5" aria-hidden="true" /></a>
+      </p>
+    </div>
+    <div class="flex flex-col rounded-xl border border-dashed border-gray-4">
+      <div class="p-6 pb-5">
+        <h3 class="text-lg text-ink">Withheld until release</h3>
+        <p class="mt-1 text-sm text-muted-foreground">Kept private until a release moves it here.</p>
+      </div>
+      <ul class="sx-lp-plain flex flex-1 flex-col gap-3 border-t border-dashed border-gray-4 p-6">
+        {
+          withheld.map((text) => (
+            <li class="flex items-start gap-3">
+              <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border border-border bg-muted text-muted-foreground">
+                <Lock className="size-3" strokeWidth={2.5} aria-hidden="true" />
+              </span>
+              <span class="text-[0.95rem] text-muted-foreground">{text}</span>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="border-t border-dashed border-gray-4 px-6 py-4 text-sm text-muted-foreground">
+        Releases follow a fixed rule: complete, working, older versions only.{' '}
+        <a class="sx-lp-a inline-flex items-center gap-1" href={withBase('research/disclosure-policy/')}>Read the disclosure policy<ArrowRight className="size-3.5" aria-hidden="true" /></a>
+      </p>
+    </div>
+  </div>
+</section>

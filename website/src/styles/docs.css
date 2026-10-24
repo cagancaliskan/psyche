@@ -1,4 +1,199 @@
-/* Typography and spacing for the staged documentation pages. */
+/*
+ * Typography and spacing for the staged documentation pages.
+ *
+ * Every rule below targets Starlight's Markdown output (`.sl-markdown-content`) on pages that carry
+ * neither `.sx-landing` nor `.sx-wide`, skips elements that have a class or sit inside
+ * `.not-content`, and has zero specificity, so the custom pages and the site's components keep
+ * their own styles. The current-page marker in the sidebar is shared chrome and applies on every
+ * page. Colours come only from the theme tokens, so light and dark switch by themselves.
+ */
 
 @layer components {
+  /* The reading measure, and a heading scale a step smaller than Starlight's default. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content) {
+    --sx-measure: 70ch;
+    --sl-text-h2: clamp(1.5rem, 1.25rem + 1vw, 1.875rem);
+    --sl-text-h3: clamp(1.1875rem, 1.1rem + 0.4vw, 1.375rem);
+    --sl-text-h4: 1.0625rem;
+  }
+  /* Section headings in Newsreader, balanced over their lines. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :is(h2, h3):not(.not-content *)) {
+    font-family: var(--sx-font-display);
+    font-weight: 560;
+    letter-spacing: -0.005em;
+    color: var(--sl-color-white);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper:is(.level-h2, .level-h3)) {
+    text-wrap: balance;
+  }
+  /* A hairline above each section; none above a heading that opens the page. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper.level-h2) {
+    margin-block-start: 3rem;
+    padding-block-start: 1.5rem;
+    border-block-start: 1px solid var(--sx-hairline);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper.level-h2:first-child) {
+    margin-block-start: 0;
+    padding-block-start: 0;
+    border-block-start: 0;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper.level-h3) {
+    margin-block-start: 2.25rem;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper.level-h2 + .sl-heading-wrapper.level-h3) {
+    margin-block-start: 1.25rem;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper + :not(.sl-heading-wrapper)) {
+    margin-block-start: 0.75rem;
+  }
+
+  /* Measure and leading. The paragraph measure is a width, not a max-width: global.css
+     caps paragraphs at 72ch outside any layer, and an unlayered declaration beats a layered one. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > :is(p, ul, ol, blockquote):not([class])) {
+    line-height: 1.65;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > p:not([class])) {
+    inline-size: min(100%, var(--sx-measure));
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > :is(ul, ol, blockquote):not([class])) {
+    max-inline-size: var(--sx-measure);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :is(p, li, blockquote):not([class], .not-content *)) {
+    text-wrap: pretty;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :is(strong, b):not([class], .not-content *)) {
+    color: var(--sl-color-white);
+  }
+
+  /* Lists: structure-coloured markers, a little more air between items. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content li:not([class], .not-content *))::marker {
+    color: var(--sx-structure);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content li + li:not([class], .not-content *)) {
+    margin-block-start: 0.35rem;
+  }
+
+  /* Links: ink text with a quiet underline; the agent colour on hover and keyboard focus. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content a:not([class], .not-content *)) {
+    color: var(--sl-color-white);
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-decoration-color: var(--sl-color-gray-3);
+    text-underline-offset: 0.2em;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content a:not([class], .not-content *):is(:hover, :focus-visible)) {
+    color: var(--sx-agent);
+    text-decoration-color: currentColor;
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content a:not([class], .not-content *)) {
+      transition:
+        color 0.15s ease,
+        text-decoration-color 0.15s ease;
+    }
+  }
+
+  /* Inline code: a chip tinted from the structure colour. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :not(pre) > code:not([class], .not-content *)) {
+    padding: 0.1em 0.35em;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 0.3rem;
+    background-color: var(--sx-surface);
+    color: var(--sl-color-white);
+    font-size: 0.875em;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+  @supports (background-color: color-mix(in srgb, red 10%, transparent)) {
+    :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :not(pre) > code:not([class], .not-content *)) {
+      border-color: color-mix(in srgb, var(--sx-structure) 30%, transparent);
+      background-color: color-mix(in srgb, var(--sx-structure) 11%, transparent);
+    }
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content a:not([class]) > code:not([class])) {
+    color: inherit;
+  }
+
+  /* Tables: hairline rows, a structure rule under the header, tabular figures. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content table:not([class], .not-content *)) {
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    font-variant-numeric: tabular-nums;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :is(th, td):not([class], .not-content *)) {
+    padding-block: 0.55rem;
+    border-block-end: 1px solid var(--sx-hairline);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content th:not([class], .not-content *)) {
+    padding-block-start: 0.25rem;
+    border-block-end-color: var(--sx-structure);
+    color: var(--sl-color-white);
+    font-weight: 700;
+    vertical-align: bottom;
+  }
+
+  /* Blockquotes: a structure-colour rule at the start edge. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content blockquote:not([class], .not-content *)) {
+    margin-inline: 0;
+    padding-block: 0.1rem;
+    padding-inline: 1.1rem 0;
+    border-inline-start: 2px solid var(--sx-structure);
+    color: var(--sl-color-gray-1);
+  }
+
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content hr:not([class], .not-content *)) {
+    margin-block: 2.5rem;
+    border: 0;
+    border-block-start: 1px solid var(--sx-hairline);
+  }
+  /* A section heading already draws its own hairline, so a break right before one would double it. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > hr:not([class]):has(+ .sl-heading-wrapper.level-h2)) {
+    display: none;
+  }
+
+  /* Asides: tinted from the tokens instead of Starlight's stock hues. Notes take the structure
+     colour, tips the ink violet, cautions the accent, dangers its deeper shade. Titles stay ink. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .starlight-aside) {
+    --sl-color-asides-border: var(--sx-structure);
+    --sl-color-asides-text-accent: var(--sl-color-white);
+    padding: 1rem 1.25rem;
+    border-inline-start: 3px solid var(--sl-color-asides-border);
+    border-start-end-radius: 0.4rem;
+    border-end-end-radius: 0.4rem;
+    background-color: var(--sx-surface);
+    line-height: 1.65;
+  }
+  @supports (background-color: color-mix(in srgb, red 10%, transparent)) {
+    :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .starlight-aside) {
+      background-color: color-mix(in srgb, var(--sl-color-asides-border) 9%, transparent);
+    }
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .starlight-aside--tip) {
+    --sl-color-asides-border: var(--sl-color-gray-3);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .starlight-aside--caution) {
+    --sl-color-asides-border: var(--sl-color-accent);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .starlight-aside--danger) {
+    --sl-color-asides-border: var(--sl-color-accent-high);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .starlight-aside__title) {
+    font-size: 1rem;
+    font-weight: 700;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .starlight-aside__icon) {
+    color: var(--sl-color-asides-border);
+  }
+
+  /* Sidebar: the current page gets a tinted row and a marker in the "now" colour. A border, not a
+     background bar, so the marker survives forced colours. */
+  :where(.sidebar-content a[aria-current='page']) {
+    padding-inline-start: calc(var(--sl-sidebar-item-padding-inline, 0.5rem) - 3px);
+    border-inline-start: 3px solid var(--sx-agent);
+    border-start-start-radius: 0;
+    border-end-start-radius: 0;
+    background-color: var(--sl-color-accent-low);
+    color: var(--sl-color-white);
+    font-weight: 700;
+  }
 }

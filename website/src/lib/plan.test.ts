@@ -11,6 +11,7 @@ import {
   isoFromDay,
   monthTicks,
   nextGate,
+  phaseWhen,
   spans,
   todayIn,
   type Plan,
@@ -90,4 +91,13 @@ test('todayIn uses the plan time zone, not UTC', () => {
 
 test('formatDay is stable', () => {
   assert.equal(formatDay('2026-11-15'), '15 November 2026');
+});
+
+test('phaseWhen gives dates, or the plan rule where a date is not fixed', () => {
+  const base = { id: 'X', title: 'x', gate: null, status: 'planned', outputs: [] };
+  assert.equal(phaseWhen({ ...base, start: '2027-03-01', end: '2027-04-15' }), '1 March 2027 to 15 April 2027');
+  assert.equal(phaseWhen({ ...base, start: '2027-04-15', end: null, end_rule: 'the deadline' }), '15 April 2027 to the deadline');
+  assert.equal(phaseWhen({ ...base, start: null, start_rule: 'after review', end: null, end_rule: 'set later' }), 'Starts after review; end set later');
+  assert.equal(phaseWhen({ ...base, start: null, start_rule: 'after review', end: '2027-04-15' }), 'Starts after review, ends 15 April 2027');
+  for (const p of plan.phases) assert.doesNotMatch(phaseWhen(p), /undefined|null/);
 });
