@@ -1,8 +1,9 @@
 /*
- * Visual identity: histology on paper.
- * Ink violet carries text; eosin pink marks only the agent (its trails and paths) and "now".
- * Slate teal draws structure (maze walls, axes). Newsreader for display, Atkinson Hyperlegible
- * Next for reading. Starlight's dark theme is :root; light is :root[data-theme='light'].
+ * Visual identity: neural cartography.
+ * A near-black instrument canvas with a faint coordinate grid. One luminous signal colour marks
+ * only the agent (its trail and route) and "now"; a cold map blue draws structure (walls, axes,
+ * grid); a warm spike amber is kept for rare emphasis. Unbounded for display, Instrument Sans for
+ * reading, Martian Mono for labels and figures. Dark is :root; light is :root[data-theme='light'].
  */
 
 /* Cascade layers: Starlight's own styles sit in `starlight`; the site's components and Tailwind
@@ -15,14 +16,17 @@
 
 @theme {
   --color-*: initial;
-  --font-sans: 'Atkinson Hyperlegible Next', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Newsreader Variable', 'Iowan Old Style', Georgia, serif;
+  --font-sans: 'Instrument Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Unbounded Variable', 'Instrument Sans Variable', system-ui, sans-serif;
+  --font-mono: 'Martian Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --font-serif: var(--font-display);
 }
 
 /* Utilities resolve to the theme variables, so light and dark switch without `dark:` variants. */
 @theme inline {
   --color-sx-agent: var(--sx-agent);
+  --color-sx-spike: var(--sx-spike);
+  --color-sx-surface-2: var(--sx-surface-2);
   --color-sx-structure: var(--sx-structure);
   --color-sx-surface: var(--sx-surface);
   --color-sx-hairline: var(--sx-hairline);
@@ -52,47 +56,57 @@
 
 :root {
   --sl-font: var(--font-sans);
+  --sl-font-mono: var(--font-mono);
   --sx-font-display: var(--font-display);
 
-  /* dark */
-  --sl-color-accent-low: #3a1c33;
-  --sl-color-accent: #e0679a;
-  --sl-color-accent-high: #f7bcd4;
-  --sl-color-white: #f3f1fa;
-  --sl-color-gray-1: #e3e0f0;
-  --sl-color-gray-2: #c3beda;
-  --sl-color-gray-3: #9893bb;
-  --sl-color-gray-4: #615c8a;
-  --sl-color-gray-5: #3a365e;
-  --sl-color-gray-6: #221f40;
-  --sl-color-black: #16142b;
+  /* dark (default) */
+  --sl-color-accent-low: #0a2b24;
+  --sl-color-accent: #5ef0c4;
+  --sl-color-accent-high: #c4fbe9;
+  --sl-color-white: #f4f6fb;
+  --sl-color-gray-1: #e9edf5;
+  --sl-color-gray-2: #c3cad8;
+  --sl-color-gray-3: #8f99ad;
+  --sl-color-gray-4: #5c6579;
+  --sl-color-gray-5: #2a3142;
+  --sl-color-gray-6: #121722;
+  --sl-color-black: #05070d;
 
-  --sx-agent: #f27baa;
-  --sx-structure: #7fb3c0;
-  --sx-surface: #1d1a38;
-  --sx-hairline: #3a365e;
-  --sx-muted: #b9b4d4;
+  --sx-agent: #5ef0c4;
+  --sx-structure: #8aa2ff;
+  --sx-spike: #ffb45e;
+  --sx-surface: #0b0f18;
+  --sx-surface-2: #111726;
+  --sx-hairline: #1c2333;
+  --sx-muted: #9aa4b8;
+  --sx-glow: 0 0 0.9rem color-mix(in oklab, var(--sx-agent) 45%, transparent);
+  --sx-grid: color-mix(in oklab, var(--sx-structure) 9%, transparent);
+  --sx-ease: cubic-bezier(0.2, 0.7, 0.1, 1);
 }
 
 :root[data-theme='light'] {
-  --sl-color-accent-low: #f6dbe7;
-  --sl-color-accent: #b8336a;
-  --sl-color-accent-high: #6e1b3e;
-  --sl-color-white: #1e1a40;
-  --sl-color-gray-1: #2b2752;
-  --sl-color-gray-2: #3f3a6b;
-  --sl-color-gray-3: #5a5484;
-  --sl-color-gray-4: #8a84ae;
-  --sl-color-gray-5: #cfcbe2;
-  --sl-color-gray-6: #e8e5f2;
-  --sl-color-gray-7: #f1effa;
-  --sl-color-black: #fbfbfd;
+  --sl-color-accent-low: #d9f7ee;
+  --sl-color-accent: #087a5c;
+  --sl-color-accent-high: #04402f;
+  --sl-color-white: #0a0d14;
+  --sl-color-gray-1: #121826;
+  --sl-color-gray-2: #2b3346;
+  --sl-color-gray-3: #4a5468;
+  --sl-color-gray-4: #8a93a6;
+  --sl-color-gray-5: #d5dbe6;
+  --sl-color-gray-6: #e9edf4;
+  --sl-color-gray-7: #f0f3f8;
+  --sl-color-black: #f5f7fb;
 
-  --sx-agent: #b8336a;
-  --sx-structure: #41707c;
-  --sx-surface: #f1effa;
-  --sx-hairline: #cfcbe2;
-  --sx-muted: #4f4a78;
+  --sx-agent: #087a5c;
+  --sx-structure: #2f4fd6;
+  --sx-spike: #9a5300;
+  --sx-surface: #ffffff;
+  --sx-surface-2: #eef1f7;
+  --sx-hairline: #dde2ec;
+  --sx-muted: #4a5468;
+  --sx-glow: 0 0 0.75rem color-mix(in oklab, var(--sx-agent) 25%, transparent);
+  --sx-grid: color-mix(in oklab, var(--sx-structure) 7%, transparent);
 }
 
 /* Display type for page titles and markdown headings. */

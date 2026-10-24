@@ -42,12 +42,13 @@ export default defineConfig({
       // global.css comes first: its @layer statement must be the first one the cascade sees.
       customCss: [
         './src/styles/global.css',
-        '@fontsource-variable/newsreader',
-        '@fontsource/atkinson-hyperlegible-next/400.css',
-        '@fontsource/atkinson-hyperlegible-next/400-italic.css',
-        '@fontsource/atkinson-hyperlegible-next/700.css',
+        '@fontsource-variable/unbounded',
+        '@fontsource-variable/instrument-sans',
+        '@fontsource-variable/instrument-sans/standard-italic.css',
+        '@fontsource-variable/martian-mono',
         './src/styles/docs.css',
       ],
+      components: { PageTitle: './src/components/docs/PageTitle.astro' },
       sidebar: stagedSidebar(),
       lastUpdated: false,
       pagination: true,
