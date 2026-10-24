@@ -9,7 +9,10 @@
     "",
     "Fields marked GENERATED are derived from docs/TEST_OUTPUT.txt by tools/ledger_sync.py.",
     "Never hand-edit them; re-run the sync after capturing a test run.",
-    "Everything else is hand-maintained and should change only via a DECISIONS.md entry."
+    "Everything else is hand-maintained and should change only via a DECISIONS.md entry.",
+    "",
+    "PROGRAM STATE (D-031) lives in `program`: a third axis, orthogonal to bricks[*].status (build)",
+    "and meaning_bar (meaning). It says what is being worked on, never what is true of a brick."
   ],
   "schema_version": 1,
   "project": {
@@ -20,6 +23,32 @@
     "doi": "10.5281/zenodo.20474613",
     "repo": "github.com/cagancaliskan/psyche"
   },
+  "program": {
+    "_README": "Program state (D-031): a THIRD axis, orthogonal to bricks[*].status (build) and meaning_bar (meaning). It says what is being worked on, never what is true of a brick. Changed only by Cagan, with a DECISIONS.md entry.",
+    "psyche": {
+      "state": "paused",
+      "since": "2026-10-23",
+      "decision": "D-031",
+      "aim": "a biologically grounded, non-LLM memory-and-activation substrate that moves information without loss and sets how much activation it spends without producing output its inputs do not support",
+      "aim_rule": "stated only as an aim, never as a property of the system (CLAUDE.md rule 1)",
+      "while_paused": "no new brick starts and no default changes; suites, ledger, ledger_check and the determinism sweep stay maintained; brick statuses and the meaning bar are not changed by the pause",
+      "resume": "only by a new DECISIONS.md entry from Cagan setting state to active"
+    },
+    "thesis": {
+      "state": "active",
+      "since": "2026-10-23",
+      "decision": "D-031",
+      "plan": "tools/thesis_plan.json",
+      "docs": "docs/thesis/",
+      "package": "thesis/",
+      "package_policy": "export-only, under docs/thesis/disclosure-policy.md"
+    }
+  },
+  "program_states": [
+    "active",
+    "paused",
+    "closed"
+  ],
   "tests": {
     "_GENERATED": "by tools/ledger_sync.py from docs/TEST_OUTPUT.txt — do not hand-edit",
     "suites": 26,
@@ -209,8 +238,8 @@
       "name": "temporal credit assignment — the eligibility trace (SPEC-2f Design C)"
     },
     "2g": {
-      "status": "DESIGNED",
-      "note": "DECIDED 2026-07-27 (D-029): OPTION C — asymmetric depression with its own rate. SPEC-2g re-scoped from three options to one; ready for the builder. STEP ZERO IS 0g and is mandatory before any 2g code. THE SPEC'S FIRST REVISION CARRIED A FRAMING ERROR, corrected in §1 and kept visible: it presented the competitive/shared-budget mechanism and the asymmetric rule as MUTUALLY EXCLUSIVE. They are not. C is a LOCAL rule (per-road, fast); the competitive form is a GLOBAL constraint (across siblings, slow), and the cited literature treats them as COMPOSED — Turrigiano & Nelson frame homeostatic scaling as a complement to Hebbian plasticity precisely because Hebbian rules are destabilising; Oja fuses both in one equation; Miller & MacKay's whole subject is the interaction. So sequencing them is coherent. ONE REFINEMENT, and it is 2h's cost not 2g's: they are composed, NOT independent — Miller & MacKay show the choice of constraint changes what the local rule CONVERGES TO, so 2h will perturb 2g rather than merely sit beside it, and 2g's graded invariants must be re-run when 2h lands. EPISTEMIC STATUS, stated in the spec and not assumed: assessed from knowledge of these sources, NOT re-read at verification time, on the same discipline the Butlin figure carries; the spec names what would confirm and what would falsify it. Not load-bearing for 2g, which is buildable either way. OPTION A (symmetric, no new constant) is RECORDED AS REJECTED AND NOT DELETED: symmetry is empirically rejected — extinction is not the reverse of acquisition (Bouton 2004) — and A KNOWN-WRONG MECHANISM IS NOT MADE ACCEPTABLE BY BEING FREE. ONE NEW CONSTANT, depression_gain, already on uncalibrated_constants with what would calibrate it. Its falsifier is the sharpest in the spec: a constant with no measurable effect on any reachable input is a knob that looks like a decision and does nothing. RE-VALIDATION: the 0a write path only. NO COUPLING between roads — every proven single-road property stays a single-road property, which is why C is buildable now. WHAT 2g DOES NOT MAKE TRUE: it moves Butlin AE-1 from failing at TWO conjuncts to failing at ONE — the system still selects no outputs and pursues no goals — and it moves NO AOL criterion. AOL-5 is reachable only through 2h.",
+      "status": "BUILT-UNVALIDATED",
+      "note": "RECONCILED 2026-10-23 (D-032): built at 3547f3a, tester PASS at bed8376. TWO AXES as for 2f-i (D-027): the mechanism is tester-verified; the meaning verdict is NOT-YET. Tester findings on the record, neither blocking: 2g-1, the 'decided by the signature' argument is incomplete (the frozen trace entry closes it); 2g-2, a strengthen-then-weaken round trip at one rate is not neutral except at weight 0.5 (asserted, not adjudicated). The decision record below is kept as written. DECIDED 2026-07-27 (D-029): OPTION C — asymmetric depression with its own rate. SPEC-2g re-scoped from three options to one; ready for the builder. STEP ZERO IS 0g and is mandatory before any 2g code. THE SPEC'S FIRST REVISION CARRIED A FRAMING ERROR, corrected in §1 and kept visible: it presented the competitive/shared-budget mechanism and the asymmetric rule as MUTUALLY EXCLUSIVE. They are not. C is a LOCAL rule (per-road, fast); the competitive form is a GLOBAL constraint (across siblings, slow), and the cited literature treats them as COMPOSED — Turrigiano & Nelson frame homeostatic scaling as a complement to Hebbian plasticity precisely because Hebbian rules are destabilising; Oja fuses both in one equation; Miller & MacKay's whole subject is the interaction. So sequencing them is coherent. ONE REFINEMENT, and it is 2h's cost not 2g's: they are composed, NOT independent — Miller & MacKay show the choice of constraint changes what the local rule CONVERGES TO, so 2h will perturb 2g rather than merely sit beside it, and 2g's graded invariants must be re-run when 2h lands. EPISTEMIC STATUS, stated in the spec and not assumed: assessed from knowledge of these sources, NOT re-read at verification time, on the same discipline the Butlin figure carries; the spec names what would confirm and what would falsify it. Not load-bearing for 2g, which is buildable either way. OPTION A (symmetric, no new constant) is RECORDED AS REJECTED AND NOT DELETED: symmetry is empirically rejected — extinction is not the reverse of acquisition (Bouton 2004) — and A KNOWN-WRONG MECHANISM IS NOT MADE ACCEPTABLE BY BEING FREE. ONE NEW CONSTANT, depression_gain, already on uncalibrated_constants with what would calibrate it. Its falsifier is the sharpest in the spec: a constant with no measurable effect on any reachable input is a knob that looks like a decision and does nothing. RE-VALIDATION: the 0a write path only. NO COUPLING between roads — every proven single-road property stays a single-road property, which is why C is buildable now. WHAT 2g DOES NOT MAKE TRUE: it moves Butlin AE-1 from failing at TWO conjuncts to failing at ONE — the system still selects no outputs and pursues no goals — and it moves NO AOL criterion. AOL-5 is reachable only through 2h.",
       "name": "the depression path — the missing half of credit assignment"
     },
     "0a-ii": {
@@ -219,8 +248,8 @@
       "name": "encapsulation: get_road hands out a live write-capable reference"
     },
     "0g": {
-      "status": "DESIGNED",
-      "note": "CONFIRMED DEFECT, registered 2026-07-27 (D-027) from tester FINDING 2f-5. SCHEDULED AS **STEP ZERO OF THE NEXT BRICK**, exactly as L3 was step zero of 2f — the next brick edits src/ and will trip this constantly. THE DEFECT: `bound_on_absence` dismissals are keyed `path:line`. Inserting ONE COMMENT LINE at the top of psyche_field.py shifts every line below it and fires a FALSE [C6] against the ActivationField.flow bound. THIS IS THE EXACT FAILURE THE Accumulation DATACLASS SAYS IT AVOIDS — its docstring reads 'a registry keyed by line rots on every insertion above it and trains people to re-key mechanically instead of re-reading' — reintroduced one field away, in the dismissal list, by the same brick. IT HAS ALREADY COST A REAL MIS-MEASUREMENT. The tester's first blind-spot probe prepended to an existing module and reported ALL FIVE blind spots as CAUGHT. That was the shifted bound firing, not the binding bound working. The correct measurement (plant in a NEW module) showed all five slip through, as documented. WHY IT OUTRANKS A SILENT GAP, and this is the reason for the scheduling: **a false positive that masquerades as the check working is worse than a silent gap.** A silent gap is a known unknown; a lying gate teaches people to re-key mechanically instead of re-reading, and a gate that cries wolf gets ignored — which would waste the entire foundation arc that produced it. FIX SHAPE (not decided): a CONTENT-ANCHORED key — the text of the source line, or an AST path — instead of a line number. ACCEPTANCE: inserting a comment anywhere in src/ changes no finding, and every existing dismissal still resolves.",
+      "status": "PROVEN",
+      "note": "RECONCILED 2026-10-23 (D-032): fixed at 5a1c385, the tester's own assertion converted at b2f71f6, tester PASS at 401f7ee (instability attacked six ways; the duplicate-in-scope limitation asserted). STATUS RATIONALE follows 0d/0e exactly: a TOOL, so the meaning axis is vacuous; PROVEN means deterministic, pure and functionally verified. The registration record below is kept as written. CONFIRMED DEFECT, registered 2026-07-27 (D-027) from tester FINDING 2f-5. SCHEDULED AS **STEP ZERO OF THE NEXT BRICK**, exactly as L3 was step zero of 2f — the next brick edits src/ and will trip this constantly. THE DEFECT: `bound_on_absence` dismissals are keyed `path:line`. Inserting ONE COMMENT LINE at the top of psyche_field.py shifts every line below it and fires a FALSE [C6] against the ActivationField.flow bound. THIS IS THE EXACT FAILURE THE Accumulation DATACLASS SAYS IT AVOIDS — its docstring reads 'a registry keyed by line rots on every insertion above it and trains people to re-key mechanically instead of re-reading' — reintroduced one field away, in the dismissal list, by the same brick. IT HAS ALREADY COST A REAL MIS-MEASUREMENT. The tester's first blind-spot probe prepended to an existing module and reported ALL FIVE blind spots as CAUGHT. That was the shifted bound firing, not the binding bound working. The correct measurement (plant in a NEW module) showed all five slip through, as documented. WHY IT OUTRANKS A SILENT GAP, and this is the reason for the scheduling: **a false positive that masquerades as the check working is worse than a silent gap.** A silent gap is a known unknown; a lying gate teaches people to re-key mechanically instead of re-reading, and a gate that cries wolf gets ignored — which would waste the entire foundation arc that produced it. FIX SHAPE (not decided): a CONTENT-ANCHORED key — the text of the source line, or an AST path — instead of a line number. ACCEPTANCE: inserting a comment anywhere in src/ changes no finding, and every existing dismissal still resolves.",
       "name": "bound_on_absence dismissals are line-anchored and rot on any edit above them"
     },
     "2h": {
@@ -293,6 +322,30 @@
     "subjective experience",
     "phenomenal"
   ],
+  "thesis_forbidden_claim_terms": {
+    "_README": "Thesis claim rules (D-031), from the thesis claims-and-scope discipline. Read by tools/publish/check_copy.py for public thesis surfaces (README.md, MOC.md, docs/thesis/, website/, thesis/). Matched case-insensitively, with the same negation logic as C4. Lifting a term (e.g. a 'first' claim after Gate A) needs a DECISIONS entry.",
+    "terms": [
+      "the model understands",
+      "the network understands",
+      "the model thinks",
+      "the network thinks",
+      "the system thinks",
+      "the brain does it",
+      "the brain does this",
+      "how the brain does",
+      "snns are more efficient",
+      "spiking networks are more efficient",
+      "more efficient than anns",
+      "more energy-efficient than anns",
+      "measured energy",
+      "energy was measured",
+      "the first spiking",
+      "first model to",
+      "is the first",
+      "proves cognition",
+      "is conscious"
+    ]
+  },
   "claim_quarantine_paths": [
     "docs/design/",
     "docs/specs/PAPER_CLAIM_INVENTORY.md",

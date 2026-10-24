@@ -1810,3 +1810,98 @@ shows nothing beyond uuid road ids and the census digest, which hashes module pa
 the removed "working name" footnote until they are recompiled on Overleaf; no TeX toolchain is on
 this machine. Ten of the twelve Mermaid PNGs mention the old name only in a source comment, so
 they keep their original render.
+
+---
+
+## D-031 — Psyche is paused; the repository is restructured to serve the thesis first
+
+**Date:** 2026-10-23 · **Direction:** Cagan · **Lane:** architect-pm (documents, plan file,
+ledger keys); builder (publishing tools, hooks, CI, docs site) · **Status:** decided; the
+restructure lands on branch `docs/thesis-restructure`
+
+### 1. Context
+
+Cagan's priority is now his undergraduate thesis: a spiking network that learns only through
+local synaptic plasticity, evaluated on a battery of classic cognitive-map tests, with an
+analytic estimate of the synaptic operations it needs. Psyche's long-term aim cannot be pursued
+in parallel at the pace the thesis needs.
+
+### 2. The decision
+
+1. **Psyche is paused; the thesis is active.** `tools/ledger.json` gains a `program` block that
+   records this. Program state is a third axis, orthogonal to the build axis (`bricks[*].status`)
+   and the meaning axis (`meaning_bar`): it says what is being worked on, never what is true of a
+   brick. No brick status, meaning verdict or test figure changes because of the pause. Only
+   Cagan changes `program`, and only with a new entry here.
+2. **While paused:** no new Psyche brick starts and no Psyche default changes. The suites, the
+   ledger, `ledger_check` and the determinism sweep stay maintained. The paper stays HELD
+   (D-012).
+3. **The paused aim, stated only as an aim and never as a property of the system:** a
+   biologically grounded, non-LLM memory-and-activation substrate that moves information without
+   loss and sets how much activation it spends without producing output its inputs do not
+   support. It is paused, not abandoned and not achieved.
+4. **Public summary, private detail.** This repository shows the thesis overview, roadmap,
+   gates, battery overview, claims discipline, engineering standards and visuals. Hypotheses,
+   pre-registered thresholds, the experiment plan, the novelty analysis, the model mechanism,
+   logs, the paper and other working records live in a private companion repository that is
+   not named here. Material moves here only under `docs/thesis/disclosure-policy.md`: complete,
+   working, older tagged versions, never the current state.
+5. **One source for the thesis plan.** The public phases, gates, dates and deadlines live only in
+   `tools/thesis_plan.json`; documents, the wiki and the docs site render from it.
+6. **Thesis code** appears under `thesis/` by export only, with its own pinned dependencies.
+   `src/` stays standard-library only and never imports it. Nothing under `thesis/` is
+   registered in `run_tests.py`.
+7. **Everything in this repository is English.**
+8. **The commit gate while the paper is held:** `python3 tools/ledger_check.py --only
+   C1,C3,C4,C5,C6` exits 0, and every C2 finding lies under `docs/paper/`
+   (`python3 tools/publish/ci_c2.py` exits 0). `tools/ledger_check.py` itself is not changed.
+9. **Lanes for the new paths.** architect-pm owns `README.md`, `MOC.md`, `docs/PSYCHE.md`,
+   `docs/thesis/**`, `docs/publish.json` and `tools/thesis_plan.json`. builder owns
+   `tools/publish/**`, `tools/hooks/**`, `website/**` and `.github/**`. No agent edits
+   `thesis/` except through a release export that Cagan runs.
+
+### 3. Options considered
+
+- Keep Psyche active and start the thesis in an unrelated repository: no restructure cost, but
+  this repository's methodology and public presence stop serving the work that matters now.
+- Pause by demoting brick statuses, or by adding PAUSED to `valid_statuses`: conflates schedule
+  with the build axis. A paused proven brick is still proven, and C3 would stop adjudicating
+  paused bricks.
+- A program-level flag plus a thesis-first restructure, summary public and detail private:
+  chosen.
+
+### 4. Evidence and cost
+
+**Evidence at the pause:** 26 suites, 2645 assertions, 0 failures (capture of 2026-10-23,
+swept on CPython 3.10–3.14 under six hash seeds); `ledger_check` reports only the 16 held-paper
+C2 findings; `tools/test_ledger.py` passes.
+
+**Cost:** `README.md` is rewritten thesis-first and its former body moves to `docs/PSYCHE.md`;
+`CLAUDE.md`, `MOC.md`, four skills, two hooks and the agents' lane lists are edited; a publishing
+toolchain, a docs site and CI are added. Nothing under `src/`, `tests/` or `experiments/`
+changes, and no capture is re-run.
+
+---
+
+## D-032 — The ledger's 0g and 2g statuses are reconciled with their verified commits
+
+**Date:** 2026-10-23 · **Direction:** Cagan (approved with the D-031 plan) · **Lane:**
+architect-pm · **Status:** done
+
+The pause would otherwise freeze two stale statuses. Both bricks were still `DESIGNED`
+although their work was built and tester-verified:
+
+- **0g** (dismissals keyed by content, not by line): fixed at `5a1c385`, the tester's own
+  assertion converted at `b2f71f6`, tester PASS at `401f7ee` (instability attacked six ways;
+  the documented duplicate-in-scope limitation now asserted). It is a tool, so it follows the
+  0d/0e precedent exactly: the meaning axis is vacuous, and `PROVEN` means deterministic, pure
+  and functionally verified. **0g → PROVEN.**
+- **2g** (the depression path, SPEC-2g Option C): built at `3547f3a`, tester PASS at `bed8376`.
+  It follows the 2f-i precedent (D-027): the mechanism is tester-verified, the meaning verdict
+  is NOT-YET. Two tester findings stand on the record and neither blocks: 2g-1, the stated
+  "decided by the signature" argument is incomplete (the frozen trace entry is what actually
+  closes it); 2g-2, a strengthen-then-weaken round trip at one rate is not neutral except at
+  weight 0.5 (asserted, not adjudicated). **2g → BUILT-UNVALIDATED.**
+
+C3 was run against the reconciled ledger before this entry and stays clean. Each brick's
+earlier note is kept as written, with the reconciliation prepended.
