@@ -1,0 +1,60 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import Timeline from '../components/Timeline.tsx';
+import TimelineList from '../components/TimelineList.astro';
+import NowLine from '../components/NowLine.tsx';
+import plan from '../data/plan.json';
+import { formatDay, type Plan } from '../lib/plan.ts';
+import { withBase } from '../lib/url.ts';
+
+const p = plan as unknown as Plan;
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Roadmap and gates',
+    description: 'Phases and decision gates of stage 2, spiking cognitive maps, rendered from the research plan.',
+  }}
+>
+  <p>
+    These are the phases and gates of Psyche's current research line, stage 2: spiking cognitive maps. Every
+    date here is read from one file, the research plan, at build time. A moved date keeps its original
+    alongside it and gets a change-log entry. The text version is in <a href={withBase('research/roadmap/')}>Roadmap</a>.
+  </p>
+
+  <NowLine client:load plan={p} />
+
+  <section class="sx-section">
+    <h2>Phases</h2>
+    <Timeline client:load plan={p} />
+    <TimelineList plan={p} />
+  </section>
+
+  <section class="sx-section">
+    <h2>Decision gates</h2>
+    <p>
+      Each gate is decided against criteria written before the work it judges. Public status shows only
+      whether a gate is decided; verdicts are disclosed when the paper is submitted.
+      Details in <a href={withBase('research/gates/')}>Decision gates</a>.
+    </p>
+    <ol class="sx-gates">
+      {
+        p.gates.map((g) => (
+          <li>
+            <span class="sx-gates__mark" aria-hidden="true">{g.id}</span>
+            <div>
+              <h3>
+                Gate {g.id}: {g.title}
+              </h3>
+              <p class="sx-gates__meta">
+                {g.date ? formatDay(g.date) : g.date_rule} ({g.status})
+              </p>
+              <p>{g.question}</p>
+              <p class="sx-gates__meta">If missed: {g.if_missed}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+  </section>
+</StarlightPage>

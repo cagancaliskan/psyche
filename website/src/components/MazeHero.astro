@@ -1,0 +1,42 @@
+---
+// The landing figure: a reward-free exploration trail through two rooms, then a goal introduced
+// afterwards and the direct route to it — Tolman's latent-learning paradigm drawn as an illustration.
+// Rendered to static SVG at build time; the only motion is one CSS sequence on load, and
+// prefers-reduced-motion shows the final frame.
+import {
+  HERO_GOAL,
+  HERO_PICTURE,
+  HERO_SEED,
+  HERO_START,
+  HERO_STEPS,
+  parseGrid,
+  pathLength,
+  polylinePoints,
+  randomWalk,
+  shortestPath,
+  wallCells,
+} from '../lib/maze.ts';
+
+const grid = parseGrid(HERO_PICTURE);
+const walls = wallCells(grid);
+const trail = randomWalk(grid, HERO_START, HERO_STEPS, HERO_SEED);
+const path = shortestPath(grid, HERO_START, HERO_GOAL);
+if (!path) throw new Error('hero goal unreachable');
+const trailLen = pathLength(trail);
+const pathLen = pathLength(path);
+---
+
+<figure class="sx-maze is-animated">
+  <svg viewBox={`0 0 ${grid.cols} ${grid.rows}`} role="img" aria-labelledby="sx-maze-title">
+    <title id="sx-maze-title">
+      Illustration: an agent wanders two connected rooms without reward, then takes a direct route to a goal introduced afterwards.
+    </title>
+    <rect class="floor" x="0" y="0" width={grid.cols} height={grid.rows}></rect>
+    {walls.map(([r, c]) => <rect class="wall" x={c} y={r} width="1" height="1"></rect>)}
+    <polyline class="trail" points={polylinePoints(trail)} style={`--len:${trailLen + 1}`}></polyline>
+    <circle class="start" cx={HERO_START[1] + 0.5} cy={HERO_START[0] + 0.5} r="0.32"></circle>
+    <circle class="goal" cx={HERO_GOAL[1] + 0.5} cy={HERO_GOAL[0] + 0.5} r="0.34"></circle>
+    <polyline class="path" points={polylinePoints(path)} style={`--len:${pathLen + 1}`}></polyline>
+  </svg>
+  <figcaption>Latent learning, after Tolman: explore without reward, then reach a goal introduced afterwards. An illustration, not a result.</figcaption>
+</figure>
