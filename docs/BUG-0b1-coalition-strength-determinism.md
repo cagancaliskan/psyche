@@ -238,8 +238,8 @@ contributions — which is not a restriction the project ever stated.
    is what surfaced it.
 
 **Status.** DEFECT-A belongs to brick `0b`, not to `0b1` and not to `0b2`. It contests Phase 0's
-`PROVEN` label, and that call — with its re-validation cost — is Cagan's, recorded as **D-011** in
-`DECISIONS.md`. Nothing is re-labelled here on an agent's initiative.
+`PROVEN` label, and that call — with its re-validation cost — is the project lead's, recorded as **D-011** in
+`DECISIONS.md`. Nothing is re-labelled here on a lane's own initiative.
 
 ---
 
@@ -271,7 +271,7 @@ were only two is an assertion, not a finding. SPEC-0c §2.5.2 records the corres
 lesson for the spec: 0c's own falsifier exercised only the activation accumulator, so the
 brick whose purpose is closing this class would have shipped with a live instance of it.
 
-**Status, updated.** DEFECT-A belongs to brick `0b`. Cagan resolved the label question in
+**Status, updated.** DEFECT-A belongs to brick `0b`. The label question was resolved in
 **D-012**: Phase 0's `PROVEN` label is withdrawn, and both `0a` and `0b` now carry
 `BUILT · UNVALIDATED` — restored only after the repair brick is built and re-verified.
 The third-site correction and the conversion of the remaining naive sums are **D-014**,

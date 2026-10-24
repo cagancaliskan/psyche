@@ -1,8 +1,8 @@
 # Original design & vision documents: read this first
 
-The 13 Markdown files in this folder are the project's **original, aspirational design and
-vision documents**, written **before** the code in `src/` existed. They are kept here
-**byte-unchanged** as a historical record of the intent that motivated the prototype.
+The 12 Markdown files in this folder are the project's **original, aspirational design and
+vision documents**, written **before** the code in `src/` existed. They are kept here,
+**unchanged in substance**, as a historical record of the intent that motivated the prototype.
 
 **They describe intent and ambition, not what the built code does or proves:**
 
@@ -14,15 +14,15 @@ description of a working system.
 
 ## What actually corresponds to the built code
 
-Of the 13 files here, only two correspond to what was actually built:
+Of the 12 files here, only two correspond to what was actually built:
 
 - [`psyche_plan_layer0_topology.md`](psyche_plan_layer0_topology.md): the topology/graph layer plan.
 - [`psyche_plan_layer1_substrate_store.md`](psyche_plan_layer1_substrate_store.md): the substrate
   store plan, realized in `src/psyche_store.py`.
 
-The other **eleven** documents (substrate biology, memory hierarchy, abstraction engine, self
+The other **ten** documents (substrate biology, memory hierarchy, abstraction engine, self
 model, motivation architecture, attention & awareness, emotional regulation, the sleeping brain,
-the body's voice, how this brain comes to speak, and the project evaluation) describe a large,
+the body's voice, and how this brain comes to speak) describe a large,
 **mostly-unbuilt** architecture. They are design exploration, not specifications of shipped code.
 Treating any of them as a description of implemented behavior would be a mistake.
 

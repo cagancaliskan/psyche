@@ -1,16 +1,16 @@
 # SPEC-fan-effect — Anderson's fan effect as the re-routed primary meaning bar
 
 Status: **FEASIBILITY PRE-CHECK COMPLETE → NO-GO (structurally infeasible on this substrate).** This document
-leads with a **gating** feasibility pre-check (§1), as instructed. The pre-check is answered **NO**: the fan
+leads with a **gating** feasibility pre-check (§1), as the scope note requires. The pre-check is answered **NO**: the fan
 effect is **not testable on this substrate as built**, for a reason **different from** the 1e priming NO-GO. 1e
 failed on **anti-circularity** (the prediction variable, SWOW strength, *is* the edge weight). The fan effect
 fails on a more basic ground — **the generating mechanism of the fan effect does not exist in this engine** —
 and this is **not** a provisional, population-uncertain finding but an **already-proven** property of the frozen
-substrate. Per the instruction's second ending, the verdict is stated explicitly and the design **stops here**;
+substrate. Per the scope note's second outcome, the verdict is stated explicitly and the design **stops here**;
 the full graded experiment is **not** written. A pivot to **interoception (2c)** is recommended (§4).
 
 Author: architect-pm
-For: the human (a direction decision) and, if the recommendation is accepted, the validator (who would own a
+For: the project lead (a direction decision) and, if the recommendation is accepted, the validator (who would own a
 2c meaning experiment). This document writes **no code**, runs **no code**, and asserts **no** built or proven
 artifact. It is `DESIGNED`-tier analysis only.
 Depends on (read): Phase 2A fan-effect characterization (`experiments/fan_effect.py`, `experiments/FAN_EFFECT.md`,
@@ -30,13 +30,13 @@ spreading-activation engine (`src/psyche_activation.py`); the 1e NO-GO (`docs/sp
 
 ## 1. FEASIBILITY PRE-CHECK (GATING — answered before any experiment is designed)
 
-**The one question (verbatim from the directive):** *Does measuring the fan effect on THIS substrate — through
+**The one question (verbatim from the scope note):** *Does measuring the fan effect on THIS substrate — through
 the closed loop — avoid the structural coupling that killed 1e?*
 
 **Short answer: it avoids 1e's *specific* coupling, but it hits a different, harder wall that forecloses the
 test before circularity is even reached. NO-GO.**
 
-The pre-check has three parts, exactly as the directive frames them. I answer each, then state the gate verdict.
+The pre-check has three parts, exactly as the scope note frames them. I answer each, then state the gate verdict.
 
 ### 1.0 What killed 1e, restated precisely (so I test against the right failure)
 
@@ -48,7 +48,7 @@ read straight back out. But the saturating ladder sends HIGH to a strictly highe
 everywhere, so **N_S0 = 7 < 30** and the all-primes fallback's value-added headroom was arithmetically ~0.027
 < 0.20 (`r_W ≈ 0.97`). The gate fired **at selection time, before any graded number** (EXP-1e §15.3–15.4).
 
-The lesson I carry forward (and the directive insists on): **structural optimism over-predicted feasibility for
+The lesson I carry forward (and the scope note insists on): **structural optimism over-predicted feasibility for
 1e.** Reasoning said S0 would populate; the blind run said N_S0 = 7. So any feasibility claim I make from
 reasoning alone is **provisional** and would need an empirical confirmation run — *unless* the blocker is a
 property that is **already empirically established**, in which case no new run is needed to know the answer. The
@@ -94,7 +94,7 @@ be "the direction is reproduced," never "Psyche retrieves the way a person does.
 
 ### 1.2 Part 2 — Is there a clean, well-populated stratum separating the fan prediction from a mechanical readback? (assessed BOTH ways, honestly)
 
-The directive asks me to assess two opposite possibilities. I do both, then report which is true.
+The scope note asks for two opposite possibilities to be assessed. I do both, then report which is true.
 
 **(2a) The optimistic read — is fan structurally *cleaner* than priming?** On the surface, **yes, and this is
 real**: the fan prediction rides on the **NUMBER of edges (out-degree / fan)**, which is a **different axis**
@@ -102,7 +102,7 @@ from the **weight of any one edge**. In 1e, prediction and mechanism were the *s
 out-degree and edge weight are **distinct, separable graph properties** — one can hold edge strength and
 distance fixed while varying only fan (exactly what `star_spec` does). So the fan effect **does avoid 1e's
 specific strength=weight coupling.** If the only worry were "is the fan axis entangled with the weight axis the
-way strength was," the answer would be: **less entangled — fan is the cleaner axis.** The directive's first
+way strength was," the answer would be: **less entangled — fan is the cleaner axis.** The scope note's first
 sub-question is answered **in the fan effect's favor.**
 
 **(2b) The fatal read — does the generating mechanism even exist on this substrate?** Here the pre-check turns,
@@ -136,7 +136,7 @@ prove the loop *added value over* that readback). For the fan effect there is **
 in either direction** — the substrate's response to fan is **identically flat.** There is no stratum where the
 loop produces a fan effect, because **the loop produces no fan-dependence at all.**
 
-**Does a *similar* coupling resurface (the directive's named risk)?** I checked for the inverse worry — that
+**Does a *similar* coupling resurface (the scope note's named risk)?** I checked for the inverse worry — that
 high-fan nodes might correlate with in-degree / weight / frequency artifacts so that a *spurious* "high fan →
 lower activation" could appear as a mechanical topology readback. **It does not arise**, because the substrate
 produces **no fan-dependence to be spurious about**: the readout at a target is a pure function of *its own*
@@ -175,7 +175,7 @@ confirm**: a confirmation run would re-measure the flat line.
 
 ### 1.4 The closed-loop check (does 1d's competition/broadcast rescue it?)
 
-The directive asks specifically about the fan effect **through the closed loop**, not the bare engine the 2A
+The scope note asks specifically about the fan effect **through the closed loop**, not the bare engine the 2A
 study used. I checked whether 1d-i competition or 1d-ii broadcast introduces any out-degree sensitivity the bare
 engine lacks. **They do not:**
 
@@ -201,16 +201,16 @@ contrasts register — and edge-strength is exactly the 1e axis that was too cou
 > blocker here; the blocker is upstream of it — there is no fan-dependent signal to grade, circular or
 > otherwise.**
 
-**This is the directive's second honest ending** ("entangled on this substrate" → say so and stop). I note one
+**This is the scope note's second honest outcome** ("entangled on this substrate" → say so and stop). I note one
 precise nuance, because honesty requires it: the fan effect is not *entangled* the way priming was — it is
-**absent**. The directive's three landings map as follows, and I pick the correct one without splitting the
+**absent**. The scope note's three possible outcomes map as follows, and I pick the correct one without splitting the
 difference:
 
 - *Testable (clean stratum that plausibly populates)* → **NO.** There is no fan signal to grade.
 - *Structurally entangled the way priming was* → **NOT exactly**; the fan axis is actually *cleaner* than the
   strength axis. But the experiment is still foreclosed, for the stronger reason that the effect is **not
   produced at all.**
-- *Plausible but population-uncertain, gated on an empirical run* → **NO.** This landing is explicitly for when
+- *Plausible but population-uncertain, gated on an empirical run* → **NO.** This outcome is explicitly for when
   reasoning *looks* feasible and only a run can confirm. Here the run **already exists** (Phase 2A) and confirms
   **infeasibility**. Recommending a fresh confirmation run would be theater — it would re-measure a flat line
   already captured verbatim.
@@ -265,7 +265,7 @@ The reason the fan effect cannot be made to appear by a cleverer experiment is t
   - is **out of this step's lane** (the PM does not modify the engine; that is the builder's, and only on an
     approved spec);
   - would be a **substantial cognitive-architecture decision** (normalization changes the meaning of *every*
-    activation result the project has, including 1c/1d), so it is a **human call**, not an agent's;
+    activation result the project has, including 1c/1d), so it is a **project-lead call**, not a lane's;
   - and crucially, **would not be "reproducing" the fan effect** in any earned sense if the normalization were
     added *in order to* produce it — that is engineering the answer into the mechanism (the cousin of the
     circularity bug). A fan effect would only be meaningful if normalization were adopted for an *independent*
@@ -281,7 +281,7 @@ So the door is closed on **two** independent grounds: (a) as the engine stands, 
 
 **Recommendation: do not take the fan effect as the re-routed primary meaning bar. Pivot to interoception (2c).**
 
-**Why (one paragraph, as the directive asks).** The project now has **two** re-routes that both dead-end inside
+**Why (one paragraph, as the scope note asks).** The project now has **two** re-routes that both dead-end inside
 the *association/activation-magnitude* family: semantic priming (1e) is infeasible on SWOW because the
 prediction variable **is** the edge weight (anti-circularity); the fan effect is infeasible because its
 generating mechanism (shared-budget normalization) **is not in the engine** (a proven flat curve). These are
@@ -304,7 +304,7 @@ are **not measurable as an earned cognitive claim on this substrate as built.** 
 **mechanism-verified**; what remains open is which **external behavioral effect** carries the milestone, and the
 recommendation is that it be **interoceptive modulation (2c)**, not an association-family effect.
 
-**The alternative, stated fairly (the human's call).** If the human wants to keep the milestone inside Phase 1
+**The alternative, stated fairly (the project lead's call).** If the project lead wants to keep the milestone inside Phase 1
 and is willing to make a **Phase 0 engine decision**, the *only* path to a fan effect is to add source-activation
 normalization to the engine (§3) — adopted for an independent architectural reason, with the fan effect then
 checked as an **untuned** consequence against external fan norms. That is a legitimate research direction, but it
@@ -327,7 +327,7 @@ fan-mechanism absent) → primary meaning bar open; recommend pivot to interocep
 stays separate; mechanism ≠ meaning intact; 1c, 1d stay `BUILT · UNVALIDATED`; Phase 0 stays `PROVEN`; nothing
 reopened.
 
-**Single next action (human decision):** approve the pivot of the primary behavioral meaning bar to
+**Single next action (project-lead decision):** approve the pivot of the primary behavioral meaning bar to
 **interoception (2c)** — at which point the architect-pm writes SPEC-2c (telemetry-derived body-state signals
 that measurably modulate the cycle, graded against the live telemetry as the external yardstick) and routes the
 meaning experiment to the validator. (Holding, separately and unrescued, any future Phase 0 question of whether

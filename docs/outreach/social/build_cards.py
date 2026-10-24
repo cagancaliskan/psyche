@@ -9,13 +9,13 @@ Each card is a STANDALONE 1200x1200 HTML file with brand fonts base64-embedded, 
 it renders identically offline. The cards are then screenshot with headless Chrome
 at 2x and downsampled to a crisp 1200x1200 PNG.
 
-Honesty (matches README/REPORT): no claim of a mind, consciousness, AGI, or a
-validated cognitive model; nothing implying the cognitive layer works. The Greek
-mark appears only beside the wordmark, no gloss. Numbers are exact: 130 / 0 / 56 /
-6 / 0. No banned overclaim phrases, no exclamation marks, no em dashes, no single
-hash-seed count. Copy is verbatim from the brief.
+Wording follows the project's claim rules (README, REPORT): no claim of a mind,
+consciousness, AGI or a validated cognitive model; nothing implying the cognitive
+layer works. The Greek mark appears only beside the wordmark, no gloss. Numbers are
+exact: 130 / 0 / 56 / 6 / 0.
 
-Run:  /tmp/psyche_venv/bin/python build_cards.py
+Requires Pillow (pip install pillow) and Chrome or chrome-headless-shell.
+Run:  python3 build_cards.py
 """
 import os, re, glob, base64, subprocess, urllib.request, urllib.parse
 from PIL import Image

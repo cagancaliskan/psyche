@@ -3,7 +3,7 @@
 Status: **BUILT (mechanism) · UNVALIDATED (meaning)** — implemented and passing as-scoped; independent tester verification pending; §6.2 meaning not yet earned.
 Author: architect-pm
 For: builder (§6.1 test-first) → tester (independent verify) → validator (§6.2)
-Amended 2026-06-20: §6.1's "no over-swallow" criterion re-scoped to 1d by human decision (see §6.1 and §8).
+Amended 2026-06-20: §6.1's "no over-swallow" criterion re-scoped to 1d by project-lead decision (see §6.1 and §8).
 Depends on: 1a (`psyche_field`), 1b (`psyche_coalitions`, `psyche_perceive`), Phase 0 substrate.
 
 > Scope discipline (CONTRIBUTING.md): this document is **description, not built code**. Nothing here is
@@ -153,7 +153,7 @@ corresponds to external structure). Passing §6.1 does **not** earn §6.2, and v
 
 ### 6.1 Mechanism bar (tester) — the known-limitation test inverts and passes
 
-> **AMENDED 2026-06-20 (human decision — see §8).** The original §6.1 bundled three criteria, one of
+> **AMENDED 2026-06-20 (project-lead decision — see §8).** The original §6.1 bundled three criteria, one of
 > which (no over-swallow) was found at build time to be structurally outside 1c's reach and has been
 > **re-scoped to 1d**. The two criteria below are 1c's acceptance; the moved criterion is recorded as
 > a known limitation (§7.7) and shipped as a *passing asserted-negative* until 1d earns it.
@@ -222,7 +222,7 @@ than no clustering.
 1. **Not whole-graph clustering.** 1c clusters only the perceived source set, not the substrate. —
    asserted-negative test.
 2. **No cognitive claim on its own.** Passing §6.1 proves a mechanism, not a cognitive phenomenon. —
-   stated in the delivery report and as a code comment, not hidden.
+   stated in the verification notes and as a code comment, not hidden.
 3. **Chaining is intentional and documented.** Single-link transitive merging can chain A–B–C even
    when A–C are not directly near; a test documents this behavior rather than pretending it can't
    happen.
@@ -255,7 +255,7 @@ than no clustering.
 3. **Sequencing.** Finish 1c fully (§6.1 mechanism → §6.2 meaning) before pulling 2c (interoception)
    forward — RECOMMENDED — vs. reorder now per the roadmap's open question.
 
-**RESOLVED (2026-06-20, human decision):**
+**RESOLVED (2026-06-20, project-lead decision):**
 
 1. Proximity signal → **A1 (graph topology / road-strength only)**. A2 (activation-field overlap)
    explicitly rejected, so the grouping stays a pure function of stable graph state. *(Locked at build.)*

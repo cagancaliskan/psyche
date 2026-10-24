@@ -3,11 +3,11 @@
 **Written:** 2026-07-25 · **Landed in repo:** 2026-07-26 · **Assessment date:** 2026-07-25
 
 **Why this file exists.** The figure "0 of 14, 1 partial" was cited in project records and in
-conversation for two days while the assessment backing it lived nowhere in this repository. That
+discussion for two days while the assessment backing it lived nowhere in this repository. That
 is `C1`/`C2`'s failure class arriving through *absence* rather than drift: a number with no
 checkable provenance is not better than a stale one, it is worse, because nothing can catch it.
 Flagged by architect-pm on 2026-07-26; this document is the fix. **The figure must not be cited
-anywhere — roadmap, ledger, paper, or conversation — except by reference to this file.**
+anywhere — roadmap, ledger or paper — except by reference to this file.**
 
 **Provenance of the indicator list.** The fourteen indicators and their wording were re-verified
 on 2026-07-26 against Table 1 of arXiv:2308.08708. The published version (*Identifying indicators

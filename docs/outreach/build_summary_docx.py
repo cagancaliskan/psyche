@@ -4,10 +4,10 @@ Render docs/outreach/SUMMARY.md to docs/outreach/SUMMARY.docx (one page).
 
 SUMMARY.md is the source of truth; this script parses its lightweight Markdown
 (H1 title, **bold lead-in:** paragraphs, *italic* spans, and "- " bullets) so the
-two stay in sync. No new claims are introduced here: text is taken from SUMMARY.md.
+two stay in sync. Every sentence is taken from SUMMARY.md.
 
-Run with the venv that has python-docx:
-    /tmp/psyche_venv/bin/python build_summary_docx.py
+Requires python-docx (pip install python-docx).
+Run:  python3 build_summary_docx.py
 """
 import os
 import re

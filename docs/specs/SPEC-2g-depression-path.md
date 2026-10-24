@@ -66,7 +66,7 @@ Hebbian rule. **Carandini & Heeger (2012)** concerns response normalisation rath
 plasticity, so it supports "normalisation is a distinct layered operation" and does not speak
 to this question directly.
 
-**So Cagan's reading is right, and sequencing them is coherent.**
+**So that reading holds, and sequencing them is coherent.**
 
 ### 1.1 One refinement, and it changes 2h's price rather than the decision
 
@@ -82,7 +82,7 @@ properties still hold. That is a real cost and it belongs to 2h.
 
 ### 1.2 Epistemic status of the paragraph above — stated, not assumed
 
-This assessment is made **from knowledge of these sources, not from re-reading them at
+This assessment is made **from prior familiarity with these sources, not from re-reading them at
 verification time.** The project has a precedent for exactly this situation (the Butlin
 figure, which is marked verified against the arXiv version only, and explicitly *not*
 upgradeable until someone reads the published one). The same discipline applies here:

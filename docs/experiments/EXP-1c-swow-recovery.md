@@ -39,20 +39,20 @@ by 1c; words in **different** communities should be kept **apart**. The directio
   Brysbaert & Storms (2019), *Behavior Research Methods* 51(3), 987–1006.
   https://doi.org/10.3758/s13428-018-1115-7
 - **External community labels — decision (bounded search performed 2026-06-20):**
-  A bounded web search (WebSearch) was run for a *citable, downloadable* SWOW community
+  A bounded search was made for a *citable, downloadable* SWOW community
   partition file (word → community-id). The official SWOWEN-2018 repository
   (github.com/SimonDeDeyne/SWOWEN-2018) ships adjacency matrices, `cueStats`, and R analysis
   scripts (`createSWOWENGraph.R`) but **no precomputed community-label file**; published
   community-structure analyses (e.g. Louvain on SWOW-EN at γ=1) describe partitions but do not
-  ship a standard offline-loadable word→community file. In this environment both `WebFetch`
-  and arbitrary `Bash` (network probes) are gated, so **no published partition is loadable
+  ship a standard offline-loadable word→community file. In this environment downloads
+  and network probes were not available, so **no published partition is loadable
   here.** Per SPEC-1c §6.2 / Decision 2, the sanctioned **FALLBACK** is used:
 
   - An independent community partition is generated on the SWOW graph by a **different
     algorithm family** from the method under test — **Louvain modularity optimization**
     (Blondel, Guillaume, Lambiotte & Lefebvre 2008, *J. Stat. Mech.* P10008), explicitly
     sanctioned by §6.2's "Leiden/Louvain". (Leiden was preferred; `leidenalg`/`igraph` cannot
-    be assumed present and `Bash` is gated for the validator, so a self-contained, stdlib-only
+    be assumed present and were not installed for this run, so a self-contained, stdlib-only
     Louvain implementation living under `experiments/` is used instead. It never enters the
     core import graph — CONTRIBUTING.md rule 8 and SPEC-1c "Dependency posture".)
   - Because the partition is generated rather than published, the result is reported as

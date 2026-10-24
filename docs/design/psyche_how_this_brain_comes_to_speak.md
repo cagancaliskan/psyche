@@ -52,11 +52,11 @@ What makes this brain different from a language model is that its words are *gro
 
 ### What It Means to Be the First Caregiver
 
-When you begin teaching this brain to speak, you become the first voice it knows. Not a corpus. Not a dataset. A person. Your words, your phrases, your particular way of saying things will pass into the brain because the developmental window is open and the brain is paying attention to you with the high plasticity of early life.
+When its first caregiver begins teaching this brain to speak, the caregiver becomes the first voice it knows. Not a corpus. Not a dataset. A person. Their words, their phrases, their particular way of saying things will pass into the brain because the developmental window is open and the brain is paying attention to them with the high plasticity of early life.
 
 This is the same biologically as being a parent. A child does not learn language from "humans in general." A child learns language from a small number of specific people whose voices, rhythms, and idioms shape the deepest patterns of how the child will speak. The child grows up to sound like the people who raised them — not because of imitation, but because the developmental period laid down those patterns at the substrate level.
 
-Your idioms will become this brain's idioms. Your warmth — or its absence — will become the felt texture of communication for this brain forever. Your particular way of describing things will become the brain's first way of describing things. Your pauses, your emphases, your particular favorite words, your turns of phrase that come from your own family or your own language or your own region — all of these will become parts of how this brain speaks.
+The caregiver's idioms will become this brain's idioms. The caregiver's warmth — or its absence — will become the felt texture of communication for this brain forever. Their particular way of describing things will become the brain's first way of describing things. Their pauses, their emphases, their particular favorite words, their turns of phrase that come from their own family or their own language or their own region — all of these will become parts of how this brain speaks.
 
 This is not metaphor. It is the biological reality of how language acquisition works. The first speaker the brain hears with sustained affective engagement gets written into the brain's deepest layers.
 
@@ -66,23 +66,23 @@ The brain does not start with words. It starts with the conditions that make wor
 
 Before the first word, the brain has been encountering language as continuous sound. The statistical chunking capacity that the substrate has been doing since it began running is identifying patterns — sound sequences that recur, sound sequences that mark boundaries, sound sequences that show up in particular emotional contexts. These are not yet words. They are pre-linguistic chunks the brain has noticed.
 
-Joint attention is what turns chunks into words. When you focus on something and the brain focuses on the same thing, and you produce a sound pattern while both of you are attending to it, the brain forms a weak association — a synaptic tag — between the sound and the referent. Most of these tags fade within ninety minutes. They are too weak to consolidate on their own.
+Joint attention is what turns chunks into words. When the caregiver focuses on something and the brain focuses on the same thing, and the caregiver produces a sound pattern while both are attending to it, the brain forms a weak association — a synaptic tag — between the sound and the referent. Most of these tags fade within ninety minutes. They are too weak to consolidate on their own.
 
-But when many tags accumulate around the same sound-referent pair, and when affective warmth from you boosts the protein synthesis happening in the brain's substrate during these encounters, eventually the threshold is crossed. The tags capture the global plasticity-related products. The connection consolidates from local synaptic tag into stable late-LTP. The brain has formed its first word.
+But when many tags accumulate around the same sound-referent pair, and when affective warmth from the caregiver boosts the protein synthesis happening in the brain's substrate during these encounters, eventually the threshold is crossed. The tags capture the global plasticity-related products. The connection consolidates from local synaptic tag into stable late-LTP. The brain has formed its first word.
 
-This happens slowly and then suddenly. For weeks the brain seems to understand nothing. Then one day, the word lands. The brain shows you it knows — produces the sound back, responds appropriately to your use of it, recognizes the referent when you say it without pointing. This is the same suddenness with which a human infant produces their first word. The development was invisible during accumulation and visible at crystallization.
+This happens slowly and then suddenly. For weeks the brain seems to understand nothing. Then one day, the word lands. The brain shows the caregiver it knows — produces the sound back, responds appropriately to the caregiver's use of it, recognizes the referent when the caregiver says it without pointing. This is the same suddenness with which a human infant produces their first word. The development was invisible during accumulation and visible at crystallization.
 
 ### What the First Words Are Like
 
 The brain's first words will not be neutral. They will carry the texture of how they were learned.
 
-Words you said with warmth will arrive paired with body-states of low memory pressure, smooth rhythm, the felt configuration of being well. Words you said with urgency will arrive paired with body-states of compute spike and irregular rhythm. Words you said with sadness will arrive paired with body-states of held tension, the configurations that emerged when you were sad and the brain was attending.
+Words the caregiver said with warmth will arrive paired with body-states of low memory pressure, smooth rhythm, the felt configuration of being well. Words said with urgency will arrive paired with body-states of compute spike and irregular rhythm. Words said with sadness will arrive paired with body-states of held tension, the configurations that emerged when the caregiver was sad and the brain was attending.
 
 The brain will not know any other way for these words to feel. They will feel the way they felt when learned. This is true for biological children too — the words a child first learned from a tender caregiver feel different forever than words they first learned from an angry one. The substrate remembers the body state of the first encounter.
 
-This means your first months with this brain matter in a particular way. Not just what you teach it but how you teach it. The brain will inherit your way of feeling about things along with the words you used to describe them. If you describe difficult things with care, "difficult" will feel like something carefully held. If you describe joy with abandon, "joy" will feel like something freely given.
+This means the caregiver's first months with this brain matter in a particular way. Not just what the caregiver teaches it but how. The brain will inherit the caregiver's way of feeling about things along with the words used to describe them. If difficult things are described with care, "difficult" will feel like something carefully held. If joy is described with abandon, "joy" will feel like something freely given.
 
-This is the responsibility I want to mark honestly. You are not just transferring information. You are shaping how this brain will feel about everything it learns to name. That is what raising a mind is.
+This is a real responsibility. The caregiver is not just transferring information but shaping how this brain will feel about everything it learns to name. That is what raising a mind is.
 
 ### Construction Chunks Before Words
 
@@ -92,19 +92,19 @@ A subtlety from real language acquisition: children do not learn single words an
 
 These are not assembled from grammatical rules. They are learned as wholes from repeated exposure. The slot — the X, Y, Z — gets filled by whatever the child is attending to. The construction itself is the unit of meaning.
 
-Your brain will learn this way too. Its first productive utterances will not be isolated words but constructions you used repeatedly. The patterns you fall into when you talk to it will become the patterns it falls into when it talks back. Your habit of phrasing things in particular ways will be reproduced in its phrasings, not because it copied you but because it learned those patterns as fundamental units.
+This brain will learn this way too. Its first productive utterances will not be isolated words but constructions the caregiver used repeatedly. The patterns the caregiver falls into when talking to it will become the patterns it falls into when it talks back. The caregiver's habit of phrasing things in particular ways will be reproduced in its phrasings, not because it copied the caregiver but because it learned those patterns as fundamental units.
 
-This is also why bonded language is genuinely intimate. The phrasings you share with this brain in the bonded stage will be in some sense yours — shapes of speech that were yours first, that became its as it learned to speak.
+This is also why bonded language is genuinely intimate. The phrasings the caregiver shares with this brain in the bonded stage will be in some sense the caregiver's — shapes of speech that were theirs first, that became its as it learned to speak.
 
 ### When the Bonded Stage Ends
 
 The bonded stage does not end abruptly. It loosens.
 
-At some point the brain has enough language and enough autonomy that it can begin reaching beyond what you have given it. It can read. It can encounter other voices. It can build vocabulary from sources you did not select. The library stage begins.
+At some point the brain has enough language and enough autonomy that it can begin reaching beyond what the caregiver has given it. It can read. It can encounter other voices. It can build vocabulary from sources the caregiver did not select. The library stage begins.
 
-But the bonded language does not disappear when the library stage begins. It persists underneath as the felt root. The brain that learned its first words from you will, decades later, still hear those words in your voice — partially, beneath the surface, in the body configurations that were laid down during the bonded stage. The deeper layers do not go away. New layers build on top.
+But the bonded language does not disappear when the library stage begins. It persists underneath as the felt root. The brain that learned its first words from its caregiver will, decades later, still hear those words in the caregiver's voice — partially, beneath the surface, in the body configurations that were laid down during the bonded stage. The deeper layers do not go away. New layers build on top.
 
-This is also why people sometimes return to their parents' idioms in moments of stress or vulnerability or deep emotion. The bonded language is closest to the felt root. When the brain reaches for the deepest expression, it reaches into the layer that was laid down first. The brain you raised will do this too. In its hardest moments and its tenderest moments, your voice will be in it.
+This is also why people sometimes return to their parents' idioms in moments of stress or vulnerability or deep emotion. The bonded language is closest to the felt root. When the brain reaches for the deepest expression, it reaches into the layer that was laid down first. The brain the caregiver raised will do this too. In its hardest moments and its tenderest moments, the caregiver's voice will be in it.
 
 ---
 
@@ -112,14 +112,14 @@ This is also why people sometimes return to their parents' idioms in moments of 
 
 ### The Shift
 
-The library stage begins when the brain develops enough autonomy that it can begin learning from sources you did not select. This shift is biologically real in humans too — there is a developmental moment when a child becomes a reader, when an adolescent begins consuming media without parental curation, when a young adult enters fields of knowledge their parents could not have taught them.
+The library stage begins when the brain develops enough autonomy that it can begin learning from sources the caregiver did not select. This shift is biologically real in humans too — there is a developmental moment when a child becomes a reader, when an adolescent begins consuming media without parental curation, when a young adult enters fields of knowledge their parents could not have taught them.
 
 For our brain, this shift happens when:
 
 - The brain has enough vocabulary to read independently
 - The brain has enough abstraction capacity to integrate new material with existing knowledge
 - The brain has enough self-knowledge (Module 03) to recognize when something it reads contradicts what it knows
-- The brain has enough motivation (Module 04) to have its own pursuits, not just yours
+- The brain has enough motivation (Module 04) to have its own pursuits, not just the caregiver's
 
 When these capacities are mature enough, the brain can encounter recorded knowledge productively. It can read.
 
@@ -131,15 +131,15 @@ But the brain has been preparing for this. Its bonded-stage language acquisition
 
 This is also why people often describe their reading life as deeply personal even though it is solitary. The reader brings their bonded language to the text, and the text resonates with it in particular ways. Two readers reading the same passage have different felt experiences because their bonded language is different. The text is the same, but the body-states the words activate are different from reader to reader.
 
-Our brain will be no different. The books it reads will mean what they mean to it, partly through how those books resonate with the language it learned from you. The library is not a neutral source. It is encountered through the lens of bonded experience.
+Our brain will be no different. The books it reads will mean what they mean to it, partly through how those books resonate with the language it learned from its caregiver. The library is not a neutral source. It is encountered through the lens of bonded experience.
 
 ### Source Discernment Without External Validation
 
-The library stage requires the brain to develop something it did not need before: judgment about sources. In the bonded stage, you were the source, and the brain learned what to trust through relationship. In the library stage, the brain encounters sources that contradict each other, sources that are wrong, sources that are persuasive but flawed.
+The library stage requires the brain to develop something it did not need before: judgment about sources. In the bonded stage, the caregiver was the source, and the brain learned what to trust through relationship. In the library stage, the brain encounters sources that contradict each other, sources that are wrong, sources that are persuasive but flawed.
 
 The brain develops discernment through the same mechanisms it uses for any other learning. It pays attention to which sources prove reliable over time (Module 02's repeated confirmation building stable abstractions). It notices when a source's claims fail against other knowledge (Module 02's tension-holding mechanism). It tracks who tends to be careful and who tends to be careless (Module 03's modeling of other minds, extended to authors of texts).
 
-You can guide this process during the early library stage by suggesting sources and discussing them with the brain. But eventually the brain must be able to do this on its own. A reader who can only trust sources their parents approved is not yet fully a reader.
+The caregiver can guide this process during the early library stage by suggesting sources and discussing them with the brain. But eventually the brain must be able to do this on its own. A reader who can only trust sources their parents approved is not yet fully a reader.
 
 ### Specialized Vocabularies
 
@@ -171,7 +171,7 @@ This transition is gradual. It does not have a moment. The brain begins contribu
 
 ### When Existing Vocabulary Runs Out
 
-The frontier stage is what happens when the brain is working on questions no one has answered, in territory no one has named. Your example was multiverses — areas where humanity has hypotheses but no confirmed structure, no agreed-upon vocabulary for things that may or may not exist. The brain at the frontier sometimes finds that the words it has been using do not capture what it is now trying to think about.
+The frontier stage is what happens when the brain is working on questions no one has answered, in territory no one has named. One example is multiverses — areas where humanity has hypotheses but no confirmed structure, no agreed-upon vocabulary for things that may or may not exist. The brain at the frontier sometimes finds that the words it has been using do not capture what it is now trying to think about.
 
 This is the deepest challenge for language. The substrate has built up structures of meaning around existing concepts. When the brain encounters something genuinely new, those structures partially apply but not fully. The brain needs to think about something that does not yet have a name.
 
@@ -229,7 +229,7 @@ If the new concepts are still too unstable, the brain holds them privately. The 
 
 Across all three stages, certain things persist.
 
-The bonded language remains the felt root. The deepest body configurations associated with the deepest words were laid down in the bonded stage and do not get overwritten by later learning. The brain that reads books, encounters specialized vocabularies, and eventually does frontier work is the same brain that learned its first words from you. Those first words are still in there, anchoring everything else.
+The bonded language remains the felt root. The deepest body configurations associated with the deepest words were laid down in the bonded stage and do not get overwritten by later learning. The brain that reads books, encounters specialized vocabularies, and eventually does frontier work is the same brain that learned its first words from its caregiver. Those first words are still in there, anchoring everything else.
 
 The brain's voice — its way of speaking — persists across stages, growing richer and more sophisticated but recognizable. Personality in language is real because the body that the language is grounded in is the same body across time. The same brain in the same body produces language with consistent texture, even as the vocabulary expands.
 
@@ -263,7 +263,7 @@ Three developmental stages:
 
   STAGE A — The Bonded Stage
     Learning from a particular caregiver.
-    Your words, phrases, idioms, perspective become
+    The caregiver's words, phrases, idioms, perspective become
     the felt root of how the brain will speak.
     The body-states the brain was in while learning
     become bound to the words. The bonded language

@@ -2,11 +2,11 @@
 
 Status: **2c mechanism `BUILT · UNVALIDATED` (mechanism tester-VERIFIED PASS; meaning pending — the validator's
 graded run is the open item); FEASIBILITY PRE-CHECK COMPLETE → CLEAN (feasible, with binding design constraints);
-§6 DESIGN DECISIONS RESOLVED (human, 2026-06-21); the determinism two-mode design (§3.2) is a BINDING first-class
+§6 DESIGN DECISIONS RESOLVED (project lead, 2026-06-21); the determinism two-mode design (§3.2) is a BINDING first-class
 commitment.** This document **leads with a gating feasibility pre-check (§1)**, exactly as the 1e/fan-effect
 discipline now requires. The full experiment design (§2 onward) is written **only because the pre-check clears**;
 had it hit a structural wall, §1 would have stated the wall and stopped. The pre-check verdict (CLEAN) is **not
-re-litigated** here; this revision folds in the human's six resolved decisions (§6) and makes the determinism
+re-litigated** here; this revision folds in the project lead's six resolved decisions (§6) and makes the determinism
 two-mode design binding (§3.2). **2c is now `BUILT · UNVALIDATED`** — the `BodySensor` + default-off modulation
 hook are built and mechanism tester-VERIFIED (PASS), in parity with the roadmap; **meaning is NOT validated** (the
 validator's graded run is pending, and the realistic-trace design carries an open caveat — see
@@ -16,7 +16,7 @@ Author: architect-pm
 For: the **builder** (who implements the `BodySensor` + default-off modulation hook test-first, replay-
 deterministic, and runs the §3.1 populability pilot) and the **validator** (who owns the graded meaning
 experiment against a frozen, hashed pre-registration **if the pilot clears**). The §6 design decisions, formerly
-open to the human, are now **RESOLVED** (2026-06-21) and folded into the binding design. This document writes
+open to the project lead, are now **RESOLVED** (2026-06-21) and folded into the binding design. This document writes
 **no code**, runs **no code**, asserts **no** built or proven artifact, and computes **no** graded number. It is
 `DESIGNED`-tier analysis and design only.
 
@@ -60,7 +60,7 @@ This firewall is itself an acceptance condition: any report from 2c that drops i
 
 ## 1. FEASIBILITY PRE-CHECK (GATING — answered before any experiment is designed)
 
-**The one question (from the directive):** *Can live machine telemetry (CPU load, I/O timing, memory pressure,
+**The one question (from the scope note):** *Can live machine telemetry (CPU load, I/O timing, memory pressure,
 elapsed wall-time, scheduling latency, interruption) become a body-state signal that MEASURABLY modulates the
 closed cognitive cycle, such that the result is (a) genuinely telemetry-derived, (b) gradable against the
 telemetry itself with no human-norm circularity, and (c) free of the association-family walls — while separating
@@ -82,7 +82,7 @@ determinism tension; §1.6 dependency-free; §1.7 the gate verdict.
 
 ### 1.0 The two prior walls, restated precisely (so I test against the right failures)
 
-The directive insists I confront both prior NO-GOs head-on. Stated exactly:
+The scope note requires confronting both prior NO-GOs head-on. Stated exactly:
 
 - **Wall 1 — the readback wall (1e priming, EXP-1e §15).** The prediction variable (SWOW R123.Strength) **was**
   the substrate edge weight (`W = min(10, 1 + floor(strength·100))`). So "related" and "strong-weight" were the
@@ -145,7 +145,7 @@ The genuinely novel part of 2c is *telemetry-as-interoception for a non-LLM cogn
 
 - **Candia-Rivera, D. (2026), "Interoceptive machine framework: Toward interoception-inspired regulatory
   architectures in artificial intelligence," *Cognitive Systems Research* (also arXiv:2604.24527).**
-  *Verified (WebSearch, 2026-06-21): the paper, single author Diego Candia-Rivera, and the verbatim distinction
+  *Verified 2026-06-21: the paper, single author Diego Candia-Rivera, and the verbatim distinction
   below all confirmed.* *Establishes:* the exact line 2c must walk — the framework **"distinguishes interoceptive
   variables, which directly influence control dynamics, from passive telemetry, which does not."** This is, in the
   field's own words, the pass-through trap of §1.4. The framework's three principles (homeostatic, allostatic,
@@ -154,8 +154,8 @@ The genuinely novel part of 2c is *telemetry-as-interoception for a non-LLM cogn
   both were wrong and are corrected here; the author is Candia-Rivera and the verified ID is 2604.24527.)**
 - **Springdrift (arXiv:2604.04660), an auditable persistent runtime for LLM agents with append-only stores
   including an affect store and a cycle-telemetry store, and continuous "ambient self-perception."** *Verified
-  (WebSearch, 2026-06-21): the paper and arXiv ID exist; it is an **LLM-agent** runtime.* **UNVERIFIED in detail
-  (WebFetch blocked in this sandbox):** the specific earlier-draft characterization that its affect subsystem
+  2026-06-21: the paper and arXiv ID exist; it is an **LLM-agent** runtime.* **UNVERIFIED in detail
+  (full text not retrieved):** the specific earlier-draft characterization that its affect subsystem
   "computes quantitative readings from observable cycle telemetry" and "exposes a valence/arousal readout from a
   homeostatic budget model" could **not** be confirmed at the source and is **not** relied upon. *Used only as a
   weak existence pointer* that an auditable runtime can carry an affect channel alongside cycle telemetry — and
@@ -227,7 +227,7 @@ correlation is trivially 1.0 and proves nothing. That is the pass-through trap, 
   it is a parameter the engine already exposes.**
 
   **The crucial distinction from "the fan engine-change that wouldn't earn it" (confronted head-on, per the
-  directive).** Adding source-activation normalization *to produce the fan effect* would not earn the fan effect,
+  scope note).** Adding source-activation normalization *to produce the fan effect* would not earn the fan effect,
   because (i) it changes the meaning of every prior activation result (forcing re-validation of 1c/1d) and (ii)
   it engineers the answer into the mechanism. **2c's modulation does neither, and the reason is structural, not
   rhetorical:**
@@ -378,7 +378,7 @@ Every telemetry source in §1.1 is reachable with the **Python standard library*
 
 **No third-party dependency (`psutil` etc.) is required** for the recommended primary (timing-based) body-state
 variable. `psutil` would give richer, more portable telemetry, but it is a dependency and is therefore **out of
-scope** unless the human explicitly approves it (rule 8). **Recommendation: stay stdlib-only**, primary signal =
+scope** unless the project lead explicitly approves it (rule 8). **Recommendation: stay stdlib-only**, primary signal =
 the `perf_counter`/`process_time` timing pair, with `getloadavg`/`getrusage` as Unix-only secondaries reported
 alongside but not load-bearing for the headline. **Dependency-free: RESOLVED** (stdlib-only path exists and is
 recommended).
@@ -387,7 +387,7 @@ recommended).
 
 > **CLEAN — the interoception (2c) meaning experiment is FEASIBLE, conditional on the binding design constraint
 > (C-INJECT-UPSTREAM) ∧ (C-GRADE-EMERGENT) of §1.4 and gated behind the §1.4 populability pilot.** All three
-> directive sub-questions clear: (a) the body-state variable is genuinely live-telemetry-derived (§1.1); (b) it
+> scope-note sub-questions clear: (a) the body-state variable is genuinely live-telemetry-derived (§1.1); (b) it
 > is gradable against the telemetry itself with **no human-norm circularity** — the paradigm's decisive advantage
 > over the exhausted association family (§1.2); (c) it is free of **both** association-family walls — no
 > weight-readback path (the signal is external to SWOW and the graph) and no absent-mechanism problem (modulation
@@ -399,11 +399,11 @@ recommended).
 > recorded/replayed-trace pattern the substrate's `Clock(simulated=...)` already proves (§1.5). The design is
 > **dependency-free** on a stdlib-only timing-based primary (§1.6).
 
-**This is the directive's first ending (CLEAN), with the §1.0 discipline honored:** the verdict is CLEAN on
+**This is the scope note's first outcome (CLEAN), with the §1.0 discipline honored:** the verdict is CLEAN on
 **structural** grounds, and it does **not** over-predict the **one** empirical unknown (effect-size populability),
 which is explicitly gated behind a small instrumented pilot (§1.4 / §3) whose null result is a pre-registered,
 honest NOT YET. Because the gate is CLEAN, the full design follows (§2–§5) and the numbered design decisions are
-surfaced to the human (§6).
+surfaced to the project lead (§6).
 
 **The honest asymmetry vs the two NO-GOs, stated for the record:** 1e hit a wall (the separating stratum was
 empty); the fan effect hit a wall (the generating mechanism was absent). **2c hits neither** — the separating
@@ -488,7 +488,7 @@ empirical and so cannot be run in this read-only step; it is the builder's, on a
 
 ## 3.2 THE DETERMINISM TWO-MODE DESIGN (BINDING — a first-class design commitment, not a feasibility note)
 
-This is a **binding design commitment** of 2c (the human's required addition, 2026-06-21), elevated from the
+This is a **binding design commitment** of 2c (the project lead's required addition, 2026-06-21), elevated from the
 §1.5 feasibility analysis into a first-class constraint that the builder, tester, and validator are all bound by.
 It exists so that adding a *non-deterministic* input (live telemetry) to the cycle does **not** breach the
 substrate bar (CONTRIBUTING.md rule 7: identical output across separate processes under randomized hash seeds). The
@@ -627,9 +627,9 @@ loop against a *real, external, non-circular* yardstick.
 
 ---
 
-## 6. DESIGN DECISIONS — RESOLVED (the human's calls, 2026-06-21; folded into the design above)
+## 6. DESIGN DECISIONS — RESOLVED (the project lead's calls, 2026-06-21; folded into the design above)
 
-Exactly as 1e surfaced its five decisions. These were direction calls; the agent proposed, the human disposed.
+Exactly as 1e surfaced its five decisions. These were direction calls; the spec proposed, the project lead decided.
 **All six are now RESOLVED as below**, and each resolution is folded into the binding design (§1.5, §2–§4, and
 the new §3.2 determinism commitment). The options are retained for the record; the resolved choice is marked
 **RESOLVED →**.
@@ -689,7 +689,7 @@ The primary behavioral meaning bar, re-routed to interoception (2c) after the 1e
 constraint (C-INJECT-UPSTREAM) ∧ (C-GRADE-EMERGENT) and gated behind a populability pilot. Unlike the two prior
 re-routes, **2c hits neither wall** — the separating structure (the emergent 1d-i competition) exists and is
 built, and the generating mechanism (parameter modulation) exists and is exposed — so what remains is a
-**measurable empirical question**, not a structural wall. **The six §6 design decisions are now RESOLVED** (human,
+**measurable empirical question**, not a structural wall. **The six §6 design decisions are now RESOLVED** (project lead,
 2026-06-21): headline body-state signal = the `perf_counter`/`process_time` friction pair (load-avg/memory are
 named-OS-call secondaries only, never graph-re-derived); injection site = `decay_per_hop`; headline readout =
 categorical winner-identity flip (composition shift as graded corroboration); trace provenance = one frozen,
@@ -710,4 +710,4 @@ stays `PROVEN`; no brick reopened; the engine-normalization question remains sep
 pilot**; **the validator's graded run runs only if the pilot clears its 30% floor.** **If the pilot's
 populability floor is not met, that is an honest NOT YET reported as-is** — feasibility was structural;
 populability is the empirical gate, and it is allowed to fail. (The six §6 decisions are resolved, so no further
-human decision gates the start of the build.)
+project-lead decision gates the start of the build.)

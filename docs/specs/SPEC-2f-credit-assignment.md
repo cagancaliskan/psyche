@@ -151,7 +151,7 @@ detail, and credit assignment is a parenthesis.
 
 ### 2.1 The premise, corrected
 
-The brief describes two incompatible models: (a) the biology document's continuous tag and
+The scope note gives two incompatible models: (a) the biology document's continuous tag and
 capture, and (b) *"Module 01 / `src/psyche_store.py` — an integer `traverse_count` ladder
 (5 / 20 / 100)"*, with (b) having shipped.
 
@@ -417,7 +417,7 @@ only job it has.
 
 ## 7. Done means — a MECHANISM bar, sharpened
 
-The brief's formulation, tightened where it was loose. Every clause below is a place a
+The scope note's formulation, tightened where it was loose. Every clause below is a place a
 plausible-looking implementation could pass without doing the work.
 
 > **The claim.** A road traversed at cycle `t` and followed by a designated outcome at
@@ -427,7 +427,7 @@ plausible-looking implementation could pass without doing the work.
 > for `k > L`**. Byte-identical under replay.
 
 **"Matched" is defined by construction, never by selection.** The control road must be
-generated with identical initial `strength`, identical `charge`, identical in- and
+created with identical initial `strength`, identical `charge`, identical in- and
 out-degree, and traversed at the same cycle `t` in the same batch. Hand-picking a comparison
 road is how a test encodes its own answer.
 
@@ -486,7 +486,7 @@ project to end either one**:
 - `advance()` has no caller in `src/` — 2f deals in cycles and elapsed time.
 
 C6's `bound_on_absence` enforces both mechanically and will fail the build if either symbol
-appears. **The builder re-checks both by hand anyway, and says so in the delivery report.**
+appears. **The builder re-checks both by hand anyway, and says so in the verification notes.**
 That is belt and braces on purpose: the machine check is **one cycle old**, it has never been
 fired in anger by real work, and the 0d tester found that it **under-reports on dynamic
 access** — `getattr(x, 'flow')`, `x.__dict__['flow']` and aliased calls all evade it
@@ -558,13 +558,13 @@ should be started before it exists.
 **It does not touch the meaning bar.** Credit assignment is a mechanism, it will be verified
 as a mechanism, and the three NO-GOs stand exactly where they are.
 
-**Three decisions are open and all are Cagan's:**
+**Three decisions are open and all are the project lead's:**
 1. **§3.4 — which design.** Recommendation: **C** (`2f-i`), with A as a later `2f-ii` if
    behavioural tagging earns its own brick. This is the expensive one to get wrong.
 2. **§2.3 — the vestigial `traversal_count`.** Recommendation: **(A) leave and document**.
 3. **§4.3 — `P_PRP`'s home.** Recommendation: **(A) caller-supplied scalar**, with
    NEUROMODULATION as its later publisher.
 
-**Single next action: Cagan decides §3.4.** The other two are cheap and can follow. And
+**Single next action: the project lead decides §3.4.** The other two are cheap and can follow. And
 **0d must land first regardless of which design is chosen** — §6 makes it a prerequisite, and
 2f is the first real test of whether the detector does its job.
