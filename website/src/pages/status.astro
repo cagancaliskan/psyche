@@ -1,0 +1,48 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { Aside } from '@astrojs/starlight/components';
+import BrickBoard from '../components/BrickBoard.astro';
+import ledger from '../data/ledger.public.json';
+import { withBase } from '../lib/url.ts';
+
+const t = ledger.tests;
+const fmt = new Intl.NumberFormat('en-US');
+const interpreters: string[] = ledger.determinism.interpreters;
+const seeds: number[] = ledger.determinism.hash_seeds;
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Psyche status',
+    description: 'The paused Psyche substrate: what is built, what is verified, and what was stopped.',
+  }}
+>
+  <Aside type="caution" title="Paused">
+    Psyche is paused while the thesis takes priority (decision D-031). No new work starts on it; its tests
+    and checks stay maintained.
+  </Aside>
+
+  <p>
+    Psyche is a dependency-free Python memory-and-activation substrate. What it shows is that its lower layers
+    are correct and deterministic. It makes no claim that any layer reproduces a cognitive effect: three
+    attempts to grade one were stopped before any graded run, each at a structurally distinct wall:
+    semantic priming was circular, the fan effect found the mechanism absent, and interoception found the
+    signal flat. The finding is scoped to this substrate and these three yardsticks.
+  </p>
+  <p>
+    The captured test run has {t.suites} suites, {fmt.format(t.assertions)} assertions and {t.failures} failures,
+    with identical counts on CPython {interpreters.join(', ')} and determinism probed under {seeds.length} hash seeds.
+    The meaning bar is {String(ledger.meaning_bar.status).toLowerCase()}.
+  </p>
+
+  <section class="sx-section">
+    <h2>Bricks</h2>
+    <BrickBoard />
+  </section>
+
+  <p>
+    Read more: <a href={withBase('psyche/overview/')}>What Psyche is</a>,
+    <a href={withBase('psyche/architecture/')}>Architecture</a> and
+    <a href={withBase('psyche/methodology/')}>Methodology</a>.
+  </p>
+</StarlightPage>

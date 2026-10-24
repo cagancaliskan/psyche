@@ -1,0 +1,69 @@
+---
+// Psyche's bricks grouped by build status, read from the staged public projection of
+// tools/ledger.json. Nothing here is typed by hand: names and statuses come from the ledger.
+import ledger from '../data/ledger.public.json';
+
+interface Brick {
+  id: string;
+  name: string;
+  status: string;
+}
+
+const groups: { status: string; heading: string; note: string; collapsed?: boolean }[] = [
+  { status: 'PROVEN', heading: 'Proven', note: 'Deterministic, integrity-preserving and pure, verified by an independent tester.' },
+  { status: 'BUILT-UNVALIDATED', heading: 'Built; meaning not validated', note: 'The mechanism is tester-verified; no cognitive claim is made.' },
+  { status: 'NO-GO', heading: 'Stopped before a graded run', note: 'Attempts at a cognitive claim stopped before any graded number existed, each at its own wall: a circular yardstick, or a mechanism the effect needs that the engine lacks.' },
+  { status: 'DESIGNED', heading: 'Designed, not built', note: 'Specified only. Paused with the rest of Psyche.', collapsed: true },
+];
+const bricks = (ledger.bricks as Brick[]).slice();
+const shown = new Set(groups.map((g) => g.status));
+const other = bricks.filter((b) => !shown.has(b.status));
+---
+
+<div class="sx-board">
+  {
+    groups.map((g) => {
+      const items = bricks.filter((b) => b.status === g.status);
+      if (items.length === 0) return null;
+      const list = (
+        <ul>
+          {items.map((b) => (
+            <li>
+              <code>{b.id}</code>
+              {b.name}
+            </li>
+          ))}
+        </ul>
+      );
+      return (
+        <section>
+          <h3>{g.heading} ({items.length})</h3>
+          <p class="sx-gates__meta">{g.note}</p>
+          {g.collapsed ? (
+            <details>
+              <summary>Show the list</summary>
+              {list}
+            </details>
+          ) : (
+            list
+          )}
+        </section>
+      );
+    })
+  }
+  {
+    other.length > 0 && (
+      <section>
+        <h3>Other states ({other.length})</h3>
+        <ul>
+          {other.map((b) => (
+            <li>
+              <code>{b.id}</code>
+              {b.name} ({b.status.toLowerCase()})
+            </li>
+          ))}
+        </ul>
+      </section>
+    )
+  }
+</div>

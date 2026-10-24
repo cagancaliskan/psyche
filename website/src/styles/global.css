@@ -1,0 +1,621 @@
+/*
+ * Visual identity: histology on paper.
+ * Ink violet carries text; eosin pink marks only the agent (its trails and paths) and "now".
+ * Slate teal draws structure (maze walls, axes). Newsreader for display, Atkinson Hyperlegible
+ * Next for reading. Starlight's dark theme is :root; light is :root[data-theme='light'].
+ */
+
+:root {
+  --sl-font: 'Atkinson Hyperlegible Next', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --sx-font-display: 'Newsreader Variable', 'Iowan Old Style', Georgia, serif;
+
+  /* dark */
+  --sl-color-accent-low: #3a1c33;
+  --sl-color-accent: #e0679a;
+  --sl-color-accent-high: #f7bcd4;
+  --sl-color-white: #f3f1fa;
+  --sl-color-gray-1: #e3e0f0;
+  --sl-color-gray-2: #c3beda;
+  --sl-color-gray-3: #9893bb;
+  --sl-color-gray-4: #615c8a;
+  --sl-color-gray-5: #3a365e;
+  --sl-color-gray-6: #221f40;
+  --sl-color-black: #16142b;
+
+  --sx-agent: #f27baa;
+  --sx-structure: #7fb3c0;
+  --sx-surface: #1d1a38;
+  --sx-hairline: #3a365e;
+  --sx-muted: #b9b4d4;
+}
+
+:root[data-theme='light'] {
+  --sl-color-accent-low: #f6dbe7;
+  --sl-color-accent: #b8336a;
+  --sl-color-accent-high: #6e1b3e;
+  --sl-color-white: #1e1a40;
+  --sl-color-gray-1: #2b2752;
+  --sl-color-gray-2: #3f3a6b;
+  --sl-color-gray-3: #5a5484;
+  --sl-color-gray-4: #8a84ae;
+  --sl-color-gray-5: #cfcbe2;
+  --sl-color-gray-6: #e8e5f2;
+  --sl-color-gray-7: #f1effa;
+  --sl-color-black: #fbfbfd;
+
+  --sx-agent: #b8336a;
+  --sx-structure: #4c7a86;
+  --sx-surface: #f1effa;
+  --sx-hairline: #cfcbe2;
+  --sx-muted: #4f4a78;
+}
+
+/* Display type for page titles and markdown headings. */
+h1#_top,
+.sl-markdown-content :is(h1, h2, h3) {
+  font-family: var(--sx-font-display);
+  font-weight: 560;
+  letter-spacing: -0.005em;
+}
+h1#_top {
+  font-size: clamp(2rem, 1.4rem + 2.4vw, 2.9rem);
+  line-height: 1.12;
+}
+.sl-markdown-content {
+  line-height: 1.68;
+}
+.sl-markdown-content p,
+.sl-markdown-content li {
+  max-width: 72ch;
+}
+.sl-markdown-content blockquote {
+  border-inline-start-color: var(--sx-structure);
+}
+
+/* Visible focus everywhere. */
+:where(a, button, [tabindex]):focus-visible {
+  outline: 2px solid var(--sx-agent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* The landing page carries its own h1 (the thesis title); drop Starlight's page title there. */
+body:has(.sx-landing) h1#_top {
+  display: none;
+}
+
+/* ---------- Site extension components (prefix sx-) ---------- */
+
+.sx-hero {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3.5rem);
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: center;
+  padding-block: clamp(1rem, 4vw, 3rem) clamp(1.5rem, 4vw, 2.5rem);
+}
+@media (max-width: 52rem) {
+  .sx-hero {
+    grid-template-columns: 1fr;
+  }
+}
+.sx-hero__title {
+  font-family: var(--sx-font-display);
+  font-weight: 520;
+  font-size: clamp(2.1rem, 1.3rem + 3.4vw, 3.6rem);
+  line-height: 1.04;
+  letter-spacing: -0.012em;
+  color: var(--sl-color-white);
+  margin: 0;
+  text-wrap: balance;
+}
+.sx-hero__level {
+  color: var(--sx-muted);
+  font-size: 1rem;
+  margin: 0.75rem 0 0;
+}
+.sx-hero__lead {
+  font-size: 1.15rem;
+  line-height: 1.6;
+  max-width: 34rem;
+  margin: 1.25rem 0 0;
+  color: var(--sl-color-gray-1);
+}
+.sx-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.25rem;
+  margin-top: 1.75rem;
+  align-items: center;
+}
+.sx-button {
+  display: inline-block;
+  padding: 0.6rem 1.05rem;
+  border-radius: 0.4rem;
+  background: var(--sl-color-white);
+  color: var(--sl-color-black);
+  font-weight: 700;
+  text-decoration: none;
+}
+.sx-button:hover {
+  background: var(--sl-color-gray-2);
+}
+.sx-link {
+  color: var(--sl-color-white);
+  font-weight: 700;
+  text-underline-offset: 0.2em;
+}
+
+/* The maze figure: walls in structure colour, the agent in eosin. */
+.sx-maze {
+  width: 100%;
+  max-width: 30rem;
+  justify-self: center;
+}
+.sx-maze svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.sx-maze figcaption {
+  color: var(--sx-muted);
+  font-size: 0.875rem;
+  margin-top: 0.6rem;
+}
+.sx-maze .floor {
+  fill: var(--sx-surface);
+}
+.sx-maze .wall {
+  fill: var(--sx-structure);
+  opacity: 0.85;
+}
+.sx-maze .trail {
+  fill: none;
+  stroke: var(--sx-agent);
+  stroke-width: 0.16;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  opacity: 0.38;
+}
+.sx-maze .path {
+  fill: none;
+  stroke: var(--sx-agent);
+  stroke-width: 0.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sx-maze .goal {
+  fill: var(--sx-agent);
+}
+.sx-maze .start {
+  fill: none;
+  stroke: var(--sl-color-white);
+  stroke-width: 0.14;
+}
+/* One orchestrated moment: the exploration trail draws, then the goal and the direct path. */
+@media (prefers-reduced-motion: no-preference) {
+  .sx-maze.is-animated .trail {
+    stroke-dasharray: var(--len) var(--len);
+    stroke-dashoffset: var(--len);
+    animation: sx-draw 5.2s cubic-bezier(0.45, 0.05, 0.4, 1) 0.3s forwards;
+  }
+  .sx-maze.is-animated .goal {
+    opacity: 0;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: sx-appear 0.5s ease-out 5.7s forwards;
+  }
+  .sx-maze.is-animated .path {
+    stroke-dasharray: var(--len) var(--len);
+    stroke-dashoffset: var(--len);
+    animation: sx-draw 1.1s ease-in-out 6.3s forwards;
+  }
+}
+@keyframes sx-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes sx-appear {
+  from {
+    opacity: 0;
+    transform: scale(0.4);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Status line under the hero. */
+.sx-now {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 2rem;
+  padding: 1rem 0;
+  border-block: 1px solid var(--sx-hairline);
+  margin-block: 0.5rem 2.5rem;
+}
+.sx-now p {
+  margin: 0;
+}
+.sx-now strong {
+  color: var(--sl-color-white);
+}
+.sx-now .sx-now__days {
+  color: var(--sx-agent);
+  font-weight: 700;
+}
+
+/* Section headings on custom pages. */
+.sx-section {
+  margin-block: 2.75rem;
+}
+.sx-section h2 {
+  font-family: var(--sx-font-display);
+  font-weight: 560;
+  font-size: 1.7rem;
+  margin: 0 0 0.6rem;
+  color: var(--sl-color-white);
+}
+.sx-section > p {
+  max-width: 68ch;
+  margin: 0 0 1rem;
+}
+
+/* Public now / withheld: two columns divided by a rule, not cards. */
+.sx-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+.sx-split > div {
+  padding: 0.25rem 1.5rem 0.25rem 0;
+}
+.sx-split > div + div {
+  padding: 0.25rem 0 0.25rem 1.5rem;
+  border-inline-start: 1px solid var(--sx-hairline);
+}
+.sx-split h3 {
+  font-size: 1.05rem;
+  margin: 0 0 0.5rem;
+  color: var(--sl-color-white);
+}
+.sx-split ul {
+  margin: 0;
+  padding-inline-start: 1.1rem;
+}
+@media (max-width: 40rem) {
+  .sx-split {
+    grid-template-columns: 1fr;
+  }
+  .sx-split > div + div {
+    border-inline-start: 0;
+    border-block-start: 1px solid var(--sx-hairline);
+    padding: 1rem 0 0;
+    margin-top: 1rem;
+  }
+}
+
+/* Timeline (roadmap). */
+.sx-timeline {
+  --row: 2.6rem;
+  position: relative;
+  margin: 1.5rem 0 1rem;
+}
+.sx-timeline__axis {
+  position: relative;
+  height: 1.6rem;
+  border-bottom: 1px solid var(--sx-structure);
+  font-size: 0.8125rem;
+  color: var(--sx-muted);
+}
+.sx-timeline__tick {
+  position: absolute;
+  bottom: 0.25rem;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+.sx-timeline__body {
+  position: relative;
+}
+.sx-timeline__id {
+  font-weight: 700;
+  margin-inline-end: 0.5rem;
+  color: var(--sx-structure);
+}
+.sx-timeline__rows {
+  position: relative;
+  list-style: none;
+  margin: 0;
+  padding: 0.5rem 0 0;
+}
+.sx-timeline__row {
+  position: relative;
+  height: var(--row);
+}
+.sx-timeline__bar {
+  position: absolute;
+  top: 0.35rem;
+  height: calc(var(--row) - 0.7rem);
+  border-radius: 0.3rem;
+  background: var(--sx-surface);
+  border: 1px solid var(--sx-hairline);
+  display: flex;
+  align-items: center;
+  padding: 0 0.6rem;
+  font-size: 0.875rem;
+  color: var(--sl-color-white);
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  font: inherit;
+  text-align: start;
+}
+.sx-timeline__bar[data-status='active'] {
+  border-color: var(--sx-agent);
+  box-shadow: inset 3px 0 0 var(--sx-agent);
+}
+.sx-timeline__bar[data-open='true'] {
+  border-style: dashed;
+}
+.sx-timeline__bar[aria-pressed='true'] {
+  background: var(--sl-color-accent-low);
+}
+.sx-timeline__gate {
+  position: absolute;
+  top: calc(var(--row) / 2 - 0.45rem);
+  width: 0.9rem;
+  height: 0.9rem;
+  transform: translateX(-50%) rotate(45deg);
+  background: var(--sl-color-black);
+  border: 2px solid var(--sx-structure);
+}
+.sx-timeline__today {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-inline-start: 2px solid var(--sx-agent);
+  pointer-events: none;
+}
+.sx-timeline__today span {
+  position: absolute;
+  top: -1.45rem;
+  transform: translateX(-50%);
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--sx-agent);
+  white-space: nowrap;
+}
+.sx-timeline__detail {
+  margin-top: 1rem;
+  padding: 1rem 1.2rem;
+  border-inline-start: 3px solid var(--sx-structure);
+  background: var(--sx-surface);
+}
+.sx-timeline__detail h3 {
+  margin: 0 0 0.35rem;
+  font-family: var(--sx-font-display);
+  font-size: 1.25rem;
+  color: var(--sl-color-white);
+}
+.sx-timeline__detail p,
+.sx-timeline__detail ul {
+  margin: 0.35rem 0 0;
+}
+/* Narrow screens: the same data as an ordered list. */
+.sx-timeline-list {
+  display: none;
+}
+@media (max-width: 40rem) {
+  .sx-timeline {
+    display: none;
+  }
+  .sx-timeline-list {
+    display: block;
+  }
+}
+.sx-timeline-list ol {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-inline-start: 2px solid var(--sx-structure);
+}
+.sx-timeline-list li {
+  padding: 0.2rem 0 1rem 1rem;
+  position: relative;
+}
+.sx-timeline-list li[data-status='active']::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: -0.42rem;
+  top: 0.5rem;
+  width: 0.75rem;
+  height: 0.75rem;
+  border-radius: 50%;
+  background: var(--sx-agent);
+}
+
+/* Gates: a stepped sequence, so numbered markers are honest here. */
+.sx-gates {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 1rem;
+}
+.sx-gates li {
+  display: grid;
+  grid-template-columns: 2.4rem 1fr;
+  gap: 0 1rem;
+}
+.sx-gates__mark {
+  width: 2.4rem;
+  height: 2.4rem;
+  display: grid;
+  place-items: center;
+  border: 2px solid var(--sx-structure);
+  border-radius: 0.35rem;
+  font-family: var(--sx-font-display);
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--sl-color-white);
+}
+.sx-gates h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: var(--sl-color-white);
+}
+.sx-gates p {
+  margin: 0.2rem 0 0;
+}
+.sx-gates .sx-gates__meta {
+  color: var(--sx-muted);
+  font-size: 0.9rem;
+}
+
+/* Battery explorer rows. */
+.sx-battery {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.sx-battery > li {
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) 1fr;
+  gap: 1.5rem;
+  padding: 1.5rem 0;
+  border-bottom: 1px solid var(--sx-hairline);
+  align-items: start;
+}
+@media (max-width: 40rem) {
+  .sx-battery > li {
+    grid-template-columns: 1fr;
+  }
+}
+.sx-battery h3 {
+  font-family: var(--sx-font-display);
+  font-size: 1.35rem;
+  margin: 0;
+  color: var(--sl-color-white);
+}
+.sx-battery p {
+  margin: 0.4rem 0 0;
+  max-width: 60ch;
+}
+.sx-battery .sx-battery__paradigm {
+  color: var(--sx-muted);
+  font-size: 0.9rem;
+}
+.sx-illustration svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+.sx-illustration .floor {
+  fill: var(--sx-surface);
+}
+.sx-illustration .wall {
+  fill: var(--sx-structure);
+  opacity: 0.85;
+}
+.sx-illustration .door {
+  fill: var(--sx-structure);
+}
+.sx-illustration .trail {
+  fill: none;
+  stroke: var(--sx-agent);
+  stroke-width: 0.16;
+  opacity: 0.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sx-illustration .path {
+  fill: none;
+  stroke: var(--sx-agent);
+  stroke-width: 0.3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.sx-illustration .goal {
+  fill: var(--sx-agent);
+}
+.sx-illustration .node {
+  fill: var(--sx-surface);
+  stroke: var(--sx-structure);
+  stroke-width: 0.08;
+}
+.sx-illustration .node-label {
+  fill: var(--sl-color-white);
+  font-size: 0.55px;
+  font-family: var(--sx-font-display);
+  text-anchor: middle;
+  dominant-baseline: central;
+}
+.sx-illustration .edge {
+  stroke: var(--sx-structure);
+  stroke-width: 0.08;
+}
+.sx-illustration .query {
+  stroke: var(--sx-agent);
+  stroke-width: 0.1;
+  stroke-dasharray: 0.2 0.15;
+  fill: none;
+}
+.sx-illustration figcaption {
+  font-size: 0.8125rem;
+  color: var(--sx-muted);
+  margin-top: 0.4rem;
+}
+.sx-step-controls {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+  flex-wrap: wrap;
+}
+.sx-step-controls button {
+  font: inherit;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.7rem;
+  border-radius: 0.3rem;
+  border: 1px solid var(--sx-hairline);
+  background: transparent;
+  color: var(--sl-color-white);
+  cursor: pointer;
+}
+.sx-step-controls button[aria-pressed='true'] {
+  border-color: var(--sx-agent);
+  color: var(--sl-color-white);
+  background: var(--sl-color-accent-low);
+}
+
+/* Psyche board. */
+.sx-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1.5rem 2rem;
+}
+.sx-board h3 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+  color: var(--sl-color-white);
+  border-bottom: 1px solid var(--sx-hairline);
+  padding-bottom: 0.35rem;
+}
+.sx-board ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.sx-board li {
+  padding: 0.2rem 0;
+  font-size: 0.92rem;
+}
+.sx-board code {
+  margin-inline-end: 0.4rem;
+}
+.sx-board details summary {
+  cursor: pointer;
+  color: var(--sx-muted);
+}

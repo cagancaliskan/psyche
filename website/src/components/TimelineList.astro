@@ -1,0 +1,35 @@
+---
+// The roadmap as an ordered list: the narrow-screen and no-script form of the timeline.
+import { formatDay, type Plan } from '../lib/plan.ts';
+
+interface Props {
+  plan: Plan;
+}
+const { plan } = Astro.props;
+const gates = new Map(plan.gates.map((g) => [g.id, g]));
+---
+
+<div class="sx-timeline-list">
+  <ol>
+    {
+      plan.phases.map((p) => {
+        const g = p.gate ? gates.get(p.gate) : undefined;
+        return (
+          <li data-status={p.status}>
+            <strong>
+              {p.id}: {p.title}
+            </strong>
+            <br />
+            {p.start ? formatDay(p.start) : p.start_rule} to {p.end ? formatDay(p.end) : p.end_rule} ({p.status})
+            {g && (
+              <>
+                <br />
+                Gate {g.id}, {g.title.toLowerCase()}: {g.date ? formatDay(g.date) : g.date_rule}
+              </>
+            )}
+          </li>
+        );
+      })
+    }
+  </ol>
+</div>
