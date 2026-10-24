@@ -10,6 +10,7 @@ import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
 import mermaid from 'astro-mermaid';
 import starlightLinksValidator from 'starlight-links-validator';
+import tailwindcss from '@tailwindcss/vite';
 
 const BASE = '/psyche';
 
@@ -28,6 +29,7 @@ export default defineConfig({
   trailingSlash: 'always',
   vite: {
     build: { sourcemap: false },
+    plugins: [tailwindcss()],
   },
   integrations: [
     mermaid({ theme: 'default', autoTheme: true }),
@@ -37,12 +39,14 @@ export default defineConfig({
         'Psyche, an open research project building toward AGI from original, brain-inspired components: spiking cognitive maps (active) and the substrate that founded it (paused).',
       logo: { src: './src/assets/mark.svg', replacesTitle: false },
       social: [{ icon: 'github', label: 'Psyche on GitHub', href: 'https://github.com/cagancaliskan/psyche' }],
+      // global.css comes first: its @layer statement must be the first one the cascade sees.
       customCss: [
+        './src/styles/global.css',
         '@fontsource-variable/newsreader',
         '@fontsource/atkinson-hyperlegible-next/400.css',
         '@fontsource/atkinson-hyperlegible-next/400-italic.css',
         '@fontsource/atkinson-hyperlegible-next/700.css',
-        './src/styles/global.css',
+        './src/styles/docs.css',
       ],
       sidebar: stagedSidebar(),
       lastUpdated: false,

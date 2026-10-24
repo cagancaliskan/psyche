@@ -8,20 +8,27 @@
   "scripts": {
     "stage": "python3 ../tools/publish/stage.py --target site",
     "dev": "npm run stage && astro dev",
-    "build": "npm run stage && astro check && astro build",
+    "build": "npm run stage && astro check && astro build && npm run check:spacing",
     "preview": "astro preview",
-    "test": "node --test src/lib/plan.test.ts src/lib/maze.test.ts src/lib/battery.test.ts"
+    "test": "node --test src/lib/plan.test.ts src/lib/maze.test.ts src/lib/battery.test.ts",
+    "check:spacing": "node scripts/check-spacing.mjs"
   },
   "dependencies": {
     "@astrojs/react": "7.1.1",
     "@astrojs/starlight": "0.42.6",
+    "@astrojs/starlight-tailwind": "5.0.0",
     "@fontsource-variable/newsreader": "5.3.0",
     "@fontsource/atkinson-hyperlegible-next": "5.3.0",
+    "@tailwindcss/vite": "4.3.3",
     "astro": "7.4.2",
     "astro-mermaid": "2.1.0",
+    "clsx": "2.1.1",
+    "lucide-react": "1.55.0",
     "mermaid": "11.17.2",
     "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "react-dom": "19.3.1",
+    "tailwind-merge": "3.7.0",
+    "tailwindcss": "4.3.3"
   },
   "devDependencies": {
     "@astrojs/check": "0.9.12",
