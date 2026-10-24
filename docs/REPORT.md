@@ -1,24 +1,24 @@
 <!--
-  MASTER SOURCE OF TRUTH for the Psyche technical report.
-  The LaTeX (docs/report/nous_report.tex) and Word (docs/report/nous_report.docx)
-  deliverables are rendered from THIS file and must be kept in sync in content.
+  Source of the Psyche technical report. The LaTeX (docs/report/nous_report.tex) and Word
+  (docs/report/nous_report.docx) versions were rendered from this file and are kept in step
+  with it in content.
 
-  HARD RULES (do not relax):
-   - Every number is taken verbatim from docs/TEST_OUTPUT.txt and the measured stats
-     in README.md. Do not recompute or estimate.
-   - Psyche is an engineering prototype AND a testing-methodology case study: never a
-     mind, consciousness, AGI, or a validated cognitive model. The cognitive cycle now
-     CLOSES end-to-end, but that is a tester-verified MECHANISM result, not a cognitive
-     one; no cognitive meaning is claimed above the substrate.
-   - Three assurance tiers are kept strictly distinct: PROVEN (substrate + activation);
-     tester-verified mechanism (field, coalitions, source-clustering, workspace — the
-     closed cycle); disciplined-exploratory (the experiment scaffolding, incl. the §6.2
-     SWOW structural check, which returned an honest NOT YET).
-   - Neuroscience/cognitive theories are conceptual inspiration only: never
-     "implemented" or "reproduced"; no claims of biological fidelity.
+  Maintenance notes:
+   - Numbers come from docs/TEST_OUTPUT.txt and tools/ledger.json; none is recomputed or
+     estimated by hand.
+   - The substrate is described as an engineering prototype and a testing-methodology case
+     study, never as a mind, conscious, AGI or a validated cognitive model. The cognitive
+     cycle closes end-to-end, but that is a tester-verified mechanism result, not a
+     cognitive one; no cognitive meaning is claimed above the substrate.
+   - The three assurance tiers stay distinct: PROVEN (substrate + activation);
+     tester-verified mechanism (field, coalitions, source-clustering, workspace, the closed
+     cycle); disciplined-exploratory (the experiment scaffolding, incl. the §6.2 SWOW
+     structural check, which returned an honest NOT YET).
+   - Neuroscience and cognitive theories are cited as inspiration only: never
+     "implemented" or "reproduced"; no claim of biological fidelity.
 
-  The §11 reference list is verified: every entry carries page numbers, volume/issue,
-  and a DOI (or ISBN) confirmed against the primary source.
+  Every §11 reference was checked against its primary source: each entry carries page
+  numbers, volume/issue, and a DOI (or ISBN).
 -->
 
 # Nous: Adversarial Testing of a Dependency-Free Memory-and-Activation Substrate for Cognitive Architectures

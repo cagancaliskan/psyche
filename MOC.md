@@ -1,73 +1,75 @@
-<!-- ledger:ignore-file -->
-# Psyche — map of content
+# Map of content
 
-The entry point. Start here in Obsidian; everything else hangs off this.
+The entry point for reading this repository as an Obsidian vault. Every link is a standard
+Markdown link, so the same map also works on GitHub. Psyche is one open research project
+building toward artificial general intelligence (AGI), named only as its long-term aim, and it
+grows in stages: stage 1, the substrate, is the foundation and is paused; stage 2, spiking
+cognitive maps, is the active line. Both are recorded under D-031 in [DECISIONS.md](DECISIONS.md),
+and the aim under D-033.
 
-## Where we are
+## Start here
 
-- [[tools/ledger.json|THE LEDGER]] — every quotable fact. Nothing else is authoritative.
-- [[docs/psyche_roadmap|Roadmap]] — the narrative position, phases, "you are here"
-- [[DECISIONS|Decisions]] — append-only log of what changed and why
-- [[CONTRIBUTING|Rules]] — the ten rules
+- [README.md](README.md): the repository landing page, with the stages and the current status.
+- [Research overview](docs/research/README.md): what the cognitive-map line asks, what it plans
+  to contribute, and what it does not claim.
+- [Origins](docs/research/origins.md): how the substrate led to the cognitive-map line.
 
-## The build
+<!-- generated:status-line:start -->
+**Now:** P0 Novelty review and setup (2026-10-23 to 2026-11-15) · **Next gate:** A Novelty, 2026-11-15
+<!-- generated:status-line:end -->
 
-- [[README|Repo README]]
-- [[docs/ARCHITECTURE|Architecture (as-built)]]
-- [[docs/METHODOLOGY|Methodology — the six bugs]]
-- [[docs/REPORT|Technical report]]
+## Facts
 
-Modules: `psyche_store` · `psyche_activation` · `psyche_field` · `psyche_coalitions` ·
-`psyche_source_clustering` · `psyche_workspace` · `psyche_perceive` · `psyche_bodysensor`
+A few files hold the facts, and every other document defers to them. Statuses are not copied
+here; read them from the ledger.
 
-## Specs and pre-registrations
+| File | What it holds |
+|---|---|
+| [tools/ledger.json](tools/ledger.json) | Every quotable substrate fact: test totals, brick statuses, the meaning bar, and the program state that records which stage is active and which is paused |
+| [tools/research_plan.json](tools/research_plan.json) | The public plan of the cognitive-map line: phases, gates, layers and deadlines. The only source of the line's dates |
+| [DECISIONS.md](DECISIONS.md) | The append-only log of what changed and why |
 
-| Brick | Spec | Pre-registration | Verdict |
-|---|---|---|---|
-| 0b | [[docs/BUG-0b1-coalition-strength-determinism\|BUG-0b1 §8]] | — | **PROVEN contested — DEFECT-A, status call open (D-011)** |
-| 0b2 | [[docs/specs/SPEC-0b2-conserved-activation\|conserved activation]] | — | **mechanism FAIL — N-2, N-5; §6 is the record** |
-| 1c | [[docs/specs/SPEC-1c-source-clustering\|source clustering]] | [[docs/experiments/EXP-1c-swow-recovery\|SWOW recovery]] | NOT YET (ARI 0.228 / 0.30) |
-| 1d | [[docs/specs/SPEC-1d-workspace-broadcast\|workspace + broadcast]] | — | mechanism PASS |
-| 1e | [[docs/specs/SPEC-1e-priming\|priming]] | [[docs/experiments/EXP-1e-priming\|priming]] | **NO-GO — circular** |
-| 1e′ | [[docs/specs/SPEC-fan-effect\|fan effect]] | — | **NO-GO — mechanism absent** |
-| 2c | [[docs/specs/SPEC-2c-interoception\|interoception]] | [[docs/experiments/EXP-2c-interoception\|interoception]] | **NOT-YET — signal flat** |
+## Stage 2: spiking cognitive maps (active)
 
-## The paper
+Each page is a public summary. Detail is withheld until submission under the
+[disclosure policy](docs/research/disclosure-policy.md).
 
-- [[docs/specs/PAPER_CLAIM_INVENTORY|Claim inventory]] — the locked honesty contract
-- `docs/paper/paper.tex` — *Mechanism Is Not Meaning*
-- `docs/paper/ieee/` — the 6-page conference version
+| Page | What it covers |
+|---|---|
+| [Overview](docs/research/README.md) | The research questions, planned contributions and non-claims |
+| [Origins](docs/research/origins.md) | How the substrate led to this line: what carries over, what does not, and where it points |
+| [Roadmap](docs/research/roadmap.md) | Phases, layers and deadlines, generated from the plan file |
+| [Decision gates](docs/research/gates.md) | The question each gate answers, and what happens if one is not passed |
+| [Test battery](docs/research/test-battery.md) | The classic paradigms behind the battery, the environment families and the fairness rules |
+| [Claims and scope](docs/research/claims-and-scope.md) | What the line may and may not claim, what is in and out of scope, and the writing rules |
+| [Engineering](docs/research/engineering.md) | Coding standards, reproducibility, determinism, statistics and figures |
+| [Glossary](docs/research/glossary.md) | Terms used on these pages |
+| [Reading list](docs/research/reading-list.md) | Classic background reading |
+| [Disclosure policy](docs/research/disclosure-policy.md) | What is public, what is withheld, and when it is released |
+| [cogmap/](cogmap/README.md) | The export-only package for released versions of the spiking model; nothing released yet |
 
-## The vision — **aspirational, not built**
+## Stage 1: the substrate (foundation, paused)
 
-[[docs/design/README|Read the disclaimer first]]. These thirteen documents were written
-before the code and use deliberately grand language. Only `plan_layer0_topology` and
-`plan_layer1_substrate_store` correspond to anything that exists.
+The substrate is a dependency-free Python prototype of a memory-and-activation substrate, the
+project's foundation. While its development is paused, no new brick starts and no default
+changes; its suites, ledger and checks stay maintained.
 
-Modules 01–06: memory hierarchy · abstraction engine · self model · motivation architecture ·
-attention & awareness · emotional regulation.
-Description docs: the body's voice · the sleeping brain · how this brain comes to speak.
-Foundation: substrate biology (the most mathematically concrete doc in the set).
+| Document | Role |
+|---|---|
+| [docs/PSYCHE.md](docs/PSYCHE.md) | The substrate's overview and record, formerly the repository README |
+| [Architecture](docs/ARCHITECTURE.md) | The as-built technical reference for the code in `src/` |
+| [Methodology](docs/METHODOLOGY.md) | How adversarial testing caught structural bugs |
+| [Technical report](docs/REPORT.md) | The archived account of the substrate; the published record is the DOI release under `docs/report/` |
+| [Substrate roadmap](docs/psyche_roadmap.md) | The substrate's paused roadmap. It narrates history, superseded states included, and is not a status source |
+| [Specs](docs/specs/) | Brick specifications and feasibility pre-checks |
+| [Pre-registrations](docs/experiments/) | Frozen pre-registrations, written before any graded result. Any change made before data existed is recorded in the file with its lineage. After a result the protocol is never changed; later notes are labelled additions, not rewrites |
+| [Design and vision](docs/design/README.md) | The original vision documents, written before the code and largely unbuilt: only the layer plans for the topology and the substrate store correspond to built code. Their language is vision framing, not a claim about the prototype. Start with the disclaimer |
 
-## The program
+## Obsidian
 
-1. **Brick 0** — BUG-0b1, the determinism fix · *landed, `PROVEN` at its own site — but the
-   same bug class is live one layer upstream (DEFECT-A, BUG-0b1 §8)*
-2. **Brick 1** — SPEC-0b2, conserved activation · *overlay landed default-off; tester verdict
-   **FAIL** on §6 (N-2, N-5); σ/floor decision still open; the default flip additionally needs
-   plumbing through the field builder*
-3. **Brick 1.5 (new, and it comes first)** — repair the foundation: DEFECT-A and DEFECT-B,
-   both open, both awaiting Cagan's call in D-011
-4. **Brick 2** — temporal credit assignment via tag-and-capture · *not started*
-5. **Brick 3** — learn the graph, grade it against SWOW · *not started; the first
-   non-circular meaning bar available*
+Open the repository root as a vault; this file is its entry point. Obsidian is a reading and
+thinking surface, not where facts live. A fact changes in the ledger, or for the research
+line's dates in the plan file, never in a note.
 
-## The three walls
-
-Every meaning-bar attempt so far, and why each stopped:
-
-- **1e — circular.** The prediction variable *was* the edge weight.
-- **1e′ — mechanism absent.** No shared budget, so the fan curve is flat to the last digit.
-- **2c — signal flat.** Friction ≈ 0 on realistic CPU-bound work.
-
-The pattern is the finding. Scope it to this substrate and these yardsticks.
+The Specs and Pre-registrations links point at folders. They open on GitHub; in Obsidian,
+browse those folders from the file explorer.
