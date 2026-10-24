@@ -280,7 +280,7 @@ yardsticks*, never a general law about spreading activation or cognition.
 - **Never `git stash`. Inspect an old revision with `git show <rev>:<path>` or a temporary
   worktree.** A stash is **repo-wide**: it sets aside every uncommitted change in the working
   tree, not only the one being worked on, and one that is never popped loses that work. A stash
-  once set aside 315 lines of unrelated uncommitted work at `044008c`; it was recovered by
+  once set aside 315 lines of unrelated uncommitted work at `5bce7a8`; it was recovered by
   diffing every stashed path against `HEAD` and disk.
 
 ---

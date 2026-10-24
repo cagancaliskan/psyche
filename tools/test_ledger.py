@@ -1349,7 +1349,7 @@ def run(tmp: Path) -> None:
     old_dir = Path(tempfile.mkdtemp(prefix="prefix0e-"))
     got_old = {}
     for name in ("run_tests.py", "tools/capture_run.py", "tools/ledger_check.py"):
-        g = subprocess.run(["git", "show", f"1065c43:{name}"], cwd=str(REPO),
+        g = subprocess.run(["git", "show", f"0cfba58:{name}"], cwd=str(REPO),
                            capture_output=True, text=True)
         if g.returncode == 0:
             (old_dir / Path(name).name).write_text(g.stdout, encoding="utf-8")
@@ -1431,13 +1431,13 @@ def run(tmp: Path) -> None:
           f"defect this brick closes")
     # RULE FOUR: the same edit against the pre-fix tool must go RED, or the assertion
     # above is not evidence of anything.
-    old = c6_on(add_comment, use_rev="9c15249")
+    old = c6_on(add_comment, use_rev="83daef7")
     if old is None:
         note("pre-fix tool unavailable from git; the two-sided proof was skipped")
     else:
         check(old.returncode == 1 and "RESTS ON THE ABSENCE" in old.stdout,
               "LIVE: the SAME one-comment edit fires a false [C6] on the pre-fix tool "
-              "(9c15249). One comment line was the entire reproducer")
+              "(83daef7). One comment line was the entire reproducer")
 
     # DIRECTION 2 — the dismissed EXPRESSION changes: the dismissal must STOP applying.
     def change_expr(d):

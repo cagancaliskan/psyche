@@ -3,8 +3,8 @@
 TESTER-authored adversarial verification of brick 2f-i (SPEC-2f Design C) and of the
 0e runner/parser fix, written from scratch rather than adapted from the builder's suite.
 
-VERDICT (re-verification after 7886167): PASS on the two closures. The 2f-1 refusal
-holds and its conversion FAILS against 1065c43, where the abs() still lived. Three
+VERDICT (re-verification after ca59468): PASS on the two closures. The 2f-1 refusal
+holds and its conversion FAILS against 0cfba58, where the abs() still lived. Three
 findings are recorded, none of which blocks the brick: the structural ARGUMENT for
 potentiation-only does not bound what it claims (2f-3), the AOL reason stated in the
 module is an over-read of SPEC-2e (2f-4, flagged for the architect), and -0.0 is correct
@@ -312,7 +312,7 @@ def test_P0_noise_floor_must_be_measured_before_any_conclusion():
 def test_I1_neutral_is_byte_identical_to_the_REAL_pre_2f_engine():
     section("2f  I-1 THE GATE: neutral 2f vs the pre-2f engine recovered from git")
     work = pathlib.Path(tempfile.mkdtemp(prefix="pre2f-"))
-    r = subprocess.run(f"git archive cce3dc5 src | tar -x -C {work}",
+    r = subprocess.run(f"git archive 9081da9 src | tar -x -C {work}",
                        shell=True, cwd=str(ROOT), capture_output=True, text=True)
     if r.returncode != 0 or not (work / "src").is_dir():
         note("pre-2f tree unavailable from git; I-1 compared against the current engine only")
@@ -444,7 +444,7 @@ def test_CONVERTED_a_negative_outcome_is_REFUSED_not_absorbed():
     section("2f-1 CONVERTED: an adverse outcome is refused, and the caller is told why")
     # WAS: an asserted-negative holding the defect in place — `-1.0` strengthened
     # byte-identically to `+1.0` because the gain took abs(). The builder closed it by
-    # refusal (7886167). Converted, never deleted.
+    # refusal (ca59468). Converted, never deleted.
     #
     # NOTE FOR THE RECORD: this suite ABORTED on that fix, because the old assertion
     # called with -1.0 and the new guard raises. 0e's fix NAMED the abort with its
@@ -926,7 +926,7 @@ def test_the_knob_is_load_bearing_its_own_falsifier():
 def test_CONVERTED_2f5_dismissals_are_content_anchored():
     section("2f-5 CONVERTED: a comment no longer rots a dismissal, and staleness still bites")
     # WAS an asserted-negative holding the defect: one comment line fired a false [C6].
-    # Fixed at 5a1c385. The instability half is attacked hardest below, because a key that
+    # Fixed at 8805fdc. The instability half is attacked hardest below, because a key that
     # CANNOT go stale is worse than a line number — it silently excuses a site that is no
     # longer the one its reason was written about.
     def c6(mut):
@@ -1554,7 +1554,7 @@ def main():
     print("  everything closes one third of the class while looking like it closed all.")
     print()
     print("  0d SUITE CONVERTED after four aborted passes: 338 assertions, 0 failures.")
-    print("  Census 14/8 -> 15/9, each conversion failing against cce3dc5.")
+    print("  Census 14/8 -> 15/9, each conversion failing against 9081da9.")
     print()
     print("  ONE NEW FINDING, 2f-5, not blocking: bound_on_absence DISMISSALS are keyed")
     print("  path:line and rot on any edit above them — one comment line fires a false")

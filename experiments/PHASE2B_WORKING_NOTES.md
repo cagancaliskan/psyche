@@ -13,7 +13,7 @@ Disciplines: deterministic by construction (simulated Clock), pure reads, advers
 cross-process determinism (PYTHONHASHSEED in {0,1,2,3,7,42,123,999}) on the final numbers,
 every number captured verbatim to results/, predictions printed before results, verdicts
 computed from data, the engine never modified, and a null result reported as an honest finding.
-Branch: phase-2b-priming, from phase-2a-fan-effect (2A=780f96f, clean working tree).
+Branch: phase-2b-priming, from phase-2a-fan-effect (2A=ff11575, clean working tree).
 
 ## DATA — measured
 - experiments/data/strength.SWOW-EN.R123.20180827.csv (53 MB, UTF-8). NOT committed (license

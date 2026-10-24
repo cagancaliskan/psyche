@@ -732,7 +732,7 @@ verification record edited after the fact to reflect a later state is not a reco
 **A process conflict the tester surfaced rather than resolved, and that was right.**
 CONTRIBUTING.md requires `ledger_check` to exit 0 before any commit; the tester's close-out steps
 required reporting the C2 staleness without fixing it, since prose is architect-pm's lane. So
-commit `1b5780a` was made at exit 1. That is now resolved by this reconciliation, and the sequencing
+commit `975f3c0` was made at exit 1. That is now resolved by this reconciliation, and the sequencing
 gap is real: **a tester close-out that moves the totals cannot satisfy the pre-commit gate on its
 own.** Either the gate tolerates C2-only findings during a lane hand-off, or the reconciliation must
 precede the commit. Recorded for the project lead; not resolved here.
@@ -1374,7 +1374,7 @@ narrows silently every time the code grows past it.
 
 **Date:** 2026-07-26 · **Lane:** architect-pm · **Status:** decided
 
-Tester PASS on SPEC-2f step zero (`9c26356`), builder fix at `044008c`. Close-out.
+Tester PASS on SPEC-2f step zero (`e9e3016`), builder fix at `5bce7a8`. Close-out.
 
 ### 1. The capture omitted the primary evidence for the brick it was quoted beside
 
@@ -1444,7 +1444,7 @@ mode is real.
 
 Into `CONTRIBUTING.md`'s repo conventions: inspect an old revision with `git show <rev>:<path>` or a
 temporary worktree. A stash is **repo-wide**, so one taken inside a lane reverts every other
-lane's uncommitted work. During this brick a stash at `044008c` swallowed 315 lines of an
+lane's uncommitted work. During this brick a stash at `5bce7a8` swallowed 315 lines of an
 uncommitted working file and nothing noticed; damage was bounded to that file and recovered,
 verified by diffing every path in the stash against `HEAD` and disk. On the same task the
 builder used `git show` and the tester used stash — **lane discipline that a routine git
@@ -1480,7 +1480,7 @@ eligibility trace exists, and 2f still satisfies zero of SPEC-2e's five autonomy
 
 **Date:** 2026-07-27 · **Lane:** architect-pm · **Status:** decided
 
-Builder `1065c43` / `7886167` / `6411ef7`, tester PASS `19d3286`. Both lanes signed off.
+Builder `0cfba58` / `ca59468` / `2cfca65`, tester PASS `3f13bd7`. Both lanes signed off.
 
 ### 1. The status, on two axes, deliberately not collapsed
 
@@ -1581,8 +1581,8 @@ conversion landed, so that registering added no aborting suite.
 
 ### 1. Two ledger corrections, and the shape they share
 
-**`0e` read `DESIGNED` for two passes after it was fixed** at `d8debc2` and tester-verified
-at `c23c591`. Corrected to **`PROVEN`**, on 0d's precedent: it is a tool, so the meaning axis
+**`0e` read `DESIGNED` for two passes after it was fixed** at `f8bb547` and tester-verified
+at `a1d0844`. Corrected to **`PROVEN`**, on 0d's precedent: it is a tool, so the meaning axis
 is vacuous and `BUILT-UNVALIDATED` would imply a validation that can never arrive. Its
 functional claim is verified the only way a refusal can be — a deliberately-raising fixture
 suite must be **named**.
@@ -1901,12 +1901,12 @@ architect-pm · **Status:** done
 The pause would otherwise freeze two stale statuses. Both bricks were still `DESIGNED`
 although their work was built and tester-verified:
 
-- **0g** (dismissals keyed by content, not by line): fixed at `5a1c385`, the tester's own
-  assertion converted at `b2f71f6`, tester PASS at `401f7ee` (instability attacked six ways;
+- **0g** (dismissals keyed by content, not by line): fixed at `8805fdc`, the tester's own
+  assertion converted at `49218e0`, tester PASS at `12f5986` (instability attacked six ways;
   the documented duplicate-in-scope limitation now asserted). It is a tool, so it follows the
   0d/0e precedent exactly: the meaning axis is vacuous, and `PROVEN` means deterministic, pure
   and functionally verified. **0g → PROVEN.**
-- **2g** (the depression path, SPEC-2g Option C): built at `3547f3a`, tester PASS at `bed8376`.
+- **2g** (the depression path, SPEC-2g Option C): built at `e8d561b`, tester PASS at `43923b3`.
   It follows the 2f-i precedent (D-027): the mechanism is tester-verified, the meaning verdict
   is NOT-YET. Two tester findings stand on the record and neither blocks: 2g-1, the stated
   "decided by the signature" argument is incomplete (the frozen trace entry is what actually

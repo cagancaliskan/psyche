@@ -58,7 +58,7 @@ is *for* — and the answer the corpus keeps deferring is this.
 
 ## 0.5 STEP ZERO — **COMPLETE 2026-07-26 (D-026)**
 
-> **STATUS: DONE.** Builder `044008c`, tester PASS `9c26356`. L3 is closed: the gate sees
+> **STATUS: DONE.** Builder `5bce7a8`, tester PASS `e9e3016`. L3 is closed: the gate sees
 > tuple-target accumulation, and the tuple spelling and the split spelling now report the
 > same sites — verified as an equivalence over 84 generated accumulation pairs, against
 > which the pre-fix tool disagrees on all 84.
