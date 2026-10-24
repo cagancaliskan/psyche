@@ -1,8 +1,10 @@
 /*
- * The test battery: its pictures, the landing's battery cards and the battery page.
- * The layer statement repeats global.css, so the order holds whichever file loads first.
- * Motion shows only the agent's trail and route, and the arc between a test pair, drawing
- * along their length. With reduced motion, every picture is its final frame.
+ * The test battery: its pictures, the battery cards (landing and docs) and the battery page.
+ * Pictures are luminous paths on the dark canvas: walls in the structure colour, the agent's
+ * trail and route in the signal colour with a soft halo under the route. Motion shows only the
+ * agent's trail and route, and the arc between a test pair, drawing along their length. With
+ * reduced motion, every picture is its final frame. The layer statement repeats global.css, so
+ * the order holds whichever file loads first.
  */
 @layer base, starlight, theme, components, utilities;
 
@@ -15,57 +17,65 @@
     overflow: visible;
   }
   .sx-pic .floor {
-    fill: var(--sx-surface);
+    fill: transparent;
   }
   .sx-pic .wall {
-    fill: var(--sx-structure);
-    opacity: 0.85;
+    fill: color-mix(in oklab, var(--sx-structure) 34%, var(--sx-surface));
+    shape-rendering: crispEdges;
   }
   .sx-pic .door {
     fill: var(--sx-structure);
   }
-  .sx-pic .trail,
-  .sx-pic .path {
+  .sx-pic :is(.trail, .path, .path-glow) {
     fill: none;
     stroke: var(--sx-agent);
     stroke-linecap: round;
     stroke-linejoin: round;
   }
   .sx-pic .trail {
-    stroke-width: 0.16;
-    opacity: 0.4;
+    stroke-width: 0.14;
+    opacity: 0.38;
+  }
+  .sx-pic .path-glow {
+    stroke-width: 0.85;
+    stroke-opacity: 0.16;
   }
   .sx-pic .path {
-    stroke-width: 0.3;
+    stroke-width: 0.26;
   }
   .sx-pic .goal {
     fill: var(--sx-agent);
   }
+  /* fill-opacity, so the appear animation (which sets opacity) keeps the glow faint. */
+  .sx-pic .goal-glow {
+    fill: var(--sx-agent);
+    fill-opacity: 0.18;
+  }
   .sx-pic .start-dot {
     fill: none;
     stroke: var(--sl-color-white);
-    stroke-width: 0.12;
+    stroke-width: 0.1;
   }
   .sx-pic .node {
     fill: var(--sx-surface);
     stroke: var(--sx-structure);
-    stroke-width: 0.08;
+    stroke-width: 0.06;
   }
   .sx-pic .node-label {
     fill: var(--sl-color-white);
-    font-family: var(--sx-font-display);
-    font-size: 0.55px;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.46px;
     text-anchor: middle;
     dominant-baseline: central;
   }
   .sx-pic .edge {
-    stroke: var(--sx-structure);
-    stroke-width: 0.08;
+    stroke: color-mix(in oklab, var(--sx-structure) 75%, transparent);
+    stroke-width: 0.06;
   }
   .sx-pic .query {
     fill: none;
     stroke: var(--sx-agent);
-    stroke-width: 0.1;
+    stroke-width: 0.09;
     stroke-dasharray: 0.2 0.15;
   }
   .sx-pic .arc-reveal {
@@ -76,6 +86,19 @@
   .sx-pic .appear {
     transform-box: fill-box;
     transform-origin: center;
+  }
+
+  /* The dark plate every picture sits on: the canvas with a fine coordinate grid. */
+  .sx-test-card__frame,
+  .sx-test-fig__frame {
+    border: 1px solid var(--sx-hairline);
+    border-radius: 10px;
+    background-color: var(--sl-color-black);
+    background-image:
+      linear-gradient(var(--sx-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--sx-grid) 1px, transparent 1px);
+    background-size: 12px 12px;
+    background-position: -1px -1px;
   }
 
   /* Path draw after "Line Draw SVG" by pulkitxm (21st.dev), as CSS on pathLength="1". */
@@ -98,32 +121,36 @@
     }
   }
 
-  /* ---------- Landing: one card per test ---------- */
-  /* Hairline rails and corner marks after "Feature Grid Spotlight Cards" by Mohammad Shehadeh
-     (21st.dev, feature-08); the pointer spotlight is left out. */
+  /* ---------- Battery cards: one per test ---------- */
+  /* Hairline cards with the spotlight hover (docs-visuals.css). A row that scrolls sideways in a
+     narrow column, three over two in a medium one, five across in a wide one. */
+  .sx-test-cards-wrap {
+    container: sx-cards / inline-size;
+  }
   .sx-test-cards {
     list-style: none;
     margin: 0;
-    padding: 1rem 0.75rem 1.25rem;
+    padding: 0.25rem 0.1rem 1rem;
     display: flex;
-    gap: 1.5rem;
+    gap: 0.85rem;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
-    scroll-padding-inline: 0.75rem;
+    scroll-padding-inline: 0.1rem;
     overscroll-behavior-x: contain;
     scrollbar-width: thin;
   }
   .sx-test-cards > li {
     flex: 0 0 min(15rem, 78%);
     scroll-snap-align: start;
+    margin: 0;
   }
-  @media (min-width: 52rem) {
+  @container sx-cards (min-width: 36rem) {
     .sx-test-cards {
       display: grid;
       grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 2rem 1.5rem;
+      gap: 0.85rem;
       overflow: visible;
-      padding-inline: 0;
+      padding: 0;
     }
     .sx-test-cards > li {
       grid-column: span 2;
@@ -132,7 +159,7 @@
       grid-column: 2 / span 2;
     }
   }
-  @media (min-width: 64rem) {
+  @container sx-cards (min-width: 60rem) {
     .sx-test-cards {
       grid-template-columns: repeat(5, minmax(0, 1fr));
     }
@@ -143,60 +170,26 @@
   }
 
   .sx-test-card {
-    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
-    padding: 0.9rem 0.9rem 1.1rem;
-    background: var(--sl-color-black);
-  }
-  .sx-test-card::before,
-  .sx-test-card::after {
-    content: '';
-    position: absolute;
-    pointer-events: none;
-  }
-  .sx-test-card::before {
-    inset: -1px -0.75rem;
-    border-block: 1px solid var(--sx-hairline);
-  }
-  .sx-test-card::after {
-    inset: -0.75rem -1px;
-    border-inline: 1px solid var(--sx-hairline);
-  }
-  .sx-cross {
-    position: absolute;
-    z-index: 1;
-    width: 0.875rem;
-    height: 0.875rem;
-    color: var(--sx-muted);
-    pointer-events: none;
-  }
-  .sx-cross--start {
-    top: 0;
-    left: 0;
-    transform: translate(-50%, -50%);
-  }
-  .sx-cross--end {
-    right: 0;
-    bottom: 0;
-    transform: translate(50%, 50%);
+    gap: 0.4rem;
+    padding: 0.7rem 0.7rem 0.95rem;
   }
   .sx-test-card__frame {
     aspect-ratio: 9 / 7;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.45rem;
     padding: 0.4rem;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 0.3rem;
-    background: var(--sx-surface);
-    transition: border-color 0.2s ease;
+    transition: border-color 180ms var(--sx-ease);
   }
+  /* Card titles are UI text in the sans. global.css sets display type on every markdown h3 outside
+     any layer, so only an important declaration in a layer outranks it there. */
   .sx-test-card__name {
     margin: 0;
-    font-family: var(--sx-font-display);
-    font-size: 1.15rem;
-    font-weight: 560;
-    line-height: 1.2;
+    font-family: var(--sl-font) !important;
+    letter-spacing: normal !important;
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.25;
     color: var(--sl-color-white);
   }
   .sx-test-card__name a {
@@ -209,37 +202,40 @@
     position: absolute;
     inset: 0;
     z-index: 2;
+    border-radius: inherit;
   }
   .sx-test-card__id {
     display: block;
-    margin-bottom: 0.15rem;
-    font-family: var(--sl-font);
-    font-size: 0.8125rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    margin-bottom: 0.2rem;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
     color: var(--sx-structure);
   }
   .sx-test-card__caption {
     margin: 0;
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     line-height: 1.45;
     color: var(--sx-muted);
   }
   .sx-test-card:is(:hover, :focus-within) .sx-test-card__frame {
-    border-color: var(--sx-agent);
+    border-color: color-mix(in oklab, var(--sx-agent) 30%, var(--sx-hairline));
   }
   .sx-test-card:is(:hover, :focus-within) .sx-test-card__name a {
     text-decoration: underline;
+    text-decoration-color: var(--sx-agent);
     text-underline-offset: 0.2em;
   }
 
   /* ---------- Battery page: jump bar ---------- */
-  /* Underline that grows on hover and focus, after "Underlined Navigation Menu" by
-     shadcnui-blocks (21st.dev, navigation-menu-05). */
+  /* Mono chips; the underline that grows on hover and focus follows "Underlined Navigation Menu"
+     by shadcnui-blocks (21st.dev, navigation-menu-05). */
   .sx-test-jump {
-    margin-block: 1.5rem 0.5rem;
-    padding-block: 0.4rem;
-    border-block: 1px solid var(--sx-hairline);
+    margin-block: 1.75rem 0.5rem;
+  }
+  .sx-test-jump__kicker {
+    margin: 0 0 0.6rem;
   }
   .sx-test-jump ol {
     list-style: none;
@@ -247,35 +243,47 @@
     padding: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.15rem 1.5rem;
+    gap: 0.5rem;
+  }
+  .sx-test-jump li {
+    margin: 0;
   }
   .sx-test-jump a {
     position: relative;
     display: inline-flex;
     align-items: baseline;
-    gap: 0.45rem;
-    padding-block: 0.45rem;
+    gap: 0.5rem;
+    padding: 0.4rem 0.85rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 999px;
+    background: var(--sx-surface);
+    font-size: 0.875rem;
     color: var(--sl-color-white);
     text-decoration: none;
+    transition: border-color 180ms var(--sx-ease);
   }
   .sx-test-jump a::before {
     content: '';
     position: absolute;
-    inset-inline: 0;
-    bottom: 0.15rem;
-    height: 2px;
+    inset-inline: 0.85rem;
+    bottom: 0.25rem;
+    height: 1px;
     background: var(--sx-agent);
     transform: scaleX(0);
     transform-origin: left;
-    transition: transform 0.2s ease;
+    transition: transform 180ms var(--sx-ease);
+  }
+  .sx-test-jump a:is(:hover, :focus-visible) {
+    border-color: color-mix(in oklab, var(--sx-agent) 30%, var(--sx-hairline));
   }
   .sx-test-jump a:is(:hover, :focus-visible)::before {
     transform: scaleX(1);
   }
   .sx-test-jump__id {
-    font-size: 0.8125rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
     color: var(--sx-structure);
   }
 
@@ -287,21 +295,17 @@
     container-type: inline-size;
     margin: 1.5rem 0 0;
     display: grid;
-    gap: 2rem;
+    gap: 1.25rem;
   }
   .sx-test-stack > article {
-    position: relative;
     display: grid;
     grid-template-areas: 'text' 'fig';
     gap: 1.25rem 2rem;
-    padding: 1.4rem 1.25rem 1.25rem;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 0.4rem;
-    background: var(--sl-color-black);
-    transition: border-color 0.2s ease;
+    padding: 1.25rem 1.15rem 1.15rem;
+    scroll-margin-top: calc(var(--sl-nav-height, 3.5rem) + 1rem);
   }
   .sx-test-stack > article:target {
-    border-color: var(--sx-agent);
+    border-color: color-mix(in oklab, var(--sx-agent) 55%, var(--sx-hairline));
   }
   @container (min-width: 40rem) {
     .sx-test-stack > article {
@@ -317,30 +321,33 @@
   }
   .sx-test-text h2 {
     display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.25rem 0.65rem;
+    flex-direction: column;
+    gap: 0.45rem;
     margin: 0;
     font-family: var(--sx-font-display);
-    font-size: 1.5rem;
-    font-weight: 560;
-    line-height: 1.2;
+    font-size: clamp(1.35rem, 1.1rem + 0.9vw, 1.75rem);
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
     color: var(--sl-color-white);
   }
   .sx-test-text__id {
-    font-family: var(--sl-font);
-    font-size: 0.8125rem;
-    font-weight: 700;
-    letter-spacing: 0.04em;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
     color: var(--sx-structure);
   }
   .sx-test-text p {
-    margin: 0.75rem 0 0;
+    margin: 0.8rem 0 0;
     max-width: 60ch;
+    color: var(--sl-color-gray-2);
   }
   .sx-test-text .sx-test-text__paradigm {
-    margin-top: 0.3rem;
-    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
     color: var(--sx-muted);
   }
 
@@ -355,8 +362,6 @@
   .sx-test-fig__frame {
     aspect-ratio: 9 / 7;
     padding: 0.5rem;
-    border-radius: 0.3rem;
-    background: var(--sx-surface);
   }
   .sx-test-fig figcaption {
     min-height: 2.9em;
@@ -370,7 +375,8 @@
     gap: 0.75rem;
   }
 
-  /* Step row: numbered markers joined by a rule, after "Stepper" by kevingirelli (21st.dev). */
+  /* Step chips: a mono pill per step, numbered, after "Stepper" by kevingirelli (21st.dev). The
+     current step takes the signal colour; steps already shown are drawn in structure blue. */
   .sx-steps {
     flex: 1;
     min-width: 0;
@@ -378,94 +384,90 @@
     margin: 0;
     padding: 0;
     display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
   }
   .sx-steps > li {
-    position: relative;
-    flex: 1 1 0;
-    min-width: 0;
-    display: flex;
-    justify-content: center;
-  }
-  .sx-steps > li + li::before {
-    content: '';
-    position: absolute;
-    top: 0.75rem;
-    left: calc(-50% + 1rem);
-    right: calc(50% + 1rem);
-    border-top: 2px solid var(--sx-hairline);
-  }
-  .sx-steps > li:is([data-state='done'], [data-state='current']) + li:is([data-state='done'], [data-state='current'])::before {
-    border-top-color: var(--sx-structure);
+    margin: 0;
   }
   .sx-steps button {
-    display: flex;
-    flex-direction: column;
+    display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    min-width: 2rem;
-    padding: 0 0.2rem;
-    border: 0;
-    background: none;
-    font: inherit;
-    font-size: 0.8125rem;
-    line-height: 1.25;
-    text-align: center;
+    gap: 0.45rem;
+    padding: 0.25rem 0.7rem 0.25rem 0.3rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 999px;
+    background: var(--sl-color-black);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    line-height: 1.3;
+    text-transform: uppercase;
     color: var(--sx-muted);
     cursor: pointer;
+    transition:
+      border-color 180ms var(--sx-ease),
+      color 180ms var(--sx-ease);
   }
   .sx-steps__n {
     display: grid;
     place-items: center;
-    width: 1.5rem;
-    height: 1.5rem;
+    min-width: 1.3rem;
+    height: 1.3rem;
     border: 1px solid var(--sx-hairline);
     border-radius: 999px;
-    background: var(--sl-color-black);
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--sx-muted);
+    letter-spacing: 0;
+    font-variant-numeric: tabular-nums;
     transition:
-      background-color 0.2s ease,
-      border-color 0.2s ease,
-      color 0.2s ease;
+      background-color 180ms var(--sx-ease),
+      border-color 180ms var(--sx-ease),
+      color 180ms var(--sx-ease);
+  }
+  .sx-steps > li[data-state='done'] button {
+    color: var(--sl-color-gray-2);
   }
   .sx-steps > li[data-state='done'] .sx-steps__n {
     border-color: var(--sx-structure);
-    color: var(--sl-color-white);
+    color: var(--sx-structure);
   }
   .sx-steps button:hover {
+    border-color: color-mix(in oklab, var(--sx-agent) 35%, var(--sx-hairline));
     color: var(--sl-color-white);
-  }
-  .sx-steps button:hover .sx-steps__n {
-    border-color: var(--sx-agent);
   }
   .sx-steps button[aria-pressed='true'] {
-    font-weight: 700;
-    color: var(--sl-color-white);
+    border-color: color-mix(in oklab, var(--sx-agent) 60%, transparent);
+    background: color-mix(in oklab, var(--sx-agent) 7%, var(--sl-color-black));
+    color: var(--sx-agent);
   }
   .sx-steps button[aria-pressed='true'] .sx-steps__n {
     border-color: var(--sx-agent);
     background: var(--sx-agent);
     color: var(--sl-color-black);
+    box-shadow: var(--sx-glow);
   }
 
   .sx-test-toggle {
     flex: none;
     display: inline-flex;
     align-items: center;
-    gap: 0.35rem;
-    padding: 0.25rem 0.7rem;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
     border: 1px solid var(--sx-hairline);
     border-radius: 999px;
     background: transparent;
-    font: inherit;
-    font-size: 0.8125rem;
-    line-height: 1.25;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.625rem;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    line-height: 1.3;
+    text-transform: uppercase;
     color: var(--sl-color-white);
     cursor: pointer;
+    transition: border-color 180ms var(--sx-ease);
   }
   .sx-test-toggle:hover {
-    border-color: var(--sx-agent);
+    border-color: color-mix(in oklab, var(--sx-agent) 35%, var(--sx-hairline));
   }
   .sx-test-toggle svg {
     width: 0.8rem;
@@ -473,17 +475,19 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
+    .sx-test-jump a,
     .sx-test-jump a::before,
     .sx-test-card__frame,
-    .sx-test-stack > article,
-    .sx-steps__n {
+    .sx-steps button,
+    .sx-steps__n,
+    .sx-test-toggle {
       transition: none;
     }
   }
 
   /* ---------- Motion: the route draws; nothing else spreads or moves ---------- */
   @media (prefers-reduced-motion: no-preference) {
-    /* Landing: hidden until the card is seen, then drawn once; again on hover or keyboard focus. */
+    /* Cards: hidden until the card is seen, then drawn once; again on hover or keyboard focus. */
     .sx-test-card[data-wait] .sx-pic .draw {
       stroke-dasharray: 1 1.1;
       stroke-dashoffset: 1.05;

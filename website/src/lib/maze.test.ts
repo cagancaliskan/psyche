@@ -18,6 +18,7 @@ import {
   roomField,
   shortestPath,
   wallCells,
+  wallLines,
   wallPath,
   withCell,
   type Cell,
@@ -217,6 +218,48 @@ test('wallPath covers exactly the wall cells, split cleanly between wing and are
   assert.deepEqual(new Set([...wing, ...arenaWalls]), walls);
   const small = parseGrid(['###', '#.#', '###']);
   assert.equal(wallPath(small), 'M0 0h3v1h-3zM0 1h1v1h-1zM2 1h1v1h-1zM0 2h3v1h-3z');
+});
+
+/** Expand `M x y h n` / `M x y v n` runs into unit links between wall cells; fails on a repeat. */
+function linksOf(d: string): Set<string> {
+  const links = new Set<string>();
+  const run = /M(\d+)\.5 (\d+)\.5([hv])(\d+)/g;
+  let consumed = 0;
+  for (const m of d.matchAll(run)) {
+    const [c, r] = [Number(m[1]), Number(m[2])];
+    const n = Number(m[4]);
+    assert.ok(n > 0);
+    for (let k = 0; k < n; k++) {
+      const link = m[3] === 'h' ? `${r},${c + k}>${r},${c + k + 1}` : `${r + k},${c}>${r + k + 1},${c}`;
+      assert.ok(!links.has(link), `drawn twice: ${link}`);
+      links.add(link);
+    }
+    consumed += m[0].length;
+  }
+  assert.equal(consumed, d.length, 'only line runs in the path');
+  return links;
+}
+
+test('wallLines joins exactly the neighbouring wall cells, split cleanly between wing and arena', () => {
+  const expected = new Set<string>();
+  for (let r = 0; r < field.rows; r++) {
+    for (let c = 0; c < field.cols; c++) {
+      if (!field.blocked[r][c]) continue;
+      if (c + 1 < field.cols && field.blocked[r][c + 1]) expected.add(`${r},${c}>${r},${c + 1}`);
+      if (r + 1 < field.rows && field.blocked[r + 1][c]) expected.add(`${r},${c}>${r + 1},${c}`);
+    }
+  }
+  assert.deepEqual(linksOf(wallLines(field)), expected);
+  const wing = linksOf(wallLines(field, 0, ARENA - 1));
+  const arenaLines = linksOf(wallLines(field, ARENA - 1));
+  for (const link of wing) assert.ok(Number(link.split('>')[0].split(',')[1]) < ARENA - 1, link);
+  for (const link of arenaLines) assert.ok(Number(link.split('>')[0].split(',')[1]) >= ARENA - 1, link);
+  assert.equal(wing.size + arenaLines.size, expected.size);
+  assert.deepEqual(new Set([...wing, ...arenaLines]), expected);
+  // Every door leaves a gap: no line passes through an open cell.
+  for (const link of expected) for (const k of link.split('>')) assert.ok(field.blocked[Number(k.split(',')[0])][Number(k.split(',')[1])]);
+  const small = parseGrid(['###', '#.#', '###']);
+  assert.equal(wallLines(small), 'M0.5 0.5h2M0.5 2.5h2M0.5 0.5v2M2.5 0.5v2');
 });
 
 test('randomWalk is deterministic for a seed and only visits open cells', () => {

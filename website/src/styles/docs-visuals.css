@@ -1,0 +1,900 @@
+/*
+ * Figures and shared pieces in the neural-cartography identity: the mono kicker, the spotlight
+ * card, the one-pass beam on connectors, the figure frame and the visual headers of the docs
+ * pages. Structure (connectors, rails, plates) is drawn in the structure colour; the signal colour
+ * marks only the agent, "now" and the active line. The layer statement repeats global.css, so the
+ * order holds whichever stylesheet the browser reads first.
+ */
+@layer base, starlight, theme, components, utilities;
+
+@layer components {
+  /* ---------- Kicker: mono label above a heading or a figure ---------- */
+  .sx-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin: 0;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1.4;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+  .sx-kicker__index {
+    color: var(--sx-structure);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ---------- Spotlight card ---------- */
+  /* Pointer-following light and a lit edge, after "Spotlight" by kevingirelli (21st.dev); the
+     pointer position is written by motion.ts on any element with data-spot. */
+  .sx-spot {
+    position: relative;
+    isolation: isolate;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 14px;
+    background: var(--sx-surface);
+    box-shadow: inset 0 1px 0 color-mix(in oklab, white 4%, transparent);
+    transition: border-color 180ms var(--sx-ease);
+  }
+  .sx-spot::before,
+  .sx-spot::after {
+    content: '';
+    position: absolute;
+    pointer-events: none;
+    border-radius: inherit;
+    opacity: 0;
+    transition: opacity 180ms var(--sx-ease);
+  }
+  .sx-spot::before {
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(
+      22rem circle at var(--sx-spot-x, 50%) var(--sx-spot-y, 50%),
+      color-mix(in oklab, var(--sx-agent) 7%, transparent),
+      transparent 70%
+    );
+  }
+  .sx-spot::after {
+    inset: -1px;
+    padding: 1px;
+    background: radial-gradient(
+      14rem circle at var(--sx-spot-x, 50%) var(--sx-spot-y, 50%),
+      color-mix(in oklab, var(--sx-agent) 55%, transparent),
+      transparent 65%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+    mask-clip: content-box, border-box;
+    mask-composite: exclude;
+  }
+  .sx-spot:is(:hover, :focus-within) {
+    border-color: color-mix(in oklab, var(--sx-agent) 30%, var(--sx-hairline));
+  }
+  .sx-spot:is(:hover, :focus-within)::before,
+  .sx-spot:is(:hover, :focus-within)::after {
+    opacity: 1;
+  }
+
+  /* ---------- Beams: one light pulse along fixed connectors ---------- */
+  /* After "Klyv Animated Beam" by klyv-ui (21st.dev): a short dash walked along each fixed path by
+     stroke-dashoffset. It runs once when the figure is seen and again on hover; nothing else moves,
+     and with reduced motion the pulse never shows. */
+  .sx-beam {
+    overflow: visible;
+  }
+  .sx-beam path {
+    fill: none;
+  }
+  .sx-beam__track {
+    stroke: color-mix(in oklab, var(--sx-structure) 50%, transparent);
+    stroke-width: 1.25;
+  }
+  .sx-beam__end {
+    fill: var(--sx-structure);
+  }
+  .sx-beam__pulse {
+    stroke: color-mix(in oklab, var(--sx-structure) 55%, var(--sl-color-white));
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-dasharray: 0.18 1.4;
+    stroke-dashoffset: 0.24;
+    opacity: 0;
+  }
+
+  /* Straight rails between the markers of a sequence: horizontal in a wide figure, vertical in a
+     narrow one. The pulse is a short bright segment that crosses the rail once. */
+  .sx-rail {
+    --sx-rail-line: color-mix(in oklab, var(--sx-structure) 50%, transparent);
+    position: relative;
+    display: block;
+    flex: 1 1 auto;
+    overflow: hidden;
+    width: 9px;
+    min-height: 1rem;
+    background: linear-gradient(var(--sx-rail-line), var(--sx-rail-line)) center / 1px 100% no-repeat;
+  }
+  .sx-rail[data-style='dashed'] {
+    background: repeating-linear-gradient(180deg, var(--sx-rail-line) 0 4px, transparent 4px 8px) center / 1px 100% no-repeat;
+  }
+  .sx-rail__pulse {
+    position: absolute;
+    top: 0;
+    left: 3px;
+    width: 3px;
+    height: 40%;
+    border-radius: 3px;
+    background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--sx-structure) 55%, var(--sl-color-white)), transparent);
+    box-shadow: 0 0 6px color-mix(in oklab, var(--sx-structure) 60%, transparent);
+    opacity: 0;
+    --sx-rail-anim: sx-rail-y;
+  }
+  @keyframes sx-beam {
+    from {
+      stroke-dashoffset: 0.24;
+      opacity: 1;
+    }
+    to {
+      stroke-dashoffset: -1.05;
+      opacity: 1;
+    }
+  }
+  @keyframes sx-rail-x {
+    from {
+      transform: translateX(-100%);
+      opacity: 1;
+    }
+    to {
+      transform: translateX(250%);
+      opacity: 1;
+    }
+  }
+  @keyframes sx-rail-y {
+    from {
+      transform: translateY(-100%);
+      opacity: 1;
+    }
+    to {
+      transform: translateY(250%);
+      opacity: 1;
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    :is([data-sx-beams][data-run], [data-sx-beams]:hover) .sx-beam__pulse {
+      animation: sx-beam 1s var(--sx-ease) calc(var(--i, 0) * 0.55s) both;
+    }
+    :is([data-sx-beams][data-run], [data-sx-beams]:hover) .sx-rail__pulse {
+      animation: var(--sx-rail-anim) 0.9s var(--sx-ease) calc(var(--i, 0) * 0.55s) both;
+    }
+  }
+
+  /* ---------- Figure frame ---------- */
+  /* A hairline panel over a faint coordinate grid that fades out from the centre. */
+  .sx-dv {
+    container: sx-dv / inline-size;
+    position: relative;
+    isolation: isolate;
+    margin: 0;
+    padding: 1.25rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 14px;
+    background: color-mix(in oklab, var(--sx-surface) 72%, var(--sl-color-black));
+    box-shadow: inset 0 1px 0 color-mix(in oklab, white 4%, transparent);
+  }
+  .sx-dv::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    pointer-events: none;
+    background-image:
+      linear-gradient(var(--sx-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--sx-grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: -1px -1px;
+    -webkit-mask-image: radial-gradient(ellipse at 50% 45%, #000 25%, transparent 78%);
+    mask-image: radial-gradient(ellipse at 50% 45%, #000 25%, transparent 78%);
+  }
+  .sx-dv--bare {
+    padding: 0;
+    border: 0;
+    background: none;
+    box-shadow: none;
+  }
+  .sx-dv--bare::before {
+    display: none;
+  }
+  .sx-dv__cap {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0 0 1.25rem;
+  }
+  .sx-dv__lead {
+    margin: 0;
+    max-width: 62ch;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--sl-color-gray-2);
+    text-wrap: pretty;
+  }
+  .sx-dv__foot {
+    margin: 1.1rem 0 0;
+    max-width: 66ch;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: var(--sx-muted);
+  }
+  .sx-dv-slot > * + * {
+    margin-top: 1.25rem;
+  }
+
+  /* A small node: title in the sans, a muted line under it. */
+  .sx-node {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    padding: 0.55rem 0.65rem 0.6rem;
+    border-radius: 10px;
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    color: var(--sl-color-white);
+  }
+  .sx-node__title {
+    font-weight: 600;
+  }
+  .sx-node__sub {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    color: var(--sx-muted);
+  }
+  .sx-node[data-private] {
+    border-style: dashed;
+  }
+  /* A static signal dot for the agents; only the roadmap's "now" dot ever pulses. */
+  .sx-node__agent {
+    display: inline-block;
+    width: 0.45rem;
+    height: 0.45rem;
+    margin-inline-end: 0.4rem;
+    border-radius: 50%;
+    background: var(--sx-agent);
+    box-shadow: var(--sx-glow);
+    vertical-align: 0.08em;
+  }
+
+  /* ---------- Evaluation pipeline (research overview) ---------- */
+  /* Columns of nodes joined by fixed connectors. Below 40rem of width the same nodes stack. */
+  .sx-pipe__steps {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sx-pipe__col {
+    position: relative;
+    margin: 0;
+  }
+  .sx-pipe__col:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 0.3rem);
+    height: 1.15rem;
+    border-inline-start: 1px solid color-mix(in oklab, var(--sx-structure) 50%, transparent);
+  }
+  .sx-pipe__group {
+    padding: 0.6rem;
+    border: 1px dashed color-mix(in oklab, var(--sx-structure) 40%, transparent);
+    border-radius: 14px;
+  }
+  .sx-pipe__glabel {
+    display: flex;
+    justify-content: center;
+    margin: 0 0 0.5rem;
+  }
+  .sx-pipe__group > ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sx-pipe__group li {
+    margin: 0;
+  }
+  .sx-pipe__svg {
+    display: none;
+  }
+  @container sx-dv (min-width: 40rem) {
+    .sx-pipe__stage {
+      position: relative;
+      aspect-ratio: 720 / 420;
+    }
+    .sx-pipe__svg {
+      display: block;
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .sx-pipe__steps {
+      position: absolute;
+      inset: 0;
+      display: block;
+    }
+    .sx-pipe__col {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: var(--x);
+      width: 16%;
+    }
+    .sx-pipe__col::after {
+      display: none;
+    }
+    /* Every node is placed against its column, which spans the full height of the figure. */
+    .sx-pipe__col > .sx-node,
+    .sx-pipe__group li {
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: var(--y);
+      transform: translateY(-50%);
+      padding-inline: 0.5rem;
+      hyphens: auto;
+    }
+    .sx-pipe__group {
+      padding: 0;
+      border: 0;
+      border-radius: 0;
+    }
+    .sx-pipe__group::before {
+      content: '';
+      position: absolute;
+      top: var(--top);
+      bottom: var(--bottom);
+      left: -0.45rem;
+      right: -0.45rem;
+      border: 1px dashed color-mix(in oklab, var(--sx-structure) 40%, transparent);
+      border-radius: 14px;
+      pointer-events: none;
+    }
+    .sx-pipe__glabel {
+      position: absolute;
+      top: calc(var(--top) + 0.5rem);
+      left: 0;
+      right: 0;
+      margin: 0;
+      justify-content: center;
+      font-size: 0.625rem;
+    }
+    .sx-pipe__group > ul {
+      display: block;
+    }
+  }
+
+  /* ---------- Sequences: stage arc, release flow, role lanes ---------- */
+  /* Markers on a rail with a card or text under each, after "How It Works Steps" by ln-dev7
+     (21st.dev). Vertical by default; side by side from 40rem of figure width. */
+  .sx-seq {
+    display: grid;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sx-seq__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    column-gap: 0.9rem;
+    margin: 0;
+  }
+  .sx-seq__track {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .sx-seq__mark {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border: 1px solid color-mix(in oklab, var(--sx-structure) 60%, transparent);
+    border-radius: 999px;
+    background: var(--sl-color-black);
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+    color: var(--sl-color-white);
+    font-variant-numeric: tabular-nums;
+  }
+  .sx-seq__item:last-child .sx-rail {
+    visibility: hidden;
+  }
+  .sx-seq__body {
+    min-width: 0;
+    padding-bottom: 1.25rem;
+  }
+  .sx-seq__item:last-child .sx-seq__body {
+    padding-bottom: 0;
+  }
+  .sx-seq__via {
+    grid-column: 2;
+    margin: -0.6rem 0 1.1rem;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sx-structure);
+  }
+  .sx-seq__title {
+    margin: 0.35rem 0 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--sl-color-white);
+  }
+  .sx-seq__text {
+    margin: 0.3rem 0 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--sl-color-gray-2);
+  }
+  .sx-seq__item[data-state='active'] .sx-seq__mark {
+    border-color: var(--sx-agent);
+    color: var(--sx-agent);
+    box-shadow: var(--sx-glow);
+  }
+  .sx-seq__item:is([data-state='later'], [data-state='private']) .sx-seq__mark {
+    border-style: dashed;
+    color: var(--sx-muted);
+  }
+  .sx-seq__item[data-state='open'] .sx-seq__mark {
+    border-color: var(--sx-structure);
+    background: color-mix(in oklab, var(--sx-structure) 18%, var(--sl-color-black));
+  }
+  @container sx-dv (min-width: 40rem) {
+    .sx-seq {
+      grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr));
+      column-gap: var(--gap, 1rem);
+    }
+    .sx-seq[data-via] {
+      padding-top: 1.35rem;
+    }
+    .sx-seq__item {
+      display: block;
+    }
+    .sx-seq__track {
+      flex-direction: row;
+      margin-inline-end: calc(-1 * var(--gap, 1rem));
+    }
+    .sx-seq__track .sx-rail {
+      width: auto;
+      height: 9px;
+      min-height: 0;
+      background-size: 100% 1px;
+    }
+    .sx-seq__track .sx-rail[data-style='dashed'] {
+      background-image: repeating-linear-gradient(90deg, var(--sx-rail-line) 0 4px, transparent 4px 8px);
+    }
+    .sx-seq__track .sx-rail__pulse {
+      top: 3px;
+      left: 0;
+      width: 40%;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--sx-structure) 55%, var(--sl-color-white)), transparent);
+      --sx-rail-anim: sx-rail-x;
+    }
+    .sx-seq__body {
+      padding: 0.85rem 0.75rem 0 0;
+    }
+    .sx-seq__via {
+      position: absolute;
+      top: -1.35rem;
+      left: 2.75rem;
+      right: calc(-1 * var(--gap, 1rem) + 0.5rem);
+      margin: 0;
+      text-align: center;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  /* Stage arc (origins): each stage as a card under its marker, the cards of a row equally tall. */
+  .sx-arc .sx-seq__body > .sx-spot {
+    flex: 1;
+    padding: 0.9rem 1rem 1rem;
+  }
+  .sx-arc .sx-seq__body {
+    display: flex;
+    flex-direction: column;
+  }
+  @container sx-dv (min-width: 40rem) {
+    .sx-arc .sx-seq__item {
+      display: flex;
+      flex-direction: column;
+    }
+    .sx-arc .sx-seq__body {
+      flex: 1;
+    }
+  }
+  .sx-arc__state {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin: 0.75rem 0 0;
+    padding: 0.15rem 0.6rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 999px;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-2);
+    width: fit-content;
+  }
+  .sx-arc__state::before {
+    content: '';
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    border: 1px solid var(--sx-structure);
+  }
+  [data-state='active'] .sx-arc__state {
+    border-color: color-mix(in oklab, var(--sx-agent) 45%, transparent);
+    color: var(--sx-agent);
+  }
+  [data-state='active'] .sx-arc__state::before {
+    border-color: var(--sx-agent);
+    background: var(--sx-agent);
+    box-shadow: var(--sx-glow);
+  }
+  [data-state='later'] .sx-arc__state::before {
+    border-style: dashed;
+  }
+  [data-state='later'] .sx-spot {
+    border-style: dashed;
+    background: transparent;
+  }
+  [data-state='active'] .sx-spot {
+    border-color: color-mix(in oklab, var(--sx-agent) 30%, var(--sx-hairline));
+  }
+
+  /* Release flow (disclosure policy). */
+  .sx-flow__tag {
+    display: block;
+    margin-top: 0.15rem;
+  }
+  .sx-flow__stop {
+    display: flex;
+    gap: 0.65rem;
+    align-items: baseline;
+    margin: 1.25rem 0 0;
+    padding: 0.7rem 0.9rem;
+    border: 1px dashed var(--sx-hairline);
+    border-radius: 10px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--sl-color-gray-2);
+  }
+  .sx-flow__stop .sx-kicker {
+    flex: none;
+  }
+
+  /* Role lanes (methodology): one lane per role, joined by the rail in the order a brick moves. */
+  .sx-lanes .sx-seq__item {
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+  }
+  .sx-lanes .sx-seq__body {
+    padding-bottom: 0.75rem;
+  }
+  .sx-lane {
+    display: grid;
+    gap: 0.35rem 1.25rem;
+    padding: 0.75rem 1rem 0.8rem;
+  }
+  .sx-lane__role {
+    color: var(--sx-structure);
+  }
+  .sx-lane__act {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--sl-color-white);
+  }
+  .sx-lane__detail {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--sx-muted);
+  }
+  .sx-lane[data-when] {
+    border-style: dashed;
+  }
+  @container sx-dv (min-width: 40rem) {
+    .sx-lanes {
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .sx-lanes .sx-seq__item {
+      display: grid;
+    }
+    .sx-lanes .sx-seq__track {
+      flex-direction: column;
+      margin-inline-end: 0;
+    }
+    .sx-lanes .sx-seq__track .sx-rail {
+      width: 9px;
+      height: auto;
+      min-height: 1rem;
+      background-size: 1px 100%;
+    }
+    .sx-lanes .sx-seq__track .sx-rail__pulse {
+      top: 0;
+      left: 3px;
+      width: 3px;
+      height: 40%;
+      background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--sx-structure) 55%, var(--sl-color-white)), transparent);
+      --sx-rail-anim: sx-rail-y;
+    }
+    .sx-lanes .sx-seq__body {
+      padding: 0 0 0.75rem;
+    }
+    .sx-lane {
+      grid-template-columns: 8.5rem minmax(0, 1fr);
+      align-items: baseline;
+    }
+    .sx-lane__detail {
+      grid-column: 2;
+    }
+  }
+
+  /* ---------- Determinism tiers (engineering) ---------- */
+  .sx-tiers {
+    display: grid;
+    gap: 0.85rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  @container sx-dv (min-width: 40rem) {
+    .sx-tiers {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+  .sx-tier {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    margin: 0;
+    padding: 1rem 1rem 1.05rem;
+  }
+  .sx-tier__head {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .sx-tier__letter {
+    font-family: var(--sx-font-display);
+    font-size: 2.75rem;
+    font-weight: 300;
+    line-height: 0.9;
+    letter-spacing: -0.03em;
+    color: var(--sl-color-white);
+  }
+  /* Three bars, filled by the strength of the guarantee: A is the strongest tier. */
+  .sx-tier__meter {
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+  }
+  .sx-tier__meter span {
+    width: 5px;
+    border-radius: 2px;
+    border: 1px solid color-mix(in oklab, var(--sx-structure) 55%, transparent);
+  }
+  .sx-tier__meter span:nth-child(1) {
+    height: 0.6rem;
+  }
+  .sx-tier__meter span:nth-child(2) {
+    height: 0.9rem;
+  }
+  .sx-tier__meter span:nth-child(3) {
+    height: 1.2rem;
+  }
+  .sx-tier__meter span[data-on] {
+    background: var(--sx-structure);
+    border-color: var(--sx-structure);
+  }
+  .sx-tier__guarantee {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--sl-color-white);
+  }
+  .sx-tier dl {
+    display: grid;
+    gap: 0.5rem;
+    margin: auto 0 0;
+    padding-top: 0.65rem;
+    border-top: 1px solid var(--sx-hairline);
+  }
+  .sx-tier dt {
+    font-size: 0.625rem;
+  }
+  .sx-tier dd {
+    margin: 0.1rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.45;
+    color: var(--sl-color-gray-2);
+  }
+
+  /* ---------- Layer stack (substrate) ---------- */
+  /* Exploded isometric plates, one per layer, with dashed construction lines through their
+     corners, after "Stack" by abhishek-mallick (21st.dev), drawn once on the server. The store
+     sits at the bottom; the list keeps reading order from the bottom up. */
+  .sx-stack {
+    display: flex;
+    flex-direction: column-reverse;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sx-stack__layer {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.5rem;
+    margin: 0;
+    padding: 0.65rem 0;
+    border-top: 1px solid var(--sx-hairline);
+  }
+  .sx-stack__layer:last-child {
+    border-top: 0;
+  }
+  .sx-stack__plate {
+    display: none;
+  }
+  .sx-stack__name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.25rem 0.65rem;
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--sl-color-white);
+  }
+  .sx-stack__module {
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.6875rem;
+    font-weight: 400;
+    color: var(--sx-muted);
+  }
+  .sx-stack__text {
+    margin: 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--sl-color-gray-2);
+  }
+  .sx-stack__tier {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: fit-content;
+    padding: 0.1rem 0.55rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 999px;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    font-size: 0.625rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sl-color-gray-2);
+  }
+  .sx-stack__tier::before {
+    content: '';
+    width: 0.4rem;
+    height: 0.4rem;
+    border-radius: 50%;
+    border: 1px solid var(--sx-structure);
+  }
+  [data-tier='proven'] .sx-stack__tier::before {
+    background: var(--sx-structure);
+  }
+  .sx-stack__loop {
+    display: flex;
+    gap: 0.65rem;
+    align-items: baseline;
+    margin: 0.9rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--sl-color-gray-2);
+  }
+  .sx-stack__loop .sx-kicker {
+    flex: none;
+    color: var(--sx-structure);
+  }
+  @container sx-dv (min-width: 36rem) {
+    .sx-stack__layer {
+      grid-template-columns: 11rem minmax(0, 1fr);
+      column-gap: 1.25rem;
+      align-items: center;
+      padding: 0;
+      border-top: 0;
+      min-height: 4.4rem;
+    }
+    .sx-stack__plate {
+      display: block;
+      position: relative;
+      align-self: stretch;
+    }
+    .sx-stack__plate svg {
+      position: absolute;
+      left: 0;
+      top: 50%;
+      width: 11rem;
+      height: auto;
+      transform: translateY(-50%);
+      overflow: visible;
+    }
+    .sx-stack__body {
+      display: grid;
+      gap: 0.3rem;
+      padding: 0.6rem 0 0.6rem 1rem;
+      border-inline-start: 1px solid var(--sx-hairline);
+    }
+  }
+  .sx-plate__top {
+    fill: color-mix(in oklab, var(--sx-structure) 10%, var(--sx-surface));
+    stroke: color-mix(in oklab, var(--sx-structure) 70%, transparent);
+    stroke-width: 1;
+  }
+  .sx-plate__side {
+    fill: color-mix(in oklab, var(--sx-structure) 22%, var(--sl-color-black));
+    stroke: color-mix(in oklab, var(--sx-structure) 45%, transparent);
+    stroke-width: 1;
+  }
+  .sx-plate__grid {
+    fill: none;
+    stroke: color-mix(in oklab, var(--sx-structure) 22%, transparent);
+    stroke-width: 0.75;
+  }
+  .sx-plate__guide {
+    fill: none;
+    stroke: color-mix(in oklab, var(--sx-structure) 35%, transparent);
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
+  }
+  [data-tier='proven'] .sx-plate__top {
+    fill: color-mix(in oklab, var(--sx-structure) 24%, var(--sx-surface));
+    stroke: var(--sx-structure);
+  }
+  .sx-stack__layer:hover .sx-plate__top {
+    stroke: color-mix(in oklab, var(--sx-structure) 55%, var(--sl-color-white));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sx-spot,
+    .sx-spot::before,
+    .sx-spot::after {
+      transition: none;
+    }
+  }
+}

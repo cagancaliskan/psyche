@@ -7,6 +7,7 @@ import ledger from '../data/ledger.public.json';
 import { withBase } from '../lib/url.ts';
 import { formatDay } from '../lib/plan.ts';
 import { stateLabel, type PublicLedger } from '../lib/ledger.ts';
+import '../styles/docs-visuals.css';
 
 const led = ledger as unknown as PublicLedger;
 const t = led.tests;
@@ -39,6 +40,7 @@ const methodology = withBase('substrate/methodology/');
   }}
 >
   <div class="sx-wide">
+    <p class="sx-kicker sx-status-kicker"><span class="sx-kicker__index">01</span> Test run</p>
     <StatsBand title="The captured test run" items={stats}>
       Captured on {capturedOn} with CPython {t.captured_python}. The counts are identical on every version listed, and determinism is probed under each hash seed. The meaning bar is {meaningBar}.
     </StatsBand>
@@ -60,6 +62,7 @@ const methodology = withBase('substrate/methodology/');
     </p>
 
     <section class="sx-section">
+      <p class="sx-kicker"><span class="sx-kicker__index">02</span> Build status</p>
       <h2>Bricks</h2>
       <p>Each brick of the substrate, grouped by its build status in the ledger.</p>
       <BrickBoard />

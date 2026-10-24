@@ -1,5 +1,6 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { ArrowRight } from 'lucide-react';
 import MazeHero from '@/components/MazeHero.astro';
 import NowLine from '@/components/NowLine.tsx';
 import Timeline from '@/components/Timeline.tsx';
@@ -22,6 +23,7 @@ const led = ledger as unknown as PublicLedger;
 const t = led.tests;
 const { interpreters, hash_seeds } = led.determinism;
 const aim = led.aim.trim().replace(/\.$/, '');
+const name = 'Psyche';
 
 const stats = [
   { label: 'Suites', value: t.suites },
@@ -42,12 +44,18 @@ const stats = [
 >
   <div class="sx-landing not-content">
     <MazeHero>
-      <h1 class="sx-lp-title">Psyche</h1>
+      <h1 class="sx-lp-title">
+        <span class="sr-only">{name}</span>
+        <span class="sx-lp-title__word" aria-hidden="true">{[...name].map((ch, i) => <span style={`--i: ${i}`}>{ch}</span>)}</span>
+      </h1>
       <p class="sx-lp-aim">Its long-term aim: {aim}.</p>
       <p class="sx-lp-lead">An open research project that grows in stages, each built test-first and kept as a citable artifact.</p>
       <div class="sx-lp-actions">
-        <a class="sx-lp-btn sx-lp-btn--primary" href={withBase('research/')}>Read the research overview</a>
-        <a class="sx-lp-btn sx-lp-btn--quiet" href={withBase('battery/')}>Explore the test battery</a>
+        <a class="sx-lp-btn sx-lp-btn--primary" href={withBase('research/')}>
+          Read the research overview
+          <ArrowRight className="sx-lp-btn__icon" strokeWidth={2} aria-hidden="true" />
+        </a>
+        <a class="sx-lp-btn sx-lp-btn--ghost" href={withBase('battery/')}>Explore the test battery</a>
       </div>
     </MazeHero>
   </div>
@@ -59,20 +67,24 @@ const stats = [
   <StageReveal />
 
   <section class="sx-lp-section not-content" aria-labelledby="sx-battery-title">
-    <SectionHeader id="sx-battery-title" title="The test battery">
+    <SectionHeader id="sx-battery-title" title="The test battery" index="02" kicker="Battery">
       <p>The classic behavioural paradigms the battery is built from, drawn as illustrations, not results.</p>
     </SectionHeader>
-    <BatteryTeaser />
+    <div data-reveal>
+      <BatteryTeaser />
+    </div>
   </section>
 
-  <section class="sx-lp-section" aria-labelledby="sx-roadmap-title">
+  <section class="sx-lp-section sx-lp-band" aria-labelledby="sx-roadmap-title">
     <div class="not-content">
-      <SectionHeader id="sx-roadmap-title" title="Stage 2 roadmap">
+      <SectionHeader id="sx-roadmap-title" title="Stage 2 roadmap" index="03" kicker="Roadmap">
         <p>The current research line, <cite>{p.line.title}</cite>, runs in {p.phases.length} phases with {p.gates.length} decision gates. Choose a phase to see what it delivers; the full schedule is on the <a class="sx-lp-a" href={withBase('roadmap/')}>roadmap page</a>.</p>
       </SectionHeader>
     </div>
-    <Timeline client:visible plan={p} />
-    <TimelineList plan={p} />
+    <div data-reveal>
+      <Timeline client:visible plan={p} />
+      <TimelineList plan={p} />
+    </div>
   </section>
 
   <HowBuilt />
@@ -80,10 +92,61 @@ const stats = [
   <PublicWithheld />
 
   <section class="sx-lp-section not-content" aria-labelledby="sx-substrate-title">
-    <SectionHeader id="sx-substrate-title" title="The substrate, maintained">
+    <SectionHeader id="sx-substrate-title" title="The substrate, maintained" index="06" kicker="Substrate">
       <p>The substrate's development is {led.program.substrate.state}, and its record stays here and stays verified.</p>
     </SectionHeader>
-    <StatsBand items={stats} />
-    <p class="sx-lp-more"><a class="sx-lp-a" href={withBase('status/')}>See the substrate's status</a>, or read <a class="sx-lp-a" href={withBase('substrate/overview/')}>what the substrate is</a>.</p>
+    <div data-reveal>
+      <StatsBand items={stats} />
+    </div>
+    <p class="sx-lp-more" data-reveal><a class="sx-lp-a" href={withBase('status/')}>See the substrate's status</a>, or read <a class="sx-lp-a" href={withBase('substrate/overview/')}>what the substrate is</a>.</p>
   </section>
 </StarlightPage>
+
+<script>
+  // Scroll reveals through one shared observer, after "Reveal" by asanshay (21st.dev), without its
+  // motion dependency: blocks below the fold wait, then fade and rise once as they enter. Blocks
+  // already on screen are never hidden, and with reduced motion nothing waits.
+  const blocks = [...document.querySelectorAll<HTMLElement>('[data-reveal]')];
+  if (blocks.length > 0 && 'IntersectionObserver' in window && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    const seen = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          seen.unobserve(entry.target);
+          (entry.target as HTMLElement).dataset.reveal = 'in';
+        }
+      },
+      { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
+    );
+    const fold = innerHeight;
+    for (const block of blocks) {
+      if (block.getBoundingClientRect().top < fold) continue;
+      const peers = [...(block.parentElement?.children ?? [])].filter((el) => el.hasAttribute('data-reveal'));
+      block.style.setProperty('--sx-delay', `${Math.min(Math.max(peers.indexOf(block), 0), 5) * 60}ms`);
+      block.dataset.reveal = 'wait';
+      seen.observe(block);
+    }
+    addEventListener('beforeprint', () => blocks.forEach((block) => (block.dataset.reveal = 'in')));
+  }
+
+  // The cards' spotlight, after "Spotlight" by kevingirelli, with the single document-level
+  // listener of "Glow Card Grid" by ncdai (both 21st.dev): the light follows a mouse pointer.
+  if (matchMedia('(hover: hover)').matches) {
+    let frame = 0;
+    document.addEventListener(
+      'pointermove',
+      (event) => {
+        if (event.pointerType === 'touch') return;
+        const card = (event.target as Element | null)?.closest?.('.sx-card') as HTMLElement | null;
+        if (!card) return;
+        cancelAnimationFrame(frame);
+        frame = requestAnimationFrame(() => {
+          const box = card.getBoundingClientRect();
+          card.style.setProperty('--sx-spot-x', `${event.clientX - box.left}px`);
+          card.style.setProperty('--sx-spot-y', `${event.clientY - box.top}px`);
+        });
+      },
+      { passive: true },
+    );
+  }
+</script>

@@ -1,7 +1,9 @@
 ---
-// The landing's battery cards: one per test, each showing the step that defines it (the direct
-// route, the detour, the shortcut, the shared layout, the test pair). Rendered on the server; a
-// small script draws each route once when its card is seen.
+// The battery cards: one per test, each showing the step that defines it (the direct route, the
+// detour, the shortcut, the shared layout, the test pair), as a hairline card with the spotlight
+// hover. Rendered on the server; a small script draws each route once when its card is seen.
+// Used on the landing and on the Test battery docs page; the layout follows the width it is given.
+import '@/styles/docs-visuals.css';
 import '@/styles/battery.css';
 import { TestPicture } from '@/components/battery/Pictures.tsx';
 import { TESTS } from '@/lib/battery.ts';
@@ -13,31 +15,29 @@ const cards = TESTS.map((test) => {
 });
 ---
 
-<ol class="sx-test-cards not-content" data-sx-test-cards>
-  {
-    cards.map(({ test, index, caption, href }) => (
-      <li class="sx-test-card">
-        <svg class="sx-cross sx-cross--start" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-          <path d="M5 12h14M12 5v14" />
-        </svg>
-        <svg class="sx-cross sx-cross--end" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
-          <path d="M5 12h14M12 5v14" />
-        </svg>
-        <div class="sx-test-card__frame">
-          <TestPicture test={test} index={index} decorative idPrefix={`sx-teaser-${test.id.toLowerCase()}`} />
-        </div>
-        <h3 class="sx-test-card__name">
-          <a href={href}><span class="sx-test-card__id">{test.id}</span> {test.name}</a>
-        </h3>
-        <p class="sx-test-card__caption">{caption}</p>
-      </li>
-    ))
-  }
-</ol>
+<div class="sx-test-cards-wrap not-content">
+  <ol class="sx-test-cards" data-sx-test-cards>
+    {
+      cards.map(({ test, index, caption, href }) => (
+        <li class="sx-test-card sx-spot" data-spot>
+          <div class="sx-test-card__frame">
+            <TestPicture test={test} index={index} decorative idPrefix={`sx-teaser-${test.id.toLowerCase()}`} />
+          </div>
+          <h3 class="sx-test-card__name">
+            <a href={href}><span class="sx-test-card__id">{test.id}</span> {test.name}</a>
+          </h3>
+          <p class="sx-test-card__caption">{caption}</p>
+        </li>
+      ))
+    }
+  </ol>
+</div>
 
 <script>
-  const list = document.querySelector<HTMLElement>('[data-sx-test-cards]');
-  if (list && 'IntersectionObserver' in window && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+  import '@/components/docs/motion.ts';
+
+  for (const list of document.querySelectorAll<HTMLElement>('[data-sx-test-cards]')) {
+    if (!('IntersectionObserver' in window) || !matchMedia('(prefers-reduced-motion: no-preference)').matches) break;
     const cards = list.querySelectorAll<HTMLElement>('.sx-test-card');
     const seen = new IntersectionObserver(
       (entries) => {

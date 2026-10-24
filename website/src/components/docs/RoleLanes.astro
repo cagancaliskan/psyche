@@ -1,0 +1,61 @@
+---
+// The four roles a brick moves through, in the order the contributing guide gives them, as one
+// lane each: the architect-pm writes the spec, the builder implements it test-first, the tester
+// attacks it, and the validator runs the pre-registered experiment when a cognitive claim is
+// involved; the architect-pm then folds the result into the roadmap and the ledger.
+import Figure from './Figure.astro';
+
+const lanes = [
+  {
+    role: 'architect-pm',
+    act: 'Writes the spec',
+    detail: 'Turns direction into a sequenced spec with an external "done means". Changes documents only, never production code or tests.',
+  },
+  {
+    role: 'builder',
+    act: 'Implements it test-first',
+    detail: 'Self-audits against the bug checklist and submits a change only when the whole suite passes on every interpreter.',
+  },
+  {
+    role: 'tester',
+    act: 'Attacks it',
+    detail: 'Hostile, loop-closed suites written separately from the code they attack. Verifies mechanism, not meaning, and never modifies production code.',
+  },
+  {
+    role: 'validator',
+    act: 'Runs the pre-registered experiment, when a cognitive claim is involved',
+    detail: 'A falsifiable experiment against external data. Verifies meaning, not mechanism, and never patches the module under test.',
+    when: true,
+  },
+  {
+    role: 'architect-pm',
+    act: 'Folds the result into the roadmap and the ledger',
+    detail: null,
+  },
+];
+const pad = (n: number) => String(n).padStart(2, '0');
+---
+
+<Figure kicker="Roles" lead="Lanes do not cross; the separation is the evidence." beams class="sx-lanes-fig">
+  <ol class="sx-seq sx-lanes" style="--n: 1" aria-label="The order a brick moves through the roles">
+    {
+      lanes.map((l, i) => (
+        <li class="sx-seq__item">
+          <div class="sx-seq__track" aria-hidden="true">
+            <span class="sx-seq__mark">{pad(i + 1)}</span>
+            <span class="sx-rail" style={`--i: ${i}`}>
+              <span class="sx-rail__pulse" />
+            </span>
+          </div>
+          <div class="sx-seq__body">
+            <div class="sx-lane sx-spot" data-spot data-when={l.when ? '' : undefined}>
+              <span class="sx-kicker sx-lane__role">{l.role}</span>
+              <p class="sx-lane__act">{l.act}</p>
+              {l.detail && <p class="sx-lane__detail">{l.detail}</p>}
+            </div>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</Figure>

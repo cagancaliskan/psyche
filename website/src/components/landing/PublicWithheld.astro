@@ -1,5 +1,7 @@
 ---
-// Layout after "Us vs Them Comparison" by olewandowski1 (21st.dev).
+// What is public and what is withheld, side by side. Layout after "Us vs Them Comparison" by
+// olewandowski1; the divider's single travelling light after "Animated Beam" by dillionverma; cards
+// with the spotlight of "Spotlight" by kevingirelli (all 21st.dev).
 import { ArrowRight, Check, Lock } from 'lucide-react';
 import { withBase } from '@/lib/url.ts';
 import SectionHeader from './SectionHeader.astro';
@@ -20,51 +22,60 @@ const withheld = [
 ];
 ---
 
-<section class="sx-lp-section not-content" aria-labelledby="sx-public-title">
-  <SectionHeader id="sx-public-title" title="What is public, and what is not yet" />
-  <div class="grid gap-4 sm:grid-cols-2">
-    <div class="flex flex-col rounded-xl border border-sx-structure bg-card">
-      <div class="p-6 pb-5">
-        <h3 class="text-lg text-ink">Public now</h3>
-        <p class="mt-1 text-sm text-muted-foreground">On this site and in the open repository.</p>
+<section class="sx-lp-section sx-lp-band not-content" aria-labelledby="sx-public-title">
+  <SectionHeader id="sx-public-title" title="What is public, and what is not yet" index="05" kicker="Disclosure" />
+  <div class="sx-pw" data-reveal>
+    <div class="sx-card sx-pw__card sx-pw__card--public">
+      <div class="sx-pw__head">
+        <p class="sx-pw__kicker">
+          <span class="sx-pw__glyph sx-pw__glyph--check"><Check className="size-3" strokeWidth={3} aria-hidden="true" /></span>
+          <span>Open</span>
+        </p>
+        <h3>Public now</h3>
+        <p class="sx-pw__sub">On this site and in the open repository.</p>
       </div>
-      <ul class="sx-lp-plain flex flex-1 flex-col gap-3 border-t border-border p-6">
+      <ul class="sx-lp-plain sx-pw__list">
         {
           publicNow.map((text) => (
-            <li class="flex items-start gap-3">
-              <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded bg-sx-structure text-paper">
-                <Check className="size-3.5" strokeWidth={3} aria-hidden="true" />
+            <li>
+              <span class="sx-pw__glyph sx-pw__glyph--check">
+                <Check className="size-3" strokeWidth={3} aria-hidden="true" />
               </span>
-              <span class="text-[0.95rem] text-ink">{text}</span>
+              <span>{text}</span>
             </li>
           ))
         }
       </ul>
-      <p class="border-t border-border px-6 py-4 text-sm text-muted-foreground">
+      <p class="sx-pw__foot">
         The claims discipline sets what these pages may say.{' '}
-        <a class="sx-lp-a inline-flex items-center gap-1" href={withBase('research/claims-and-scope/')}>Read the claims and scope<ArrowRight className="size-3.5" aria-hidden="true" /></a>
+        <a class="sx-lp-link" href={withBase('research/claims-and-scope/')}>Read the claims and scope<ArrowRight className="sx-lp-link__icon" aria-hidden="true" /></a>
       </p>
     </div>
-    <div class="flex flex-col rounded-xl border border-dashed border-gray-4">
-      <div class="p-6 pb-5">
-        <h3 class="text-lg text-ink">Withheld until release</h3>
-        <p class="mt-1 text-sm text-muted-foreground">Kept private until a release moves it here.</p>
+    <div class="sx-pw__beam" aria-hidden="true"></div>
+    <div class="sx-card sx-pw__card sx-pw__card--withheld">
+      <div class="sx-pw__head">
+        <p class="sx-pw__kicker">
+          <span class="sx-pw__glyph sx-pw__glyph--lock"><Lock className="size-3" strokeWidth={2.5} aria-hidden="true" /></span>
+          <span>Private</span>
+        </p>
+        <h3>Withheld until release</h3>
+        <p class="sx-pw__sub">Kept private until a release moves it here.</p>
       </div>
-      <ul class="sx-lp-plain flex flex-1 flex-col gap-3 border-t border-dashed border-gray-4 p-6">
+      <ul class="sx-lp-plain sx-pw__list">
         {
           withheld.map((text) => (
-            <li class="flex items-start gap-3">
-              <span class="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded border border-border bg-muted text-muted-foreground">
+            <li>
+              <span class="sx-pw__glyph sx-pw__glyph--lock">
                 <Lock className="size-3" strokeWidth={2.5} aria-hidden="true" />
               </span>
-              <span class="text-[0.95rem] text-muted-foreground">{text}</span>
+              <span>{text}</span>
             </li>
           ))
         }
       </ul>
-      <p class="border-t border-dashed border-gray-4 px-6 py-4 text-sm text-muted-foreground">
+      <p class="sx-pw__foot">
         Releases follow a fixed rule: complete, working, older versions only.{' '}
-        <a class="sx-lp-a inline-flex items-center gap-1" href={withBase('research/disclosure-policy/')}>Read the disclosure policy<ArrowRight className="size-3.5" aria-hidden="true" /></a>
+        <a class="sx-lp-link" href={withBase('research/disclosure-policy/')}>Read the disclosure policy<ArrowRight className="sx-lp-link__icon" aria-hidden="true" /></a>
       </p>
     </div>
   </div>

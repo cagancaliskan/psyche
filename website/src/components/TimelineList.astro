@@ -1,7 +1,8 @@
 ---
 // The research roadmap as an ordered list: the narrow-screen form of the timeline. It shows only
-// where the timeline has too little width (see .sx-tll in plan.css).
-import { formatDay, phaseWhen, type Plan } from '../lib/plan.ts';
+// where the timeline has too little width (see .sx-tll in plan.css). The next gate is read from
+// the plan's own as_of date, so the HTML stays deterministic.
+import { formatDay, nextGate, phaseWhen, type Plan } from '../lib/plan.ts';
 import '../styles/plan.css';
 
 interface Props {
@@ -9,6 +10,7 @@ interface Props {
 }
 const { plan } = Astro.props;
 const gates = new Map(plan.gates.map((g) => [g.id, g]));
+const next = nextGate(plan, plan.as_of)?.id ?? null;
 const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 ---
 
@@ -28,7 +30,7 @@ const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
             </p>
             {g && (
               <p class="sx-tll__gate">
-                <span class="sx-diamond" aria-hidden="true" />
+                <span class="sx-diamond" data-next={g.id === next ? '' : undefined} aria-hidden="true" />
                 <span>Gate {g.id} ({g.title}): {g.date ? formatDay(g.date) : g.date_rule}</span>
               </p>
             )}

@@ -19,6 +19,8 @@ const paradigm = t1.paradigm.charAt(0).toLowerCase() + t1.paradigm.slice(1);
 ---
 
 <figure class="sx-lp-maze">
-  <GridPicture step={step} />
+  <div class="sx-lp-maze__frame">
+    <GridPicture step={step} />
+  </div>
   <figcaption>{t1.id}, {t1.name.toLowerCase()}, {paradigm}: explore without reward, then reach a goal introduced afterwards. An illustration, not a result.</figcaption>
 </figure>

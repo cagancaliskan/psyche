@@ -1,14 +1,15 @@
 ---
-// The landing hero: a full-width field of rooms behind the hero copy (the default slot). The rooms
-// on the left are a faded wing under the copy; the rooms on the right are the arena, where a
-// reward-free trail explores, a goal appears afterwards, and the direct route to it is drawn:
-// Tolman's latent learning, as an illustration. The field is static SVG built here; the server
-// markup is the final frame, so without script, or with reduced motion, the finished picture
-// shows. The inline script plays the sequence with the Web Animations API: each cycle fades the
-// last picture, draws the trail (0.4-7.4 s), shows the goal (7.8-8.3 s), draws the route
-// (8.6-10.2 s) and holds to 14 s. Cycle one skips the fade and cycle three ends on the final
-// frame. It pauses while the field is less than 15% visible or the tab is hidden, and the Pause
-// toggle (aria-pressed) stops it; after the last cycle the toggle reads pressed and replays.
+// The landing hero: a full-width field of rooms behind the hero copy (the default slot), drawn as
+// thin linework on a faint coordinate lattice. The rooms on the left are a faded wing under the
+// copy; the rooms on the right are the arena, where a reward-free trail explores, a goal appears
+// afterwards, and the direct route to it is drawn: Tolman's latent learning, as an illustration.
+// The field is static SVG built here; the server markup is the final frame, so without script, or
+// with reduced motion, the finished picture shows. The inline script plays the sequence with the
+// Web Animations API: each cycle fades the last picture, draws the trail (0.4-7.4 s), shows the
+// goal (7.8-8.3 s), draws the route (8.6-10.2 s) and holds to 14 s. Cycle one skips the fade and
+// cycle three ends on the final frame. It pauses while the field is less than 15% visible or the
+// tab is hidden, and the Pause toggle (aria-pressed) stops it; after the last cycle the toggle
+// reads pressed and replays.
 import '../styles/hero.css';
 import {
   FIELD_GOAL,
@@ -22,7 +23,7 @@ import {
   persistentWalk,
   roomField,
   shortestPath,
-  wallPath,
+  wallLines,
 } from '../lib/maze.ts';
 
 const field = roomField(FIELD_SPEC, FIELD_SEED);
@@ -32,8 +33,30 @@ const trail = persistentWalk(arena, FIELD_START, FIELD_STEPS, FIELD_SEED);
 const route = shortestPath(arena, FIELD_START, FIELD_GOAL);
 if (!route) throw new Error('hero goal unreachable');
 const { rows, cols } = field;
+// The arena's west wall is its first column of lines; the wing's lines stop one column before it.
+const west = from - 1;
+const pitch = FIELD_SPEC.size + 1;
+
+// The coordinate lattice: a line through every second cell centre, so each wall lies on one.
+let lattice = '';
+for (let r = 0; r < rows; r += 2) lattice += `M0 ${r + 0.5}h${cols}`;
+for (let c = 0; c < cols; c += 2) lattice += `M${c + 0.5} 0v${rows}`;
+
+// A dot where the arena's walls meet (each room corner).
+let joints = '';
+for (let r = 0; r < rows; r += pitch) for (let c = west; c < cols; c += pitch) joints += `M${c + 0.5} ${r + 0.5}h0`;
+
+// Coordinate labels along the arena's top wall and the field's east wall, as percentages of the
+// drawing, so the type stays a fixed size whatever the drawing's scale.
+const pct = (v: number, of: number) => `${((v + 0.5) / of) * 100}%`;
+const pad = (n: number) => String(n).padStart(2, '0');
+const xTicks: number[] = [];
+for (let c = west; c < cols; c += pitch) xTicks.push(c);
+const yTicks: number[] = [];
+for (let r = pitch; r < rows - 1; r += pitch) yTicks.push(r);
+
 // The arena band on narrow screens starts at the arena's west wall.
-const vars = `--field-cols:${cols};--field-rows:${rows};--arena-cols:${cols - from + 1}`;
+const vars = `--field-cols:${cols};--field-rows:${rows};--arena-cols:${cols - west}`;
 ---
 
 <section class="sx-mazehero sx-landing not-content" style={vars}>
@@ -42,30 +65,59 @@ const vars = `--field-cols:${cols};--field-rows:${rows};--arena-cols:${cols - fr
       <slot />
     </div>
     <div class="sx-mazehero__field">
-      <svg
-        class="field"
-        viewBox={`0 0 ${cols} ${rows}`}
-        preserveAspectRatio="xMinYMid slice"
-        aria-hidden="true"
-        focusable="false"
-      >
-        <defs>
-          <linearGradient id="sx-mazehero-fade" x1="0" y1="0" x2={from} y2="0" gradientUnits="userSpaceOnUse">
-            <stop offset="0" stop-color="#fff" stop-opacity="0.12"></stop>
-            <stop offset="0.72" stop-color="#fff" stop-opacity="0.3"></stop>
-            <stop offset="1" stop-color="#fff"></stop>
-          </linearGradient>
-          <mask id="sx-mazehero-wing" maskUnits="userSpaceOnUse" x="0" y="0" width={from} height={rows}>
-            <rect width={from} height={rows} fill="url(#sx-mazehero-fade)"></rect>
-          </mask>
-        </defs>
-        <path class="wing" d={wallPath(field, 0, from)} mask="url(#sx-mazehero-wing)"></path>
-        <path class="walls" d={wallPath(field, from)}></path>
-        <path class="trail" d={cellPath(trail)} pathLength="1"></path>
-        <circle class="start" cx={FIELD_START[1] + 0.5} cy={FIELD_START[0] + 0.5} r="0.36"></circle>
-        <circle class="goal" cx={FIELD_GOAL[1] + 0.5} cy={FIELD_GOAL[0] + 0.5} r="0.42"></circle>
-        <path class="route" d={cellPath(route)} pathLength="1"></path>
-      </svg>
+      <div class="sx-mazehero__plot">
+        <svg
+          class="field"
+          viewBox={`0 0 ${cols} ${rows}`}
+          preserveAspectRatio="xMinYMid slice"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <defs>
+            <linearGradient id="sx-mazehero-fade" x1="0" y1="0" x2={west} y2="0" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#fff" stop-opacity="0.1"></stop>
+              <stop offset="0.7" stop-color="#fff" stop-opacity="0.32"></stop>
+              <stop offset="1" stop-color="#fff"></stop>
+            </linearGradient>
+            <mask id="sx-mazehero-wing" maskUnits="userSpaceOnUse" x="0" y="0" width={west + 1} height={rows}>
+              <rect width={west + 1} height={rows} fill="url(#sx-mazehero-fade)"></rect>
+            </mask>
+          </defs>
+          <path class="lattice" d={lattice}></path>
+          <path class="wing" d={wallLines(field, 0, west)} mask="url(#sx-mazehero-wing)"></path>
+          <path class="walls walls--halo" d={wallLines(field, west)}></path>
+          <path class="walls" d={wallLines(field, west)}></path>
+          <path class="joints" d={joints}></path>
+          <path class="trail" d={cellPath(trail)} pathLength="1"></path>
+          <circle class="start" cx={FIELD_START[1] + 0.5} cy={FIELD_START[0] + 0.5} r="0.36"></circle>
+          <circle class="goal goal--halo" cx={FIELD_GOAL[1] + 0.5} cy={FIELD_GOAL[0] + 0.5} r="0.95"></circle>
+          <circle class="goal" cx={FIELD_GOAL[1] + 0.5} cy={FIELD_GOAL[0] + 0.5} r="0.4"></circle>
+          <path class="route route--wide" d={cellPath(route)} pathLength="1"></path>
+          <path class="route route--halo" d={cellPath(route)} pathLength="1"></path>
+          <path class="route" d={cellPath(route)} pathLength="1"></path>
+        </svg>
+        <svg class="ticks" aria-hidden="true" focusable="false">
+          {
+            xTicks.map((c, i) => (
+              <text
+                x={pct(c, cols)}
+                y={pct(0, rows)}
+                dx={i === xTicks.length - 1 ? '-0.6em' : '0.6em'}
+                text-anchor={i === xTicks.length - 1 ? 'end' : 'start'}
+              >
+                {pad(c)}
+              </text>
+            ))
+          }
+          {
+            yTicks.map((r) => (
+              <text x={pct(cols - 1, cols)} y={pct(r, rows)} dx="-0.6em" text-anchor="end">
+                {pad(r)}
+              </text>
+            ))
+          }
+        </svg>
+      </div>
     </div>
     <div class="sx-mazehero__meta">
       <p class="sx-mazehero__caption">
@@ -89,7 +141,6 @@ const vars = `--field-cols:${cols};--field-rows:${rows};--arena-cols:${cols - fr
       const b = s.querySelector('.sx-mazehero__pause');
       const m = matchMedia('(prefers-reduced-motion: reduce)');
       if (m.matches || !s.animate) return;
-      const q = (c) => s.querySelector('.field .' + c);
       const T = 14, f = 0.35 / T, S = 0.4 / T;
       const k = (p, off, on, a, z, e) => [
         { offset: 0, opacity: 1, [p]: on },
@@ -101,16 +152,16 @@ const vars = `--field-cols:${cols};--field-rows:${rows};--arena-cols:${cols - fr
         { offset: 1, opacity: 1, [p]: on },
       ];
       const o = { duration: T * 1e3, iterations: 3 - S, iterationStart: S, fill: 'forwards' };
-      const A = [
-        q('trail').animate(k('strokeDashoffset', 1, 0, 0.4, 7.4, 'cubic-bezier(.35,0,.45,1)'), o),
-        q('goal').animate(k('transform', 'scale(0)', 'scale(1)', 7.8, 8.3, 'cubic-bezier(.3,1.5,.6,1)'), o),
-        q('route').animate(k('strokeDashoffset', 1, 0, 8.6, 10.2, 'ease-in-out'), o),
-      ];
+      const A = [];
+      const run = (c, ...a) => s.querySelectorAll('.field .' + c).forEach((n) => A.push(n.animate(k(...a), o)));
+      run('trail', 'strokeDashoffset', 1, 0, 0.4, 7.4, 'cubic-bezier(.35,0,.45,1)');
+      run('goal', 'transform', 'scale(0)', 'scale(1)', 7.8, 8.3, 'cubic-bezier(.3,1.5,.6,1)');
+      run('route', 'strokeDashoffset', 1, 0, 8.6, 10.2, 'ease-in-out');
       let paused = false, seen = true, done = false;
       const sync = () => {
         if (done) return;
-        const run = !paused && seen && !document.hidden;
-        A.forEach((x) => (run ? x.play() : x.pause()));
+        const go = !paused && seen && !document.hidden;
+        A.forEach((x) => (go ? x.play() : x.pause()));
       };
       const end = () => {
         done = paused = true;

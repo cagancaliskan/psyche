@@ -1,0 +1,98 @@
+---
+// The substrate's five layers as the substrate pages number them, from the graph store at the
+// bottom to the workspace and its bounded broadcast at the top, each with its module and the
+// assurance the pages give it. Static: the plates are drawn once on the server.
+import Figure from './Figure.astro';
+
+const layers = [
+  {
+    name: 'Graph store',
+    module: 'psyche_store.py',
+    text: 'Concept nodes and weighted roads. The only component that mutates.',
+    tier: 'proven',
+  },
+  {
+    name: 'Spreading activation',
+    module: 'psyche_activation.py',
+    text: 'Deterministic, records per-edge flow, and is a pure read.',
+    tier: 'proven',
+  },
+  {
+    name: 'Multi-source field',
+    module: 'psyche_field.py',
+    text: 'Assigns each node to the source that activates it most.',
+    tier: 'mechanism',
+  },
+  {
+    name: 'Source clustering',
+    module: 'psyche_source_clustering.py',
+    text: 'Groups nearby perceived sources before the field is built.',
+    tier: 'mechanism',
+  },
+  {
+    name: 'Workspace and bounded broadcast',
+    module: 'psyche_workspace.py',
+    text: 'One competition among coalitions, pruning, and a single bounded broadcast back onto the store.',
+    tier: 'mechanism',
+  },
+];
+const tierLabel = { proven: 'Proven', mechanism: 'Tester-verified mechanism' } as const;
+
+// One isometric plate on a 176 by 70 grid: the top face, two side faces, a 3 by 3 tile grid on the
+// top face, and dashed construction lines from its outer corners down to the plate below.
+const L = [6, 32];
+const A = [82, -26];
+const B = [82, 26];
+const DEPTH = 6;
+const at = (u: number, v: number) => [L[0] + u * A[0] + v * B[0], L[1] + u * A[1] + v * B[1]];
+const pts = (list: number[][]) => list.map(([x, y]) => `${x},${y}`).join(' ');
+const top = pts([at(0, 0), at(1, 0), at(1, 1), at(0, 1)]);
+const down = ([x, y]: number[]) => [x, y + DEPTH];
+const sideLeft = pts([at(0, 0), at(0, 1), down(at(0, 1)), down(at(0, 0))]);
+const sideRight = pts([at(0, 1), at(1, 1), down(at(1, 1)), down(at(0, 1))]);
+const grid = [1 / 3, 2 / 3]
+  .flatMap((t) => [
+    [at(t, 0), at(t, 1)],
+    [at(0, t), at(1, t)],
+  ])
+  .map(([p, q]) => `M${p[0]} ${p[1]}L${q[0]} ${q[1]}`)
+  .join('');
+const guides = [at(0, 0), at(1, 1)]
+  .map((p) => down(p))
+  .map(([x, y]) => `M${x} ${y}V${y + 64}`)
+  .join('');
+---
+
+<Figure
+  kicker="Layer stack"
+  lead="Each layer reads the one below it through its public surface only. The whole substrate is pure-Python standard library."
+>
+  <ol class="sx-stack" aria-label="Substrate layers, from the bottom up">
+    {
+      layers.map((l, i) => (
+        <li class="sx-stack__layer" data-tier={l.tier}>
+          <div class="sx-stack__plate" aria-hidden="true">
+            <svg viewBox="0 0 176 70" focusable="false">
+              {i > 0 && <path class="sx-plate__guide" d={guides} />}
+              <polygon class="sx-plate__side" points={sideLeft} />
+              <polygon class="sx-plate__side" points={sideRight} />
+              <polygon class="sx-plate__top" points={top} />
+              <path class="sx-plate__grid" d={grid} />
+            </svg>
+          </div>
+          <div class="sx-stack__body">
+            <p class="sx-stack__name">
+              <span>{l.name}</span> <code class="sx-stack__module">{l.module}</code>
+            </p>
+            <p class="sx-stack__text">{l.text}</p>
+            <span class="sx-stack__tier">{tierLabel[l.tier as keyof typeof tierLabel]}</span>
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+  <p class="sx-stack__loop">
+    <span class="sx-kicker">Loop</span>
+    <span>The single bounded broadcast writes back onto the store and biases the next cycle, so the cycle closes end to end. This is a mechanism result, with no cognitive claim.</span>
+  </p>
+</Figure>

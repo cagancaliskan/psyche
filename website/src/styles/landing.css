@@ -1,101 +1,68 @@
 /*
- * The landing page (src/pages/index.astro and src/components/landing/). Site tokens only, so light
- * and dark switch through the variables. The layer statement repeats global.css's order, so the
- * order holds whichever stylesheet the browser reads first.
+ * The landing page below the hero (src/pages/index.astro and src/components/landing/). Site tokens
+ * only, so light and dark switch through the variables. The layer statement repeats global.css's
+ * order, so the order holds whichever stylesheet the browser reads first. Catalog sources
+ * (21st.dev), rewritten in plain CSS: the band texture after "Animated Grid" by rmahammad, without
+ * its drift; the card light after "Spotlight" by kevingirelli; the reveals after "Reveal" by
+ * asanshay; the kicker after "Tagline" by shadcncraft.
  */
 @layer base, starlight, theme, components, utilities;
 
 @layer components {
-  /* Hero copy, placed by MazeHero in its text column. */
-  .sx-lp-title {
-    margin: 0;
-    font-family: var(--sx-font-display);
-    font-size: clamp(2.75rem, 1.7rem + 4.4vw, 4.6rem);
-    line-height: 1;
-    color: var(--sl-color-white);
-  }
-  .sx-lp-aim {
-    max-width: 28rem;
-    margin: 1rem 0 0;
-    font-family: var(--sx-font-display);
-    font-size: clamp(1.25rem, 1.05rem + 0.8vw, 1.6rem);
-    line-height: 1.3;
-    color: var(--sl-color-gray-1);
-    text-wrap: balance;
-  }
-  .sx-lp-lead {
-    max-width: 28rem;
-    margin: 1rem 0 0;
-    font-size: 1.1rem;
-    line-height: 1.6;
-    color: var(--sl-color-gray-2);
-    text-wrap: pretty;
-  }
-  .sx-lp-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    margin-top: 1.75rem;
-  }
-  .sx-lp-btn {
-    display: inline-flex;
-    align-items: center;
-    padding: 0.6rem 0.9rem;
-    border: 1px solid transparent;
-    border-radius: 0.5rem;
-    font-size: 0.9375rem;
-    font-weight: 700;
-    line-height: 1.3;
-    text-decoration: none;
-  }
-  .sx-lp-btn--primary {
-    background: var(--sl-color-white);
-    color: var(--sl-color-black);
-  }
-  .sx-lp-btn--primary:hover {
-    background: var(--sl-color-gray-2);
-    color: var(--sl-color-black);
-  }
-  .sx-lp-btn--quiet {
-    border-color: var(--sl-color-gray-4);
-    background: color-mix(in srgb, var(--sl-color-black) 75%, transparent);
-    color: var(--sl-color-white);
-  }
-  .sx-lp-btn--quiet:hover {
-    border-color: var(--sx-agent);
-    color: var(--sl-color-white);
-  }
+  /* ---------- Rhythm: sections, kicker, heading, one paragraph ---------- */
 
   .sx-lp-now {
     margin-top: 0.5rem;
   }
-
-  /* Sections and their headings. */
   .sx-lp-section {
-    margin-top: clamp(3.5rem, 2rem + 5vw, 5.5rem);
+    margin-top: clamp(4rem, 1.5rem + 6vw, 7.5rem);
   }
   .sx-lp-head {
     max-width: 46rem;
-    margin-bottom: 1.75rem;
+    margin-bottom: clamp(1.75rem, 1.2rem + 1.5vw, 2.5rem);
+  }
+  .sx-lp-kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    margin: 0 0 1.1rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+  .sx-lp-kicker__index {
+    color: var(--sx-structure);
+    font-variant-numeric: tabular-nums;
+  }
+  .sx-lp-kicker__rule {
+    display: block;
+    width: 2rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--sx-structure), transparent);
   }
   .sx-lp-head h2 {
     margin: 0;
-    font-size: clamp(1.65rem, 1.3rem + 1.3vw, 2.25rem);
-    line-height: 1.15;
+    font-size: clamp(1.6rem, 1.1rem + 1.8vw, 2.5rem);
+    line-height: 1.1;
     color: var(--sl-color-white);
     text-wrap: balance;
   }
   .sx-lp-head p {
     max-width: 62ch;
-    margin: 0.75rem 0 0;
-    font-size: 1.05rem;
+    margin: 1rem 0 0;
+    font-size: 1.0625rem;
     line-height: 1.6;
-    color: var(--sl-color-gray-2);
+    color: var(--sx-muted);
     text-wrap: pretty;
   }
   .sx-lp-more {
-    margin: 1.25rem 0 0;
-    color: var(--sl-color-gray-2);
+    margin: 1.5rem 0 0;
+    font-size: 0.9375rem;
+    color: var(--sx-muted);
   }
   .sx-lp-plain {
     list-style: none;
@@ -106,63 +73,193 @@
     margin: 0;
   }
 
-  /* Links in landing copy: underlined in the structure colour, the agent colour on hover. */
-  .sx-lp-a {
+  /* Links in landing copy: a hairline underline that turns to the signal colour on hover. */
+  .sx-lp-a,
+  .sx-lp-link {
     color: var(--sl-color-white);
-    font-weight: 700;
+    font-weight: 550;
     text-decoration: underline;
-    text-decoration-color: var(--sx-structure);
+    text-decoration-color: color-mix(in oklab, var(--sx-structure) 60%, transparent);
     text-decoration-thickness: 1px;
-    text-underline-offset: 0.22em;
+    text-underline-offset: 0.25em;
+    transition:
+      color 180ms var(--sx-ease),
+      text-decoration-color 180ms var(--sx-ease);
   }
-  .sx-lp-a:hover {
-    color: var(--sx-agent);
+  .sx-lp-a:hover,
+  .sx-lp-link:hover {
+    color: var(--sl-color-white);
     text-decoration-color: var(--sx-agent);
   }
+  .sx-lp-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.9375rem;
+  }
+  .sx-lp-link__icon {
+    width: 0.95rem;
+    height: 0.95rem;
+    flex-shrink: 0;
+    color: var(--sx-muted);
+    transition:
+      color 180ms var(--sx-ease),
+      transform 180ms var(--sx-ease);
+  }
+  .sx-lp-link:hover .sx-lp-link__icon {
+    color: var(--sx-agent);
+    transform: translate(2px, -1px);
+  }
 
-  /* One project, in stages: a numbered block per stage with a rail beside its text and a figure
-     beside it. The rail fills as the block scrolls into view; without scroll-driven animation
-     support, or with reduced motion, it is drawn full. */
+  /* ---------- Bands: a faint coordinate grid behind alternate sections ---------- */
+
+  .sx-lp-band {
+    position: relative;
+    isolation: isolate;
+  }
+  .sx-lp-band::before {
+    content: '';
+    position: absolute;
+    z-index: -1;
+    inset-block: -4.5rem;
+    left: 50%;
+    width: 100vw;
+    translate: -50% 0;
+    background-image:
+      linear-gradient(to right, color-mix(in oklab, var(--sx-structure) 15%, transparent) 1px, transparent 1px),
+      linear-gradient(to bottom, color-mix(in oklab, var(--sx-structure) 15%, transparent) 1px, transparent 1px),
+      linear-gradient(to right, var(--sx-grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--sx-grid) 1px, transparent 1px);
+    background-size:
+      192px 192px,
+      192px 192px,
+      48px 48px,
+      48px 48px;
+    mask-image: radial-gradient(ellipse 68% 62% at 50% 42%, #000 18%, transparent 78%);
+    pointer-events: none;
+  }
+
+  /* ---------- Scroll reveals (the script in index.astro sets data-reveal) ---------- */
+
+  [data-reveal] {
+    transition:
+      opacity 800ms var(--sx-ease) var(--sx-delay, 0ms),
+      transform 800ms var(--sx-ease) var(--sx-delay, 0ms);
+  }
+  [data-reveal='wait'] {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  /* ---------- Cards: hairline surface with a pointer-following light ---------- */
+
+  .sx-card {
+    position: relative;
+    isolation: isolate;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 14px;
+    background: var(--sx-surface);
+    box-shadow: inset 0 1px 0 color-mix(in oklab, white 4%, transparent);
+    transition:
+      border-color 180ms var(--sx-ease),
+      opacity 800ms var(--sx-ease) var(--sx-delay, 0ms),
+      transform 800ms var(--sx-ease) var(--sx-delay, 0ms);
+  }
+  .sx-card::before,
+  .sx-card::after {
+    content: '';
+    position: absolute;
+    border-radius: inherit;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 180ms var(--sx-ease);
+  }
+  .sx-card::before {
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(
+      22rem circle at var(--sx-spot-x, 50%) var(--sx-spot-y, 0%),
+      color-mix(in oklab, var(--sx-agent) 7%, transparent),
+      transparent 70%
+    );
+  }
+  /* The lit stretch of edge nearest the pointer: a 1px ring cut out with two masks. */
+  .sx-card::after {
+    inset: -1px;
+    padding: 1px;
+    background: radial-gradient(
+      14rem circle at var(--sx-spot-x, 50%) var(--sx-spot-y, 0%),
+      color-mix(in oklab, var(--sx-agent) 50%, transparent),
+      transparent 65%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+  }
+  .sx-card:is(:hover, :focus-within) {
+    border-color: color-mix(in oklab, var(--sx-hairline) 70%, var(--sx-agent));
+  }
+  .sx-card:is(:hover, :focus-within)::before,
+  .sx-card:is(:hover, :focus-within)::after {
+    opacity: 1;
+  }
+
+  /* ---------- 01 Stages ---------- */
+
   .sx-reveal {
     display: grid;
-    gap: clamp(2.5rem, 1.5rem + 3vw, 4rem);
+    gap: clamp(3rem, 1.75rem + 3.5vw, 5rem);
     list-style: none;
     margin: 0;
     padding: 0;
   }
-  /* global.css caps every list item in the content column at 72ch, unlayered. */
+  /* Content list items may carry a reading measure from outside any layer; these lay out their own. */
   .sx-reveal > .sx-reveal__item {
     max-width: none !important;
   }
   .sx-reveal__item {
+    --sx-stage: var(--sx-structure);
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 1.5rem 3rem;
+    gap: 1.75rem 3.5rem;
     margin: 0;
     view-timeline-name: --sx-stage;
   }
+  .sx-reveal__item[data-state='active'] {
+    --sx-stage: var(--sx-agent);
+  }
+  .sx-reveal__item[data-state='later'] {
+    --sx-stage: var(--sx-muted);
+  }
   @media (min-width: 64rem) {
     .sx-reveal__item {
-      grid-template-columns: minmax(0, 1fr) minmax(0, 21rem);
+      grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
       align-items: center;
     }
   }
   .sx-reveal__number {
-    display: flex;
-    justify-content: center;
-    width: 2.5rem;
-    margin: 0 0 0.5rem;
+    margin: 0 0 1rem;
     font-family: var(--sx-font-display);
-    font-size: 1.6rem;
+    font-size: clamp(2.25rem, 1.8rem + 1.6vw, 3.25rem);
+    font-weight: 300;
     line-height: 1;
+    letter-spacing: -0.03em;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
-    color: var(--sx-muted);
+    color: var(--sx-stage);
+  }
+  .sx-reveal__item[data-state='paused'] .sx-reveal__number {
+    color: color-mix(in oklab, var(--sx-structure) 80%, var(--sl-color-white));
   }
   .sx-reveal__row {
     display: grid;
-    grid-template-columns: 2.5rem minmax(0, 1fr);
-    gap: 0 1rem;
+    grid-template-columns: 0.5rem minmax(0, 1fr);
+    gap: 0 1.5rem;
   }
   .sx-reveal__rail {
     position: relative;
@@ -170,29 +267,40 @@
   .sx-reveal__rail::before,
   .sx-reveal__fill {
     position: absolute;
-    inset-block: 0;
-    inset-inline-start: calc(50% - 1px);
-    width: 2px;
-    border-radius: 1px;
+    inset-block: 0.35rem 0;
+    inset-inline-start: calc(50% - 0.5px);
+    width: 1px;
   }
   .sx-reveal__rail::before {
     content: '';
     background: var(--sx-hairline);
   }
   .sx-reveal__fill {
-    background: var(--sx-structure);
+    background: linear-gradient(var(--sx-stage), color-mix(in oklab, var(--sx-stage) 15%, transparent));
     transform-origin: top;
   }
-  .sx-reveal__item[data-state='active'] .sx-reveal__fill {
-    background: var(--sx-agent);
+  /* The rail's head: a dot in the stage's colour. */
+  .sx-reveal__rail::after {
+    content: '';
+    position: absolute;
+    top: 0.1rem;
+    inset-inline-start: calc(50% - 3.5px);
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--sx-stage);
   }
-  .sx-reveal__item[data-state='active'] .sx-reveal__number {
-    color: var(--sx-agent);
+  .sx-reveal__item[data-state='active'] .sx-reveal__rail::after {
+    box-shadow: var(--sx-glow);
   }
   .sx-reveal__item[data-state='later'] .sx-reveal__rail::before {
     width: 0;
     background: none;
-    border-inline-start: 2px dashed var(--sl-color-gray-4);
+    border-inline-start: 1px dashed var(--sl-color-gray-4);
+  }
+  .sx-reveal__item[data-state='later'] .sx-reveal__rail::after {
+    background: none;
+    border: 1px dashed var(--sl-color-gray-4);
   }
   .sx-reveal__item[data-state='later'] .sx-reveal__fill {
     display: none;
@@ -201,78 +309,163 @@
     min-width: 0;
     padding-bottom: 0.25rem;
   }
-  .sx-reveal__body h3 {
-    margin: 0;
-    font-size: clamp(1.3rem, 1.15rem + 0.5vw, 1.55rem);
-    line-height: 1.2;
-    color: var(--sl-color-white);
-  }
-  .sx-reveal__body > p {
-    max-width: 60ch;
-    margin: 0.75rem 0 0;
-    line-height: 1.65;
-  }
   .sx-reveal__body > p.sx-reveal__meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.35rem 0.75rem;
-    margin-top: 0.5rem;
-    font-size: 0.875rem;
+    gap: 0.5rem 0.85rem;
+    margin: 0;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    line-height: 1.4;
+    text-transform: uppercase;
     color: var(--sx-muted);
   }
   .sx-reveal__badge {
-    padding: 0.1rem 0.6rem;
-    border: 1px solid var(--sx-structure);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.3rem 0.7rem 0.3rem 0.6rem;
+    border: 1px solid color-mix(in oklab, var(--sx-stage) 50%, transparent);
     border-radius: 999px;
-    font-size: 0.8125rem;
-    font-weight: 700;
-    line-height: 1.5;
+    background: color-mix(in oklab, var(--sx-stage) 8%, transparent);
     color: var(--sl-color-white);
+    font-weight: 500;
   }
-  /* The active stage is "now": filled with the agent colour, text in the page background colour. */
-  .sx-reveal__item[data-state='active'] .sx-reveal__badge {
-    border-color: var(--sx-agent);
-    background: var(--sx-agent);
-    color: var(--sl-color-black);
+  .sx-reveal__badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--sx-stage);
   }
   .sx-reveal__item[data-state='later'] .sx-reveal__badge {
     border-style: dashed;
+    border-color: var(--sl-color-gray-4);
+    background: none;
     color: var(--sx-muted);
+  }
+  .sx-reveal__item[data-state='later'] .sx-reveal__badge::before {
+    background: none;
+    border: 1px dashed var(--sl-color-gray-4);
+  }
+  .sx-reveal__body h3 {
+    margin: 0.85rem 0 0;
+    font-size: clamp(1.25rem, 1.1rem + 0.5vw, 1.5rem);
+    line-height: 1.25;
+    color: var(--sl-color-white);
+    text-wrap: balance;
+  }
+  .sx-reveal__body > p.sx-reveal__lead {
+    max-width: 60ch;
+    margin: 0.75rem 0 0;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--sl-color-gray-2);
+    text-wrap: pretty;
+  }
+  .sx-reveal__body > p.sx-reveal__note {
+    max-width: 60ch;
+    margin: 0.5rem 0 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--sx-muted);
+    text-wrap: pretty;
   }
   .sx-reveal__links {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.35rem 1.25rem;
+    gap: 0.5rem 1.5rem;
     list-style: none;
-    margin: 0.9rem 0 0;
+    margin: 1.1rem 0 0;
     padding: 0;
   }
   .sx-reveal__links > li {
     margin: 0;
   }
+
+  /* The figure card beside each stage. */
   .sx-reveal__figure {
-    width: 100%;
-    max-width: 21rem;
-    padding-inline-start: 3.5rem;
+    box-sizing: border-box;
+    width: auto;
+    max-width: 22rem;
+    margin-inline-start: 2rem;
+    padding: 1rem 1.1rem 1.1rem;
   }
   @media (max-width: 30rem) {
     .sx-reveal__figure {
-      padding-inline-start: 0;
+      margin-inline-start: 0;
     }
   }
   @media (min-width: 64rem) {
     .sx-reveal__figure {
+      width: 100%;
+      margin-inline-start: 0;
       justify-self: end;
-      padding-inline-start: 0;
     }
   }
+  .sx-reveal__item[data-state='later'] .sx-reveal__figure {
+    border-style: dashed;
+    border-color: var(--sl-color-gray-5);
+    background: transparent;
+  }
+  .sx-fig-label {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    margin: 0 0 0.9rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+  .sx-fig-label > span:first-child {
+    color: var(--sx-stage);
+  }
   .sx-reveal__empty {
+    display: grid;
+    place-items: center;
     aspect-ratio: 9 / 7;
-    border: 2px dashed var(--sl-color-gray-4);
-    border-radius: 0.75rem;
+    border-radius: 10px;
+    background-image:
+      linear-gradient(to right, var(--sx-grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--sx-grid) 1px, transparent 1px);
+    background-size: 16px 16px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+  .sx-reveal__empty > span {
+    padding: 0.3rem 0.7rem;
+    border: 1px dashed var(--sl-color-gray-4);
+    border-radius: 999px;
+    background: var(--sl-color-black);
   }
 
+  /* The active stage's dot is the page's one "now": it pulses twice, then rests. */
+  @media (prefers-reduced-motion: no-preference) {
+    .sx-reveal__item[data-state='active'] .sx-reveal__text:not([data-reveal='wait']) .sx-reveal__badge::before {
+      animation: sx-now-pulse 1800ms var(--sx-ease) 600ms 2;
+    }
+  }
+  @keyframes sx-now-pulse {
+    0% {
+      box-shadow: 0 0 0 0 color-mix(in oklab, var(--sx-agent) 60%, transparent);
+    }
+    80%,
+    100% {
+      box-shadow: 0 0 0 7px transparent;
+    }
+  }
+
+  /* The rail fills as the block scrolls into view; without scroll-driven animation support, or
+     with reduced motion, it is drawn full. */
   @supports (animation-timeline: view()) {
     @media (prefers-reduced-motion: no-preference) {
       .sx-reveal__fill {
@@ -311,17 +504,18 @@
     }
   }
 
-  /* Stage 1 figure: CPython versions by hash seeds, every cell ticked. */
+  /* Stage 1 figure: CPython versions by hash seeds, a grid of lit cells. */
   .sx-matrix {
     margin: 0;
   }
   .sx-matrix table {
     display: table;
     width: auto;
-    margin: 0 -0.3rem;
+    margin: 0 -0.25rem;
     border-collapse: separate;
-    border-spacing: 0.3rem;
-    font-size: 0.8125rem;
+    border-spacing: 0.25rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
     font-variant-numeric: tabular-nums;
   }
   .sx-matrix :is(th, td) {
@@ -332,21 +526,41 @@
     vertical-align: middle;
   }
   .sx-matrix th {
-    font-weight: 700;
+    font-weight: 500;
     color: var(--sx-muted);
+  }
+  .sx-matrix thead th[colspan] {
+    padding-bottom: 0.15rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
   }
   .sx-matrix tbody th,
   .sx-matrix thead tr + tr th:first-child {
-    padding-inline-end: 0.4rem;
+    padding-inline-end: 0.5rem;
     text-align: end;
   }
+  .sx-matrix thead tr + tr th:first-child {
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
   .sx-matrix tbody td {
-    width: 2rem;
-    height: 2rem;
-    border: 1px solid color-mix(in srgb, var(--sx-structure) 50%, transparent);
-    border-radius: 0.35rem;
-    background: color-mix(in srgb, var(--sx-structure) 14%, transparent);
+    width: 1.9rem;
+    height: 1.9rem;
+    border: 1px solid color-mix(in oklab, var(--sx-structure) 45%, transparent);
+    border-radius: 8px;
+    background: color-mix(in oklab, var(--sx-structure) 13%, var(--sx-surface));
+    box-shadow:
+      0 0 14px -5px color-mix(in oklab, var(--sx-structure) 75%, transparent),
+      inset 0 1px 0 color-mix(in oklab, white 6%, transparent);
     color: var(--sx-structure);
+    transition:
+      opacity 700ms var(--sx-ease) 250ms,
+      box-shadow 900ms var(--sx-ease) 250ms;
+  }
+  /* All cells light together when the card arrives; nothing travels across the grid. */
+  [data-reveal='wait'] .sx-matrix tbody td {
+    opacity: 0.25;
+    box-shadow: none;
   }
   .sx-matrix__tick {
     display: inline-block;
@@ -354,19 +568,462 @@
   }
   .sx-matrix figcaption,
   .sx-lp-maze figcaption {
-    margin-top: 0.75rem;
+    margin-top: 0.9rem;
     font-size: 0.8125rem;
     line-height: 1.5;
     color: var(--sx-muted);
   }
 
-  /* Stage 2 figure: the battery's T1 picture (styled by battery.css). */
+  /* Stage 2 figure: the battery's T1 picture (drawn by battery.css) in an inset frame. */
   .sx-lp-maze {
     margin: 0;
   }
-  .sx-lp-maze .sx-pic {
-    height: auto;
+  .sx-lp-maze__frame {
     overflow: hidden;
-    border-radius: 0.5rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 10px;
   }
+  .sx-lp-maze .sx-pic {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  /* ---------- 04 Method: the bento and its diagrams ---------- */
+
+  .sx-bento {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+  }
+  @media (min-width: 48rem) {
+    .sx-bento {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (min-width: 64rem) {
+    .sx-bento {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+    .sx-bento__tile--wide {
+      grid-column: span 2;
+    }
+  }
+  .sx-bento > .sx-bento__tile {
+    max-width: none !important;
+  }
+  .sx-bento__tile {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.25rem 1.25rem 1.5rem;
+  }
+  .sx-bento__text {
+    margin-top: auto;
+    padding-inline: 0.25rem;
+  }
+  .sx-bento__text h3 {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    margin: 0;
+    font-size: 1.0625rem;
+    line-height: 1.35;
+    color: var(--sl-color-white);
+    text-wrap: balance;
+  }
+  .sx-bento__icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    align-self: center;
+    color: var(--sx-structure);
+  }
+  .sx-bento__text > p {
+    max-width: 60ch;
+    margin: 0.5rem 0 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--sx-muted);
+    text-wrap: pretty;
+  }
+
+  /* A diagram sits in an inset panel on a fine lattice. */
+  .sx-dg {
+    position: relative;
+    box-sizing: border-box;
+    height: 8.5rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 10px;
+    background-color: var(--sl-color-black);
+    background-image:
+      linear-gradient(to right, var(--sx-grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--sx-grid) 1px, transparent 1px);
+    background-size: 16px 16px;
+    background-position: -1px -1px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+  .sx-dg svg {
+    display: block;
+    overflow: visible;
+  }
+  .sx-dg :is(.sx-dg__node, .sx-dg__box) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.7rem;
+    border: 1px solid color-mix(in oklab, var(--sx-structure) 55%, transparent);
+    border-radius: 8px;
+    background: var(--sx-surface-2);
+    box-shadow: 0 0 18px -8px color-mix(in oklab, var(--sx-structure) 80%, transparent);
+    color: var(--sl-color-white);
+    white-space: nowrap;
+  }
+
+  /* One ledger: four documents feed one ledger, which a check reads. */
+  .sx-dg--ledger {
+    display: grid;
+    grid-template-columns: 1.75rem minmax(2rem, 1fr) auto minmax(1.25rem, 2.5rem) auto;
+    align-items: center;
+  }
+  .sx-dg__docs {
+    display: grid;
+    grid-template-rows: repeat(4, 1fr);
+    place-items: center;
+    height: 100%;
+  }
+  .sx-dg__doc {
+    display: block;
+    width: 1.5rem;
+    height: 0.95rem;
+    border: 1px solid color-mix(in oklab, var(--sx-structure) 50%, transparent);
+    border-radius: 3px;
+    background:
+      linear-gradient(color-mix(in oklab, var(--sx-structure) 45%, transparent) 0 0) 4px 4px / 55% 1px no-repeat,
+      linear-gradient(color-mix(in oklab, var(--sx-structure) 30%, transparent) 0 0) 4px 7px / 35% 1px no-repeat,
+      var(--sx-surface);
+  }
+  .sx-dg__fan {
+    width: 100%;
+    height: 100%;
+  }
+  .sx-dg__fan path {
+    fill: none;
+    stroke: color-mix(in oklab, var(--sx-structure) 50%, transparent);
+    stroke-width: 1px;
+    vector-effect: non-scaling-stroke;
+  }
+  .sx-dg__wire {
+    height: 1px;
+    background: color-mix(in oklab, var(--sx-structure) 50%, transparent);
+  }
+  .sx-dg__node--check svg {
+    width: 0.8rem;
+    height: 0.8rem;
+  }
+  .sx-dg__node--check path {
+    fill: none;
+    stroke: var(--sx-structure);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Separate lanes: three parallel lines that never meet. */
+  .sx-dg--lanes {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+  }
+  .sx-dg__lane {
+    display: grid;
+    grid-template-columns: 5.75rem minmax(0, 1fr);
+    align-items: center;
+  }
+  .sx-dg__lane-line {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    height: 1px;
+    background: linear-gradient(90deg, color-mix(in oklab, var(--sx-structure) 55%, transparent), color-mix(in oklab, var(--sx-structure) 15%, transparent));
+  }
+  .sx-dg__lane:nth-child(2) .sx-dg__lane-line {
+    justify-content: space-evenly;
+  }
+  .sx-dg__lane:nth-child(3) .sx-dg__lane-line {
+    justify-content: space-between;
+    padding-inline: 12%;
+  }
+  .sx-dg__lane-line > i {
+    display: block;
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    border: 1px solid var(--sx-structure);
+    border-radius: 2px;
+    background: var(--sl-color-black);
+  }
+
+  /* Loop-closed: each part feeds the next; the tester stands apart. */
+  .sx-dg--chain {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 1.1rem;
+  }
+  .sx-dg__chain {
+    display: flex;
+    align-items: center;
+  }
+  .sx-dg__arrow {
+    position: relative;
+    flex: 1;
+    min-width: 0.9rem;
+    height: 1px;
+    background: color-mix(in oklab, var(--sx-structure) 55%, transparent);
+  }
+  .sx-dg__arrow::after {
+    content: '';
+    position: absolute;
+    right: -1px;
+    top: -3px;
+    border-block: 3.5px solid transparent;
+    border-inline-start: 5px solid color-mix(in oklab, var(--sx-structure) 80%, transparent);
+  }
+  .sx-dg__probe {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+  }
+  .sx-dg__probe-line {
+    flex: 1;
+    height: 0;
+    border-top: 1px dashed var(--sl-color-gray-4);
+  }
+
+  /* Determinism: every interpreter crossed with every hash seed. */
+  .sx-dg--axes {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0.9rem 1.25rem;
+    height: auto;
+    min-height: 8.5rem;
+  }
+  .sx-dg__axis {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .sx-dg__axis-name {
+    letter-spacing: 0.14em;
+  }
+  .sx-dg__chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    max-width: 18rem;
+  }
+  .sx-dg__chips > span {
+    padding: 0.35rem 0.55rem;
+    border: 1px solid color-mix(in oklab, var(--sx-structure) 45%, transparent);
+    border-radius: 999px;
+    background: var(--sx-surface-2);
+    color: var(--sl-color-white);
+    letter-spacing: 0.04em;
+    font-variant-numeric: tabular-nums;
+  }
+  .sx-dg__times {
+    font-family: var(--sx-font-display);
+    font-size: 1.75rem;
+    font-weight: 300;
+    color: var(--sx-structure);
+    text-transform: none;
+  }
+
+  /* ---------- 05 Disclosure: public and withheld, with a beam between ---------- */
+
+  .sx-pw {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.25rem;
+  }
+  @media (min-width: 48rem) {
+    .sx-pw {
+      grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr);
+      gap: 0 1.5rem;
+    }
+  }
+  .sx-pw__card {
+    display: flex;
+    flex-direction: column;
+  }
+  .sx-pw__card--public {
+    border-color: color-mix(in oklab, var(--sx-structure) 35%, var(--sx-hairline));
+  }
+  .sx-pw__card--withheld {
+    border-style: dashed;
+    border-color: var(--sl-color-gray-5);
+    background: color-mix(in oklab, var(--sx-surface) 50%, transparent);
+  }
+  .sx-pw__head {
+    padding: 1.5rem 1.5rem 1.25rem;
+  }
+  .sx-pw__kicker {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 0.9rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+  .sx-pw__head h3 {
+    margin: 0;
+    font-size: 1.25rem;
+    line-height: 1.3;
+    color: var(--sl-color-white);
+  }
+  .sx-pw__sub {
+    margin: 0.35rem 0 0;
+    font-size: 0.9375rem;
+    color: var(--sx-muted);
+  }
+  .sx-pw__list {
+    display: grid;
+    flex: 1;
+    align-content: start;
+    gap: 0.8rem;
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid var(--sx-hairline);
+  }
+  .sx-pw__card--withheld .sx-pw__list,
+  .sx-pw__card--withheld .sx-pw__foot {
+    border-top-style: dashed;
+    border-top-color: var(--sl-color-gray-5);
+  }
+  .sx-pw__list > li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--sl-color-gray-1);
+  }
+  .sx-pw__card--withheld .sx-pw__list > li {
+    color: var(--sx-muted);
+  }
+  .sx-pw__glyph {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 1.25rem;
+    height: 1.25rem;
+    margin-top: 0.05rem;
+    border-radius: 6px;
+  }
+  .sx-pw__kicker .sx-pw__glyph {
+    margin: 0;
+  }
+  .sx-pw__glyph--check {
+    border: 1px solid color-mix(in oklab, var(--sx-structure) 50%, transparent);
+    background: color-mix(in oklab, var(--sx-structure) 16%, var(--sx-surface));
+    color: var(--sx-structure);
+  }
+  .sx-pw__glyph--lock {
+    border: 1px solid var(--sl-color-gray-5);
+    background: var(--sx-surface-2);
+    color: var(--sx-muted);
+  }
+  .sx-pw__foot {
+    margin: 0;
+    padding: 1rem 1.5rem 1.15rem;
+    border-top: 1px solid var(--sx-hairline);
+    font-size: 0.875rem;
+    line-height: 1.6;
+    color: var(--sx-muted);
+  }
+  .sx-pw__foot .sx-lp-link {
+    font-size: 0.875rem;
+  }
+
+  /* The divider: a hairline that fades at its ends, with one light passing along it on arrival. */
+  .sx-pw__beam {
+    position: relative;
+    overflow: hidden;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--sx-hairline) 20%, var(--sx-hairline) 80%, transparent);
+  }
+  .sx-pw__beam::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent, var(--sx-structure), transparent);
+    opacity: 0;
+    transform: translateX(-100%);
+  }
+  @media (min-width: 48rem) {
+    .sx-pw__beam {
+      height: auto;
+      background: linear-gradient(transparent, var(--sx-hairline) 15%, var(--sx-hairline) 85%, transparent);
+    }
+    .sx-pw__beam::after {
+      inset: 0 0 auto;
+      height: 35%;
+      background: linear-gradient(transparent, var(--sx-structure), transparent);
+      transform: translateY(-100%);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .sx-pw[data-reveal='in'] .sx-pw__beam::after {
+      animation: sx-pw-beam-x 1600ms var(--sx-ease) 400ms both;
+    }
+    @media (min-width: 48rem) {
+      .sx-pw[data-reveal='in'] .sx-pw__beam::after {
+        animation-name: sx-pw-beam-y;
+      }
+    }
+  }
+  @keyframes sx-pw-beam-x {
+    0% {
+      opacity: 1;
+      transform: translateX(-100%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateX(100%);
+    }
+  }
+  @keyframes sx-pw-beam-y {
+    0% {
+      opacity: 1;
+      transform: translateY(-100%);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(300%);
+    }
+  }
+}
+
+/* Outside any layer and more specific than the site's content-heading rules, so the landing keeps
+   its own type whatever those set: display h2 at weight 400, sans h3. */
+.sx-lp-section .sx-lp-head h2 {
+  font-family: var(--sx-font-display);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+.sx-lp-section :is(.sx-reveal__body, .sx-bento__text, .sx-pw__head) h3 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  letter-spacing: -0.005em;
 }

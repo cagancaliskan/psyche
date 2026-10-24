@@ -9,8 +9,10 @@ interface Props {
 }
 
 /**
- * Current phase and next gate, as two chips. The server render uses the plan's own as_of date, so
- * the HTML is deterministic; the browser then recomputes the next gate and adds the days left.
+ * Current phase and next gate, as two mono chips: the "now" chip carries the site's one pulsing
+ * signal dot, the next-gate chip a spike-amber diamond. The server render uses the plan's own
+ * as_of date, so the HTML is deterministic; the browser then recomputes the next gate and adds the
+ * days left.
  */
 export default function NowLine({ plan, label = 'Now' }: Props) {
   const phase = currentPhase(plan);
@@ -24,24 +26,28 @@ export default function NowLine({ plan, label = 'Now' }: Props) {
       {phase && (
         <p className="sx-pair" data-tone="now">
           <span className="sx-pair__key">
+            <span className="sx-pair__dot" aria-hidden="true" />
             <span>{label}</span>
             <span className="sr-only">: </span>
           </span>{' '}
           <span className="sx-pair__val">
-            {phase.id} {phase.title}
-            {dates}
+            <span>
+              <span className="sx-pair__id">{phase.id}</span> {phase.title}
+              {dates}
+            </span>
           </span>
         </p>
       )}
-      <p className="sx-pair">
+      <p className="sx-pair" data-tone="next">
         <span className="sx-pair__key">
+          <span className="sx-pair__dot" aria-hidden="true" />
           <span>Next gate</span>
           <span className="sr-only">: </span>
         </span>{' '}
         {gate ? (
           <span className="sx-pair__val">
             <span>
-              Gate {gate.id} ({gate.title}), {formatDay(gate.date!)}
+              <span className="sx-pair__id">Gate {gate.id}</span> {gate.title}, {formatDay(gate.date!)}
             </span>
             {today !== null && (
               <>

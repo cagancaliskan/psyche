@@ -1,8 +1,10 @@
 ---
 // The decision gates in order, each with its date or the rule that will set it, its status, the
-// question it decides and what happens if it is missed. The next upcoming gate is marked from the
-// plan's as_of date at build time; a small script moves the mark to match the reader's today.
+// question it decides and what happens if it is missed. The next upcoming gate is marked in spike
+// amber from the plan's as_of date at build time; a small script moves the mark to match the
+// reader's today.
 import { formatDay, nextGate, type Plan } from '../lib/plan.ts';
+import '../styles/docs-visuals.css';
 import '../styles/plan.css';
 
 interface Props {
@@ -31,7 +33,7 @@ const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
               <span class="sx-gs__mark">{g.id}</span>
               <span class="sx-gs__line" />
             </div>
-            <article class="sx-gs__card">
+            <article class="sx-gs__card sx-spot" data-spot>
               <h3>Gate {g.id}: {g.title}</h3>
               <p class="sx-gs__meta">
                 <span class="sx-gs__when">
@@ -55,6 +57,7 @@ const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 <script>
   import { todayIn } from '../lib/plan.ts';
+  import './docs/motion.ts';
 
   // Move the "next gate" mark to the first upcoming dated gate on or after the reader's today.
   for (const root of document.querySelectorAll<HTMLElement>('[data-gate-stepper]')) {

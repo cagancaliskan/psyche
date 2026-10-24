@@ -1,14 +1,24 @@
 /*
- * The landing hero (MazeHero.astro): a full-width field of rooms. A faded wing sits behind the
- * copy; the arena on the right holds the agent's trail, the goal and the finished route.
+ * The landing hero (MazeHero.astro and the hero copy in index.astro): a full-width field of rooms
+ * drawn as luminous linework on a faint coordinate lattice. A faded wing sits behind the copy; the
+ * arena on the right holds the agent's trail, the goal and the finished route.
  * Layering (a decorative field absolutely behind, a radial fade under the copy, the copy above)
  * follows "Hero Section with Animated Grid" by shadcnui-blocks (21st.dev, hero-07), without its
- * animated squares. The caption is an outline chip after "Chip" by preetsuthar17, and the pause
- * control an outline toggle after "Mute Toggle Button" by sean0205 (both 21st.dev), in plain CSS.
+ * animated squares. The title's entrance is "Soft Blur In" by educalvolpz, the primary button's
+ * light "Border Beam Panel" by rmahammad, the caption an outline chip after "Chip" by
+ * preetsuthar17 and the pause control after "Mute Toggle Button" by sean0205 (all 21st.dev),
+ * each rewritten in plain CSS.
  */
 
 /* Repeats global.css's order, so this file keeps that order even if it loads before it. */
 @layer base, starlight, theme, components, utilities;
+
+/* The beam's angle, animatable because it is typed. */
+@property --sx-beam-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
+}
 
 @layer components {
   /* The section is 100vw wide, which counts the scrollbar; clip the sliver it would scroll. */
@@ -25,7 +35,7 @@
     position: relative;
     width: 100vw;
     margin-inline: calc(50% - 50vw);
-    margin-block: 0 1rem;
+    margin-block: 0 1.5rem;
   }
   .sx-mazehero__inner {
     position: relative;
@@ -38,18 +48,26 @@
     z-index: 1;
     box-sizing: border-box;
     max-width: calc(36rem + 2 * var(--sx-hero-pad));
-    padding: 0.5rem var(--sx-hero-pad) 0;
+    padding: 1.25rem var(--sx-hero-pad) 0;
   }
   .sx-mazehero__field {
     position: relative;
     z-index: 0;
     overflow: hidden;
-    margin-top: 2rem;
+    margin-top: 2.5rem;
   }
-  .sx-mazehero__field svg {
+  /* The drawing and its coordinate labels share one box with the drawing's own aspect. */
+  .sx-mazehero__plot {
+    position: relative;
+    aspect-ratio: var(--field-cols) / var(--field-rows);
+  }
+  .sx-mazehero__plot > svg {
+    position: absolute;
+    inset: 0;
     display: block;
     width: 100%;
-    height: auto;
+    height: 100%;
+    overflow: visible;
   }
   .sx-mazehero__meta {
     position: relative;
@@ -58,13 +76,27 @@
     flex-wrap: wrap;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.85rem var(--sx-hero-pad) 0;
+    padding: 1rem var(--sx-hero-pad) 0;
+  }
+
+  /* A soft structure-blue light behind the arena: depth, not decoration. */
+  .sx-mazehero__field::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: radial-gradient(
+      ellipse 42% 70% at 74% 55%,
+      color-mix(in oklab, var(--sx-structure) 9%, transparent),
+      transparent 72%
+    );
+    pointer-events: none;
   }
 
   /* Under 52rem the band shows the arena only: the drawing is widened and shifted so the arena's
      columns fill it. */
   @media (width < 52rem) {
-    .sx-mazehero__field svg {
+    .sx-mazehero__plot {
       width: calc(100% * var(--field-cols) / var(--arena-cols));
       margin-inline-start: calc(-100% * (var(--field-cols) - var(--arena-cols)) / var(--arena-cols));
     }
@@ -77,12 +109,12 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 1.75rem;
+      gap: 2rem;
       box-sizing: border-box;
       max-width: var(--sx-field-max);
       min-height: var(--sx-field-h);
       margin-inline: auto;
-      padding: 2.5rem var(--sx-hero-pad);
+      padding: 3rem var(--sx-hero-pad);
     }
     .sx-mazehero__copy,
     .sx-mazehero__meta {
@@ -97,11 +129,16 @@
       margin: 0;
       transform: translateY(-50%);
     }
-    /* Its top and bottom edges fade into the page, as the wing fades on the left. */
-    .sx-mazehero__field svg {
+    /* The plot keeps its aspect at the field's height; a narrower field crops its east edge. */
+    .sx-mazehero__plot {
       position: absolute;
-      inset: 0;
-      height: 100%;
+      inset-block: 0;
+      inset-inline-start: 0;
+      width: calc(var(--sx-field-h) * var(--field-cols) / var(--field-rows));
+      aspect-ratio: auto;
+    }
+    /* Its top and bottom edges fade into the page, as the wing fades on the left. */
+    .sx-mazehero__plot > .field {
       mask-image: linear-gradient(transparent, #000 1.5rem, #000 calc(100% - 1.5rem), transparent);
     }
     /* A soft fade in the page colour under the copy. */
@@ -110,19 +147,46 @@
       position: absolute;
       inset: 0;
       background: radial-gradient(
-        ellipse 36rem 80% at calc(var(--sx-hero-pad) + 12rem) 50%,
-        var(--sl-color-black) 45%,
+        ellipse 38rem 85% at calc(var(--sx-hero-pad) + 12rem) 50%,
+        var(--sl-color-black) 42%,
         transparent 100%
       );
+      pointer-events: none;
     }
   }
 
-  /* The drawing. Walls in the structure colour; the agent's trail, goal and route in its own. */
-  .sx-mazehero .wing,
-  .sx-mazehero .walls {
-    fill: var(--sx-structure);
-    opacity: 0.4;
+  /* ---- The drawing ---- */
+
+  /* The lattice and the walls are hairlines at any scale; the agent's lines scale with the field. */
+  .sx-mazehero :is(.lattice, .wing, .walls, .joints) {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+    stroke-linejoin: round;
   }
+  .sx-mazehero .lattice {
+    stroke: var(--sx-grid);
+    stroke-width: 1px;
+  }
+  .sx-mazehero .wing {
+    stroke: var(--sx-structure);
+    stroke-width: 1px;
+    stroke-opacity: 0.55;
+  }
+  .sx-mazehero .walls {
+    stroke: var(--sx-structure);
+    stroke-width: 1.25px;
+    stroke-opacity: 0.85;
+  }
+  .sx-mazehero .walls--halo {
+    stroke-width: 5px;
+    stroke-opacity: 0.1;
+  }
+  .sx-mazehero .joints {
+    stroke: var(--sx-structure);
+    stroke-width: 3.5px;
+  }
+
   .sx-mazehero .trail,
   .sx-mazehero .route {
     fill: none;
@@ -131,21 +195,33 @@
     stroke-linejoin: round;
   }
   .sx-mazehero .trail {
-    stroke-width: 0.14;
-    stroke-opacity: 0.55;
+    stroke-width: 0.1;
+    stroke-opacity: 0.45;
   }
   .sx-mazehero .route {
-    stroke-width: 0.3;
+    stroke-width: 0.19;
+  }
+  /* The route's glow: two wider, fainter copies under it (cheaper than a blur filter). */
+  .sx-mazehero .route--halo {
+    stroke-width: 0.55;
+    stroke-opacity: 0.2;
+  }
+  .sx-mazehero .route--wide {
+    stroke-width: 1.15;
+    stroke-opacity: 0.07;
   }
   .sx-mazehero .goal {
     fill: var(--sx-agent);
     transform-box: fill-box;
     transform-origin: center;
   }
+  .sx-mazehero .goal--halo {
+    fill-opacity: 0.16;
+  }
   .sx-mazehero .start {
     fill: var(--sl-color-black);
     stroke: var(--sl-color-white);
-    stroke-width: 0.14;
+    stroke-width: 0.12;
   }
   /* Only while the sequence plays; the static picture needs no dashes. */
   .sx-mazehero.is-moving .trail,
@@ -153,47 +229,77 @@
     stroke-dasharray: 1 1;
   }
 
+  /* Coordinate labels, set on the wall lines with a halo in the page colour that breaks the line. */
+  /* Above the fade under the copy, so the labels stay crisp. */
+  .sx-mazehero .ticks {
+    z-index: 1;
+  }
+  .sx-mazehero .ticks text {
+    fill: var(--sx-muted);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+    dominant-baseline: central;
+    paint-order: stroke;
+    stroke: var(--sl-color-black);
+    stroke-width: 6px;
+    stroke-linejoin: round;
+  }
+
+  /* ---- The meta row: caption chip and pause pill ---- */
+
   .sx-mazehero__caption {
     margin: 0;
-    padding: 0.3rem 0.8rem;
+    max-width: 28rem;
+    padding: 0.45rem 0.85rem;
     border: 1px solid var(--sx-hairline);
-    border-radius: 0.9rem;
-    background: var(--sl-color-black);
+    border-radius: 10px;
+    background: color-mix(in oklab, var(--sl-color-black) 82%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in oklab, white 4%, transparent);
     color: var(--sx-muted);
     font-size: 0.8125rem;
-    line-height: 1.45;
-    max-width: 28rem;
+    line-height: 1.5;
   }
 
   .sx-mazehero__pause {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
+    gap: 0.5rem;
     min-height: 2.25rem;
-    padding: 0 0.85rem;
+    padding: 0 0.95rem 0 0.8rem;
     border: 1px solid var(--sx-hairline);
-    border-radius: 0.4rem;
+    border-radius: 999px;
     background: var(--sl-color-black);
-    color: var(--sl-color-white);
-    font: inherit;
-    font-size: 0.875rem;
-    font-weight: 700;
+    color: var(--sx-muted);
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.14em;
     line-height: 1;
+    text-transform: uppercase;
     cursor: pointer;
+    transition:
+      color 180ms var(--sx-ease),
+      border-color 180ms var(--sx-ease),
+      background-color 180ms var(--sx-ease);
   }
   .sx-mazehero__pause[hidden] {
     display: none;
   }
   .sx-mazehero__pause:hover {
+    border-color: color-mix(in oklab, var(--sx-structure) 45%, var(--sx-hairline));
     background: var(--sx-surface);
+    color: var(--sl-color-white);
   }
   .sx-mazehero__pause[aria-pressed='true'] {
+    border-color: color-mix(in oklab, var(--sx-structure) 60%, var(--sx-hairline));
     background: var(--sx-surface);
-    border-color: var(--sx-structure);
+    color: var(--sl-color-white);
   }
   .sx-mazehero__pause svg {
-    width: 0.9rem;
-    height: 0.9rem;
+    width: 0.7rem;
+    height: 0.7rem;
     flex-shrink: 0;
   }
   /* The icon shows the state without relying on colour: pause bars while it plays, a play
@@ -204,5 +310,256 @@
   }
   .sx-mazehero__pause[aria-pressed='true'] .i-play {
     display: block;
+  }
+
+  /* ---- The hero copy (the slot, written in index.astro) ---- */
+
+  .sx-lp-title {
+    margin: 0;
+    font-family: var(--sx-font-display);
+    font-size: clamp(2.75rem, 1.6rem + 5vw, 5.75rem);
+    font-weight: 380;
+    line-height: 0.98;
+    letter-spacing: -0.03em;
+    color: var(--sl-color-white);
+  }
+  .sx-lp-title__word {
+    display: inline-block;
+    white-space: nowrap;
+  }
+  /* Each glyph carries the same top-to-bottom ink fade, so the word reads as one surface. */
+  .sx-lp-title__word > span {
+    display: inline-block;
+    background: linear-gradient(
+      180deg,
+      var(--sl-color-white) 35%,
+      color-mix(in oklab, var(--sl-color-white) 64%, var(--sl-color-black))
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .sx-lp-aim {
+    max-width: 28rem;
+    margin: 1.4rem 0 0;
+    font-size: clamp(1.2rem, 1.05rem + 0.6vw, 1.45rem);
+    font-weight: 450;
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    color: var(--sl-color-gray-1);
+    text-wrap: balance;
+  }
+  .sx-lp-lead {
+    max-width: 27rem;
+    margin: 0.85rem 0 0;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--sx-muted);
+    text-wrap: pretty;
+  }
+  .sx-lp-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+
+  .sx-lp-btn {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 2.75rem;
+    padding: 0 1.2rem;
+    border: 1px solid transparent;
+    border-radius: 999px;
+    font-size: 0.9375rem;
+    font-weight: 550;
+    line-height: 1.2;
+    text-decoration: none;
+    transition:
+      background-color 180ms var(--sx-ease),
+      border-color 180ms var(--sx-ease),
+      box-shadow 180ms var(--sx-ease),
+      color 180ms var(--sx-ease);
+  }
+  .sx-lp-btn__icon {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    transition: transform 180ms var(--sx-ease);
+  }
+  .sx-lp-btn:hover .sx-lp-btn__icon {
+    transform: translateX(3px);
+  }
+
+  /* Primary: a signal-tinted pill whose border carries a travelling light. */
+  .sx-lp-btn--primary {
+    border-color: color-mix(in oklab, var(--sx-agent) 38%, var(--sx-hairline));
+    background: color-mix(in oklab, var(--sx-agent) 11%, var(--sl-color-black));
+    box-shadow: inset 0 1px 0 color-mix(in oklab, white 7%, transparent);
+    color: var(--sl-color-white);
+  }
+  .sx-lp-btn--primary .sx-lp-btn__icon {
+    color: var(--sx-agent);
+  }
+  .sx-lp-btn--primary:hover {
+    border-color: color-mix(in oklab, var(--sx-agent) 60%, var(--sx-hairline));
+    background: color-mix(in oklab, var(--sx-agent) 17%, var(--sl-color-black));
+    box-shadow:
+      inset 0 1px 0 color-mix(in oklab, white 7%, transparent),
+      var(--sx-glow);
+    color: var(--sl-color-white);
+  }
+  .sx-lp-btn--primary::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    z-index: 1;
+    padding: 1px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--sx-beam-angle),
+      transparent 0deg,
+      color-mix(in oklab, var(--sx-agent) 4%, transparent) 240deg,
+      color-mix(in oklab, var(--sx-agent) 55%, transparent) 318deg,
+      var(--sx-agent) 350deg,
+      transparent 360deg
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .sx-lp-btn--primary:is(:hover, :focus-visible)::before {
+    --sx-beam-angle: 40deg;
+    opacity: 1;
+  }
+
+  /* Secondary: a ghost pill. */
+  .sx-lp-btn--ghost {
+    border-color: color-mix(in oklab, var(--sl-color-white) 16%, transparent);
+    background: color-mix(in oklab, var(--sl-color-black) 60%, transparent);
+    color: var(--sl-color-gray-1);
+  }
+  .sx-lp-btn--ghost:hover {
+    border-color: color-mix(in oklab, var(--sx-structure) 55%, transparent);
+    background: var(--sx-surface-2);
+    color: var(--sl-color-white);
+  }
+
+  /* ---- Motion: the entrance, and the beam's laps ---- */
+
+  @media (prefers-reduced-motion: no-preference) {
+    .sx-lp-title__word > span {
+      animation: sx-hero-blur-in 900ms var(--sx-ease) both;
+      animation-delay: calc(80ms + var(--i, 0) * 55ms);
+    }
+    .sx-mazehero__copy > :not(.sx-lp-title),
+    .sx-mazehero__meta {
+      animation: sx-hero-rise 800ms var(--sx-ease) both;
+    }
+    .sx-mazehero__copy > :nth-child(2) {
+      animation-delay: 420ms;
+    }
+    .sx-mazehero__copy > :nth-child(3) {
+      animation-delay: 500ms;
+    }
+    .sx-mazehero__copy > :nth-child(n + 4) {
+      animation-delay: 580ms;
+    }
+    .sx-mazehero__meta {
+      animation-delay: 700ms;
+    }
+    .sx-mazehero__field {
+      animation: sx-hero-fade 1200ms var(--sx-ease) 150ms both;
+    }
+    /* One lap of light after the entrance; on hover or focus it keeps travelling. */
+    .sx-lp-btn--primary::before {
+      animation: sx-hero-beam-lap 2600ms linear 1300ms both;
+    }
+    /* The lap stays first in the list, so leaving does not restart it. */
+    .sx-lp-btn--primary:is(:hover, :focus-visible)::before {
+      animation:
+        sx-hero-beam-lap 2600ms linear 1300ms both,
+        sx-hero-beam 2400ms linear infinite;
+    }
+  }
+
+  @keyframes sx-hero-blur-in {
+    from {
+      opacity: 0;
+      filter: blur(12px);
+      transform: translateY(0.16em);
+    }
+  }
+  @keyframes sx-hero-rise {
+    from {
+      opacity: 0;
+      filter: blur(4px);
+      transform: translateY(12px);
+    }
+  }
+  @keyframes sx-hero-fade {
+    from {
+      opacity: 0;
+    }
+  }
+  @keyframes sx-hero-beam-lap {
+    0% {
+      --sx-beam-angle: 0deg;
+      opacity: 0;
+    }
+    15%,
+    80% {
+      opacity: 1;
+    }
+    100% {
+      --sx-beam-angle: 360deg;
+      opacity: 0;
+    }
+  }
+  @keyframes sx-hero-beam {
+    from {
+      --sx-beam-angle: 0deg;
+      opacity: 1;
+    }
+    to {
+      --sx-beam-angle: 360deg;
+      opacity: 1;
+    }
+  }
+}
+
+/* Outside any layer and more specific than the site's content-heading rules, so the title keeps
+   its weight and tracking whatever those set. */
+.sx-mazehero .sx-lp-title {
+  font-weight: 380;
+  letter-spacing: -0.03em;
+}
+
+/* The pills keep their shape when focused, whatever radius a site-wide focus rule sets. */
+.sx-lp-btn:focus-visible,
+.sx-mazehero__pause:focus-visible {
+  border-radius: 999px;
+}
+
+/* Light theme: the same linework, quieter, so the field reads as a map and not as a grid of bars. */
+@layer components {
+  :root[data-theme='light'] .sx-mazehero .wing {
+    stroke-opacity: 0.26;
+  }
+  :root[data-theme='light'] .sx-mazehero .walls {
+    stroke-opacity: 0.5;
+  }
+  :root[data-theme='light'] .sx-mazehero .walls--halo {
+    stroke-opacity: 0.04;
   }
 }

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type FocusEvent, type MouseEvent, type PointerEvent } from 'react';
 import { Pause, Play } from 'lucide-react';
+import '@/styles/docs-visuals.css';
 import '@/styles/battery.css';
 import { TestPicture } from '@/components/battery/Pictures.tsx';
 import { TESTS, type Test } from '@/lib/battery.ts';
@@ -9,10 +10,10 @@ const STEP_MS = 3000;
 const THRESHOLDS = Array.from({ length: 11 }, (_, i) => i / 10);
 
 /**
- * Five paradigm illustrations, one card each. A card in view steps through its pictures on its
- * own unless the reader prefers reduced motion; hovering pauses it, and any click or keyboard
- * focus inside it stops it until Play is pressed. The caption is announced only while the reader
- * is in control.
+ * The paradigm illustrations, one spotlight card each, with mono step chips under the picture. A
+ * card in view steps through its pictures on its own unless the reader prefers reduced motion;
+ * hovering pauses it, and any click or keyboard focus inside it stops it until Play is pressed.
+ * The caption is announced only while the reader is in control.
  */
 export default function BatteryExplorer() {
   return (
@@ -96,6 +97,8 @@ function TestCard({ test }: { test: Test }) {
     <article
       ref={card}
       id={id}
+      className="sx-spot"
+      data-spot
       onClick={onClick}
       onFocus={onFocus}
       onPointerEnter={onPointerEnter}

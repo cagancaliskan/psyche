@@ -3,6 +3,7 @@
 // projection of tools/ledger.json. Nothing here is typed by hand: names, statuses and counts come
 // from the ledger.
 import ledger from '../data/ledger.public.json';
+import '../styles/docs-visuals.css';
 import '../styles/plan.css';
 
 interface Brick {
@@ -41,7 +42,7 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
           </ul>
         );
         return (
-          <section class="sx-bricks__card" data-tone={c.tone} aria-labelledby={`sx-bricks-${slug(c.status)}`}>
+          <section class="sx-bricks__card sx-spot" data-spot data-tone={c.tone} aria-labelledby={`sx-bricks-${slug(c.status)}`}>
             <div class="sx-bricks__head">
               <h3 class="sx-bricks__title" id={`sx-bricks-${slug(c.status)}`}>
                 <span class="sx-bricks__dot" aria-hidden="true" />
@@ -66,3 +67,7 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
     }
   </div>
 </div>
+
+<script>
+  import './docs/motion.ts';
+</script>

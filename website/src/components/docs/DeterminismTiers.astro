@@ -1,0 +1,66 @@
+---
+// The three determinism tiers of the Engineering page, in that page's own words: the guarantee,
+// what each tier applies to and how it is checked. The bars show only the order of strength the
+// page states (a result built from tiers states the weakest of them).
+import Figure from './Figure.astro';
+
+const tiers = [
+  {
+    id: 'A',
+    strength: 3,
+    guarantee: 'Bit-exact across CPython versions and hash seeds',
+    applies: 'Environments, battery, metrics, counters',
+    checked: 'Outputs from fresh interpreter processes, under each supported CPython version and several hash seeds, compared byte for byte',
+  },
+  {
+    id: 'B',
+    strength: 2,
+    guarantee: 'Bit-exact on CPU for one pinned version, with deterministic algorithms enabled in the deep-learning framework',
+    applies: 'CPU runs',
+    checked: 'Deterministic algorithms are enabled where the framework provides them; where it does not, this is documented and the result does not claim tier B',
+  },
+  {
+    id: 'C',
+    strength: 1,
+    guarantee: 'Statistical reproducibility',
+    applies: 'GPU runs',
+    checked: 'Fixed seeds; results reported with confidence intervals over seeds',
+  },
+];
+---
+
+<Figure
+  kicker="Determinism tiers"
+  lead="Not every computation can be made bit-exact, so each reported result states its tier. A result built from parts at different tiers states the weakest of them."
+>
+  <ol class="sx-tiers" aria-label="Determinism tiers, strongest first">
+    {
+      tiers.map((t) => (
+        <li class="sx-tier sx-spot" data-spot>
+          <div class="sx-tier__head">
+            <p class="sx-tier__letter">
+              <span class="sr-only">Tier </span>
+              {t.id}
+            </p>
+            <span class="sx-tier__meter" aria-hidden="true">
+              {[1, 2, 3].map((n) => (
+                <span data-on={n <= t.strength ? '' : undefined} />
+              ))}
+            </span>
+          </div>
+          <p class="sx-tier__guarantee">{t.guarantee}</p>
+          <dl>
+            <div>
+              <dt class="sx-kicker">Applies to</dt>
+              <dd>{t.applies}</dd>
+            </div>
+            <div>
+              <dt class="sx-kicker">How it is checked</dt>
+              <dd>{t.checked}</dd>
+            </div>
+          </dl>
+        </li>
+      ))
+    }
+  </ol>
+</Figure>

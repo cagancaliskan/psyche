@@ -3,6 +3,7 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import BatteryExplorer from '@/components/BatteryExplorer.tsx';
 import { TESTS } from '@/lib/battery.ts';
 import { withBase } from '@/lib/url.ts';
+import '@/styles/docs-visuals.css';
 ---
 
 <StarlightPage
@@ -20,6 +21,7 @@ import { withBase } from '@/lib/url.ts';
     until release. The text version, with the fairness rules, is in <a href={withBase('research/test-battery/')}>Test battery</a>.
   </p>
   <nav class="sx-test-jump not-content" aria-label="Tests in the battery">
+    <p class="sx-kicker sx-test-jump__kicker" aria-hidden="true">Jump to a test</p>
     <ol>
       {
         TESTS.map((t) => (
@@ -32,3 +34,7 @@ import { withBase } from '@/lib/url.ts';
   </nav>
   <BatteryExplorer client:visible />
 </StarlightPage>
+
+<script>
+  import '@/components/docs/motion.ts';
+</script>

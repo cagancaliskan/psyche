@@ -182,6 +182,37 @@ export function wallPath(grid: Grid, fromCol = 0, toCol = grid.cols): string {
   return d;
 }
 
+/**
+ * The wall cells as thin lines: one SVG path through wall-cell centres, joining every pair of
+ * neighbouring wall cells, with straight runs merged (`M x y h n` and `M x y v n`). A door is the
+ * gap where a line stops. A horizontal link belongs to the column of its left cell and a vertical
+ * link to its own column, so ranges [a, b) and [b, c) split a field's lines with nothing drawn
+ * twice and nothing missed.
+ */
+export function wallLines(grid: Grid, fromCol = 0, toCol = grid.cols): string {
+  const lo = Math.max(0, fromCol);
+  const hi = Math.min(grid.cols, toCol);
+  const wall = (r: number, c: number) => r >= 0 && c >= 0 && r < grid.rows && c < grid.cols && grid.blocked[r][c];
+  let d = '';
+  for (let r = 0; r < grid.rows; r++) {
+    for (let c = lo; c < hi; ) {
+      let n = 0;
+      while (c + n < hi && wall(r, c + n) && wall(r, c + n + 1)) n++;
+      if (n > 0) d += `M${c + 0.5} ${r + 0.5}h${n}`;
+      c += n + 1;
+    }
+  }
+  for (let c = lo; c < hi; c++) {
+    for (let r = 0; r < grid.rows; ) {
+      let n = 0;
+      while (wall(r + n, c) && wall(r + n + 1, c)) n++;
+      if (n > 0) d += `M${c + 0.5} ${r + 0.5}v${n}`;
+      r += n + 1;
+    }
+  }
+  return d;
+}
+
 /** A field of square rooms on a regular pitch, joined by one-cell doors. */
 export interface FieldSpec {
   /** Rooms down and across. */

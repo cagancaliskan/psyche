@@ -1,7 +1,8 @@
 // Drawings of the five classic paradigms: public illustrations, never a model or a result.
-// Walls in the structure colour; only the agent's trail and route, and the arc between a test
-// pair, carry the `draw` class that the battery styles animate. Rendered on the server, so they
-// need no client JavaScript of their own.
+// Walls in the structure colour; the agent's route has a soft halo under it, and the goal a glow.
+// Only the agent's trail and route (with its halo), and the arc between a test pair, carry the
+// `draw` class that the battery styles animate. Rendered on the server, so they need no client
+// JavaScript of their own.
 import { clsx } from 'clsx';
 import '@/styles/battery.css';
 import type { ChainStep, GridStep, Test, TransferStep } from '@/lib/battery.ts';
@@ -39,15 +40,24 @@ export function GridPicture({ step, prev, decorative }: { step: GridStep; prev?:
         ),
       )}
       {step.trail && <polyline className={clsx('trail', fresh(step.trail, prev?.trail) && 'draw')} pathLength={1} points={points(step.trail)} />}
+      {step.path && <polyline className={clsx('path-glow', fresh(step.path, prev?.path) && 'draw')} pathLength={1} points={points(step.path)} />}
       {step.path && <polyline className={clsx('path', fresh(step.path, prev?.path) && 'draw')} pathLength={1} points={points(step.path)} />}
       {step.start && <circle className="start-dot" cx={step.start[1] + 0.5} cy={step.start[0] + 0.5} r={0.28} />}
       {step.goal && (
-        <circle
-          className={clsx('goal', (!prev || cellKey(prev.goal) !== cellKey(step.goal)) && 'appear')}
-          cx={step.goal[1] + 0.5}
-          cy={step.goal[0] + 0.5}
-          r={0.32}
-        />
+        <>
+          <circle
+            className={clsx('goal-glow', (!prev || cellKey(prev.goal) !== cellKey(step.goal)) && 'appear')}
+            cx={step.goal[1] + 0.5}
+            cy={step.goal[0] + 0.5}
+            r={0.62}
+          />
+          <circle
+            className={clsx('goal', (!prev || cellKey(prev.goal) !== cellKey(step.goal)) && 'appear')}
+            cx={step.goal[1] + 0.5}
+            cy={step.goal[0] + 0.5}
+            r={0.3}
+          />
+        </>
       )}
     </svg>
   );

@@ -7,6 +7,7 @@ import GateStepper from '../components/GateStepper.astro';
 import plan from '../data/plan.json';
 import { type Plan } from '../lib/plan.ts';
 import { withBase } from '../lib/url.ts';
+import '../styles/docs-visuals.css';
 
 const p = plan as unknown as Plan;
 const roadmapDoc = withBase('research/roadmap/');
@@ -30,12 +31,14 @@ const gatesDoc = withBase('research/gates/');
     <NowLine client:visible plan={p} />
 
     <section class="sx-section">
+      <p class="sx-kicker"><span class="sx-kicker__index">01</span> Timeline</p>
       <h2>Phases</h2>
       <Timeline client:visible plan={p} />
       <TimelineList plan={p} />
     </section>
 
     <section class="sx-section">
+      <p class="sx-kicker"><span class="sx-kicker__index">02</span> Gates</p>
       <h2>Decision gates</h2>
       <p>
         Each gate is decided against criteria written before the work it judges. Public status shows only

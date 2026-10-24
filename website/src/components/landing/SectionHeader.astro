@@ -1,12 +1,28 @@
 ---
+// A landing section's opening: a mono kicker (index and name, after "Tagline" by shadcncraft,
+// 21st.dev), the display heading, and at most one short paragraph in the default slot. The kicker
+// repeats the heading, so assistive technology skips it.
 interface Props {
   id: string;
   title: string;
+  /** The section's position on the page, e.g. "01". */
+  index?: string;
+  /** A one- or two-word name for the kicker. */
+  kicker?: string;
 }
-const { id, title } = Astro.props;
+const { id, title, index, kicker } = Astro.props;
 ---
 
-<header class="sx-lp-head">
+<header class="sx-lp-head" data-reveal>
+  {
+    kicker && (
+      <p class="sx-lp-kicker" aria-hidden="true">
+        {index && <span class="sx-lp-kicker__index">{index}</span>}{' '}
+        <span class="sx-lp-kicker__rule" />{' '}
+        <span>{kicker}</span>
+      </p>
+    )
+  }
   <h2 id={id}>{title}</h2>
   <slot />
 </header>
