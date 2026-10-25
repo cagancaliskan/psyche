@@ -105,7 +105,7 @@ export default defineConfig({
       title: 'Psyche',
       description:
         'Psyche, an open research project building toward AGI from original, brain-inspired components: spiking cognitive maps (active) and the substrate that founded it (paused).',
-      logo: { light: './src/assets/mark-light.svg', dark: './src/assets/mark.svg', replacesTitle: false },
+      logo: { light: './src/assets/brand/psyche-wordmark-light.svg', dark: './src/assets/brand/psyche-wordmark-dark.svg', replacesTitle: true },
       favicon: '/favicon.svg',
       social: [{ icon: 'github', label: 'Psyche on GitHub', href: 'https://github.com/cagancaliskan/psyche' }],
       // global.css comes first: its @layer statement must be the first one the cascade sees.
@@ -124,6 +124,11 @@ export default defineConfig({
       plugins: [starlightLinksValidator({ errorOnRelativeLinks: false })],
       head: [
         { tag: 'meta', attrs: { name: 'color-scheme', content: 'light dark' } },
+        { tag: 'meta', attrs: { property: 'og:image', content: 'https://cagancaliskan.github.io/psyche/og.png' } },
+        { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
+        { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
+        { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: 'https://cagancaliskan.github.io/psyche/og.png' } },
         { tag: 'script', content: CHROME_SCRIPT },
       ],
     }),

@@ -1,4 +1,9 @@
-# Psyche
+<h1>
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="brand/psyche-wordmark-dark.svg">
+    <img src="brand/psyche-wordmark-light.svg" alt="Psyche" width="360">
+  </picture>
+</h1>
 
 > An open research project building toward artificial general intelligence (AGI) from original,
 > brain-inspired components. It grows in stages; each stage is built test-first and kept as a

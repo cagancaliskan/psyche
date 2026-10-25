@@ -317,10 +317,11 @@
   .sx-lp-title {
     margin: 0;
     font-family: var(--sx-font-display);
-    font-size: clamp(2.75rem, 1.6rem + 5vw, 5.75rem);
-    font-weight: 380;
-    line-height: 0.98;
-    letter-spacing: -0.03em;
+    font-size: clamp(2.25rem, 1.2rem + 3.6vw, 4.25rem);
+    font-weight: 200;
+    line-height: 1;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--sl-color-white);
   }
   .sx-lp-title__word {
@@ -541,8 +542,8 @@
 /* Outside any layer and more specific than the site's content-heading rules, so the title keeps
    its weight and tracking whatever those set. */
 .sx-mazehero .sx-lp-title {
-  font-weight: 380;
-  letter-spacing: -0.03em;
+  font-weight: 200;
+  letter-spacing: 0.08em;
 }
 
 /* The pills keep their shape when focused, whatever radius a site-wide focus rule sets. */
@@ -561,5 +562,22 @@
   }
   :root[data-theme='light'] .sx-mazehero .walls--halo {
     stroke-opacity: 0.04;
+  }
+}
+
+/* The brand wordmark in the hero: the P is the mark itself (components/brand/PMark.astro), drawn to
+   Unbounded's cap height (0.75em) and sitting on the baseline; the rest is live text. */
+@layer components {
+  .sx-lp-title__word > .sx-lp-title__p {
+    background: none;
+    color: inherit;
+    margin-right: 0.08em;
+  }
+  .sx-lp-title__p svg {
+    display: inline-block;
+    height: 0.75em;
+    width: auto;
+    vertical-align: baseline;
+    overflow: visible;
   }
 }

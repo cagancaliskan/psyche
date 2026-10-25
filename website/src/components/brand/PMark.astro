@@ -1,0 +1,15 @@
+---
+// The Psyche mark: one stem and three nested bowls hung from a shared top edge, each stage kept
+// inside the next. Colours follow the theme tokens, so it works on both canvases.
+interface Props {
+  class?: string;
+}
+const { class: className } = Astro.props;
+---
+
+<svg class={className} viewBox="2.76 0.75 20.63 23.25" fill="none" aria-hidden="true" focusable="false">
+  <path d="M3.6 1.59H17.1A5.45 5.45 0 0 1 17.1 12.49H6.84" stroke="var(--sl-color-white)" stroke-width="1.68" stroke-linejoin="round"></path>
+  <path d="M3.6 1.59H15.35A3.7 3.7 0 0 1 15.35 8.99H3.6" stroke="var(--sx-structure)" stroke-width="1.68" stroke-linejoin="round"></path>
+  <path d="M3.6 1.59H13.6A1.95 1.95 0 0 1 13.6 5.49H3.6" stroke="var(--sx-agent)" stroke-width="1.68" stroke-linejoin="round"></path>
+  <path d="M3.6 0.75V24" stroke="var(--sl-color-white)" stroke-width="1.68"></path>
+</svg>
