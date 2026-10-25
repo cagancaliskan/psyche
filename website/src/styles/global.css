@@ -165,8 +165,10 @@
     letter-spacing: -0.01em;
     color: var(--sl-color-white);
   }
+  /* The header carries the brand wordmark (brand/psyche-wordmark-*.svg); its viewBox includes clear space. */
   .site-title img {
-    height: 1.5rem;
+    height: 1.25rem;
+    width: auto;
   }
 
   /* Search: a pill with a mono shortcut chip, after "Search Input with Keyboard Shortcut" by
