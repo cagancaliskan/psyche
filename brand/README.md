@@ -5,6 +5,10 @@ bowl is kept whole inside the next, the innermost lit in the signal colour, and 
 open at the stem so a new stage can always wrap what exists. It is how the project works: each stage
 built test-first and kept.
 
+Read it from the inside out: the inner bowl is stage 1 (the substrate), the middle bowl is stage 2
+(spiking cognitive maps), and the open outer bowl is the stages still to come. Anything that labels
+the bowls follows this order.
+
 ## Files
 
 | File | Use |

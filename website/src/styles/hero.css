@@ -1,24 +1,24 @@
 /*
- * The landing hero (MazeHero.astro and the hero copy in index.astro): a full-width field of rooms
- * drawn as luminous linework on a faint coordinate lattice. A faded wing sits behind the copy; the
- * arena on the right holds the agent's trail, the goal and the finished route.
- * Layering (a decorative field absolutely behind, a radial fade under the copy, the copy above)
- * follows "Hero Section with Animated Grid" by shadcnui-blocks (21st.dev, hero-07), without its
- * animated squares. The title's entrance is "Soft Blur In" by educalvolpz, the primary button's
- * light "Border Beam Panel" by rmahammad, the caption an outline chip after "Chip" by
- * preetsuthar17 and the pause control after "Mute Toggle Button" by sean0205 (all 21st.dev),
- * each rewritten in plain CSS.
+ * The landing hero (components/LayersHero.astro): the Psyche mark taken apart. A stem and three
+ * nested bowls are four thin sheets in CSS 3D. They fan out in depth, are drawn in build order
+ * (the stem, then stage 1, stage 2 and the later stages), turn to face the viewer and slide
+ * together until they coincide as the logo. The stages grow outward: the inner bowl is stage 1,
+ * the middle bowl stage 2, and the outer bowl, open at the stem, is what is still to come.
+ *
+ * Catalog sources (21st.dev), rewritten in plain CSS and a few lines of script, without a motion
+ * library: the stroke draw after "Animated Signature" by dqnamo (a pathLength 1 dash reveal on a
+ * near-linear pen curve), the line-by-line rise after "Text Reveal (Mask)" by soralabs (clipped
+ * lines, expo-out), the primary action after "Expanding Arrow Button" by starc007 (a tile that
+ * widens on hover or focus, only where hover exists, with a press) and the secondary after
+ * "Underline Link" by balick (a background-gradient underline that follows line breaks, draws in
+ * from the left and leaves to the right).
+ *
+ * Site tokens only, so light and dark switch through the variables. Without script, or with
+ * reduced motion, nothing is hidden and the finished frame shows.
  */
 
 /* Repeats global.css's order, so this file keeps that order even if it loads before it. */
 @layer base, starlight, theme, components, utilities;
-
-/* The beam's angle, animatable because it is typed. */
-@property --sx-beam-angle {
-  syntax: '<angle>';
-  inherits: false;
-  initial-value: 0deg;
-}
 
 @layer components {
   /* The section is 100vw wide, which counts the scrollbar; clip the sliver it would scroll. */
@@ -26,551 +26,79 @@
     overflow-x: clip;
   }
 
-  .sx-mazehero {
-    /* The copy's left edge: the content column's, inside a field capped at 44rem tall. */
-    --sx-field-max: calc(44rem * var(--field-cols) / var(--field-rows));
-    --sx-hero-pad: max(var(--sl-content-pad-x, 1rem), (min(100vw, var(--sx-field-max)) - 67.5rem) / 2);
-    /* The field's own height: its aspect, kept between 26rem and 44rem. */
-    --sx-field-h: clamp(26rem, min(100vw, var(--sx-field-max)) * var(--field-rows) / var(--field-cols), 44rem);
+  .sx-layers {
+    --pw: clamp(250px, min(26.5vw, 46vh), 420px);
+    /* Animated Signature's pen curve for the strokes, Text Reveal's expo-out for the lines. */
+    --sx-draw: cubic-bezier(0.2, 0.2, 0.8, 0.9);
+    --sx-rise: cubic-bezier(0.19, 1, 0.22, 1);
     position: relative;
-    width: 100vw;
-    margin-inline: calc(50% - 50vw);
-    margin-block: 0 1.5rem;
-  }
-  .sx-mazehero__inner {
-    position: relative;
-    isolation: isolate;
-  }
-
-  /* Narrow screens: the copy, then the field as a band, then its caption. */
-  .sx-mazehero__copy {
-    position: relative;
-    z-index: 1;
     box-sizing: border-box;
-    max-width: calc(36rem + 2 * var(--sx-hero-pad));
-    padding: 1.25rem var(--sx-hero-pad) 0;
-  }
-  .sx-mazehero__field {
-    position: relative;
-    z-index: 0;
-    overflow: hidden;
-    margin-top: 2.5rem;
-  }
-  /* The drawing and its coordinate labels share one box with the drawing's own aspect. */
-  .sx-mazehero__plot {
-    position: relative;
-    aspect-ratio: var(--field-cols) / var(--field-rows);
-  }
-  .sx-mazehero__plot > svg {
-    position: absolute;
-    inset: 0;
-    display: block;
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-  }
-  .sx-mazehero__meta {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-wrap: wrap;
+    width: 100vw;
+    /* Flush under the header: cancels the content panel's top padding. */
+    margin-block: -1.5rem 1.5rem;
+    margin-inline: calc(50% - 50vw);
+    height: clamp(640px, calc(100vh - var(--sl-nav-height, 4rem)), 920px);
+    padding-inline: max(clamp(24px, 6vw, 104px), calc((100vw - 90rem) / 2));
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
     align-items: center;
-    gap: 0.75rem;
-    padding: 1rem var(--sx-hero-pad) 0;
+    column-gap: clamp(24px, 4vw, 72px);
+    overflow: hidden;
+    border-bottom: 1px solid var(--sx-hairline);
+    color: var(--sl-color-white);
   }
-
-  /* A soft structure-blue light behind the arena: depth, not decoration. */
-  .sx-mazehero__field::before {
+  /* A faint drafting grid, strongest behind the figure. */
+  .sx-layers::before {
     content: '';
     position: absolute;
     inset: 0;
-    z-index: -1;
-    background: radial-gradient(
-      ellipse 42% 70% at 74% 55%,
-      color-mix(in oklab, var(--sx-structure) 9%, transparent),
-      transparent 72%
-    );
     pointer-events: none;
+    background-image:
+      linear-gradient(to right, var(--sx-grid) 1px, transparent 1px),
+      linear-gradient(to bottom, var(--sx-grid) 1px, transparent 1px);
+    background-size: 56px 56px;
+    background-position: center;
+    -webkit-mask-image: radial-gradient(46% 62% at 69% 50%, black 0%, transparent 78%);
+    mask-image: radial-gradient(46% 62% at 69% 50%, black 0%, transparent 78%);
+  }
+  .sx-layers__copy {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    max-width: 36rem;
   }
 
-  /* Under 52rem the band shows the arena only: the drawing is widened and shifted so the arena's
-     columns fill it. */
-  @media (width < 52rem) {
-    .sx-mazehero__plot {
-      width: calc(100% * var(--field-cols) / var(--arena-cols));
-      margin-inline-start: calc(-100% * (var(--field-cols) - var(--arena-cols)) / var(--arena-cols));
-    }
-  }
+  /* ---- The wordmark and the copy ---- */
 
-  /* 64rem and up: the copy sits over the faded wing, the field behind it at its own height
-     (centred if the copy runs taller), so a tall copy never crops the arena. */
-  @media (min-width: 64rem) {
-    .sx-mazehero__inner {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 2rem;
-      box-sizing: border-box;
-      max-width: var(--sx-field-max);
-      min-height: var(--sx-field-h);
-      margin-inline: auto;
-      padding: 3rem var(--sx-hero-pad);
-    }
-    .sx-mazehero__copy,
-    .sx-mazehero__meta {
-      max-width: 28rem;
-      padding: 0;
-    }
-    .sx-mazehero__field {
-      position: absolute;
-      inset-inline: 0;
-      top: 50%;
-      height: var(--sx-field-h);
-      margin: 0;
-      transform: translateY(-50%);
-    }
-    /* The plot keeps its aspect at the field's height; a narrower field crops its east edge. */
-    .sx-mazehero__plot {
-      position: absolute;
-      inset-block: 0;
-      inset-inline-start: 0;
-      width: calc(var(--sx-field-h) * var(--field-cols) / var(--field-rows));
-      aspect-ratio: auto;
-    }
-    /* Its top and bottom edges fade into the page, as the wing fades on the left. */
-    .sx-mazehero__plot > .field {
-      mask-image: linear-gradient(transparent, #000 1.5rem, #000 calc(100% - 1.5rem), transparent);
-    }
-    /* A soft fade in the page colour under the copy. */
-    .sx-mazehero__field::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: radial-gradient(
-        ellipse 38rem 85% at calc(var(--sx-hero-pad) + 12rem) 50%,
-        var(--sl-color-black) 42%,
-        transparent 100%
-      );
-      pointer-events: none;
-    }
+  /* A clipped line whose inner span rises out of the clip (Text Reveal). The padding keeps
+     descenders inside the clip; the negative margin gives it back. */
+  .sx-ln {
+    display: block;
+    overflow: hidden;
+    white-space: nowrap;
+    padding-bottom: 0.18em;
+    margin-bottom: -0.18em;
   }
-
-  /* ---- The drawing ---- */
-
-  /* The lattice and the walls are hairlines at any scale; the agent's lines scale with the field. */
-  .sx-mazehero :is(.lattice, .wing, .walls, .joints) {
-    fill: none;
-    vector-effect: non-scaling-stroke;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  .sx-mazehero .lattice {
-    stroke: var(--sx-grid);
-    stroke-width: 1px;
-  }
-  .sx-mazehero .wing {
-    stroke: var(--sx-structure);
-    stroke-width: 1px;
-    stroke-opacity: 0.55;
-  }
-  .sx-mazehero .walls {
-    stroke: var(--sx-structure);
-    stroke-width: 1.25px;
-    stroke-opacity: 0.85;
-  }
-  .sx-mazehero .walls--halo {
-    stroke-width: 5px;
-    stroke-opacity: 0.1;
-  }
-  .sx-mazehero .joints {
-    stroke: var(--sx-structure);
-    stroke-width: 3.5px;
-  }
-
-  .sx-mazehero .trail,
-  .sx-mazehero .route {
-    fill: none;
-    stroke: var(--sx-agent);
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  .sx-mazehero .trail {
-    stroke-width: 0.1;
-    stroke-opacity: 0.45;
-  }
-  .sx-mazehero .route {
-    stroke-width: 0.19;
-  }
-  /* The route's glow: two wider, fainter copies under it (cheaper than a blur filter). */
-  .sx-mazehero .route--halo {
-    stroke-width: 0.55;
-    stroke-opacity: 0.2;
-  }
-  .sx-mazehero .route--wide {
-    stroke-width: 1.15;
-    stroke-opacity: 0.07;
-  }
-  .sx-mazehero .goal {
-    fill: var(--sx-agent);
-    transform-box: fill-box;
-    transform-origin: center;
-  }
-  .sx-mazehero .goal--halo {
-    fill-opacity: 0.16;
-  }
-  .sx-mazehero .start {
-    fill: var(--sl-color-black);
-    stroke: var(--sl-color-white);
-    stroke-width: 0.12;
-  }
-  /* Only while the sequence plays; the static picture needs no dashes. */
-  .sx-mazehero.is-moving .trail,
-  .sx-mazehero.is-moving .route {
-    stroke-dasharray: 1 1;
-  }
-
-  /* Coordinate labels, set on the wall lines with a halo in the page colour that breaks the line. */
-  /* Above the fade under the copy, so the labels stay crisp. */
-  .sx-mazehero .ticks {
-    z-index: 1;
-  }
-  .sx-mazehero .ticks text {
-    fill: var(--sx-muted);
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.08em;
-    font-variant-numeric: tabular-nums;
-    dominant-baseline: central;
-    paint-order: stroke;
-    stroke: var(--sl-color-black);
-    stroke-width: 6px;
-    stroke-linejoin: round;
-  }
-
-  /* ---- The meta row: caption chip and pause pill ---- */
-
-  .sx-mazehero__caption {
-    margin: 0;
-    max-width: 28rem;
-    padding: 0.45rem 0.85rem;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 10px;
-    background: color-mix(in oklab, var(--sl-color-black) 82%, transparent);
-    box-shadow: inset 0 1px 0 color-mix(in oklab, white 4%, transparent);
-    color: var(--sx-muted);
-    font-size: 0.8125rem;
-    line-height: 1.5;
-  }
-
-  .sx-mazehero__pause {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 2.25rem;
-    padding: 0 0.95rem 0 0.8rem;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 999px;
-    background: var(--sl-color-black);
-    color: var(--sx-muted);
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    line-height: 1;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition:
-      color 180ms var(--sx-ease),
-      border-color 180ms var(--sx-ease),
-      background-color 180ms var(--sx-ease);
-  }
-  .sx-mazehero__pause[hidden] {
-    display: none;
-  }
-  .sx-mazehero__pause:hover {
-    border-color: color-mix(in oklab, var(--sx-structure) 45%, var(--sx-hairline));
-    background: var(--sx-surface);
-    color: var(--sl-color-white);
-  }
-  .sx-mazehero__pause[aria-pressed='true'] {
-    border-color: color-mix(in oklab, var(--sx-structure) 60%, var(--sx-hairline));
-    background: var(--sx-surface);
-    color: var(--sl-color-white);
-  }
-  .sx-mazehero__pause svg {
-    width: 0.7rem;
-    height: 0.7rem;
-    flex-shrink: 0;
-  }
-  /* The icon shows the state without relying on colour: pause bars while it plays, a play
-     triangle once pressed. */
-  .sx-mazehero__pause .i-play,
-  .sx-mazehero__pause[aria-pressed='true'] .i-pause {
-    display: none;
-  }
-  .sx-mazehero__pause[aria-pressed='true'] .i-play {
+  .sx-ln > span {
     display: block;
   }
 
-  /* ---- The hero copy (the slot, written in index.astro) ---- */
-
   .sx-lp-title {
-    margin: 0;
+    margin: 0 0 clamp(26px, 4.2vh, 42px);
     font-family: var(--sx-font-display);
-    font-size: clamp(2.25rem, 1.2rem + 3.6vw, 4.25rem);
+    font-size: clamp(42px, 5.6vw, 84px);
     font-weight: 200;
     line-height: 1;
     letter-spacing: 0.08em;
     text-transform: uppercase;
-    color: var(--sl-color-white);
-  }
-  .sx-lp-title__word {
-    display: inline-block;
     white-space: nowrap;
-  }
-  /* Each glyph carries the same top-to-bottom ink fade, so the word reads as one surface. */
-  .sx-lp-title__word > span {
-    display: inline-block;
-    background: linear-gradient(
-      180deg,
-      var(--sl-color-white) 35%,
-      color-mix(in oklab, var(--sl-color-white) 64%, var(--sl-color-black))
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-  .sx-lp-aim {
-    max-width: 28rem;
-    margin: 1.4rem 0 0;
-    font-size: clamp(1.2rem, 1.05rem + 0.6vw, 1.45rem);
-    font-weight: 450;
-    line-height: 1.35;
-    letter-spacing: -0.01em;
-    color: var(--sl-color-gray-1);
-    text-wrap: balance;
-  }
-  .sx-lp-lead {
-    max-width: 27rem;
-    margin: 0.85rem 0 0;
-    font-size: 1.0625rem;
-    line-height: 1.6;
-    color: var(--sx-muted);
-    text-wrap: pretty;
-  }
-  .sx-lp-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    margin-top: 2rem;
-  }
-
-  .sx-lp-btn {
-    position: relative;
-    isolation: isolate;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.55rem;
-    min-height: 2.75rem;
-    padding: 0 1.2rem;
-    border: 1px solid transparent;
-    border-radius: 999px;
-    font-size: 0.9375rem;
-    font-weight: 550;
-    line-height: 1.2;
-    text-decoration: none;
-    transition:
-      background-color 180ms var(--sx-ease),
-      border-color 180ms var(--sx-ease),
-      box-shadow 180ms var(--sx-ease),
-      color 180ms var(--sx-ease);
-  }
-  .sx-lp-btn__icon {
-    width: 1rem;
-    height: 1rem;
-    flex-shrink: 0;
-    transition: transform 180ms var(--sx-ease);
-  }
-  .sx-lp-btn:hover .sx-lp-btn__icon {
-    transform: translateX(3px);
-  }
-
-  /* Primary: a signal-tinted pill whose border carries a travelling light. */
-  .sx-lp-btn--primary {
-    border-color: color-mix(in oklab, var(--sx-agent) 38%, var(--sx-hairline));
-    background: color-mix(in oklab, var(--sx-agent) 11%, var(--sl-color-black));
-    box-shadow: inset 0 1px 0 color-mix(in oklab, white 7%, transparent);
     color: var(--sl-color-white);
   }
-  .sx-lp-btn--primary .sx-lp-btn__icon {
-    color: var(--sx-agent);
-  }
-  .sx-lp-btn--primary:hover {
-    border-color: color-mix(in oklab, var(--sx-agent) 60%, var(--sx-hairline));
-    background: color-mix(in oklab, var(--sx-agent) 17%, var(--sl-color-black));
-    box-shadow:
-      inset 0 1px 0 color-mix(in oklab, white 7%, transparent),
-      var(--sx-glow);
-    color: var(--sl-color-white);
-  }
-  .sx-lp-btn--primary::before {
-    content: '';
-    position: absolute;
-    inset: -1px;
-    z-index: 1;
-    padding: 1px;
-    border-radius: inherit;
-    background: conic-gradient(
-      from var(--sx-beam-angle),
-      transparent 0deg,
-      color-mix(in oklab, var(--sx-agent) 4%, transparent) 240deg,
-      color-mix(in oklab, var(--sx-agent) 55%, transparent) 318deg,
-      var(--sx-agent) 350deg,
-      transparent 360deg
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask-composite: exclude;
-    opacity: 0;
-    pointer-events: none;
-  }
-  .sx-lp-btn--primary:is(:hover, :focus-visible)::before {
-    --sx-beam-angle: 40deg;
-    opacity: 1;
-  }
-
-  /* Secondary: a ghost pill. */
-  .sx-lp-btn--ghost {
-    border-color: color-mix(in oklab, var(--sl-color-white) 16%, transparent);
-    background: color-mix(in oklab, var(--sl-color-black) 60%, transparent);
-    color: var(--sl-color-gray-1);
-  }
-  .sx-lp-btn--ghost:hover {
-    border-color: color-mix(in oklab, var(--sx-structure) 55%, transparent);
-    background: var(--sx-surface-2);
-    color: var(--sl-color-white);
-  }
-
-  /* ---- Motion: the entrance, and the beam's laps ---- */
-
-  @media (prefers-reduced-motion: no-preference) {
-    .sx-lp-title__word > span {
-      animation: sx-hero-blur-in 900ms var(--sx-ease) both;
-      animation-delay: calc(80ms + var(--i, 0) * 55ms);
-    }
-    .sx-mazehero__copy > :not(.sx-lp-title),
-    .sx-mazehero__meta {
-      animation: sx-hero-rise 800ms var(--sx-ease) both;
-    }
-    .sx-mazehero__copy > :nth-child(2) {
-      animation-delay: 420ms;
-    }
-    .sx-mazehero__copy > :nth-child(3) {
-      animation-delay: 500ms;
-    }
-    .sx-mazehero__copy > :nth-child(n + 4) {
-      animation-delay: 580ms;
-    }
-    .sx-mazehero__meta {
-      animation-delay: 700ms;
-    }
-    .sx-mazehero__field {
-      animation: sx-hero-fade 1200ms var(--sx-ease) 150ms both;
-    }
-    /* One lap of light after the entrance; on hover or focus it keeps travelling. */
-    .sx-lp-btn--primary::before {
-      animation: sx-hero-beam-lap 2600ms linear 1300ms both;
-    }
-    /* The lap stays first in the list, so leaving does not restart it. */
-    .sx-lp-btn--primary:is(:hover, :focus-visible)::before {
-      animation:
-        sx-hero-beam-lap 2600ms linear 1300ms both,
-        sx-hero-beam 2400ms linear infinite;
-    }
-  }
-
-  @keyframes sx-hero-blur-in {
-    from {
-      opacity: 0;
-      filter: blur(12px);
-      transform: translateY(0.16em);
-    }
-  }
-  @keyframes sx-hero-rise {
-    from {
-      opacity: 0;
-      filter: blur(4px);
-      transform: translateY(12px);
-    }
-  }
-  @keyframes sx-hero-fade {
-    from {
-      opacity: 0;
-    }
-  }
-  @keyframes sx-hero-beam-lap {
-    0% {
-      --sx-beam-angle: 0deg;
-      opacity: 0;
-    }
-    15%,
-    80% {
-      opacity: 1;
-    }
-    100% {
-      --sx-beam-angle: 360deg;
-      opacity: 0;
-    }
-  }
-  @keyframes sx-hero-beam {
-    from {
-      --sx-beam-angle: 0deg;
-      opacity: 1;
-    }
-    to {
-      --sx-beam-angle: 360deg;
-      opacity: 1;
-    }
-  }
-}
-
-/* Outside any layer and more specific than the site's content-heading rules, so the title keeps
-   its weight and tracking whatever those set. */
-.sx-mazehero .sx-lp-title {
-  font-weight: 200;
-  letter-spacing: 0.08em;
-}
-
-/* The pills keep their shape when focused, whatever radius a site-wide focus rule sets. */
-.sx-lp-btn:focus-visible,
-.sx-mazehero__pause:focus-visible {
-  border-radius: 999px;
-}
-
-/* Light theme: the same linework, quieter, so the field reads as a map and not as a grid of bars. */
-@layer components {
-  :root[data-theme='light'] .sx-mazehero .wing {
-    stroke-opacity: 0.26;
-  }
-  :root[data-theme='light'] .sx-mazehero .walls {
-    stroke-opacity: 0.5;
-  }
-  :root[data-theme='light'] .sx-mazehero .walls--halo {
-    stroke-opacity: 0.04;
-  }
-}
-
-/* The brand wordmark in the hero: the P is the mark itself (components/brand/PMark.astro), drawn to
-   Unbounded's cap height (0.75em) and sitting on the baseline; the rest is live text. */
-@layer components {
-  .sx-lp-title__word > .sx-lp-title__p {
-    background: none;
-    color: inherit;
+  /* The brand wordmark: the P is the mark itself (components/brand/PMark.astro), drawn to
+     Unbounded's cap height (0.75em) and sitting on the baseline; the rest is live text. */
+  .sx-lp-title__p {
     margin-right: 0.08em;
   }
   .sx-lp-title__p svg {
@@ -579,5 +107,728 @@
     width: auto;
     vertical-align: baseline;
     overflow: visible;
+  }
+
+  .sx-lp-statement {
+    max-width: 16em;
+    margin: 0 0 18px;
+    font-family: var(--font-sans);
+    font-size: clamp(1.6rem, 1rem + 1.6vw, 2.35rem);
+    font-weight: 500;
+    line-height: 1.15;
+    letter-spacing: -0.01em;
+    color: var(--sl-color-white);
+    text-wrap: balance;
+  }
+  .sx-lp-lead {
+    max-width: 46ch;
+    margin: 0 0 clamp(26px, 4vh, 38px);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--sx-muted);
+    text-wrap: pretty;
+  }
+
+  .sx-layers__actions {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 20px 30px;
+  }
+
+  /* ---- Primary action: Expanding Arrow Button ---- */
+
+  .sx-layers__btn {
+    --tile: 44px;
+    --inset: 3px;
+    --shift: -44px;
+    /* 0 at rest, 1 on hover (where hover exists) or keyboard focus; the rest follows from it. */
+    --open: 0;
+    position: relative;
+    isolation: isolate;
+    box-sizing: border-box;
+    display: inline-flex;
+    align-items: center;
+    height: 52px;
+    padding: 0 34px 0 calc(var(--tile) + 20px);
+    overflow: hidden;
+    border: 1px solid color-mix(in oklab, var(--sx-hairline), var(--sx-agent) calc(var(--open) * 45%));
+    border-radius: 999px;
+    background: var(--sx-surface);
+    color: var(--sl-color-white);
+    font: 500 15px/1 var(--font-sans);
+    letter-spacing: 0.005em;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+      border-color 500ms var(--sx-ease),
+      transform 200ms var(--sx-ease);
+  }
+  .sx-layers__btn:focus-visible {
+    --open: 1;
+    outline: 2px solid var(--sx-structure);
+    outline-offset: 3px;
+  }
+  @media (hover: hover) {
+    .sx-layers__btn:hover {
+      --open: 1;
+    }
+  }
+  /* The press of the catalog button (a spring there, a short ease here). */
+  .sx-layers__btn:active {
+    transform: scale(0.97);
+  }
+  .sx-layers__btn-label {
+    position: relative;
+    z-index: 1;
+    white-space: nowrap;
+    transform: translateX(calc(var(--open) * var(--shift)));
+    transition: transform 650ms var(--sx-ease);
+  }
+  .sx-layers__tile {
+    position: absolute;
+    z-index: 2;
+    inset: var(--inset) auto var(--inset) var(--inset);
+    width: calc(var(--tile) + var(--open) * (100% - 2 * var(--inset) - var(--tile)));
+    overflow: hidden;
+    border-radius: 999px;
+    background: var(--sx-agent);
+    color: var(--sl-color-black);
+    transition: width 650ms var(--sx-ease);
+  }
+  /* The label again, in the tile's ink, aligned to the one below so the tile's edge reads as a
+     colour change running through the text. */
+  .sx-layers__tile-label {
+    position: absolute;
+    top: 50%;
+    left: calc(var(--tile) + 20px - var(--inset));
+    white-space: nowrap;
+    transform: translate(calc(var(--open) * var(--shift)), -50%);
+    transition: transform 650ms var(--sx-ease);
+  }
+  .sx-layers__arrow {
+    position: absolute;
+    top: 50%;
+    right: 12px;
+    width: 20px;
+    height: 20px;
+    margin-top: -10px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  /* The trail: three chevrons that fade in behind the arrow, brightest first. */
+  .sx-layers__trail {
+    position: absolute;
+    top: 50%;
+    right: 36px;
+    display: flex;
+    gap: 3px;
+    height: 12px;
+    margin-top: -6px;
+  }
+  .sx-layers__trail i {
+    display: block;
+    width: 8px;
+    height: 12px;
+    opacity: calc(var(--open) * var(--o));
+    transform: translateX(calc((1 - var(--open)) * 12px));
+    transition:
+      opacity 500ms var(--sx-ease) calc(var(--open) * var(--dly)),
+      transform 600ms var(--sx-ease) calc(var(--open) * var(--dly));
+  }
+  .sx-layers__trail i:nth-child(1) {
+    --o: 0.22;
+    --dly: 0.26s;
+  }
+  .sx-layers__trail i:nth-child(2) {
+    --o: 0.5;
+    --dly: 0.19s;
+  }
+  .sx-layers__trail i:nth-child(3) {
+    --o: 0.85;
+    --dly: 0.12s;
+  }
+  .sx-layers__trail svg {
+    display: block;
+    width: 8px;
+    height: 12px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ---- Secondary action: Underline Link ---- */
+
+  /* Two background lines on an inline box, so the underline follows the text across a line break
+     (box-decoration-break: clone): a faint rule at rest, and the ink line that draws in from the
+     left on hover or focus and leaves to the right (only its size is transitioned). */
+  .sx-layers__ulink {
+    --open: 0;
+    --rule: color-mix(in oklab, currentColor 26%, transparent);
+    padding-block: 7px;
+    color: var(--sl-color-white);
+    font: 500 15px/1.2 var(--font-sans);
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor), linear-gradient(var(--rule), var(--rule));
+    background-repeat: no-repeat;
+    background-size:
+      calc(var(--open) * 100%) 1px,
+      100% 1px;
+    background-position:
+      calc((1 - var(--open)) * 100%) 100%,
+      0 100%;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    transition: background-size 450ms var(--sx-ease);
+  }
+  .sx-layers__ulink:focus-visible {
+    --open: 1;
+    outline: 2px solid var(--sx-structure);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  @media (hover: hover) {
+    .sx-layers__ulink:hover {
+      --open: 1;
+    }
+  }
+
+  /* ---- The figure: four planes in CSS 3D ---- */
+
+  .sx-layers__fig {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(28px, 3vw, 46px);
+    min-width: 0;
+  }
+  .sx-layers__scene {
+    --rx: 8deg;
+    --ry: -32deg;
+    --sp: 110px;
+    position: relative;
+    flex: none;
+    width: var(--pw);
+    aspect-ratio: 25.43 / 28.25;
+    perspective: 1400px;
+  }
+  /* One set of values per sheet, shared by its plane, its caption and its stage row. Depth at
+     rest, back to front: stem, outer, middle, inner, so the shared top edge keeps the inner
+     colour. --fk is the depth in the fan, --sk the pointer separation, --i / --dl / --dd the
+     build order and the draw's start and length, --fog the mist before the sheets close up,
+     --qe the corner marks that stay once it has. */
+  .sx-layers [data-k='stem'] {
+    --c: var(--sl-color-white);
+    --fk: 1.5;
+    --zl: 0px;
+    --fog: 1;
+    --sk: -1;
+    --i: 0;
+    --dl: 150ms;
+    --dd: 650ms;
+    --qe: 0.32;
+  }
+  .sx-layers [data-k='inner'] {
+    --c: var(--sx-agent);
+    --fk: 0.5;
+    --zl: 0.9px;
+    --fog: 0.84;
+    --sk: 1;
+    --i: 1;
+    --dl: 450ms;
+    --dd: 700ms;
+    --qe: 0;
+  }
+  .sx-layers [data-k='middle'] {
+    --c: var(--sx-structure);
+    --fk: -0.5;
+    --zl: 0.6px;
+    --fog: 0.72;
+    --sk: 0.3333;
+    --i: 2;
+    --dl: 800ms;
+    --dd: 600ms;
+    --qe: 0;
+  }
+  .sx-layers [data-k='outer'] {
+    --c: var(--sl-color-white);
+    --fk: -1.5;
+    --zl: 0.3px;
+    --fog: 0.62;
+    --sk: -0.3333;
+    --i: 3;
+    --dl: 1050ms;
+    --dd: 750ms;
+    --qe: 0;
+  }
+
+  /* stack (pointer tilt) > fan (intro rotation) > pz (intro depth) > plane (pointer separation) */
+  .sx-layers__stack,
+  .sx-layers__fan,
+  .sx-layers__pz {
+    position: absolute;
+    inset: 0;
+    transform-style: preserve-3d;
+  }
+  .sx-layers__stack {
+    transform: rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg));
+    transition: transform 900ms var(--sx-ease);
+  }
+  .sx-layers__pz {
+    --zf: calc(var(--fk) * var(--sp));
+    transform: translateZ(var(--zl, 0px));
+  }
+  .sx-layers__plane {
+    position: absolute;
+    inset: 0;
+    color: var(--c);
+    transform: translateZ(calc(var(--sep, 0) * var(--sk, 0) * 24px));
+    transition:
+      transform 900ms var(--sx-ease),
+      opacity 400ms var(--sx-ease);
+  }
+  .sx-layers__art {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .sx-layers__art path {
+    fill: none;
+    stroke: var(--c);
+    stroke-width: var(--sw, 0.14);
+    stroke-linejoin: round;
+    stroke-linecap: butt;
+  }
+  /* The stem starts at the shared top edge's centre line; half a stroke up puts its end flush
+     with the edge's upper side, so it neither pokes above nor leaves a notch at the corner. */
+  .sx-layers__pz[data-k='stem'] path {
+    transform: translateY(calc(var(--sw, 0.14) * -0.5px));
+  }
+  /* Registration corners: hairline L-shapes on each sheet's box, never filled. */
+  .sx-layers__cm {
+    position: absolute;
+    width: 14px;
+    height: 14px;
+    border: 0 solid var(--c);
+    opacity: var(--qe, 0);
+  }
+  .sx-layers__cm.tl {
+    left: 0;
+    top: 0;
+    border-left-width: 1px;
+    border-top-width: 1px;
+  }
+  .sx-layers__cm.tr {
+    right: 0;
+    top: 0;
+    border-right-width: 1px;
+    border-top-width: 1px;
+  }
+  .sx-layers__cm.bl {
+    left: 0;
+    bottom: 0;
+    border-left-width: 1px;
+    border-bottom-width: 1px;
+  }
+  .sx-layers__cm.br {
+    right: 0;
+    bottom: 0;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+  }
+
+  /* The sheets named during the intro: a flat list under the figure, left-aligned and one line
+     each, so the captions never overlap the sheets or each other. Gone once the logo has formed. */
+  .sx-layers__legend {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 28px);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    pointer-events: none;
+  }
+  .sx-layers__legend li {
+    display: block;
+    padding-bottom: 3px;
+    font: 400 10px/14px var(--font-mono);
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--c);
+    opacity: 0;
+  }
+  .sx-layers__legend li::before {
+    content: '';
+    display: inline-block;
+    width: 22px;
+    height: 1px;
+    margin-right: 10px;
+    vertical-align: middle;
+    background: currentColor;
+    opacity: 0.55;
+  }
+
+  /* The shared top edge, drawn once the sheets coincide and behind the strokes (it comes first in
+     the markup). Its 1px is the upper half of the edge's stroke and the row the stage list's
+     first rule also occupies. */
+  .sx-layers__datum {
+    position: absolute;
+    left: -52px;
+    right: -100vw;
+    top: calc(11.823% - 1px);
+    height: 1px;
+    background: var(--sx-hairline);
+    pointer-events: none;
+  }
+
+  /* ---- The stage list (real text) ---- */
+
+  .sx-layers__stages {
+    display: grid;
+    grid-auto-rows: 1fr;
+    flex: none;
+    align-self: flex-start;
+    width: clamp(184px, 15vw, 226px);
+    /* The first rule lies on the mark's top edge: 11.823% of the figure's height, less the 1px
+       the datum is raised by. */
+    margin: calc(var(--pw) * 28.25 / 25.43 * 0.11823 - 1px) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sx-layers__stages li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      'k st'
+      'nm nm';
+    column-gap: 12px;
+    row-gap: 5px;
+    align-content: start;
+    align-items: baseline;
+    padding: 15px 0 19px;
+    border-top: 1px solid var(--sx-hairline);
+  }
+  .sx-layers__stages li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -1px;
+    width: 28px;
+    height: 2px;
+    background: var(--c);
+    transition: width 550ms var(--sx-ease);
+  }
+  @media (hover: hover) {
+    .sx-layers__stages li:hover::before {
+      width: 100%;
+    }
+  }
+  .sx-layers__stages .k {
+    grid-area: k;
+    font: 400 10.5px/1.2 var(--font-mono);
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--c);
+  }
+  .sx-layers__stages .nm {
+    grid-area: nm;
+    font: 400 16px/1.3 var(--font-sans);
+    color: var(--sl-color-white);
+  }
+  /* Status words in muted mono; the active stage is marked by ink and weight, not by a colour. */
+  .sx-layers__stages .st {
+    grid-area: st;
+    font: 400 10.5px/1.2 var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    text-align: right;
+    color: var(--sx-muted);
+  }
+  .sx-layers__stages li[data-state='active'] .st {
+    font-weight: 500;
+    color: var(--sl-color-white);
+  }
+  .sx-layers__stages li[data-state='active'] .nm {
+    font-weight: 500;
+  }
+
+  /* Hovering a stage row isolates its bowl (mouse only, once the intro is over). */
+  @media (hover: hover) and (pointer: fine) {
+    .sx-layers.done:has(.sx-layers__stages [data-k='inner']:hover) .sx-layers__pz:not([data-k='inner']) .sx-layers__plane,
+    .sx-layers.done:has(.sx-layers__stages [data-k='middle']:hover) .sx-layers__pz:not([data-k='middle']) .sx-layers__plane,
+    .sx-layers.done:has(.sx-layers__stages [data-k='outer']:hover) .sx-layers__pz:not([data-k='outer']) .sx-layers__plane {
+      opacity: 0.16;
+    }
+  }
+
+  /* ---- Intro: plain CSS animations, about 2.8 s, started by the script's "go" ---- */
+
+  /* The sheets are fanned in depth, drawn in build order, then turned to face the viewer and slid
+     together until they coincide. Nothing here applies without script ("js") or with reduced
+     motion, which show the finished frame. "done" drops the animation layers; the resting state
+     is identical. */
+  @keyframes sx-fan-turn {
+    from {
+      transform: rotateX(var(--rx)) rotateY(var(--ry));
+    }
+    to {
+      transform: rotateX(0deg) rotateY(0deg);
+    }
+  }
+  @keyframes sx-slide {
+    from {
+      transform: translateZ(var(--zf));
+    }
+    to {
+      transform: translateZ(var(--zl));
+    }
+  }
+  @keyframes sx-unfog {
+    from {
+      opacity: var(--fog);
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes sx-draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes sx-fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes sx-fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+  @keyframes sx-quiet {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: var(--qe, 0);
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Hidden until the script has measured the lines and started the intro. */
+    .sx-layers.js:not(.go) [data-split] {
+      visibility: hidden;
+    }
+    .sx-layers.js .sx-ln > span {
+      transform: translateY(110%);
+      transition: transform 800ms var(--sx-rise) var(--d, 0ms);
+    }
+    .sx-layers.js.go .sx-ln > span {
+      transform: none;
+    }
+    .sx-layers.js .sx-layers__act {
+      opacity: 0;
+      transform: translateY(14px);
+      transition:
+        opacity 800ms var(--sx-ease) var(--d, 0ms),
+        transform 800ms var(--sx-ease) var(--d, 0ms);
+    }
+    .sx-layers.js.go .sx-layers__act {
+      opacity: 1;
+      transform: none;
+    }
+
+    .sx-layers.js .sx-layers__fan {
+      transform: rotateX(var(--rx)) rotateY(var(--ry));
+    }
+    .sx-layers.js .sx-layers__pz {
+      transform: translateZ(var(--zf));
+    }
+    .sx-layers.js .sx-layers__art {
+      opacity: var(--fog);
+    }
+    .sx-layers.js .sx-layers__art path {
+      stroke-dasharray: 1;
+      stroke-dashoffset: 1;
+    }
+    .sx-layers.js .sx-layers__cm {
+      opacity: 0;
+    }
+    .sx-layers.js.go .sx-layers__fan {
+      animation: sx-fan-turn 1100ms var(--sx-ease) 1700ms both;
+    }
+    .sx-layers.js.go .sx-layers__pz {
+      animation: sx-slide 1000ms var(--sx-ease) 1800ms both;
+    }
+    .sx-layers.js.go .sx-layers__art {
+      animation: sx-unfog 1000ms var(--sx-ease) 1800ms both;
+    }
+    .sx-layers.js.go .sx-layers__art path {
+      animation: sx-draw var(--dd) var(--sx-draw) var(--dl) both;
+    }
+    .sx-layers.js.go .sx-layers__cm {
+      animation:
+        sx-fade-in 450ms linear calc(var(--i) * 60ms) both,
+        sx-quiet 600ms ease 1800ms forwards;
+    }
+    .sx-layers.js.go .sx-layers__legend li {
+      animation:
+        sx-fade-in 400ms linear var(--dl) both,
+        sx-fade-out 550ms linear 1650ms forwards;
+    }
+    .sx-layers.js.done .sx-layers__fan {
+      transform: none;
+      animation: none;
+    }
+    .sx-layers.js.done .sx-layers__pz {
+      transform: translateZ(var(--zl));
+      animation: none;
+    }
+    .sx-layers.js.done .sx-layers__art {
+      opacity: 1;
+      animation: none;
+    }
+    .sx-layers.js.done .sx-layers__art path {
+      stroke-dasharray: none;
+      stroke-dashoffset: 0;
+      animation: none;
+    }
+    .sx-layers.js.done .sx-layers__cm {
+      opacity: var(--qe, 0);
+      animation: none;
+    }
+    .sx-layers.js.done .sx-layers__legend li {
+      opacity: 0;
+      animation: none;
+    }
+
+    .sx-layers.js .sx-layers__datum {
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 1100ms var(--sx-ease) 1800ms;
+    }
+    .sx-layers.js.go .sx-layers__datum {
+      transform: none;
+    }
+
+    /* The stage list rises one row after another once the sheets have closed. */
+    .sx-layers__stages li:nth-child(1) {
+      --d: 2250ms;
+    }
+    .sx-layers__stages li:nth-child(2) {
+      --d: 2340ms;
+    }
+    .sx-layers__stages li:nth-child(3) {
+      --d: 2430ms;
+    }
+    .sx-layers.js .sx-layers__stages li {
+      border-top-color: transparent;
+    }
+    .sx-layers.js .sx-layers__stages li::before {
+      transform: scaleX(0);
+      transform-origin: left;
+      transition:
+        transform 900ms var(--sx-ease) var(--d, 0ms),
+        width 550ms var(--sx-ease);
+    }
+    .sx-layers.js .sx-layers__stages li > * {
+      opacity: 0;
+      transform: translateY(10px);
+      transition:
+        opacity 800ms var(--sx-ease) var(--d, 0ms),
+        transform 800ms var(--sx-ease) var(--d, 0ms);
+    }
+    .sx-layers.js.go .sx-layers__stages li {
+      border-top-color: var(--sx-hairline);
+      transition: border-color 800ms var(--sx-ease) var(--d, 0ms);
+    }
+    .sx-layers.js.go .sx-layers__stages li::before {
+      transform: none;
+    }
+    .sx-layers.js.go .sx-layers__stages li > * {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sx-layers *,
+    .sx-layers *::before,
+    .sx-layers *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+
+  /* ---- Phone: the figure first, then the copy, then the stages ---- */
+
+  @media (max-width: 900px) {
+    .sx-layers {
+      --pw: min(64vw, 270px);
+      height: auto;
+      min-height: clamp(640px, calc(100vh - var(--sl-nav-height, 3.5rem)), 920px);
+      grid-template-columns: minmax(0, 1fr);
+      align-content: start;
+      row-gap: 30px;
+      padding: 30px 24px 44px;
+    }
+    .sx-layers::before {
+      -webkit-mask-image: radial-gradient(90% 40% at 50% 22%, black 0%, transparent 80%);
+      mask-image: radial-gradient(90% 40% at 50% 22%, black 0%, transparent 80%);
+    }
+    .sx-layers__fig {
+      display: contents;
+    }
+    .sx-layers__scene {
+      --rx: 6deg;
+      --ry: -24deg;
+      --sp: 62px;
+      order: 1;
+      justify-self: center;
+      perspective: 1000px;
+    }
+    .sx-layers__copy {
+      order: 2;
+      max-width: none;
+    }
+    .sx-layers__stages {
+      order: 3;
+      width: 100%;
+      margin: 2px 0 0;
+    }
+    .sx-layers__legend {
+      display: none;
+    }
+    .sx-layers__datum {
+      left: -24px;
+      right: -24px;
+    }
+    .sx-lp-title {
+      font-size: clamp(40px, 12.4vw, 56px);
+    }
+    .sx-lp-statement {
+      max-width: none;
+    }
   }
 }
