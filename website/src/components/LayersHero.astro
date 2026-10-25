@@ -1,0 +1,234 @@
+---
+// The landing hero: the Psyche mark taken apart, as four thin sheets in CSS 3D (a stem and three
+// nested bowls) beside the project's statement, its lead and two actions. The sheets fan out,
+// are drawn in build order, then close into the logo; a stage list (real text, read from the
+// public ledger) sits on the mark's top edge. The figure is decoration and hidden from assistive
+// technology; the stage list says the same in words. The server markup is the finished frame.
+// The intro is CSS (src/styles/hero.css); the script below splits the copy into lines, starts the
+// intro once the fonts are in, keeps the stroke two pixels wide and tilts the figure towards a
+// fine pointer once the intro is over. Catalog sources are credited in hero.css.
+//
+// The stages grow outward (brand/README.md): the inner bowl is stage 1, the middle bowl stage 2,
+// and the outer bowl, open at the stem, is what later stages will wrap around.
+import PMark from './brand/PMark.astro';
+import ledger from '@/data/ledger.public.json';
+import { stateLabel, type PublicLedger } from '@/lib/ledger.ts';
+import { withBase } from '@/lib/url.ts';
+import '@/styles/hero.css';
+
+const led = ledger as unknown as PublicLedger;
+const name = 'Psyche';
+
+// A stage's status word follows the ledger's program state; a paused stage is kept, as a citable
+// artifact. The ledger has no state for later stages, which are open by definition.
+const status = (state: string) => (state === 'paused' ? `${stateLabel(state)}, kept` : stateLabel(state));
+const stages = [
+  { key: 'inner', label: 'Stage 1', name: 'The substrate', state: led.program.substrate.state },
+  { key: 'middle', label: 'Stage 2', name: 'Spiking cognitive maps', state: led.program.cognitive_map.state },
+  { key: 'outer', label: 'Later stages', name: 'Toward AGI', state: 'open' },
+].map((s) => ({ ...s, status: status(s.state) }));
+const caption = (key: string) => {
+  const s = stages.find((st) => st.key === key);
+  return s ? `${s.label} · ${s.name} · ${s.status}` : '';
+};
+
+// DOM order is draw order: the stem, then the bowls from the inside out. The paths are the mark's
+// own geometry (brand/README.md); the stem starts on the shared top edge.
+const planes = [
+  { key: 'stem', d: 'M3.6 1.59V24', caption: 'The stem · Shared by every stage' },
+  { key: 'inner', d: 'M3.6 1.59H13.6A1.95 1.95 0 0 1 13.6 5.49H3.6', caption: caption('inner') },
+  { key: 'middle', d: 'M3.6 1.59H15.35A3.7 3.7 0 0 1 15.35 8.99H3.6', caption: caption('middle') },
+  { key: 'outer', d: 'M3.6 1.59H17.1A5.45 5.45 0 0 1 17.1 12.49H6.84', caption: caption('outer') },
+];
+const corners = ['tl', 'tr', 'bl', 'br'];
+---
+
+<section class="sx-layers" aria-labelledby="sx-hero-title">
+  <script is:inline>document.currentScript.parentElement.classList.add('js')</script>
+  <div class="sx-layers__copy">
+    <h1 class="sx-lp-title" id="sx-hero-title">
+      <span class="sr-only">{name}</span>
+      <span class="sx-lp-title__word sx-ln" aria-hidden="true"><span><span class="sx-lp-title__p"><PMark /></span>SYCHE</span></span>
+    </h1>
+    <p class="sx-lp-statement" data-split>Brain-inspired components for machine intelligence, built and tested one stage at a time.</p>
+    <p class="sx-lp-lead" data-split>Psyche is an open research project. Its current stage tests whether spiking neural networks that learn only through local plasticity build a map of their environment, on the classic cognitive-map experiments, and reports the result either way.</p>
+    <div class="sx-layers__actions">
+      <div class="sx-layers__act">
+        <a class="sx-layers__btn" href={withBase('research/')}>
+          <span class="sx-layers__btn-label">Read the research overview</span>
+          <span class="sx-layers__tile" aria-hidden="true" data-pagefind-ignore>
+            <span class="sx-layers__tile-label">Read the research overview</span>
+            <span class="sx-layers__trail">
+              {[0, 1, 2].map(() => <i><svg viewBox="0 0 8 12"><path d="M1.5 1.5 6 6l-4.5 4.5" /></svg></i>)}
+            </span>
+            <svg class="sx-layers__arrow" viewBox="0 0 20 20"><path d="M4 10h11M10.5 5.5 15 10l-4.5 4.5" /></svg>
+          </span>
+        </a>
+      </div>
+      <div class="sx-layers__act"><a class="sx-layers__ulink" href={withBase('battery/')}>Explore the test battery</a></div>
+    </div>
+  </div>
+
+  <div class="sx-layers__fig">
+    <div class="sx-layers__scene" aria-hidden="true" data-pagefind-ignore>
+      <i class="sx-layers__datum"></i>
+      <div class="sx-layers__stack">
+        <div class="sx-layers__fan">
+          {
+            planes.map((p) => (
+              <div class="sx-layers__pz" data-k={p.key}>
+                <div class="sx-layers__plane">
+                  <svg class="sx-layers__art" viewBox="0.36 -1.75 25.43 28.25" focusable="false">
+                    <path pathLength="1" d={p.d} />
+                  </svg>
+                  {corners.map((c) => <i class={`sx-layers__cm ${c}`} />)}
+                </div>
+              </div>
+            ))
+          }
+        </div>
+      </div>
+      <ul class="sx-layers__legend">
+        {planes.map((p) => <li data-k={p.key}>{p.caption}</li>)}
+      </ul>
+    </div>
+
+    <ol class="sx-layers__stages" aria-label="Stages">
+      {
+        stages.map((s) => (
+          <li data-k={s.key} data-state={s.state}>
+            <span class="k">{s.label}</span>
+            <span class="nm">{s.name}</span>
+            <span class="st">{s.status}</span>
+          </li>
+        ))
+      }
+    </ol>
+  </div>
+</section>
+
+<script>
+  const hero = document.querySelector<HTMLElement>('.sx-layers');
+  const scene = hero?.querySelector<HTMLElement>('.sx-layers__scene');
+  const stack = hero?.querySelector<HTMLElement>('.sx-layers__stack');
+  const copy = hero?.querySelector<HTMLElement>('.sx-layers__copy');
+
+  if (hero && scene && stack && copy) {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const fine = matchMedia('(min-width: 901px) and (hover: hover) and (pointer: fine)');
+    let done = false;
+    let started = false;
+    let lastWidth = 0;
+
+    // The mark's strokes are two screen pixels wide at any size of the figure (the SVG's units scale with it).
+    const size = () => scene.style.setProperty('--sw', (2 / ((scene.offsetWidth || 400) / 25.43)).toFixed(4));
+    size();
+    new ResizeObserver(size).observe(scene);
+
+    // Pointer, once the intro is over (a fine pointer, a wide screen, no reduced motion): the figure
+    // tilts up to 7 degrees and its sheets part by up to 24px. CSS transitions do the easing.
+    let frame = 0;
+    let at: PointerEvent | null = null;
+    const tilt = () => {
+      frame = 0;
+      if (!at) return;
+      const r = hero.getBoundingClientRect();
+      const s = scene.getBoundingClientRect();
+      const cx = s.left + s.width / 2;
+      const cy = s.top + s.height / 2;
+      const dx = at.clientX - cx;
+      const dy = at.clientY - cy;
+      const nx = Math.max(-1, Math.min(1, dx / Math.max(1, dx < 0 ? cx - r.left : r.right - cx)));
+      const ny = Math.max(-1, Math.min(1, dy / Math.max(1, dy < 0 ? cy - r.top : r.bottom - cy)));
+      stack.style.setProperty('--ty', `${(nx * 7).toFixed(2)}deg`);
+      stack.style.setProperty('--tx', `${(-ny * 7).toFixed(2)}deg`);
+      stack.style.setProperty('--sep', (0.35 + 0.65 * Math.min(1, Math.hypot(nx, ny))).toFixed(3));
+    };
+    hero.addEventListener(
+      'pointermove',
+      (e) => {
+        if (e.pointerType === 'touch' || !done || reduce || !fine.matches) return;
+        at = e;
+        if (!frame) frame = requestAnimationFrame(tilt);
+      },
+      { passive: true },
+    );
+    hero.addEventListener('pointerleave', () => {
+      at = null;
+      for (const [k, v] of [['--tx', '0deg'], ['--ty', '0deg'], ['--sep', '0']]) stack.style.setProperty(k, v);
+    });
+
+    // Text Reveal: each marked paragraph becomes one clipped line per rendered line, with the
+    // text kept once for assistive technology. Lines and actions rise 80ms apart.
+    const node = (tag: string, cls: string, text?: string) => {
+      const el = document.createElement(tag);
+      el.className = cls;
+      if (text !== undefined) el.textContent = text;
+      return el;
+    };
+    const split = () => {
+      for (const el of hero.querySelectorAll<HTMLElement>('[data-split]')) {
+        const text = (el.dataset.text ??= (el.textContent ?? '').trim().replace(/\s+/g, ' '));
+        el.replaceChildren(
+          ...text.split(' ').flatMap((w, i) => [...(i ? [' '] : []), node('span', 'w', w)]),
+        );
+        const rows: string[][] = [];
+        let top = -1;
+        for (const w of el.querySelectorAll<HTMLElement>('.w')) {
+          if (!rows.length || Math.abs(w.offsetTop - top) > 3) {
+            rows.push([]);
+            top = w.offsetTop;
+          }
+          rows[rows.length - 1].push(w.textContent ?? '');
+        }
+        el.replaceChildren(
+          node('span', 'sr-only', text),
+          ...rows.map((row) => {
+            const line = node('span', 'sx-ln');
+            line.setAttribute('aria-hidden', 'true');
+            line.append(node('span', '', row.join(' ')));
+            return line;
+          }),
+        );
+      }
+      let n = 0;
+      for (const s of copy.querySelectorAll<HTMLElement>('.sx-ln > span')) s.style.setProperty('--d', `${120 + n++ * 80}ms`);
+      for (const a of copy.querySelectorAll<HTMLElement>('.sx-layers__act')) a.style.setProperty('--d', `${160 + n++ * 80}ms`);
+    };
+
+    const go = () => {
+      if (started) return;
+      started = true;
+      if (reduce) {
+        done = true;
+        hero.classList.add('go', 'done');
+        return;
+      }
+      try {
+        split();
+      } catch {
+        // the copy stays as the server wrote it
+      }
+      hero.classList.add('go');
+      setTimeout(() => {
+        done = true;
+        hero.classList.add('done');
+      }, 2860);
+    };
+
+    // Start once the faces are in (the lines are measured with them), or after 1.5 s at the latest.
+    const faces = ['200 1em "Unbounded Variable"', '400 1em "Instrument Sans Variable"', '500 1em "Instrument Sans Variable"'];
+    Promise.race([
+      Promise.all(faces.map((f) => document.fonts.load(f, 'Psyche'))).then(() => document.fonts.ready),
+      new Promise((resolve) => setTimeout(resolve, 1500)),
+    ]).then(go, go);
+    setTimeout(go, 1800);
+
+    // A new column width means new line breaks.
+    new ResizeObserver(([entry]) => {
+      const w = Math.round(entry.contentRect.width);
+      if (started && !reduce && lastWidth && w !== lastWidth) split();
+      lastWidth = w;
+    }).observe(copy);
+  }
+</script>

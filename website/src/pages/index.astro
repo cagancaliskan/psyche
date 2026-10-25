@@ -1,8 +1,6 @@
 ---
-import PMark from '../components/brand/PMark.astro';
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import { ArrowRight } from 'lucide-react';
-import MazeHero from '@/components/MazeHero.astro';
+import LayersHero from '@/components/LayersHero.astro';
 import NowLine from '@/components/NowLine.tsx';
 import Timeline from '@/components/Timeline.tsx';
 import TimelineList from '@/components/TimelineList.astro';
@@ -23,8 +21,6 @@ const p = plan as unknown as Plan;
 const led = ledger as unknown as PublicLedger;
 const t = led.tests;
 const { interpreters, hash_seeds } = led.determinism;
-const aim = led.aim.trim().replace(/\.$/, '');
-const name = 'Psyche';
 
 const stats = [
   { label: 'Suites', value: t.suites },
@@ -44,21 +40,7 @@ const stats = [
   }}
 >
   <div class="sx-landing not-content">
-    <MazeHero>
-      <h1 class="sx-lp-title">
-        <span class="sr-only">{name}</span>
-        <span class="sx-lp-title__word" aria-hidden="true"><span class="sx-lp-title__p" style="--i: 0"><PMark /></span>{[...'SYCHE'].map((ch, i) => <span style={`--i: ${i + 1}`}>{ch}</span>)}</span>
-      </h1>
-      <p class="sx-lp-aim">Its long-term aim: {aim}.</p>
-      <p class="sx-lp-lead">An open research project that grows in stages, each built test-first and kept as a citable artifact.</p>
-      <div class="sx-lp-actions">
-        <a class="sx-lp-btn sx-lp-btn--primary" href={withBase('research/')}>
-          Read the research overview
-          <ArrowRight className="sx-lp-btn__icon" strokeWidth={2} aria-hidden="true" />
-        </a>
-        <a class="sx-lp-btn sx-lp-btn--ghost" href={withBase('battery/')}>Explore the test battery</a>
-      </div>
-    </MazeHero>
+    <LayersHero />
   </div>
 
   <div class="sx-lp-now">
