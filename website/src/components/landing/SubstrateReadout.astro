@@ -1,0 +1,33 @@
+---
+// A static instrument readout for the substrate's maintained record: one hairline-ruled row of
+// cells, each a figure in Unbounded 200 with tabular digits and its mono label under it, a muted
+// detail below that. Nothing counts up; the server writes the final figures and they never change
+// on the page. On a phone the cells stack into ruled rows. Takes the same items as ui/StatsBand,
+// which stays for the pages that still use it. The ruled rhythm follows "Spec Sheet" by
+// isaiahbjork (21st.dev); the styles are in styles/landing/rows.css.
+import '@/styles/landing/rows.css';
+
+interface Item {
+  label: string;
+  value: number;
+  detail?: string;
+}
+interface Props {
+  items: Item[];
+}
+const { items } = Astro.props;
+const fmt = new Intl.NumberFormat('en-US');
+const cells = Math.min(Math.max(items.length, 1), 6);
+---
+
+<dl class="sx-readout not-content" style={`--cells: ${cells}`}>
+  {
+    items.map((item) => (
+      <div class="sx-readout__cell">
+        <dt class="sx-readout__label">{item.label}</dt>
+        <dd class="sx-readout__value">{fmt.format(item.value)}</dd>
+        {item.detail && <dd class="sx-readout__detail">{item.detail}</dd>}
+      </div>
+    ))
+  }
+</dl>

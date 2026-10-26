@@ -1,82 +1,86 @@
 ---
-// What is public and what is withheld, side by side. Layout after "Us vs Them Comparison" by
-// olewandowski1; the divider's single travelling light after "Animated Beam" by dillionverma; cards
-// with the spotlight of "Spotlight" by kevingirelli (all 21st.dev).
-import { ArrowRight, Check, Lock } from 'lucide-react';
+// What is public and what is not yet, as a two-column ledger of ruled rows. Each row carries a
+// small bowl from the Psyche mark in place of a tick or a lock: a closed bowl (it returns to the
+// stem) for what is published here, an open bowl (it curves away and does not return to the stem)
+// for what is still private. The right column states a state, not a promise: whether and when
+// anything moves is set by the disclosure policy alone. The ruled rhythm follows "Spec Sheet" by
+// isaiahbjork (21st.dev); the links are in styles/landing/links.css. The glyphs are decoration;
+// each column's heading says the same in words.
 import { withBase } from '@/lib/url.ts';
 import SectionHeader from './SectionHeader.astro';
+import '@/styles/landing/rows.css';
+import '@/styles/landing/links.css';
 
-const publicNow = [
-  "The research line's overview and questions",
-  'The roadmap and the decision gates',
-  "The test battery's paradigms and fairness rules",
-  'The claims discipline and engineering standards',
-  "The substrate's code, tests and published record",
-];
-const withheld = [
-  'The spiking model and its code',
-  'Hypotheses beyond the research questions',
-  'Pre-registered criteria, committed here by hash only',
-  'The experiment plan and its order',
-  'The analysis of related work',
+const bowls = {
+  closed: 'M2 0.75V13.25M2 2H10A3.5 3.5 0 0 1 10 9H2',
+  open: 'M2 0.75V13.25M2 2H10A3.5 3.5 0 0 1 10 9H8.5',
+};
+
+const columns = [
+  {
+    key: 'published',
+    bowl: bowls.closed,
+    kicker: 'Open',
+    title: 'Published here',
+    sub: 'On this site and in the open repository.',
+    items: [
+      "The research line's overview and questions",
+      'The roadmap and the decision gates',
+      "The test battery's paradigms and fairness rules",
+      'The claims discipline and engineering standards',
+      "The substrate's code, tests and published record",
+    ],
+    foot: 'The claims discipline sets what these pages may say.',
+    link: { href: withBase('research/claims-and-scope/'), label: 'Read the claims and scope' },
+  },
+  {
+    key: 'later',
+    bowl: bowls.open,
+    kicker: 'Private',
+    title: 'Not public yet',
+    sub: 'Kept private. Only a release under the disclosure policy moves material here.',
+    items: [
+      'The spiking model and its code',
+      'Hypotheses beyond the research questions',
+      'Pre-registered criteria, committed here by hash only',
+      'The experiment plan and its order',
+      'The analysis of related work',
+    ],
+    foot: 'Releases follow a fixed rule: complete, working, older versions only.',
+    link: { href: withBase('research/disclosure-policy/'), label: 'Read the disclosure policy' },
+  },
 ];
 ---
 
-<section class="sx-lp-section sx-lp-band not-content" aria-labelledby="sx-public-title">
+<section class="sx-lp-section not-content" aria-labelledby="sx-public-title" data-caliper="05 Disclosure">
   <SectionHeader id="sx-public-title" title="What is public, and what is not yet" index="05" kicker="Disclosure" />
-  <div class="sx-pw" data-reveal>
-    <div class="sx-card sx-pw__card sx-pw__card--public">
-      <div class="sx-pw__head">
-        <p class="sx-pw__kicker">
-          <span class="sx-pw__glyph sx-pw__glyph--check"><Check className="size-3" strokeWidth={3} aria-hidden="true" /></span>
-          <span>Open</span>
-        </p>
-        <h3>Public now</h3>
-        <p class="sx-pw__sub">On this site and in the open repository.</p>
-      </div>
-      <ul class="sx-lp-plain sx-pw__list">
-        {
-          publicNow.map((text) => (
-            <li>
-              <span class="sx-pw__glyph sx-pw__glyph--check">
-                <Check className="size-3" strokeWidth={3} aria-hidden="true" />
-              </span>
-              <span>{text}</span>
-            </li>
-          ))
-        }
-      </ul>
-      <p class="sx-pw__foot">
-        The claims discipline sets what these pages may say.{' '}
-        <a class="sx-lp-link" href={withBase('research/claims-and-scope/')}>Read the claims and scope<ArrowRight className="sx-lp-link__icon" aria-hidden="true" /></a>
-      </p>
-    </div>
-    <div class="sx-pw__beam" aria-hidden="true"></div>
-    <div class="sx-card sx-pw__card sx-pw__card--withheld">
-      <div class="sx-pw__head">
-        <p class="sx-pw__kicker">
-          <span class="sx-pw__glyph sx-pw__glyph--lock"><Lock className="size-3" strokeWidth={2.5} aria-hidden="true" /></span>
-          <span>Private</span>
-        </p>
-        <h3>Withheld until release</h3>
-        <p class="sx-pw__sub">Kept private until a release moves it here.</p>
-      </div>
-      <ul class="sx-lp-plain sx-pw__list">
-        {
-          withheld.map((text) => (
-            <li>
-              <span class="sx-pw__glyph sx-pw__glyph--lock">
-                <Lock className="size-3" strokeWidth={2.5} aria-hidden="true" />
-              </span>
-              <span>{text}</span>
-            </li>
-          ))
-        }
-      </ul>
-      <p class="sx-pw__foot">
-        Releases follow a fixed rule: complete, working, older versions only.{' '}
-        <a class="sx-lp-link" href={withBase('research/disclosure-policy/')}>Read the disclosure policy<ArrowRight className="sx-lp-link__icon" aria-hidden="true" /></a>
-      </p>
-    </div>
+  <div class="sx-disclose">
+    {
+      columns.map((col) => (
+        <div class="sx-disclose__col" data-k={col.key} data-reveal>
+          <div class="sx-disclose__head">
+            <p class="sx-disclose__kicker">{col.kicker}</p>
+            <h3 class="sx-disclose__title">{col.title}</h3>
+            <p class="sx-disclose__sub">{col.sub}</p>
+          </div>
+          <ul class={col.key === 'later' ? 'sx-ruled sx-ruled--open' : 'sx-ruled'} role="list">
+            {
+              col.items.map((text, i) => (
+                <li class="sx-ruled__row sx-ruled__row--bowl" style={`--r:${i}`}>
+                  <svg class="sx-bowl" viewBox="0 0 16 14" aria-hidden="true" focusable="false">
+                    <path d={col.bowl} />
+                  </svg>
+                  <span>{text}</span>
+                </li>
+              ))
+            }
+          </ul>
+          <div class="sx-disclose__foot">
+            <p>{col.foot}</p>
+            <a class="sx-lp-link" href={col.link.href}>{col.link.label}</a>
+          </div>
+        </div>
+      ))
+    }
   </div>
 </section>

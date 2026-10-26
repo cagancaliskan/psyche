@@ -82,6 +82,9 @@
   --sx-glow: 0 0 0.9rem color-mix(in oklab, var(--sx-agent) 45%, transparent);
   --sx-grid: color-mix(in oklab, var(--sx-structure) 9%, transparent);
   --sx-ease: cubic-bezier(0.2, 0.7, 0.1, 1);
+  /* The landing page's one mono label: its size and tracking, as in the hero's stage list. */
+  --sx-lab-size: 0.65625rem;
+  --sx-lab-track: 0.13em;
 }
 
 :root[data-theme='light'] {
@@ -446,8 +449,7 @@
 
   /* ---- Previous / next: hairline cards. On hover the edge warms toward the signal colour and a
      soft light, with a lit stretch of edge, follows the pointer, after "Spotlight" by kevingirelli
-     (21st.dev), as on the landing's cards; the pointer position comes from the small script in
-     astro.config.mjs. ---- */
+     (21st.dev); the pointer position comes from the small script in astro.config.mjs. ---- */
   .pagination-links {
     gap: 0.75rem;
   }

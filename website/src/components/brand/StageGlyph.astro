@@ -1,0 +1,46 @@
+---
+// The Psyche mark with one stage lit: the stem and the three nested bowls of PMark.astro (same
+// geometry, same 24-unit grid and 1.68-unit stroke), with only the chosen stage's bowl drawn in its
+// colour and the other two held back as a faint ghost. The stages grow outward (brand/README.md):
+// stage 1 is the inner bowl in the signal colour, stage 2 the middle bowl in the structure colour,
+// stage 3 the outer bowl in ink, open at the stem, which is what later stages will wrap around.
+// Decoration only: the text beside it names the stage, so the drawing is hidden from assistive
+// technology. Colours are theme tokens, so it works on both canvases. Size it with `size` (the
+// height in pixels, 32 by default; the stroke is two screen pixels near 28) or with a class.
+interface Props {
+  /** 1 = the substrate (inner bowl), 2 = spiking cognitive maps (middle), 3 = later stages (outer). */
+  stage: 1 | 2 | 3;
+  /** Height in pixels. */
+  size?: number;
+  class?: string;
+}
+const { stage, size = 32, class: className } = Astro.props;
+
+// Outer to inner, as PMark draws them. The shared top edge of every bowl starts at the stem.
+const bowls = [
+  { stage: 3, d: 'M3.6 1.59H17.1A5.45 5.45 0 0 1 17.1 12.49H6.84', color: 'var(--sl-color-white)' },
+  { stage: 2, d: 'M3.6 1.59H15.35A3.7 3.7 0 0 1 15.35 8.99H3.6', color: 'var(--sx-structure)' },
+  { stage: 1, d: 'M3.6 1.59H13.6A1.95 1.95 0 0 1 13.6 5.49H3.6', color: 'var(--sx-agent)' },
+];
+const lit = bowls.find((b) => b.stage === stage)!;
+const ghost = bowls.filter((b) => b.stage !== stage);
+const width = ((size * 20.63) / 23.25).toFixed(2);
+---
+
+<svg
+  class={className}
+  width={width}
+  height={size}
+  viewBox="2.76 0.75 20.63 23.25"
+  fill="none"
+  aria-hidden="true"
+  focusable="false"
+  data-stage={stage}
+>
+  <!-- One group, so the ghost bowls fade together and their shared edge does not stack. -->
+  <g opacity="0.26">
+    {ghost.map((b) => <path d={b.d} stroke={b.color} stroke-width="1.68" stroke-linejoin="round" />)}
+  </g>
+  <path d={lit.d} stroke={lit.color} stroke-width="1.68" stroke-linejoin="round"></path>
+  <path d="M3.6 0.75V24" stroke="var(--sl-color-white)" stroke-width="1.68"></path>
+</svg>

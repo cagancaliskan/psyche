@@ -1,0 +1,97 @@
+/*
+ * Section-end links for the landing page.
+ *
+ * Catalog sources (21st.dev), rewritten in plain CSS: the link after "Link Button" by hyperiux (an
+ * underline that scales in from the left on hover or focus and leaves to the right, with an arrow
+ * that turns a quarter-step) drawn the way the hero draws its quiet action, after "Underline Link"
+ * by balick (a background-gradient line, only its size transitioned). The stage state is written in
+ * mono words (components/landing/StageLedger.astro), so no chip is needed.
+ *
+ * Site tokens only, so light and dark switch through the variables. With reduced motion nothing
+ * moves: the underline appears and the arrow stays where it is.
+ */
+
+/* Repeats global.css's order, so this file keeps that order even if it loads before it. */
+@layer base, starlight, theme, components, utilities;
+
+@layer components {
+  /* ---- Section-end link ---- */
+
+  /* A short line of text, a hairline under it and a small arrow after it. Two background lines on
+     one box: a faint rule at rest, and the ink line that draws in from the left on hover or focus
+     and leaves to the right (the position jumps, only the size is transitioned). The lines are
+     sized to the content box, so the arrow in the right padding sits outside them. Written as
+     a.sx-lp-link so it outranks the older .sx-lp-link rules in landing.css whatever the load order. */
+  a.sx-lp-link {
+    --open: 0;
+    --rule: color-mix(in oklab, currentColor 26%, transparent);
+    --arrow: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M4 10h11M10.5 5.5 15 10l-4.5 4.5'/%3E%3C/svg%3E");
+    position: relative;
+    display: inline-block;
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: 7px 1.6em 7px 0;
+    color: var(--sl-color-white);
+    font: 500 0.9375rem/1.2 var(--font-sans);
+    letter-spacing: 0.005em;
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor), linear-gradient(var(--rule), var(--rule));
+    background-repeat: no-repeat;
+    background-origin: content-box;
+    background-size:
+      calc(var(--open) * 100%) 1px,
+      100% 1px;
+    background-position:
+      calc((1 - var(--open)) * 100%) calc(100% + 6px),
+      0 calc(100% + 6px);
+    transition: background-size 450ms var(--sx-ease);
+  }
+  a.sx-lp-link::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    right: 0;
+    width: 1.05em;
+    height: 1.05em;
+    margin-top: -0.525em;
+    background-color: var(--sx-muted);
+    -webkit-mask: var(--arrow) center / contain no-repeat;
+    mask: var(--arrow) center / contain no-repeat;
+    transform: translateX(calc(var(--open) * 2px)) rotate(calc(var(--open) * -45deg));
+    transition:
+      transform 500ms var(--sx-ease),
+      background-color 300ms var(--sx-ease);
+  }
+  a.sx-lp-link:focus-visible {
+    --open: 1;
+    outline: 2px solid var(--sx-structure);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  a.sx-lp-link:is(:hover, :focus-visible)::after {
+    background-color: var(--sx-agent);
+  }
+  @media (hover: hover) {
+    a.sx-lp-link:hover {
+      --open: 1;
+    }
+  }
+
+  /* Several section-end links on one line, wrapping on a narrow screen. */
+  .sx-lp-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 2.25rem;
+    margin: 1.75rem 0 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    a.sx-lp-link,
+    a.sx-lp-link::after {
+      transition: none;
+    }
+    a.sx-lp-link::after {
+      transform: none;
+    }
+  }
+}

@@ -1,0 +1,256 @@
+/*
+ * The battery rows (components/battery/BatteryTeaser.astro): five hairline-ruled rows, T1 to T5,
+ * each a link to its test. Mono id, name, one line and a small picture of the test's defining
+ * step at the right, framed by hairline corners. The row is the hero's stage-list row: a rule on
+ * top, a short bar on the rule that runs the row's width on hover or focus.
+ *
+ * Catalog source (21st.dev), rewritten in plain CSS: the row anatomy and the travelling highlight
+ * bar after "Interactive List Preview" by hyperiux; the name's underline after "Underline Link" by
+ * balick, as in the hero. The route redraw (a pathLength dash reveal) is the battery's own, see
+ * battery.css. The pictures keep battery.css's drawing; the rules below only quiet them to match
+ * the figure above them: ink trail, thinner signal route, no glow, walls as faint hatching.
+ *
+ * Site tokens only, so light and dark switch through the variables. Without script, or with
+ * reduced motion, every route is drawn.
+ */
+
+/* Repeats global.css's order, so this file keeps that order even if it loads before it. */
+@layer base, starlight, theme, components, utilities;
+
+@layer components {
+  .sx-brows-wrap {
+    container: sx-brows / inline-size;
+  }
+  .sx-brows {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  /* ---- A row ---- */
+
+  .sx-brow {
+    position: relative;
+    margin: 0;
+    border-top: 1px solid var(--sx-hairline);
+  }
+  .sx-brow:last-child {
+    border-bottom: 1px solid var(--sx-hairline);
+  }
+  /* The hero's stage-list mark: a short bar on the rule, wide on hover or focus. */
+  .sx-brow::before {
+    content: '';
+    position: absolute;
+    z-index: 1;
+    left: 0;
+    top: -1px;
+    width: 28px;
+    height: 2px;
+    background: var(--sx-structure);
+    pointer-events: none;
+    transition:
+      width 550ms var(--sx-ease),
+      background-color 550ms var(--sx-ease);
+  }
+  @media (hover: hover) {
+    .sx-brow:hover::before {
+      width: 100%;
+      background: var(--sx-agent);
+    }
+  }
+  .sx-brow:has(.sx-brow__link:focus-visible)::before {
+    width: 100%;
+    background: var(--sx-agent);
+  }
+
+  .sx-brow__link {
+    --pic: 5.5rem;
+    --idw: 2.1rem;
+    --gap: 0.85rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--pic);
+    align-items: center;
+    column-gap: var(--gap);
+    padding: 0.95rem 0;
+    color: var(--sl-color-white);
+    text-decoration: none;
+  }
+  .sx-brow__link:focus-visible {
+    outline: 2px solid var(--sx-structure);
+    outline-offset: 2px;
+  }
+
+  /* The id and the name share a first line (a baseline); the one line of text hangs under the name. */
+  .sx-brow__text {
+    display: grid;
+    grid-template-columns: var(--idw) minmax(0, 1fr);
+    align-items: baseline;
+    column-gap: var(--gap);
+    min-width: 0;
+  }
+  .sx-brow__id {
+    font: 500 var(--sx-lab-size)/1.2 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
+    font-variant-numeric: tabular-nums;
+    color: var(--sx-structure);
+  }
+  .sx-brow__head {
+    display: block;
+    min-width: 0;
+  }
+
+  /* The name carries the hero's Underline Link: a faint rule at rest and an ink line that draws in
+     from the left on hover or focus and leaves to the right. It follows a line break. */
+  .sx-brow__name {
+    --open: 0;
+    --rule: color-mix(in oklab, currentColor 22%, transparent);
+    padding-block: 3px;
+    font: 500 1.0625rem/1.3 var(--font-sans);
+    letter-spacing: -0.005em;
+    background-image: linear-gradient(currentColor, currentColor), linear-gradient(var(--rule), var(--rule));
+    background-repeat: no-repeat;
+    background-size:
+      calc(var(--open) * 100%) 1px,
+      100% 1px;
+    background-position:
+      calc((1 - var(--open)) * 100%) 100%,
+      0 100%;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    transition: background-size 450ms var(--sx-ease);
+  }
+  @media (hover: hover) {
+    .sx-brow:hover .sx-brow__name {
+      --open: 1;
+    }
+  }
+  .sx-brow:has(.sx-brow__link:focus-visible) .sx-brow__name {
+    --open: 1;
+  }
+  .sx-brow__line {
+    grid-column: 2;
+    margin-top: 0.3rem;
+    font: 400 0.875rem/1.5 var(--font-sans);
+    color: var(--sx-muted);
+    text-wrap: pretty;
+  }
+
+  .sx-brow__go {
+    display: none;
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: var(--sx-muted);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition:
+      transform 450ms var(--sx-ease),
+      stroke 450ms var(--sx-ease);
+  }
+  @media (hover: hover) {
+    .sx-brow:hover .sx-brow__go {
+      transform: translateX(4px);
+      stroke: var(--sl-color-white);
+    }
+  }
+  .sx-brow:has(.sx-brow__link:focus-visible) .sx-brow__go {
+    transform: translateX(4px);
+    stroke: var(--sl-color-white);
+  }
+
+  /* ---- The picture: a sheet with hairline corners ---- */
+
+  .sx-brow__pic {
+    --cm: color-mix(in oklab, var(--sx-structure) 70%, transparent);
+    display: block;
+    aspect-ratio: 9 / 7;
+    padding: 0.4rem;
+    background:
+      linear-gradient(var(--cm), var(--cm)) left top / 8px 1px no-repeat,
+      linear-gradient(var(--cm), var(--cm)) left top / 1px 8px no-repeat,
+      linear-gradient(var(--cm), var(--cm)) right top / 8px 1px no-repeat,
+      linear-gradient(var(--cm), var(--cm)) right top / 1px 8px no-repeat,
+      linear-gradient(var(--cm), var(--cm)) left bottom / 8px 1px no-repeat,
+      linear-gradient(var(--cm), var(--cm)) left bottom / 1px 8px no-repeat,
+      linear-gradient(var(--cm), var(--cm)) right bottom / 8px 1px no-repeat,
+      linear-gradient(var(--cm), var(--cm)) right bottom / 1px 8px no-repeat;
+  }
+  /* Quieter than the battery page's pictures: the trail is ink and thin, the route a thin signal
+     line, and neither route nor goal glows. (Three classes, so battery.css does not outrank them.) */
+  .sx-brow .sx-pic .trail {
+    stroke: color-mix(in oklab, var(--sl-color-white) 58%, transparent);
+    stroke-width: 0.09;
+    opacity: 1;
+  }
+  .sx-brow .sx-pic .path {
+    stroke-width: 0.17;
+  }
+  .sx-brow .sx-pic :is(.path-glow, .goal-glow) {
+    display: none;
+  }
+  /* The walls are blueprint hatching, not slabs: a faint tint with a fine edge, so they are never
+     the heaviest thing in the row (the figure above draws its walls as hairlines). */
+  .sx-brow .sx-pic .wall {
+    fill: color-mix(in oklab, var(--sx-structure) 12%, transparent);
+    stroke: color-mix(in oklab, var(--sx-structure) 50%, transparent);
+    stroke-width: 0.05;
+    shape-rendering: auto;
+  }
+
+  /* ---- Wider: the arrow comes in and the columns open up ---- */
+
+  @container sx-brows (min-width: 34rem) {
+    .sx-brow__link {
+      --pic: clamp(5.75rem, 13cqw, 7rem);
+      --idw: 3.25rem;
+      --gap: 1.35rem;
+      grid-template-columns: minmax(0, 1fr) var(--pic) 1.25rem;
+      padding: 1.1rem 0;
+    }
+    .sx-brow__go {
+      display: block;
+    }
+  }
+
+  /* ---- Motion: the route draws; nothing else spreads or moves ---- */
+
+  @keyframes sx-brow-draw {
+    from {
+      stroke-dashoffset: 1.05;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    /* Hidden until the row is seen, then drawn once (rows 80ms apart); again on hover or focus. */
+    .sx-brow[data-wait] .sx-pic .draw {
+      stroke-dasharray: 1 1.1;
+      stroke-dashoffset: 1.05;
+    }
+    .sx-brow[data-draw] .sx-pic .draw {
+      stroke-dasharray: 1 1.1;
+      animation: sx-brow-draw 1.2s cubic-bezier(0.45, 0.05, 0.4, 1) calc(var(--i, 0) * 80ms) both;
+    }
+    @media (hover: hover) {
+      .sx-brow:hover .sx-pic .draw {
+        stroke-dasharray: 1 1.1;
+        animation: sx-brow-draw 1.2s cubic-bezier(0.45, 0.05, 0.4, 1) both;
+      }
+    }
+    .sx-brow:has(.sx-brow__link:focus-visible) .sx-pic .draw {
+      stroke-dasharray: 1 1.1;
+      animation: sx-brow-draw 1.2s cubic-bezier(0.45, 0.05, 0.4, 1) both;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sx-brow::before,
+    .sx-brow__name,
+    .sx-brow__go {
+      transition: none;
+    }
+  }
+}

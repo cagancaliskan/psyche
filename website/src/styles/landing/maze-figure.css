@@ -1,0 +1,413 @@
+/*
+ * Fig. 1 on the landing (components/landing/MazeFigure.astro): the latent-learning illustration as
+ * a drafting sheet. Thin structure-blue walls on room centre lines, a ruler on each axis, hairline
+ * registration corners, the agent's reward-free trail in ink and one signal route. It carries the
+ * hero's language: sharp sheets, mono labels, hairline-ruled rows, tokens only.
+ *
+ * Catalog sources (21st.dev), rewritten in plain CSS: the corner marks after "Corner Frame" by
+ * kevingirelli (bracket marks with their size, thickness and inset as properties), the stroke draw
+ * after the hero's "Animated Signature" by dqnamo (a pathLength 1 dash reveal on a near-linear pen
+ * curve).
+ *
+ * The finished picture is the default. Only with script and without reduced motion is it blanked
+ * and then played once, by the "go" class that the figure's script adds when the sheet first
+ * scrolls into view: trail 0.3-3.1 s, goal 3.3-3.8 s, route 3.95-4.9 s. Print shows the final frame.
+ */
+
+/* Repeats global.css's order, so this file keeps that order even if it loads before it. */
+@layer base, starlight, theme, components, utilities;
+
+@layer components {
+  .sx-mzw {
+    container: sx-mzw / inline-size;
+  }
+  .sx-mz {
+    --pen: cubic-bezier(0.2, 0.2, 0.8, 0.9);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+    margin: 0;
+    color: var(--sl-color-white);
+  }
+
+  /* ---- The sheet ---- */
+
+  .sx-mz__sheet {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.4rem minmax(0, 1fr);
+    grid-template-rows: 1.5rem auto;
+    gap: 6px;
+    padding: 0.9rem 1.1rem 1.1rem 0.8rem;
+    background: color-mix(in oklab, var(--sx-surface) 70%, transparent);
+  }
+  /* Registration corners: hairline L shapes on the sheet's box, never a full frame. */
+  .sx-mz__cm {
+    --size: 14px;
+    position: absolute;
+    width: var(--size);
+    height: var(--size);
+    border: 0 solid var(--sx-structure);
+    pointer-events: none;
+  }
+  .sx-mz__cm.tl {
+    left: 0;
+    top: 0;
+    border-left-width: 1px;
+    border-top-width: 1px;
+  }
+  .sx-mz__cm.tr {
+    right: 0;
+    top: 0;
+    border-right-width: 1px;
+    border-top-width: 1px;
+  }
+  .sx-mz__cm.bl {
+    left: 0;
+    bottom: 0;
+    border-left-width: 1px;
+    border-bottom-width: 1px;
+  }
+  .sx-mz__cm.br {
+    right: 0;
+    bottom: 0;
+    border-right-width: 1px;
+    border-bottom-width: 1px;
+  }
+
+  /* Rulers in arena cells: numerals at the room walls, a tick at every cell. The ticks are SVG
+     stretched over the ruler, with 1px lines at any size. */
+  .sx-mz__rx {
+    position: relative;
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .sx-mz__ry {
+    position: relative;
+    grid-column: 1;
+    grid-row: 2;
+  }
+  .sx-mz__ticks {
+    position: absolute;
+    overflow: visible;
+  }
+  .sx-mz__rx .sx-mz__ticks {
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 8px;
+  }
+  .sx-mz__ry .sx-mz__ticks {
+    right: 0;
+    top: 0;
+    width: 8px;
+    height: 100%;
+  }
+  .sx-mz__ticks path {
+    fill: none;
+    stroke: var(--sx-structure);
+    stroke-width: 1px;
+    vector-effect: non-scaling-stroke;
+    shape-rendering: crispEdges;
+  }
+  .sx-mz__ticks .minor {
+    stroke-opacity: 0.5;
+  }
+  .sx-mz__rx span,
+  .sx-mz__ry span {
+    position: absolute;
+    font: 400 10.5px/1 var(--font-mono);
+    letter-spacing: 0.08em;
+    font-variant-numeric: tabular-nums;
+    color: var(--sx-muted);
+  }
+  .sx-mz__rx span {
+    top: 0;
+    left: calc(var(--p) * 1%);
+    transform: translateX(-50%);
+  }
+  .sx-mz__ry span {
+    right: 14px;
+    top: calc(var(--p) * 1%);
+    transform: translateY(-50%);
+  }
+
+  /* ---- The drawing ---- */
+
+  .sx-mz__plot {
+    grid-column: 2;
+    grid-row: 2;
+    container: sx-mzp / inline-size;
+  }
+  .sx-mz__svg {
+    /* The agent's lines are drawn in the drawing's units, so their width follows the sheet: about
+       two pixels for the route and one for the trail, in four steps. */
+    --rw: 0.115px;
+    --tw: 0.055px;
+    display: block;
+    width: 100%;
+    height: auto;
+    overflow: visible;
+  }
+  @container sx-mzp (max-width: 520px) {
+    .sx-mz__svg {
+      --rw: 0.14px;
+      --tw: 0.065px;
+    }
+  }
+  @container sx-mzp (max-width: 420px) {
+    .sx-mz__svg {
+      --rw: 0.17px;
+      --tw: 0.08px;
+    }
+  }
+  @container sx-mzp (max-width: 300px) {
+    .sx-mz__svg {
+      --rw: 0.22px;
+      --tw: 0.1px;
+    }
+  }
+
+  /* Walls and centre lines are hairlines at any scale. */
+  .sx-mz__svg :is(.centre, .walls, .joints) {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .sx-mz__svg .centre {
+    stroke: color-mix(in oklab, var(--sx-structure) 16%, transparent);
+    stroke-width: 1px;
+  }
+  /* The walls are the sheet's firmest line; the reward-free trail is lighter than they are. */
+  .sx-mz__svg .walls {
+    stroke: var(--sx-structure);
+    stroke-width: 1.25px;
+  }
+  .sx-mz__svg .joints {
+    stroke: var(--sx-structure);
+    stroke-width: 3px;
+  }
+
+  :is(.sx-mz__svg .trail, .sx-mz__svg .route, .sx-mz__svg .goal-ring) {
+    fill: none;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .sx-mz__svg .trail {
+    stroke: color-mix(in oklab, var(--sl-color-white) 36%, transparent);
+    stroke-width: var(--tw);
+  }
+  .sx-mz__svg .route {
+    stroke: var(--sx-agent);
+    stroke-width: var(--rw);
+  }
+  .sx-mz__svg .start {
+    fill: var(--sx-surface);
+    stroke: var(--sl-color-white);
+    stroke-width: calc(var(--tw) * 1.6);
+  }
+  .sx-mz__svg .goal-ring {
+    stroke: var(--sx-agent);
+    stroke-width: var(--tw);
+  }
+  .sx-mz__svg .goal-dot {
+    fill: var(--sx-agent);
+  }
+
+  /* ---- The phases (real text) and the caption ---- */
+
+  .sx-mz__key {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sx-mz__key li {
+    position: relative;
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    grid-template-areas:
+      'k nm'
+      '. tx';
+    column-gap: 8px;
+    row-gap: 5px;
+    align-items: baseline;
+    padding: 15px 0 17px;
+    border-top: 1px solid var(--sx-hairline);
+  }
+  .sx-mz__key li:last-child {
+    border-bottom: 1px solid var(--sx-hairline);
+  }
+  .sx-mz__key li:nth-child(1) {
+    --c: var(--sl-color-white);
+    --d: 300ms;
+  }
+  .sx-mz__key li:nth-child(2) {
+    --c: var(--sx-agent);
+    --d: 3300ms;
+  }
+  .sx-mz__key li:nth-child(3) {
+    --c: var(--sx-agent);
+    --d: 3950ms;
+  }
+  /* The hero's stage-list mark: a short bar on the row's rule. */
+  .sx-mz__key li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -1px;
+    width: 28px;
+    height: 2px;
+    background: var(--c);
+  }
+  .sx-mz__key .k {
+    grid-area: k;
+    font: 400 var(--sx-lab-size)/1.2 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
+    font-variant-numeric: tabular-nums;
+    color: var(--c);
+  }
+  .sx-mz__key .nm {
+    grid-area: nm;
+    font: 500 16px/1.3 var(--font-sans);
+    color: var(--sl-color-white);
+  }
+  .sx-mz__key .tx {
+    grid-area: tx;
+    font: 400 13.5px/1.5 var(--font-sans);
+    color: var(--sx-muted);
+    text-wrap: pretty;
+  }
+
+  .sx-mz__cap {
+    max-width: 40ch;
+    margin: 0;
+    font: 400 13.5px/1.55 var(--font-sans);
+    color: var(--sx-muted);
+    text-wrap: pretty;
+  }
+  .sx-mz__fig {
+    font: 400 var(--sx-lab-size)/1 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
+    color: var(--sl-color-white);
+  }
+  /* The separator is drawn here, with room on both sides, so the tracked label does not leave it
+     attached to the sentence. */
+  .sx-mz__fig::after {
+    content: '\00b7';
+    margin-inline: 0.9em 0.5em;
+    color: var(--sx-muted);
+  }
+
+  /* ---- Wide: the sheet on the left, its phases and caption in the margin ---- */
+
+  @container sx-mzw (min-width: 50rem) {
+    .sx-mz {
+      grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+      grid-template-rows: 1fr auto;
+      grid-template-areas:
+        'sheet key'
+        'sheet cap';
+      column-gap: clamp(2rem, 5cqw, 4rem);
+      row-gap: 1.75rem;
+    }
+    .sx-mz__sheet {
+      grid-area: sheet;
+    }
+    .sx-mz__key {
+      grid-area: key;
+      align-self: start;
+    }
+    .sx-mz__cap {
+      grid-area: cap;
+      align-self: end;
+    }
+  }
+
+  /* ---- Play once: nothing here applies without script, with reduced motion, or in print ---- */
+
+  @keyframes sx-mz-draw {
+    from {
+      stroke-dashoffset: 1.05;
+    }
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes sx-mz-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes sx-mz-lit {
+    from {
+      opacity: 0.38;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes sx-mz-bar {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: none;
+    }
+  }
+
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .sx-mz.js .sx-mz__svg :is(.trail, .route, .goal-ring) {
+      stroke-dasharray: 1 1.1;
+      stroke-dashoffset: 1.05;
+    }
+    /* The goal does not exist yet: the ring is hidden (a round-capped dash would leave a speck at
+       its start), and appears when the goal is introduced. */
+    .sx-mz.js .sx-mz__svg :is(.goal-ring, .goal-dot) {
+      opacity: 0;
+    }
+    /* Only the numerals dim while a phase waits; its name and text stay at full strength, so they
+       are readable at any moment, even if the sequence has not started. */
+    .sx-mz.js .sx-mz__key .k {
+      opacity: 0.38;
+    }
+    .sx-mz.js .sx-mz__key li::before {
+      transform: scaleX(0);
+      transform-origin: left;
+    }
+
+    .sx-mz.js.go .sx-mz__svg .trail {
+      animation: sx-mz-draw 2800ms var(--pen) 300ms both;
+    }
+    .sx-mz.js.go .sx-mz__svg .goal-ring {
+      animation:
+        sx-mz-draw 450ms var(--sx-ease) 3300ms both,
+        sx-mz-fade 1ms linear 3300ms both;
+    }
+    .sx-mz.js.go .sx-mz__svg .goal-dot {
+      animation: sx-mz-fade 300ms linear 3500ms both;
+    }
+    .sx-mz.js.go .sx-mz__svg .route {
+      animation: sx-mz-draw 950ms cubic-bezier(0.45, 0.05, 0.4, 1) 3950ms both;
+    }
+    .sx-mz.js.go .sx-mz__key .k {
+      animation: sx-mz-lit 500ms var(--sx-ease) var(--d) both;
+    }
+    .sx-mz.js.go .sx-mz__key li::before {
+      animation: sx-mz-bar 700ms var(--sx-ease) var(--d) both;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sx-mz *,
+    .sx-mz *::before,
+    .sx-mz *::after {
+      transition: none !important;
+      animation: none !important;
+    }
+  }
+}
