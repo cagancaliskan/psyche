@@ -195,7 +195,7 @@
     stroke-linejoin: round;
   }
   .sx-mz__svg .trail {
-    stroke: color-mix(in oklab, var(--sl-color-white) 36%, transparent);
+    stroke: color-mix(in oklab, var(--sl-color-white) 50%, transparent);
     stroke-width: var(--tw);
   }
   .sx-mz__svg .route {

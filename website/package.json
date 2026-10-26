@@ -10,7 +10,7 @@
     "dev": "npm run stage && astro dev",
     "build": "npm run stage && astro check && astro build && npm run check:spacing",
     "preview": "astro preview",
-    "test": "node --test src/lib/plan.test.ts src/lib/maze.test.ts src/lib/battery.test.ts",
+    "test": "node --test src/lib/plan.test.ts src/lib/maze.test.ts src/lib/battery.test.ts src/lib/sheet.test.ts",
     "check:spacing": "node scripts/check-spacing.mjs"
   },
   "dependencies": {

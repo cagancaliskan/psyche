@@ -1,9 +1,16 @@
 ---
+// The test battery, set as a drafting sheet set in the landing's language (see the landing's Fig. 1,
+// components/landing/MazeFigure.astro): a short lead, two ruled notes, then one sheet per test
+// from components/BatteryExplorer.tsx. A wider content width for this page only, as the roadmap and
+// status pages do with .sx-wide (styles/battery.css). The notes are two hairline-ruled rows, a mono
+// label and its text, after "Spec Sheet" by isaiahbjork (21st.dev). The island hydrates when it
+// scrolls into view; without script its Pause control would do nothing, so the noscript rule hides it.
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import BatteryExplorer from '@/components/BatteryExplorer.tsx';
-import { TESTS } from '@/lib/battery.ts';
 import { withBase } from '@/lib/url.ts';
-import '@/styles/docs-visuals.css';
+import '@/styles/battery.css';
+
+const textVersion = withBase('research/test-battery/');
 ---
 
 <StarlightPage
@@ -13,28 +20,24 @@ import '@/styles/docs-visuals.css';
     tableOfContents: false,
   }}
 >
-  <p>
-    The battery is built from five classic behavioural paradigms. Each asks for behaviour that memorised
-    stimulus and response cannot explain. The pictures below are illustrations of the paradigms, not
-    results. A card in view steps through them on its own unless you prefer reduced motion; choose a step,
-    or press Pause, to take over. Protocol details and pass criteria are pre-registered and stay private
-    until release. The text version, with the fairness rules, is in <a href={withBase('research/test-battery/')}>Test battery</a>.
-  </p>
-  <nav class="sx-test-jump not-content" aria-label="Tests in the battery">
-    <p class="sx-kicker sx-test-jump__kicker" aria-hidden="true">Jump to a test</p>
-    <ol>
-      {
-        TESTS.map((t) => (
-          <li>
-            <a href={`#${t.id.toLowerCase()}`}><span class="sx-test-jump__id">{t.id}</span> {t.name}</a>
-          </li>
-        ))
-      }
-    </ol>
-  </nav>
-  <BatteryExplorer client:visible />
+  <div class="sx-bat not-content">
+    <header class="sx-bat__intro">
+      <p class="sx-bat__lead">
+        The battery is built from five classic behavioural paradigms. Each asks for behaviour that memorised
+        stimulus and response cannot explain.
+      </p>
+      <ul class="sx-bnotes" role="list">
+        <li>
+          <p class="sx-bnotes__k">Pre-registered</p>
+          <p class="sx-bnotes__t">Protocol details and pass criteria are pre-registered and stay private until release.</p>
+        </li>
+        <li>
+          <p class="sx-bnotes__k">Text version</p>
+          <p class="sx-bnotes__t">The text version, with the fairness rules, is in <a href={textVersion}>Test battery</a>.</p>
+        </li>
+      </ul>
+    </header>
+    <BatteryExplorer client:visible />
+    <noscript><style is:inline>.sx-bs__ctl{display:none}</style></noscript>
+  </div>
 </StarlightPage>
-
-<script>
-  import '@/components/docs/motion.ts';
-</script>

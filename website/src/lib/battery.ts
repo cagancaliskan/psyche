@@ -148,3 +148,12 @@ export const TESTS: Test[] = [
     ],
   },
 ];
+
+/**
+ * A test's summary in two parts: what is set up, and the question the test asks (its last
+ * sentence, which opens with "The test asks"). A summary without that sentence is all question.
+ */
+export function splitSummary(summary: string): { setup: string; ask: string } {
+  const at = summary.lastIndexOf('The test asks');
+  return at > 0 ? { setup: summary.slice(0, at).trim(), ask: summary.slice(at).trim() } : { setup: '', ask: summary };
+}

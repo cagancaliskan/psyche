@@ -24,7 +24,7 @@ const rows = TESTS.map((test, i) => {
   <ol class="sx-brows" role="list" data-sx-brows>
     {
       rows.map(({ test, i, index, slug, caption, href }) => (
-        <li class="sx-brow" style={`--i:${i}`}>
+        <li class="sx-brow" style={`--i:${i}`} data-kind={test.kind}>
           <a class="sx-brow__link" href={href} aria-labelledby={`sx-brow-${slug}-id sx-brow-${slug}-name sx-brow-${slug}-line`}>
             <span class="sx-brow__text">
               <span class="sx-brow__id" id={`sx-brow-${slug}-id`}>{test.id}</span>{' '}
