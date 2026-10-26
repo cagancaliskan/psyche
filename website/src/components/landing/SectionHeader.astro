@@ -1,7 +1,14 @@
 ---
-// A landing section's opening: a mono kicker (index and name, after "Tagline" by shadcncraft,
-// 21st.dev), the display heading, and at most one short paragraph in the default slot. The kicker
-// repeats the heading, so assistive technology skips it.
+// A landing section's opening, drawn like a line on a drafting sheet: a mono index and kicker (after
+// "Tagline" by shadcncraft, 21st.dev) standing on a hairline datum line that runs to the content
+// edge, the display heading rising out of a clip once in view (after "Text Reveal (Mask)" by
+// soralabs, 21st.dev, in plain CSS and a few lines of script, without its motion library) and at
+// most one short paragraph in the default slot. The kicker repeats the heading, so assistive
+// technology skips it. The server markup is the finished frame: only below the fold, with script
+// and without reduced motion, a header waits until it scrolls into view. Styles are in
+// src/styles/landing/section-header.css.
+import '@/styles/landing/section-header.css';
+
 interface Props {
   id: string;
   title: string;
@@ -13,16 +20,39 @@ interface Props {
 const { id, title, index, kicker } = Astro.props;
 ---
 
-<header class="sx-lp-head" data-reveal>
+<header class="sx-sh" data-sh>
   {
     kicker && (
-      <p class="sx-lp-kicker" aria-hidden="true">
-        {index && <span class="sx-lp-kicker__index">{index}</span>}{' '}
-        <span class="sx-lp-kicker__rule" />{' '}
-        <span>{kicker}</span>
+      <p class="sx-sh__kicker" aria-hidden="true">
+        {index && <span class="sx-sh__idx">{index}</span>}
+        <span class="sx-sh__name">{kicker}</span>
       </p>
     )
   }
-  <h2 id={id}>{title}</h2>
+  <h2 class="sx-sh__title" id={id}><span class="sx-sh__clip"><span>{title}</span></span></h2>
   <slot />
 </header>
+
+<script>
+  // Headers below the fold wait, then rise once as they come into view; those already on screen are
+  // never hidden. One shared observer serves every header on the page.
+  const heads = [...document.querySelectorAll<HTMLElement>('[data-sh]')];
+  if (heads.length > 0 && 'IntersectionObserver' in window && matchMedia('(prefers-reduced-motion: no-preference)').matches) {
+    const seen = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          seen.unobserve(entry.target);
+          (entry.target as HTMLElement).dataset.sh = 'in';
+        }
+      },
+      { rootMargin: '0px 0px -12% 0px' },
+    );
+    for (const head of heads) {
+      if (head.getBoundingClientRect().top < innerHeight) continue;
+      head.dataset.sh = 'wait';
+      seen.observe(head);
+    }
+    addEventListener('beforeprint', () => heads.forEach((head) => (head.dataset.sh = 'in')));
+  }
+</script>

@@ -1,0 +1,87 @@
+---
+// The landing's signature: a measuring rail in the right page gutter (1200px and wider, fine
+// pointer). A graduated scale slides with the scroll, two jaws close over the extent of the section
+// in view, one signal marker shows the reading position through it and a mono label at the top jaw
+// gives the section's index and name. A section opts in with data-caliper="01 Stages" (index, a
+// space, the name). The rail is decoration: hidden from assistive technology, no pointer events,
+// no layout space, and it shows only while a marked section is in view.
+//
+// After "Scroll Caliper" by nikolas-sapa (21st.dev): the sliding scale, the jaws over the active
+// section's extent and the single accent marker. The springs, the motion blur and the readout are
+// left out (see styles/landing/caliper.css). The script below measures on scroll or resize only,
+// once per animation frame, and writes nothing when the reading has not changed.
+import '@/styles/landing/caliper.css';
+---
+
+<div class="sx-caliper not-content" aria-hidden="true" data-pagefind-ignore>
+  <div class="sx-caliper__ticks"></div>
+  <div class="sx-caliper__span"></div>
+  <div class="sx-caliper__jaw sx-caliper__jaw--a"></div>
+  <div class="sx-caliper__jaw sx-caliper__jaw--b"></div>
+  <div class="sx-caliper__lab"><i></i><b></b></div>
+  <div class="sx-caliper__mark"></div>
+</div>
+
+<script>
+  const rail = document.querySelector<HTMLElement>('.sx-caliper');
+  const secs = [...document.querySelectorAll<HTMLElement>('[data-caliper]')];
+  const ix = rail?.querySelector('i');
+  const nm = rail?.querySelector('b');
+
+  if (rail && ix && nm && secs.length) {
+    // The same query as caliper.css; below it the rail is not rendered and nothing is measured.
+    const wide = matchMedia('(min-width:1200px) and (pointer:fine)');
+    const clamp = (v: number, hi: number) => Math.min(hi, Math.max(0, v));
+    let raf = 0;
+    let at: HTMLElement | undefined;
+    let last = '';
+
+    const draw = () => {
+      raf = 0;
+      if (!wide.matches) return;
+      const rb = rail.getBoundingClientRect();
+      const mid = rb.top + rb.height / 2;
+
+      // The section the reading line (the rail's middle) is in, or the nearest one within a third of
+      // the rail's height of it, so the rail wakes as a marked section comes up the page.
+      let near = rb.height * 0.3;
+      let cur: HTMLElement | undefined;
+      let box = rb;
+      for (const s of secs) {
+        const r = s.getBoundingClientRect();
+        const d = Math.max(r.top - mid, mid - r.bottom, 0);
+        if (d < near) {
+          near = d;
+          cur = s;
+          box = r;
+        }
+      }
+      if (cur !== at) {
+        at = cur;
+        rail.classList.toggle('on', !!cur);
+        if (cur) {
+          const [i, ...n] = (cur.dataset.caliper ?? '').split(' ');
+          ix.textContent = i ?? '';
+          nm.textContent = n.join(' ');
+        }
+      }
+      if (!cur) return;
+
+      // Jaws on the section's edges, kept inside the rail; the marker sweeps from jaw to jaw as the
+      // reading line moves from the section's top to its bottom.
+      const a = clamp(box.top - rb.top, rb.height);
+      const b = clamp(box.bottom - rb.top, rb.height);
+      const m = a + clamp((mid - box.top) / (box.height || 1), 1) * (b - a);
+      const css = `--t:${-Math.round(scrollY % 40)}px;--a:${a.toFixed(1)}px;--b:${b.toFixed(1)}px;--g:${(b - a).toFixed(1)};--m:${m.toFixed(1)}px`;
+      if (css !== last) rail.style.cssText = last = css;
+    };
+
+    const run = () => {
+      if (!raf) raf = requestAnimationFrame(draw);
+    };
+    addEventListener('scroll', run, { passive: true });
+    // Fires once at start, and again when the page changes height or width.
+    new ResizeObserver(run).observe(document.documentElement);
+    wide.addEventListener('change', run);
+  }
+</script>

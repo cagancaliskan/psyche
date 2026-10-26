@@ -1,0 +1,151 @@
+/*
+ * Section openings on the landing page (components/landing/SectionHeader.astro), in the drafting
+ * language of the hero: a mono index and kicker standing on a hairline datum line that runs to the
+ * content edge (a short structure-coloured tick at its start, a dimension tick at its end), then
+ * the heading in Unbounded 300 and one short paragraph.
+ *
+ * The heading rises out of a clip once in view, after "Text Reveal (Mask)" by soralabs (21st.dev):
+ * a clipped block whose inner span slides up on an expo-out curve, here as a CSS transition driven
+ * by one attribute (data-sh, set by the script in SectionHeader.astro) instead of its motion
+ * library. The datum line draws in from the left and the paragraph follows the heading.
+ *
+ * Site tokens only, so light and dark switch through the variables. Without script, or with
+ * reduced motion, nothing is hidden and the finished frame shows.
+ */
+
+/* Repeats global.css's order, so this file keeps that order even if it loads before it. */
+@layer base, starlight, theme, components, utilities;
+
+@layer components {
+  .sx-sh {
+    /* Text Reveal's expo-out. */
+    --sx-rise: cubic-bezier(0.19, 1, 0.22, 1);
+    position: relative;
+    margin-bottom: clamp(1.75rem, 1.2rem + 1.5vw, 2.5rem);
+  }
+
+  /* ---- Index and kicker on the datum line ---- */
+
+  .sx-sh__kicker {
+    position: relative;
+    display: flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    margin: 0 0 clamp(1.25rem, 1rem + 0.8vw, 1.75rem);
+    padding-bottom: 0.85rem;
+    font-family: var(--font-mono);
+    font-size: var(--sx-lab-size);
+    font-weight: 400;
+    line-height: 1;
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+  .sx-sh__idx {
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+    color: var(--sx-structure);
+  }
+  .sx-sh__name {
+    padding-left: 0.9rem;
+    border-left: 1px solid var(--sx-hairline);
+  }
+  /* The datum: a hairline across the full width of the header with a dimension tick at its far
+     end, and a short structure-coloured tick over its start, like the stage list in the hero. */
+  .sx-sh__kicker::before,
+  .sx-sh__kicker::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    pointer-events: none;
+    transform-origin: left;
+  }
+  .sx-sh__kicker::after {
+    left: 0;
+    right: 0;
+    height: 7px;
+    background:
+      linear-gradient(var(--sx-hairline), var(--sx-hairline)) 0 100% / 100% 1px no-repeat,
+      linear-gradient(var(--sx-hairline), var(--sx-hairline)) 100% 100% / 1px 100% no-repeat;
+  }
+  .sx-sh__kicker::before {
+    left: 0;
+    z-index: 1;
+    width: 28px;
+    height: 2px;
+    background: var(--sx-structure);
+  }
+
+  /* ---- Heading and paragraph ---- */
+
+  .sx-sh__title {
+    max-width: 46rem;
+    margin: 0;
+    font-family: var(--sx-font-display);
+    font-size: clamp(1.6rem, 1.1rem + 1.8vw, 2.5rem);
+    font-weight: 300;
+    line-height: 1.12;
+    letter-spacing: -0.015em;
+    color: var(--sl-color-white);
+    text-wrap: balance;
+  }
+  /* The clip. The padding keeps ascenders and descenders inside it; the negative margin gives the
+     space back. */
+  .sx-sh__clip {
+    display: block;
+    overflow: hidden;
+    padding-block: 0.06em 0.2em;
+    margin-block: -0.06em -0.2em;
+  }
+  .sx-sh__clip > span {
+    display: block;
+  }
+  /* A header without a paragraph keeps the same space under it: the clip's negative margin would
+     otherwise pull the content up by the clip's bottom padding. */
+  .sx-sh__title:last-child > .sx-sh__clip {
+    margin-bottom: 0;
+  }
+  .sx-sh > p:not(.sx-sh__kicker) {
+    max-width: 62ch;
+    margin: 1rem 0 0;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+    color: var(--sx-muted);
+    text-wrap: pretty;
+  }
+
+  /* ---- Reveal: the heading rises, the datum draws, the paragraph follows ---- */
+
+  @media screen and (prefers-reduced-motion: no-preference) {
+    .sx-sh__kicker::before,
+    .sx-sh__kicker::after {
+      transition: transform 1000ms var(--sx-ease);
+    }
+    .sx-sh__kicker > * {
+      transition: opacity 700ms var(--sx-ease) 120ms;
+    }
+    .sx-sh__clip > span {
+      transition: transform 900ms var(--sx-rise) 140ms;
+    }
+    .sx-sh > p:not(.sx-sh__kicker) {
+      transition:
+        opacity 800ms var(--sx-ease) 320ms,
+        transform 800ms var(--sx-ease) 320ms;
+    }
+
+    .sx-sh[data-sh='wait'] .sx-sh__kicker::before,
+    .sx-sh[data-sh='wait'] .sx-sh__kicker::after {
+      transform: scaleX(0);
+    }
+    .sx-sh[data-sh='wait'] .sx-sh__kicker > * {
+      opacity: 0;
+    }
+    .sx-sh[data-sh='wait'] .sx-sh__clip > span {
+      transform: translateY(110%);
+    }
+    .sx-sh[data-sh='wait'] > p:not(.sx-sh__kicker) {
+      opacity: 0;
+      transform: translateY(14px);
+    }
+  }
+}

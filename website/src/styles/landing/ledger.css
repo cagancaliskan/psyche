@@ -1,0 +1,276 @@
+/*
+ * The stage ledger on the landing page (components/landing/StageLedger.astro): the stages as three
+ * columns of a hairline-ruled table, each headed by the mark with only its own bowl lit
+ * (components/brand/StageGlyph.astro), in the drafting language of the hero. A datum line runs
+ * across the head of the table with a short tick in each stage's colour on it, as the hero's stage
+ * list does; rows are rules, not boxes.
+ *
+ * Catalog source (21st.dev): the table anatomy after "Spec Sheet" by isaiahbjork (a label column,
+ * one column per variant, small uppercase column labels, the stacked layout on a narrow width),
+ * rewritten in plain CSS. The link is the hero's Underline Link (after "Underline Link" by balick).
+ *
+ * Three layouts, by the ledger's own width. Wide: the table with a row-name column. Medium: still
+ * the table, three stage columns across the full width; the row-name column is dropped and each cell
+ * carries its row's name in front of it. Narrow: three stacked blocks, one per stage: the table,
+ * its row groups and its rows stop being boxes (display: contents), so every cell is a grid item,
+ * and order sets each stage's head and cells together. A stacked block is ruled by hairlines above
+ * and between its cells and under its last one, never boxed. The markup sets explicit table roles
+ * so that the changed display does not change what assistive technology reads.
+ *
+ * Site tokens only, so light and dark switch through the variables. Nothing here moves; the only
+ * transition is the link's underline, and with reduced motion that is instant.
+ */
+
+/* Repeats global.css's order, so this file keeps that order even if it loads before it. */
+@layer base, starlight, theme, components, utilities;
+
+@layer components {
+  /* The width that decides between table and sheets is the ledger's own, not the viewport's. */
+  .sx-lg {
+    container: sx-lg / inline-size;
+  }
+
+  /* One colour per stage, read inside out like the mark: the inner bowl is signal, the middle bowl
+     structure, the outer bowl ink. --k orders a stage's sheet, --r a row within it. */
+  .sx-lg [data-k='inner'] {
+    --c: var(--sx-agent);
+    --k: 1;
+  }
+  .sx-lg [data-k='middle'] {
+    --c: var(--sx-structure);
+    --k: 2;
+  }
+  .sx-lg [data-k='outer'] {
+    --c: var(--sl-color-white);
+    --k: 3;
+  }
+  .sx-lg [data-row='state'] {
+    --r: 1;
+  }
+  .sx-lg [data-row='asks'] {
+    --r: 2;
+  }
+  .sx-lg [data-row='kept'] {
+    --r: 3;
+  }
+  .sx-lg [data-row='read'] {
+    --r: 4;
+  }
+
+  .sx-lg__table {
+    width: 100%;
+    table-layout: fixed;
+    /* Separate, so the tick on a column head sits exactly over the cell's own top rule. */
+    border-collapse: separate;
+    border-spacing: 0;
+    text-align: left;
+    color: var(--sl-color-white);
+  }
+  .sx-lg__table col:first-child {
+    width: 7.75rem;
+  }
+
+  /* ---- Column heads: the datum line, a tick, the glyph and the stage's name ---- */
+
+  .sx-lg__corner,
+  .sx-lg__ch {
+    padding: 0 1.5rem 0 0;
+    border-top: 1px solid var(--sx-hairline);
+    text-align: left;
+    vertical-align: top;
+    font-weight: 400;
+  }
+  .sx-lg__ch {
+    position: relative;
+    padding-block: 1.6rem 1.4rem;
+  }
+  .sx-lg__ch::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -1px;
+    width: 28px;
+    height: 2px;
+    background: var(--c);
+  }
+  .sx-lg__chin {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+  .sx-lg__glyph {
+    display: block;
+    flex: none;
+  }
+  .sx-lg__ct {
+    display: block;
+    min-width: 0;
+  }
+  .sx-lg__k {
+    display: block;
+    font: 400 var(--sx-lab-size)/1.2 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
+    color: var(--c);
+  }
+  .sx-lg__nm {
+    display: block;
+    margin-top: 6px;
+    font: 500 1.0625rem/1.25 var(--font-sans);
+    color: var(--sl-color-white);
+    text-wrap: balance;
+  }
+
+  /* ---- Rows: a mono row name, then one cell per stage ---- */
+
+  .sx-lg__rh,
+  .sx-lg__table td {
+    padding: 1.25rem 1.5rem 1.5rem 0;
+    border-top: 1px solid var(--sx-hairline);
+    text-align: left;
+    vertical-align: top;
+  }
+  .sx-lg__table tbody tr:last-child > * {
+    border-bottom: 1px solid var(--sx-hairline);
+  }
+  .sx-lg__rh {
+    padding-top: calc(1.25rem + 0.3rem);
+    font: 400 var(--sx-lab-size)/1.5 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+
+  .sx-lg__main,
+  .sx-lg__sub,
+  .sx-lg__st,
+  .sx-lg__none {
+    margin: 0;
+  }
+  .sx-lg__main,
+  .sx-lg__none {
+    max-width: 60ch;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+  .sx-lg__main {
+    color: var(--sl-color-white);
+  }
+  .sx-lg__sub {
+    max-width: 60ch;
+    margin-top: 0.55rem;
+    font-size: 0.8125rem;
+    line-height: 1.55;
+    color: var(--sx-muted);
+    text-wrap: pretty;
+  }
+  .sx-lg__none {
+    color: var(--sx-muted);
+  }
+  /* The state is a status word in muted mono; the active stage is marked by ink and weight, not by
+     a colour, as in the hero's stage list. */
+  .sx-lg__st {
+    font: 400 var(--sx-lab-size)/1.5 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+  .sx-lg__table td[data-state='active'] .sx-lg__st {
+    font-weight: 500;
+    color: var(--sl-color-white);
+  }
+
+  /* ---- Link: the hero's Underline Link ---- */
+
+  /* Two background lines on an inline box, so the underline follows the text across a line break: a
+     faint rule at rest, and the ink line that draws in from the left on hover or focus and leaves
+     to the right (only its size is transitioned). */
+  .sx-lg__link {
+    --open: 0;
+    --rule: color-mix(in oklab, currentColor 26%, transparent);
+    padding-block: 7px;
+    color: var(--sl-color-white);
+    font: 500 15px/1.2 var(--font-sans);
+    text-decoration: none;
+    background-image: linear-gradient(currentColor, currentColor), linear-gradient(var(--rule), var(--rule));
+    background-repeat: no-repeat;
+    background-size:
+      calc(var(--open) * 100%) 1px,
+      100% 1px;
+    background-position:
+      calc((1 - var(--open)) * 100%) 100%,
+      0 100%;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    transition: background-size 450ms var(--sx-ease);
+  }
+  .sx-lg__link:focus-visible {
+    --open: 1;
+    outline: 2px solid var(--sx-structure);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+  @media (hover: hover) {
+    .sx-lg__link:hover {
+      --open: 1;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .sx-lg__link {
+      transition: none;
+    }
+  }
+
+  /* ---- Medium: the table without its row-name column ---- */
+
+  /* Each cell names its row in front of its text, so the row-name column can go and the three
+     stages get its width. Shared by the medium and the narrow layout. */
+  @container sx-lg (max-width: 58rem) {
+    .sx-lg__table col:first-child,
+    .sx-lg__corner,
+    .sx-lg__rh {
+      display: none;
+    }
+    .sx-lg__table td::before {
+      content: attr(data-label);
+      display: block;
+      margin-bottom: 0.6rem;
+      font: 400 var(--sx-lab-size)/1.2 var(--font-mono);
+      letter-spacing: var(--sx-lab-track);
+      text-transform: uppercase;
+      color: var(--sx-muted);
+    }
+  }
+
+  /* ---- Narrow: three stacked blocks ---- */
+
+  @container sx-lg (max-width: 44rem) {
+    .sx-lg__table {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr);
+    }
+    .sx-lg__table :is(colgroup, .sx-lg__corner, .sx-lg__rh) {
+      display: none;
+    }
+    .sx-lg__table :is(thead, tbody, tr) {
+      display: contents;
+    }
+
+    /* A block is its head and four cells: a hairline above each, one under the last, the stage's
+       tick on the head's rule. No side edges. */
+    .sx-lg__ch {
+      order: calc(var(--k) * 10);
+      margin-top: 2.75rem;
+      padding: 1.5rem 0 1.25rem;
+    }
+    .sx-lg__ch[data-k='inner'] {
+      margin-top: 0;
+    }
+    .sx-lg__table td {
+      order: calc(var(--k) * 10 + var(--r));
+      padding: 1.1rem 0 1.3rem;
+    }
+  }
+}

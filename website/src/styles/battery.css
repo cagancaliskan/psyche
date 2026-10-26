@@ -1,5 +1,5 @@
 /*
- * The test battery: its pictures, the battery cards (landing and docs) and the battery page.
+ * The test battery: its pictures, the battery rows (landing and docs) and the battery page.
  * Pictures are luminous paths on the dark canvas: walls in the structure colour, the agent's
  * trail and route in the signal colour with a soft halo under the route. Motion shows only the
  * agent's trail and route, and the arc between a test pair, drawing along their length. With
@@ -89,7 +89,6 @@
   }
 
   /* The dark plate every picture sits on: the canvas with a fine coordinate grid. */
-  .sx-test-card__frame,
   .sx-test-fig__frame {
     border: 1px solid var(--sx-hairline);
     border-radius: 10px;
@@ -119,113 +118,6 @@
       opacity: 1;
       transform: scale(1);
     }
-  }
-
-  /* ---------- Battery cards: one per test ---------- */
-  /* Hairline cards with the spotlight hover (docs-visuals.css). A row that scrolls sideways in a
-     narrow column, three over two in a medium one, five across in a wide one. */
-  .sx-test-cards-wrap {
-    container: sx-cards / inline-size;
-  }
-  .sx-test-cards {
-    list-style: none;
-    margin: 0;
-    padding: 0.25rem 0.1rem 1rem;
-    display: flex;
-    gap: 0.85rem;
-    overflow-x: auto;
-    scroll-snap-type: x mandatory;
-    scroll-padding-inline: 0.1rem;
-    overscroll-behavior-x: contain;
-    scrollbar-width: thin;
-  }
-  .sx-test-cards > li {
-    flex: 0 0 min(15rem, 78%);
-    scroll-snap-align: start;
-    margin: 0;
-  }
-  @container sx-cards (min-width: 36rem) {
-    .sx-test-cards {
-      display: grid;
-      grid-template-columns: repeat(6, minmax(0, 1fr));
-      gap: 0.85rem;
-      overflow: visible;
-      padding: 0;
-    }
-    .sx-test-cards > li {
-      grid-column: span 2;
-    }
-    .sx-test-cards > li:nth-child(4) {
-      grid-column: 2 / span 2;
-    }
-  }
-  @container sx-cards (min-width: 60rem) {
-    .sx-test-cards {
-      grid-template-columns: repeat(5, minmax(0, 1fr));
-    }
-    .sx-test-cards > li,
-    .sx-test-cards > li:nth-child(4) {
-      grid-column: auto;
-    }
-  }
-
-  .sx-test-card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.4rem;
-    padding: 0.7rem 0.7rem 0.95rem;
-  }
-  .sx-test-card__frame {
-    aspect-ratio: 9 / 7;
-    margin-bottom: 0.45rem;
-    padding: 0.4rem;
-    transition: border-color 180ms var(--sx-ease);
-  }
-  /* Card titles are UI text in the sans. global.css sets display type on every markdown h3 outside
-     any layer, so only an important declaration in a layer outranks it there. */
-  .sx-test-card__name {
-    margin: 0;
-    font-family: var(--sl-font) !important;
-    letter-spacing: normal !important;
-    font-size: 1rem;
-    font-weight: 600;
-    line-height: 1.25;
-    color: var(--sl-color-white);
-  }
-  .sx-test-card__name a {
-    color: inherit;
-    text-decoration: none;
-  }
-  /* The whole card is the link's target area; the heading keeps the link's name short. */
-  .sx-test-card__name a::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 2;
-    border-radius: inherit;
-  }
-  .sx-test-card__id {
-    display: block;
-    margin-bottom: 0.2rem;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.625rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    color: var(--sx-structure);
-  }
-  .sx-test-card__caption {
-    margin: 0;
-    font-size: 0.8125rem;
-    line-height: 1.45;
-    color: var(--sx-muted);
-  }
-  .sx-test-card:is(:hover, :focus-within) .sx-test-card__frame {
-    border-color: color-mix(in oklab, var(--sx-agent) 30%, var(--sx-hairline));
-  }
-  .sx-test-card:is(:hover, :focus-within) .sx-test-card__name a {
-    text-decoration: underline;
-    text-decoration-color: var(--sx-agent);
-    text-underline-offset: 0.2em;
   }
 
   /* ---------- Battery page: jump bar ---------- */
@@ -477,7 +369,6 @@
   @media (prefers-reduced-motion: reduce) {
     .sx-test-jump a,
     .sx-test-jump a::before,
-    .sx-test-card__frame,
     .sx-steps button,
     .sx-steps__n,
     .sx-test-toggle {
@@ -487,16 +378,6 @@
 
   /* ---------- Motion: the route draws; nothing else spreads or moves ---------- */
   @media (prefers-reduced-motion: no-preference) {
-    /* Cards: hidden until the card is seen, then drawn once; again on hover or keyboard focus. */
-    .sx-test-card[data-wait] .sx-pic .draw {
-      stroke-dasharray: 1 1.1;
-      stroke-dashoffset: 1.05;
-    }
-    .sx-test-card:is([data-draw], :hover, :has(:focus-visible)) .sx-pic .draw {
-      stroke-dasharray: 1 1.1;
-      animation: sx-pic-draw 1.2s cubic-bezier(0.45, 0.05, 0.4, 1) both;
-    }
-
     /* Battery page: whatever a step adds draws or appears when the step changes. */
     .sx-test-fig[data-animate] .sx-pic .draw {
       stroke-dasharray: 1 1.1;

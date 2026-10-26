@@ -1,0 +1,152 @@
+---
+// Fig. 1 of the battery section: Tolman's latent learning, drawn as one sheet of a drafting set.
+// The arena of src/lib/maze.ts (the landing hero's old field, without its decorative wing) is
+// built here as static SVG: thin structure-blue walls, the agent's reward-free trail, the goal
+// introduced afterwards and the finished shortest route. Agent paths only; nothing spreads. The
+// sheet carries hairline registration corners and a ruler on each axis. The server markup is the
+// final frame, so without script, or with reduced motion, the finished picture shows. The inline
+// script only starts the sequence (trail, goal, route, under 5 s, once) when the sheet, or the
+// phase list beside or under it, first scrolls into view; the drawing itself is CSS
+// (src/styles/landing/maze-figure.css). The picture
+// is decoration and hidden from assistive technology: the phases beside it and the caption say
+// the same in words, read from the battery's own T1 data.
+// Catalog (21st.dev): the corner marks follow "Corner Frame" by kevingirelli.
+import {
+  FIELD_GOAL,
+  FIELD_SEED,
+  FIELD_SPEC,
+  FIELD_START,
+  FIELD_STEPS,
+  arenaColumn,
+  cellPath,
+  closeLeftOf,
+  persistentWalk,
+  roomField,
+  shortestPath,
+  wallLines,
+} from '@/lib/maze.ts';
+import { TESTS } from '@/lib/battery.ts';
+import '@/styles/landing/maze-figure.css';
+
+const field = roomField(FIELD_SPEC, FIELD_SEED);
+const from = arenaColumn(FIELD_SPEC);
+const arena = closeLeftOf(field, from);
+const trail = persistentWalk(arena, FIELD_START, FIELD_STEPS, FIELD_SEED);
+const route = shortestPath(arena, FIELD_START, FIELD_GOAL);
+if (!route) throw new Error('MazeFigure: the goal is unreachable');
+
+// The drawing spans the arena's walls, centre line to centre line: its west wall is the column
+// before the first arena cell, and rooms sit on a pitch of size + 1.
+const pitch = FIELD_SPEC.size + 1;
+const w = (FIELD_SPEC.roomCols - FIELD_SPEC.arenaFrom) * pitch;
+const h = FIELD_SPEC.roomRows * pitch;
+const x0 = from - 1 + 0.5;
+const y0 = 0.5;
+const pad = (n: number) => String(n).padStart(2, '0');
+
+// Room centre lines, and a dot where the walls of four rooms meet.
+let centre = '';
+for (let i = 0; i < w / pitch; i++) centre += `M${x0 + i * pitch + pitch / 2} ${y0}v${h}`;
+for (let j = 0; j < h / pitch; j++) centre += `M${x0} ${y0 + j * pitch + pitch / 2}h${w}`;
+let joints = '';
+for (let j = 0; j <= h / pitch; j++) for (let i = 0; i <= w / pitch; i++) joints += `M${x0 + i * pitch} ${y0 + j * pitch}h0`;
+
+// Rulers in arena cells: a tick at every cell, a longer one at every room wall, numerals on those.
+const along = (len: number, major: (n: number) => string, minor: (n: number) => string) => {
+  let big = '';
+  let small = '';
+  for (let n = 0; n <= len; n++) {
+    if (n % pitch === 0) big += major(n);
+    else small += minor(n);
+  }
+  return { big, small };
+};
+const rx = along(w, (n) => `M${n} 0v1`, (n) => `M${n} .55v.45`);
+const ry = along(h, (n) => `M0 ${n}h1`, (n) => `M.55 ${n}h.45`);
+const stops = (len: number) => Array.from({ length: len / pitch + 1 }, (_, i) => ({ n: i * pitch, p: (i * pitch * 100) / len }));
+
+// A goal ring, as a path so the pen can draw it.
+const ringAt = (cx: number, cy: number, r: number) => `M${cx + r} ${cy}a${r} ${r} 0 1 0 ${-2 * r} 0a${r} ${r} 0 1 0 ${2 * r} 0`;
+const start = [FIELD_START[1] + 0.5, FIELD_START[0] + 0.5];
+const goal = [FIELD_GOAL[1] + 0.5, FIELD_GOAL[0] + 0.5];
+
+// The three phases are the battery's own T1 steps (explore, goal introduced, direct route).
+const t1 = TESTS.find((t) => t.id === 'T1');
+if (!t1 || t1.kind !== 'grid' || t1.steps.length !== 3) throw new Error('MazeFigure: battery test T1 is missing or changed shape');
+const phases = t1.steps.map((s, i) => ({ k: pad(i + 1), label: s.label, text: s.caption }));
+---
+
+<div class="sx-mzw not-content">
+  <figure class="sx-mz">
+    <script is:inline>
+      (() => {
+        const f = document.currentScript.parentElement;
+        if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+        f.classList.add('js');
+        // Either part starts it: on a phone the list sits under the sheet, and a page restored to a
+        // scroll position can show the list with the sheet mostly out of view.
+        addEventListener('DOMContentLoaded', () => {
+          const io = new IntersectionObserver(
+            (e) => {
+              if (e.some((x) => x.intersectionRatio >= 0.35)) {
+                f.classList.add('go');
+                io.disconnect();
+              }
+            },
+            { threshold: 0.35 },
+          );
+          io.observe(f.querySelector('.sx-mz__sheet'));
+          io.observe(f.querySelector('.sx-mz__key'));
+        });
+      })();
+    </script>
+
+    <div class="sx-mz__sheet" aria-hidden="true" data-pagefind-ignore>
+      <i class="sx-mz__cm tl"></i><i class="sx-mz__cm tr"></i><i class="sx-mz__cm bl"></i><i class="sx-mz__cm br"></i>
+
+      <div class="sx-mz__rx">
+        {stops(w).map((s) => <span style={`--p:${s.p}`}>{pad(s.n)}</span>)}
+        <svg class="sx-mz__ticks" viewBox={`0 0 ${w} 1`} preserveAspectRatio="none" focusable="false">
+          <path class="minor" d={rx.small}></path>
+          <path d={rx.big}></path>
+        </svg>
+      </div>
+      <div class="sx-mz__ry">
+        {stops(h).map((s) => <span style={`--p:${s.p}`}>{pad(s.n)}</span>)}
+        <svg class="sx-mz__ticks" viewBox={`0 0 1 ${h}`} preserveAspectRatio="none" focusable="false">
+          <path class="minor" d={ry.small}></path>
+          <path d={ry.big}></path>
+        </svg>
+      </div>
+
+      <div class="sx-mz__plot">
+        <svg class="sx-mz__svg" viewBox={`${x0} ${y0} ${w} ${h}`} focusable="false">
+          <path class="centre" d={centre}></path>
+          <path class="walls" d={wallLines(field, from - 1)}></path>
+          <path class="joints" d={joints}></path>
+          <path class="trail" d={cellPath(trail)} pathLength="1"></path>
+          <path class="route" d={cellPath(route)} pathLength="1"></path>
+          <circle class="start" cx={start[0]} cy={start[1]} r="0.34"></circle>
+          <path class="goal-ring" d={ringAt(goal[0], goal[1], 0.62)} pathLength="1"></path>
+          <circle class="goal-dot" cx={goal[0]} cy={goal[1]} r="0.26"></circle>
+        </svg>
+      </div>
+    </div>
+
+    <ol class="sx-mz__key" aria-label="Phases of the illustration">
+      {
+        phases.map((p) => (
+          <li>
+            <span class="k">{p.k}</span>
+            <span class="nm">{p.label}</span>
+            <span class="tx">{p.text}</span>
+          </li>
+        ))
+      }
+    </ol>
+
+    <figcaption class="sx-mz__cap">
+      <span class="sx-mz__fig">Fig. 1</span> Latent learning, after Tolman: explore without reward, then reach a goal introduced afterwards. An illustration, not a result.
+    </figcaption>
+  </figure>
+</div>

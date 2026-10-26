@@ -1,0 +1,182 @@
+---
+// One project, in stages, as a ledger. Structure after "Spec Sheet" by isaiahbjork (21st.dev): a
+// real table (screen-reader caption, column headers, a row header on every row) with the stages as
+// columns, rewritten in plain Astro and CSS without its React, framer-motion or colour palette. Each
+// column is headed by the Psyche mark with only that stage's bowl lit (brand/StageGlyph.astro);
+// the rows are the stage's state, what it asks, what is kept and where to read more. On a narrow
+// container the table becomes three stacked sheets (src/styles/landing/ledger.css), which reorders
+// the same cells, so the markup is written once.
+//
+// The state follows the public ledger's program state exactly as the hero reads it
+// (components/LayersHero.astro): a paused stage is kept, as a citable artifact, and later stages
+// have no state in the ledger and are open by definition. The wording is the stage text of the
+// landing page and the docs; nothing here is new.
+import StageGlyph from '@/components/brand/StageGlyph.astro';
+import ledger from '@/data/ledger.public.json';
+import { stateLabel, type ProgramLine, type PublicLedger } from '@/lib/ledger.ts';
+import { formatDay } from '@/lib/plan.ts';
+import { withBase } from '@/lib/url.ts';
+import SectionHeader from './SectionHeader.astro';
+import '@/styles/landing/ledger.css';
+
+const led = ledger as unknown as PublicLedger;
+const status = (state: string) => (state === 'paused' ? `${stateLabel(state)}, kept` : stateLabel(state));
+const since = (line: ProgramLine) => `Since ${formatDay(line.since)}, decision ${line.decision}`;
+
+// A cell is a main line and, where the docs add one, a quieter line under it.
+interface Cell {
+  main: string;
+  sub?: string;
+}
+interface Stage {
+  key: 'inner' | 'middle' | 'outer';
+  stage: 1 | 2 | 3;
+  label: string;
+  name: string;
+  state: string;
+  since?: string;
+  asks: Cell;
+  kept: Cell;
+  read: { href: string; text: string } | null;
+}
+
+// The bowls read inside out (brand/README.md): the inner bowl is stage 1, the middle bowl stage 2
+// and the outer bowl, open at the stem, the later stages.
+const stages: Stage[] = [
+  {
+    key: 'inner',
+    stage: 1,
+    label: 'Stage 1',
+    name: 'The substrate',
+    state: led.program.substrate.state,
+    since: since(led.program.substrate),
+    asks: {
+      main: 'Can a memory-and-activation substrate move information without loss and set how much activation it spends without producing output its inputs do not support?',
+      sub: 'An aim, paused and not achieved.',
+    },
+    kept: {
+      main: 'A dependency-free Python memory-and-activation substrate whose lower layers are proven correct and deterministic.',
+      sub: 'Its three attempts to grade a cognitive effect each stopped before any graded number, at the external yardstick; that lesson shaped stage 2.',
+    },
+    read: { href: 'substrate/overview/', text: 'What the substrate is' },
+  },
+  {
+    key: 'middle',
+    stage: 2,
+    label: 'Stage 2',
+    name: 'Spiking cognitive maps',
+    state: led.program.cognitive_map.state,
+    since: since(led.program.cognitive_map),
+    asks: {
+      main: 'Does a spiking network that learns only through local synaptic plasticity show, on classic cognitive-map tests, the behaviours that an internal map explains and memorised responses do not?',
+      sub: 'The plan does not depend on a positive answer.',
+    },
+    kept: {
+      main: 'If the spiking model falls short, a documented account of where and why is kept as a result in its own right.',
+      sub: 'The summary is public here; the detail stays private until release.',
+    },
+    read: { href: 'research/', text: 'The research overview' },
+  },
+  {
+    key: 'outer',
+    stage: 3,
+    label: 'Later stages',
+    name: 'Toward AGI',
+    state: 'open',
+    asks: {
+      main: "Later stages build toward the long-term aim on the same discipline and on the project's own designs.",
+    },
+    kept: { main: 'Not specified publicly yet.' },
+    read: null,
+  },
+];
+
+const labels = { state: 'State', asks: 'What it asks', kept: 'What is kept', read: 'Read' };
+---
+
+<section class="sx-lp-section not-content" aria-labelledby="sx-stages-title" data-caliper="01 Stages">
+  <SectionHeader id="sx-stages-title" title="One project, in stages" index="01" kicker="Stages">
+    <p>Each stage stands on the one before it and is kept as a citable artifact, so the work behind it stays usable wherever the road stops.</p>
+  </SectionHeader>
+
+  <div class="sx-lg" data-reveal>
+    <table class="sx-lg__table" role="table">
+      <caption class="sr-only">
+        Psyche's stages side by side: the state of each, what it asks, what is kept and where to read more.
+      </caption>
+      <colgroup><col /><col /><col /><col /></colgroup>
+      <thead role="rowgroup">
+        <tr role="row">
+          <th class="sx-lg__corner" scope="col" role="columnheader"><span class="sr-only">Aspect</span></th>
+          {
+            stages.map((s) => (
+              <th class="sx-lg__ch" scope="col" role="columnheader" data-k={s.key}>
+                <span class="sx-lg__chin">
+                  <StageGlyph stage={s.stage} class="sx-lg__glyph" />
+                  <span class="sx-lg__ct">
+                    <span class="sx-lg__k">{s.label}</span>{' '}
+                    <span class="sx-lg__nm">{s.name}</span>
+                  </span>
+                </span>
+              </th>
+            ))
+          }
+        </tr>
+      </thead>
+      <tbody role="rowgroup">
+        <tr role="row">
+          <th class="sx-lg__rh" scope="row" role="rowheader">{labels.state}</th>
+          {
+            stages.map((s) => (
+              <td role="cell" data-k={s.key} data-row="state" data-label={labels.state} data-state={s.state}>
+                <p class="sx-lg__st">{status(s.state)}</p>
+                {s.since && <p class="sx-lg__sub">{s.since}</p>}
+              </td>
+            ))
+          }
+        </tr>
+        <tr role="row">
+          <th class="sx-lg__rh" scope="row" role="rowheader">{labels.asks}</th>
+          {
+            stages.map((s) => (
+              <td role="cell" data-k={s.key} data-row="asks" data-label={labels.asks}>
+                <p class="sx-lg__main">{s.asks.main}</p>
+                {s.asks.sub && <p class="sx-lg__sub">{s.asks.sub}</p>}
+              </td>
+            ))
+          }
+        </tr>
+        <tr role="row">
+          <th class="sx-lg__rh" scope="row" role="rowheader">{labels.kept}</th>
+          {
+            stages.map((s) => (
+              <td role="cell" data-k={s.key} data-row="kept" data-label={labels.kept}>
+                <p class="sx-lg__main">{s.kept.main}</p>
+                {s.kept.sub && <p class="sx-lg__sub">{s.kept.sub}</p>}
+              </td>
+            ))
+          }
+        </tr>
+        <tr role="row">
+          <th class="sx-lg__rh" scope="row" role="rowheader">{labels.read}</th>
+          {
+            stages.map((s) => (
+              <td role="cell" data-k={s.key} data-row="read" data-label={labels.read}>
+                {s.read ? (
+                  <p class="sx-lg__main">
+                    <a class="sx-lg__link" href={withBase(s.read.href)}>{s.read.text}</a>
+                  </p>
+                ) : (
+                  <p class="sx-lg__none">
+                    <span aria-hidden="true">&mdash;</span>
+                    <span class="sr-only">None</span>
+                  </p>
+                )}
+              </td>
+            ))
+          }
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

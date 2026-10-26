@@ -78,12 +78,16 @@ export default function Timeline({ plan }: Props) {
                 const g = r.phase.gate ? gates.get(r.phase.gate) : undefined;
                 const gateDay = g?.date ? dayNumber(g.date) : null;
                 // Labels sit after the band (and its gate marker); late phases put them before it.
-                // Each label may wrap to a second line inside the room it has.
+                // Each label may wrap to a second line inside the room it has. A label before its
+                // band stops short of the today line when that line lies to its left, so the line
+                // never cuts through the label (with a floor, so a narrow room stays readable).
                 const after = end <= 0.6;
                 const gap = gateDay !== null ? '1rem' : '0.5rem';
+                const room = todayVisible && todayAt < left ? left - todayAt : left;
+                const beforeMax = room < left ? `max(calc(${pct(room)} - 1rem), 6rem)` : `calc(${pct(left)} - 0.5rem)`;
                 const labelStyle = after
                   ? { left: `calc(${pct(left + width)} + ${gap})`, maxWidth: `calc(${pct(1 - left - width)} - ${gap})` }
-                  : { right: `calc(${pct(1 - left)} + 0.5rem)`, maxWidth: `calc(${pct(left)} - 0.5rem)` };
+                  : { right: `calc(${pct(1 - left)} + 0.5rem)`, maxWidth: beforeMax };
                 return (
                   <li key={r.phase.id} className="sx-tl__row">
                     <button

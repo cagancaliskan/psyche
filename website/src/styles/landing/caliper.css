@@ -1,0 +1,208 @@
+/*
+ * The page-edge caliper (components/landing/CaliperRail.astro): a measuring rail in the right page
+ * gutter. A graduated scale slides with the scroll, two jaws close over the extent of the section
+ * in view, one signal marker shows the reading position through it, and a mono label at the top
+ * jaw names the section. Everything is drawn in the structure colour at low strength; the signal
+ * colour is the marker alone.
+ *
+ * After "Scroll Caliper" by nikolas-sapa (21st.dev): the scale that slides with the scroll, the
+ * jaws closed over the active section and the single accent marker, rewritten as plain CSS driven
+ * by five custom properties that the script sets. The springs, the motion blur and the pixel
+ * readout are left out; a short CSS transition eases the jaws, and reduced motion drops it.
+ *
+ * Site tokens only, so light and dark switch through the variables. Wide screens with a fine
+ * pointer only; elsewhere the rail is not rendered. It sits in the page gutter, takes no pointer
+ * events and reserves no layout space.
+ */
+
+/* Repeats global.css's order, so this file keeps that order even if it loads before it. */
+@layer base, starlight, theme, components, utilities;
+
+@layer components {
+  .sx-caliper {
+    display: none;
+  }
+
+  @media screen and (min-width: 1200px) and (pointer: fine) {
+    .sx-caliper {
+      /* Set by the script: --t the scale's offset, --a and --b the jaws, --g the span between them
+         (a plain number), --m the marker. All are measured from the rail's top. */
+      --t: 0px;
+      --a: 0px;
+      --b: 0px;
+      --g: 0;
+      --m: 0px;
+      --jaw: color-mix(in oklab, var(--sx-structure) 72%, transparent);
+      --major: color-mix(in oklab, var(--sx-structure) 44%, transparent);
+      --minor: color-mix(in oklab, var(--sx-structure) 24%, transparent);
+      --glide: 220ms var(--sx-ease);
+      display: block;
+      position: fixed;
+      z-index: 3;
+      /* Below the header, clear of an overlay scrollbar and inside the gutter that a 1200px window
+         leaves beside the content column (52px at the least, with a classic scrollbar). */
+      top: var(--sl-nav-height, 4rem);
+      right: 8px;
+      bottom: 0;
+      width: 38px;
+      margin: 0;
+      overflow: hidden;
+      pointer-events: none;
+      user-select: none;
+      /* Shown only while a marked section is in view. */
+      opacity: 0;
+      transition: opacity 500ms var(--sx-ease);
+    }
+    .sx-caliper.on {
+      opacity: 1;
+    }
+    .sx-caliper > * {
+      position: absolute;
+      margin: 0;
+    }
+
+    /* The beam: a hairline at the page edge. */
+    .sx-caliper::after {
+      content: '';
+      position: absolute;
+      inset: 0 0 0 auto;
+      width: 1px;
+      background: var(--sx-hairline);
+    }
+
+    /* The scale: a major tick every 40px (12px long) and four minor ones between (6px), tiled and
+       moved by whole pixels with the scroll. Taller than the rail by one period at each end, so
+       the wrap of the offset (0 to -40px) is never seen. */
+    .sx-caliper__ticks {
+      top: -40px;
+      bottom: -40px;
+      right: 1px;
+      width: 12px;
+      background:
+        linear-gradient(var(--major) 1px, transparent 0) right top / 12px 40px repeat-y,
+        linear-gradient(
+            transparent 8px,
+            var(--minor) 0 9px,
+            transparent 0 16px,
+            var(--minor) 0 17px,
+            transparent 0 24px,
+            var(--minor) 0 25px,
+            transparent 0 32px,
+            var(--minor) 0 33px,
+            transparent 0
+          )
+          right top / 6px 40px repeat-y;
+      transform: translateY(var(--t));
+      will-change: transform;
+    }
+
+    /* The measured extent: a faint wash between the jaws (1px tall, scaled to the span). */
+    .sx-caliper__span {
+      top: 0;
+      right: 1px;
+      width: 24px;
+      height: 1px;
+      background: color-mix(in oklab, var(--sx-structure) 4.5%, transparent);
+      transform-origin: 0 0;
+      transform: translateY(var(--a)) scaleY(var(--g));
+      transition: transform var(--glide);
+    }
+
+    /* The jaws: a hairline across the rail with a tooth at its inner end, pointing into the
+       extent (down from the top jaw, up from the bottom one). */
+    .sx-caliper__jaw {
+      top: 0;
+      right: 1px;
+      width: 24px;
+      height: 1px;
+      background: var(--jaw);
+      transition: transform var(--glide);
+    }
+    .sx-caliper__jaw::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      width: 1px;
+      height: 7px;
+      background: inherit;
+    }
+    .sx-caliper__jaw--a {
+      transform: translateY(var(--a));
+    }
+    .sx-caliper__jaw--a::after {
+      top: 0;
+    }
+    .sx-caliper__jaw--b {
+      margin-top: -1px;
+      transform: translateY(var(--b));
+    }
+    .sx-caliper__jaw--b::after {
+      bottom: 0;
+    }
+
+    /* The label hangs below the top jaw, set sideways: the section's index in structure blue, its
+       name in muted ink. It is cut off at the bottom jaw rather than run past it. */
+    .sx-caliper__lab {
+      box-sizing: border-box;
+      top: 0;
+      right: 28px;
+      max-height: max(0px, calc(var(--g) * 1px));
+      padding-top: 10px;
+      overflow: hidden;
+      writing-mode: vertical-rl;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      font: 500 var(--sx-lab-size)/1 var(--font-mono);
+      letter-spacing: var(--sx-lab-track);
+      text-transform: uppercase;
+      color: var(--sx-muted);
+      transform: translateY(var(--a));
+      transition: transform var(--glide);
+    }
+    .sx-caliper__lab i {
+      margin-inline-end: 0.9em;
+      font-style: normal;
+      font-variant-numeric: tabular-nums;
+      color: var(--sx-structure);
+    }
+    .sx-caliper__lab b {
+      font-weight: inherit;
+    }
+
+    /* The reading position: the one signal-coloured mark, a pointer on a short line. */
+    .sx-caliper__mark {
+      top: -1px;
+      right: 1px;
+      width: 18px;
+      height: 2px;
+      background: var(--sx-agent);
+      transform: translateY(var(--m));
+      transition: transform var(--glide);
+    }
+    .sx-caliper__mark::before {
+      content: '';
+      position: absolute;
+      left: -5px;
+      top: -2.5px;
+      width: 6px;
+      height: 7px;
+      background: inherit;
+      clip-path: polygon(0 50%, 100% 0, 100% 100%);
+    }
+  }
+
+  /* Reduced motion: the jaws and the marker jump to their place and the rail appears at once. The
+     scale still follows the scroll, one to one, as the page itself does. */
+  @media (prefers-reduced-motion: reduce) {
+    .sx-caliper,
+    .sx-caliper * {
+      transition: none !important;
+    }
+  }
+
+  @media (forced-colors: active) {
+    .sx-caliper {
+      display: none !important;
+    }
+  }
+}
