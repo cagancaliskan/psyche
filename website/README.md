@@ -149,8 +149,9 @@ names its source in a one-line comment next to the code.
   "Scroll Reveal Content A" by abui, "Bento Feature Grid" by ln-dev7, "Us vs Them Comparison" by
   olewandowski1, "Animated Beam" by dillionverma, "Spotlight" by kevingirelli, "Glow Card Grid"
   by ncdai, and "Stats Band" by kuratlielia with "Number Ticker" by dillionverma.
-- **Test battery:** "Line Draw SVG" by pulkitxm, "Feature Grid Spotlight Cards" by
-  mohammadshehadeh, "Underlined Navigation Menu" by shadcnui-blocks and "Stepper" by kevingirelli.
+- **Test battery:** "Line Draw SVG" by pulkitxm, "Stepper" by kevingirelli, "Vertical Titled
+  Stepper" by sean0205, "Spec Sheet" by isaiahbjork, "Kokonut UI Scroll Index" by kokonutd,
+  "Corner Frame" by kevingirelli and "Table of Contents" (21st.dev catalog).
 - **Roadmap and status:** "Status" by diceui, "Status Badge" by serafimcloud, "Gantt Chart" by
   klyv-ui, "Stepper" by kevingirelli, "Quarterly Roadmap Columns" by olewandowski1 and "Stats
   Band" by kuratlielia.

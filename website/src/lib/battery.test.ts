@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TESTS, type GridStep } from './battery.ts';
+import { TESTS, splitSummary, type GridStep } from './battery.ts';
 import { isOpen } from './maze.ts';
 
 const grid = (id: string) => {
@@ -48,4 +48,14 @@ test('T1: the first-trial route reaches a goal the exploration trail passed', ()
   const [explore, , first] = grid('T1');
   const goal = first.goal!;
   assert.ok(explore.trail!.some(([r, c]) => r === goal[0] && c === goal[1]));
+});
+
+test('every summary splits into its set-up and the question the test asks', () => {
+  for (const t of TESTS) {
+    const { setup, ask } = splitSummary(t.summary);
+    assert.ok(setup.length > 0, `${t.id}: a set-up comes first`);
+    assert.match(ask, /^The test asks whether .+\.$/, `${t.id}: the question is the last sentence`);
+    assert.equal(`${setup} ${ask}`, t.summary);
+  }
+  assert.deepEqual(splitSummary('No question here.'), { setup: '', ask: 'No question here.' });
 });

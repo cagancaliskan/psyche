@@ -7,8 +7,8 @@
  * Catalog source (21st.dev), rewritten in plain CSS: the row anatomy and the travelling highlight
  * bar after "Interactive List Preview" by hyperiux; the name's underline after "Underline Link" by
  * balick, as in the hero. The route redraw (a pathLength dash reveal) is the battery's own, see
- * battery.css. The pictures keep battery.css's drawing; the rules below only quiet them to match
- * the figure above them: ink trail, thinner signal route, no glow, walls as faint hatching.
+ * battery.css. The pictures are drawn exactly as on the battery page; the rules below only firm
+ * up the trail and thin the wall outline for this size.
  *
  * Site tokens only, so light and dark switch through the variables. Without script, or with
  * reduced motion, every route is drawn.
@@ -64,14 +64,19 @@
   }
 
   .sx-brow__link {
-    --pic: 5.5rem;
+    /* --std is the width of the usual picture; every row is at least as tall as that picture's box
+       (9 by 7) and its padding, so a wide, short picture does not make its row shorter. */
+    --std: 5.5rem;
+    --pic: var(--std);
     --idw: 2.1rem;
     --gap: 0.85rem;
+    --vpad: 0.95rem;
     display: grid;
     grid-template-columns: minmax(0, 1fr) var(--pic);
     align-items: center;
     column-gap: var(--gap);
-    padding: 0.95rem 0;
+    min-height: calc(var(--std) * 7 / 9 + 2 * var(--vpad));
+    padding: var(--vpad) 0;
     color: var(--sl-color-white);
     text-decoration: none;
   }
@@ -176,40 +181,44 @@
       linear-gradient(var(--cm), var(--cm)) right bottom / 8px 1px no-repeat,
       linear-gradient(var(--cm), var(--cm)) right bottom / 1px 8px no-repeat;
   }
-  /* Quieter than the battery page's pictures: the trail is ink and thin, the route a thin signal
-     line, and neither route nor goal glows. (Three classes, so battery.css does not outrank them.) */
+  /* The pictures are the battery page's own (battery.css), in the same language as the figure above
+     them: low-fill walls in a fine outline, an ink trail, one signal route, a ringed start and a
+     goal ring. At this size the trail is a little firmer and the wall outline a hairline. */
   .sx-brow .sx-pic .trail {
     stroke: color-mix(in oklab, var(--sl-color-white) 58%, transparent);
-    stroke-width: 0.09;
-    opacity: 1;
   }
-  .sx-brow .sx-pic .path {
-    stroke-width: 0.17;
+  .sx-brow .sx-pic .wall-edge {
+    stroke-width: 1px;
+    stroke-opacity: 0.6;
   }
-  .sx-brow .sx-pic :is(.path-glow, .goal-glow) {
-    display: none;
+
+  /* The chain is a strip, not a room: its box takes the strip's proportions, and is wider than the
+     others so its five nodes stay large enough to tell apart. */
+  .sx-brow[data-kind='chain'] .sx-brow__link {
+    --pic: 7.25rem;
   }
-  /* The walls are blueprint hatching, not slabs: a faint tint with a fine edge, so they are never
-     the heaviest thing in the row (the figure above draws its walls as hairlines). */
-  .sx-brow .sx-pic .wall {
-    fill: color-mix(in oklab, var(--sx-structure) 12%, transparent);
-    stroke: color-mix(in oklab, var(--sx-structure) 50%, transparent);
-    stroke-width: 0.05;
-    shape-rendering: auto;
+  .sx-brow[data-kind='chain'] .sx-brow__pic {
+    aspect-ratio: auto;
+  }
+  .sx-brow[data-kind='chain'] .sx-pic {
+    height: auto;
   }
 
   /* ---- Wider: the arrow comes in and the columns open up ---- */
 
   @container sx-brows (min-width: 34rem) {
     .sx-brow__link {
-      --pic: clamp(5.75rem, 13cqw, 7rem);
+      --std: clamp(5.75rem, 13cqw, 7rem);
       --idw: 3.25rem;
       --gap: 1.35rem;
+      --vpad: 1.1rem;
       grid-template-columns: minmax(0, 1fr) var(--pic) 1.25rem;
-      padding: 1.1rem 0;
     }
     .sx-brow__go {
       display: block;
+    }
+    .sx-brow[data-kind='chain'] .sx-brow__link {
+      --pic: clamp(8rem, 18cqw, 10rem);
     }
   }
 
