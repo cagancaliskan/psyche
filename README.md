@@ -16,8 +16,7 @@ substrate, is the foundation: it is archived with a DOI and it gave the project 
 Stage 2, spiking cognitive maps, is the active line of research. Later stages are not yet
 specified in public.
 
-Documentation site: **<https://cagancaliskan.github.io/psyche/>** · Wiki:
-**<https://github.com/cagancaliskan/psyche/wiki>**
+Documentation site: **<https://cagancaliskan.github.io/psyche/>**
 
 ---
 
@@ -248,7 +247,7 @@ flowchart TB
     ledger["tools/ledger.json<br/>and its checker"]
   end
   readme["README.md"]
-  site["Docs site<br/>and wiki"]
+  site["Docs site"]
   priv["Private detail<br/>held elsewhere"]
 
   plan --> readme
@@ -280,8 +279,8 @@ What the arrows mean:
   `docs/research/`.
 - The suites test the substrate code, and their captured run feeds the ledger.
 - The ledger's checker holds the substrate record and the research pages to the ledger; CI runs
-  the checks on every push and pull request.
-- The docs site and the wiki are built from the governed pages.
+  the checks on every pull request and every push to main.
+- The docs site is built from the governed pages.
 - `cogmap/` receives only released versions of the line's code; the dashed arrow is a release
   under the disclosure policy.
 
@@ -323,7 +322,6 @@ and `run_tests.py` never runs it.
 
 - **Docs site:** <https://cagancaliskan.github.io/psyche/>, built from the pages listed in
   [`docs/publish.json`](docs/publish.json).
-- **Wiki:** <https://github.com/cagancaliskan/psyche/wiki>, generated from the same pages.
 - **In this repository:** the [research overview](docs/research/README.md), the
   [substrate record](docs/PSYCHE.md), its [architecture](docs/ARCHITECTURE.md) and
   [methodology](docs/METHODOLOGY.md), and the [map of content](MOC.md).

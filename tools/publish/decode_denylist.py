@@ -16,7 +16,7 @@ Exit codes, each with the reason it is that code:
   3  The value is unset, empty or whitespace only. All three are read as "the secret is
      absent", because that is what a run without access to the secret sees; the caller
      decides whether absence is an error. pages.yml warns and skips its scan on a pull
-     request and fails a deploy; wiki.yml, which only runs on a push or by hand, fails.
+     request and fails a deploy.
   1  The value is present but unusable, and nothing is written: it has whitespace inside it
      (so it is not one line of base64), it is not base64, it does not decode to UTF-8, it
      decodes to control characters other than tab, line feed and carriage return (so it is

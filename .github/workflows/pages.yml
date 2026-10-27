@@ -22,20 +22,22 @@ on:
       - "MOC.md"
       - ".github/workflows/pages.yml"
       - ".github/workflows/governance.yml"
+  # No paths filter on pull requests: the job named `build` is a required status check of the
+  # main branch ruleset, and a required check that a workflow never reports (because the pull
+  # request touched no listed path) leaves the pull request waiting for it for ever. Deploys
+  # stay limited to pushes to main, above.
   pull_request:
-    paths:
-      - "docs/**"
-      - "website/**"
-      - "tools/**"
-      - ".github/workflows/pages.yml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
+# One run per ref, so two deploys never overlap and a deploy in flight is never cancelled. A
+# newer push to the same pull request replaces that pull request's run in flight; pull requests
+# never deploy, and their group is their own ref, apart from main's.
 concurrency:
   group: pages-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   governance:
@@ -47,6 +49,7 @@ jobs:
   build:
     needs: governance
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - name: Check out
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -111,9 +114,29 @@ jobs:
         with:
           path: website/dist
 
+      # Accessibility of the built pages: website/scripts/check-a11y.mjs serves website/dist on
+      # a free local port, drives the runner's Chrome and runs axe-core at WCAG 2.2 AA over the
+      # key pages (home, battery, roadmap, status, research), light and dark, desktop and phone
+      # width. It fails on any serious or critical violation and closes everything it starts.
+      # Its two dev packages (puppeteer-core, axe-core) are installed by the script itself at
+      # the exact versions pinned at its top; they are not site dependencies, and their own
+      # dependencies are not locked. That is why this is the LAST step of the job, after the
+      # site has been uploaded: nothing the step installs or runs can change what is published.
+      # TODO(a11y): report-only for now. The first run reports serious violations of the rule
+      # label-content-name-mismatch (WCAG 2.5.3) on the search button and two links of the
+      # home page, and axe cannot decide color-contrast on a few hundred elements, which need
+      # a look by hand. Remove `continue-on-error` once the violations are fixed, so that a
+      # serious or critical violation fails this job.
+      - name: Accessibility check (axe-core, WCAG 2.2 AA)
+        continue-on-error: true
+        timeout-minutes: 10
+        working-directory: website
+        run: npm run check:a11y -- --json "${RUNNER_TEMP}/axe-report.json"
+
   disclosure:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - name: Check out (tools only)
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -156,6 +179,7 @@ jobs:
     if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
     needs: [build, disclosure]
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     permissions:
       pages: write
       id-token: write

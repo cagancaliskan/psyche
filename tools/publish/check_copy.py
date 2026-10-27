@@ -26,9 +26,9 @@ Surfaces and the rules applied to each:
     every string value in tools/research_plan.json  x      x      x         x       x
     every string value in docs/publish.json         x      x      x         x       x
       (tools/publish/stage.py makes each section title a site sidebar label and each page
-       title, where one is given, a page's title; build_wiki.py puts both in the wiki's
-       Home index and _Sidebar, inside Markdown, and each wiki value is a wiki page name,
-       which GitHub shows with its hyphens as spaces. So every value is read as written,
+       title, where one is given, a page's title; each page also keeps a wiki page name,
+       a leftover of the wiki that is no longer built, which reads with its hyphens as
+       spaces. So every value is read as written,
        with "-" and "_" read as spaces, and as Markdown (check_disclosure.markup_forms of
        a .md), so a count or a term split by a hyphen, by emphasis ("618 **assertions**")
        or by an inline tag is seen as it renders. Every value
@@ -77,7 +77,7 @@ Surfaces and the rules applied to each:
 
   not surfaces
     docs/diagrams/*.mmd are the archived report figures: D-030 keeps their render, they
-    reach neither the docs site nor the wiki (the manifest publishes only Markdown pages,
+    do not reach the docs site (the manifest publishes only Markdown pages,
     and nothing stages a .mmd from there), and the figures in them are historical by
     design, as docs/diagrams/README.md records; they stay in the repository as the record
     of that report. A stale figure in them is a record, not current copy, so they are not
@@ -963,10 +963,9 @@ _SLUG_SEP_RE = re.compile(r"[-_]")
 
 def _manifest_readings(value: str) -> List[str]:
     """Every reading of one manifest string besides the value itself: "-" and "_" read as
-    spaces (GitHub shows a wiki page name with its hyphens as spaces), and the Markdown
-    readings of both (build_wiki.py writes section and page titles into Markdown), so a
-    count or a term split by a hyphen, by emphasis or by an inline tag is seen as it
-    renders."""
+    spaces (a wiki page name reads with its hyphens as spaces), and the Markdown readings of
+    both (section and page titles are written into Markdown pages), so a count or a term
+    split by a hyphen, by emphasis or by an inline tag is seen as it renders."""
     spaced = _SLUG_SEP_RE.sub(" ", value)
     forms = [spaced]
     for form in (value, spaced):
@@ -999,7 +998,7 @@ def check_plan(rules: Rules, root: Path) -> List[CopyFinding]:
 
 
 def check_manifest(rules: Rules, root: Path) -> List[CopyFinding]:
-    """docs/publish.json: every string value, as written and as the site and the wiki show
+    """docs/publish.json: every string value, as written and as the site shows
     it (see _manifest_readings)."""
     return check_json_strings(rules, root, MANIFEST_REL, _manifest_readings)
 
@@ -1032,8 +1031,8 @@ def _research_section(title) -> bool:
 
 def manifest_sources(root: Path) -> Dict[str, bool]:
     """{src: in the cognitive-map section} for every page docs/publish.json publishes,
-    read through core.load_manifest, so the pages are the ones stage.py and build_wiki.py
-    publish. A manifest core refuses publishes nothing until it is fixed, but its page
+    read through core.load_manifest, so the pages are the ones stage.py publishes. A
+    manifest core refuses publishes nothing until it is fixed, but its page
     sources are still taken from its JSON as far as its shape allows (a source that is not
     a canonical repository path is left out, so nothing outside the repository is read):
     a page named in it is not left unread meanwhile. A manifest that is not JSON gives

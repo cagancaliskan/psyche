@@ -30,10 +30,36 @@ long-term aim. Stage states and dates are read from the ledger projection, never
 |---|---|
 | `npm ci` | Install the pinned dependencies |
 | `npm run stage` | Stage content and data from the repository |
-| `npm run build` | Stage, type-check, build into `dist/`, then check the built pages for words run together |
+| `npm run build` | Stage, type-check, build into `dist/`, then check the built pages for words run together and against the size budget |
 | `npm run preview` | Serve `dist/` locally |
-| `npm run check:spacing` | Only the last step: look for words run together in `dist/` |
+| `npm run check:spacing` | Only the spacing step: look for words run together in `dist/` |
+| `npm run check:budget` | Only the budget step: gzipped JavaScript and CSS per page against `scripts/check-budget.mjs` |
+| `npm run check:a11y` | After a build: axe-core at WCAG 2.2 AA over the key pages of `dist/` (see below) |
 | `npm test` | Unit tests for the plan, maze and battery logic |
+
+### Size budget
+
+`scripts/check-budget.mjs` reads the built HTML in `dist/` and fails the build when a page ships
+more gzipped JavaScript, or links more gzipped CSS, than its budget. JavaScript is what the page
+loads (scripts, module preloads, island modules and what they import, inline scripts) plus, on a
+page with a Mermaid diagram, the module that draws it; CSS is every linked stylesheet and every
+inline `<style>`. Fonts and images are not counted. The budgets sit 3 percent above the sizes
+measured when they were set and are listed page by page at the top of the script. Raise one on
+purpose by editing the number there, and say why in the commit.
+
+### Accessibility check
+
+`scripts/check-a11y.mjs` serves `dist/` on a free local port, opens the home, battery, roadmap,
+status and research pages in Chrome at desktop and phone width and in the light and dark themes
+(reduced motion on), and runs axe-core with the WCAG 2.0, 2.1 and 2.2 level A and AA rules. It
+exits 1 on any serious or critical violation and lists the lesser ones. It needs Google Chrome or
+Chromium (`--chrome PATH` or `CHROME_PATH` names it) and installs its two dev packages,
+`puppeteer-core` and `axe-core`, at the exact versions pinned at the top of the script, into a
+temporary directory; they are not dependencies of the site. The Pages workflow runs it on every
+pull request and every push to main, as its last step, after the site has been uploaded. There it
+is report-only for now (see the `TODO(a11y)` in `.github/workflows/pages.yml`): the known
+violations are listed in the run and do not fail it. Run locally, it fails on any serious or
+critical violation.
 
 ## Design notes
 
@@ -141,26 +167,6 @@ off them.
 
 Many layouts are adapted from components in the 21st.dev catalog: ported to the site's tokens,
 their copy replaced and their animation libraries replaced by CSS or a few lines of script. Each
-names its source in a one-line comment next to the code.
-
-- **Hero:** "Hero Section with Animated Grid" by shadcnui-blocks, "Soft Blur In" by educalvolpz,
-  "Border Beam Panel" by rmahammad, "Chip" by preetsuthar17 and "Mute Toggle Button" by sean0205.
-- **Landing:** "Tagline" by shadcncraft, "Animated Grid" by rmahammad, "Reveal" by asanshay,
-  "Scroll Reveal Content A" by abui, "Bento Feature Grid" by ln-dev7, "Us vs Them Comparison" by
-  olewandowski1, "Animated Beam" by dillionverma, "Spotlight" by kevingirelli, "Glow Card Grid"
-  by ncdai, and "Stats Band" by kuratlielia with "Number Ticker" by dillionverma.
-- **Test battery:** "Line Draw SVG" by pulkitxm, "Stepper" by kevingirelli, "Vertical Titled
-  Stepper" by sean0205, "Spec Sheet" by isaiahbjork, "Kokonut UI Scroll Index" by kokonutd,
-  "Corner Frame" by kevingirelli and "Table of Contents" (21st.dev catalog).
-- **Roadmap and status:** "Status" by diceui, "Status Badge" by serafimcloud, "Gantt Chart" by
-  klyv-ui, "Stepper" by kevingirelli, "Quarterly Roadmap Columns" by olewandowski1 and "Stats
-  Band" by kuratlielia.
-- **Documentation visuals:** "Spotlight" by kevingirelli, "Klyv Animated Beam" by klyv-ui,
-  "Animated Beam" by dillionverma, "How It Works Steps" by ln-dev7 and "Stack" by
-  abhishek-mallick.
-- **Chrome and documentation pages:** "Search Input with Keyboard Shortcut" by shadcnspace and
-  "Kbd" by shadcn (search), "Table of Contents" by mohammadshehadeh and "Animated Sidebar" by
-  unlumen (sidebar and contents rail), "Spotlight" by kevingirelli (previous and next),
-  "Admonition" by deltacomponents (asides) and "Table" by originui (tables).
-
-Everything else is written for this site.
+names its source in a one-line comment next to the code, and all of them are listed in
+[THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) with the files that credit them, which is the
+one list to keep current. Everything else is written for this site.

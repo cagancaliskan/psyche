@@ -1,7 +1,7 @@
 {
   "_README": [
     "THE RESEARCH PLAN: the only source for the public phases, gates, dates and deadlines of Psyche's current research line, spiking cognitive maps (D-031).",
-    "README.md, docs/research/, the wiki and the docs site render from it: python3 tools/publish/render_plan.py --write.",
+    "README.md, docs/research/ and the docs site render from it: python3 tools/publish/render_plan.py --write.",
     "Public granularity only. Criteria, thresholds, experiment ids, venues and funding live in the private companion,",
     "keyed by these ids. tools/publish/core.py validates this file against a key allowlist, so no other field can exist.",
     "A date that differs from its baseline_date needs a changelog entry. Status words are lowercase on purpose."

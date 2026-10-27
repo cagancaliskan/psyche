@@ -1,0 +1,57 @@
+# Code scanning with CodeQL: the site's JavaScript and TypeScript (website/) and every Python
+# file in the repository. Results appear under Security > Code scanning.
+#
+# Both languages are analysed from source (build-mode none), so the job installs nothing and
+# runs no project code. It runs on every pull request, on every push to main and once a week,
+# because a new query can flag code that did not change.
+#
+# This is an advanced setup. Code scanning's "default setup" must stay off for the repository,
+# or GitHub refuses the results this workflow uploads.
+#
+# Third-party actions are pinned to full commit SHAs; the tag is in the trailing comment.
+name: codeql
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 3 * * 1"
+
+# A newer push to the same pull request replaces the run in flight. Outside a pull request the
+# group is the commit itself, so every push to main runs to the end and keeps its record.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: analyze (${{ matrix.language }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [javascript-typescript, python]
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Initialise CodeQL
+        uses: github/codeql-action/init@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
+        with:
+          languages: ${{ matrix.language }}
+          build-mode: none
+
+      - name: Analyse
+        uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4.39.0
+        with:
+          category: "/language:${{ matrix.language }}"
