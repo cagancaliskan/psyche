@@ -1,0 +1,115 @@
+# Link check over the documents and the pages of the docs site, with lychee.
+#
+# Weekly and by hand, never on a pull request: external sites go down, rate-limit and move, and
+# a pull request that changed no link should not fail because someone else's server did. A
+# failed run fails the workflow and nothing else: no issue is opened.
+#
+# Two jobs, because the two sets of files need different settings.
+#   documents  README.md, CONTRIBUTING.md, SECURITY.md, CODE_OF_CONDUCT.md,
+#              THIRD_PARTY_NOTICES.md and docs/**/*.md as they stand in the repository. Links to
+#              files are checked against the checkout, and links to other sites over the network.
+#   site       the pages the docs site is built from. They exist only after tools/publish/stage.py
+#              has staged them into website/src/content (gitignored, hence --no-ignore), and
+#              their links are already rewritten: a link to a page of the site is the site's own
+#              root-relative route (/psyche/research/gates/), and a link to any other file is a
+#              GitHub link pinned to the staged commit. lychee cannot resolve a root-relative
+#              link in a local file without a base: it reports an error for each one, and
+#              --scheme does not help, because the link fails before the scheme is looked at. So
+#              the job sets --base-url to the deployed site, and each route is checked against
+#              the live pages. Because it reads the live site, it belongs on main: the weekly run
+#              is on main, and a run started by hand from another branch reports a link to a page
+#              that branch adds, and the deploy has not published yet, as dead. --scheme https
+#              keeps the check to web links.
+#
+# Both exclude loopback addresses and localhost.
+#
+# What counts as alive: 200 to 299, and also 403 and 429. A 429 means rate limited: the server
+# answered, and lychee has already retried with a back-off. A 403 is a publisher that refuses a
+# bot, which the DOI links to APA, Wiley, PNAS, Science and MIT Press do on every run; a DOI that
+# does not exist still fails, because doi.org itself answers 404 for it. Everything else outside
+# those fails.
+#
+# Excluded: https://hdl.handle.net/10150/ (the reading list's repository record). The repository
+# behind it answers some requests with 404 or 500 and the next with 200, so it would turn the
+# run red on its own. A host is added here only with a reason; a link that is simply dead is
+# fixed, not excluded.
+#
+# Third-party actions are pinned to full commit SHAs; the tag is in the trailing comment.
+name: links
+
+on:
+  schedule:
+    - cron: "23 5 * * 1"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  documents:
+    name: links (documents)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check the links of the documents
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          lycheeVersion: v0.24.2
+          fail: true
+          failIfEmpty: true
+          args: >-
+            --no-progress
+            --max-retries 3 --retry-wait-time 10 --timeout 30 --max-concurrency 8
+            --accept '200..=299,403,429'
+            --exclude-loopback
+            --exclude '^https://hdl\.handle\.net/10150/'
+            'README.md' 'CONTRIBUTING.md' 'SECURITY.md' 'CODE_OF_CONDUCT.md' 'THIRD_PARTY_NOTICES.md'
+            'docs/**/*.md'
+
+  site:
+    name: links (site pages)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      # Full history, as the Pages build has it: staging reads every page from the commit.
+      - name: Check out the repository (full history)
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: "3.12"
+
+      - name: Stage the site pages from this commit
+        run: python3 -B tools/publish/stage.py --target site
+
+      - name: Check the links of the site pages
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          lycheeVersion: v0.24.2
+          fail: true
+          failIfEmpty: true
+          args: >-
+            --no-progress --no-ignore --scheme https
+            --base-url https://cagancaliskan.github.io/psyche/
+            --max-retries 3 --retry-wait-time 10 --timeout 30 --max-concurrency 8
+            --accept '200..=299,403,429'
+            --exclude-loopback
+            --exclude '^https://hdl\.handle\.net/10150/'
+            'website/src/content/**/*.md'

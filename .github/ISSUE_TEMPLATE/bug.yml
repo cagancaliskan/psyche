@@ -1,0 +1,75 @@
+name: Bug report
+description: Something on the site, in the substrate or in the tooling does not do what it says.
+title: "bug: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for a defect: a page that renders wrongly, a link that is broken, a number or
+        a sentence that disagrees with the ledger, a test that fails, a script that errors.
+
+        - A security vulnerability does not go here. Report it privately: Security tab, "Report a
+          vulnerability" (see the [security policy](https://github.com/cagancaliskan/psyche/security/policy)).
+        - A question, a proposal for the battery (a new baseline or paradigm) or a comment on a
+          page goes in [GitHub Discussions](https://github.com/cagancaliskan/psyche/discussions).
+  - type: dropdown
+    id: where
+    attributes:
+      label: Where did it happen?
+      options:
+        - A page of the docs site
+        - The Python substrate (src/, tests/)
+        - Tooling or workflows (tools/, run_tests.py, .github/)
+        - Written content outside the site (README, docs)
+        - Not sure
+    validations:
+      required: true
+  - type: input
+    id: location
+    attributes:
+      label: Page address or file path
+      description: The URL of the page, or the path of the file, and the line or section if you have one.
+      placeholder: "https://cagancaliskan.github.io/psyche/..."
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you saw, in words. Paste the exact error text or the exact sentence if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+      description: If the expectation comes from another page or a file in the repository, name it.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How to reproduce it
+      description: The shortest steps or command that show it. Leave empty if it is a wrong sentence or number.
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: |
+        Site: browser and version, operating system, window size, light or dark theme, whether
+        reduced motion is on.
+        Substrate or tooling: operating system, CPython version (python3 --version), the commit
+        (git rev-parse --short HEAD) and, for a site build, the Node version (node --version).
+        A wrong sentence or number needs no environment: write "not applicable".
+    validations:
+      required: true
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before you submit
+      options:
+        - label: I searched the existing issues and this is not a duplicate.
+          required: true
+        - label: This is not a security vulnerability, and I have included no secrets or private data.
+          required: true

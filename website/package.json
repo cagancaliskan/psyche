@@ -8,10 +8,12 @@
   "scripts": {
     "stage": "python3 ../tools/publish/stage.py --target site",
     "dev": "npm run stage && astro dev",
-    "build": "npm run stage && astro check && astro build && npm run check:spacing",
+    "build": "npm run stage && astro check && astro build && npm run check:spacing && npm run check:budget",
     "preview": "astro preview",
     "test": "node --test src/lib/plan.test.ts src/lib/maze.test.ts src/lib/battery.test.ts src/lib/sheet.test.ts",
-    "check:spacing": "node scripts/check-spacing.mjs"
+    "check:spacing": "node scripts/check-spacing.mjs",
+    "check:budget": "node scripts/check-budget.mjs",
+    "check:a11y": "node scripts/check-a11y.mjs"
   },
   "dependencies": {
     "@astrojs/react": "7.1.1",

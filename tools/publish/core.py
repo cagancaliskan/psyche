@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """core.py — the governed boundary between this repository and its public surfaces.
 
-D-031 adds public surfaces this repository never had: a docs site and a generated wiki,
-both built from repository documents. The danger is not that a page is badly rendered. It
+D-031 adds a public surface this repository never had: a docs site built from repository
+documents. The danger is not that a page is badly rendered. It
 is that a page escapes the checks every document here is held to: ledger_check's C2
 (quoted counts), C3 (status labels) and C4 (forbidden claims) govern only the files they
 walk, and a copy published from a quarantined, ignored or exempt file is text nothing
@@ -11,7 +11,7 @@ governs.
 So nothing is published by being listed. A page is published only if this module's guard
 accepts it, and the guard accepts only text the checks actually see, as a commit holds it.
 
-What lives here, used by render_plan.py, ci_c2.py and the later site and wiki builders:
+What lives here, used by render_plan.py, ci_c2.py and stage.py:
 
   load_manifest(root)        docs/publish.json, validated against a key allowlist; every
                              never_publish entry must be a canonical path. Every JSON file

@@ -64,10 +64,10 @@ read as text whatever it is, and as binary as well when it is not text.
 The walk skips .git, node_modules and __pycache__, and a directory named .venv or venv that
 is a Python virtual environment (it holds pyvenv.cfg): a local environment is never
 published. A directory named build is NOT skipped: build output is what gets published. A
-directory reached through a symbolic link is followed, as a site build or a wiki publish
-follows it; a link back to a directory the walk is already inside is not entered again (its
-content is scanned there) but its name is still checked. A directory or file the walk cannot
-read is exit 2, never a skipped one.
+directory reached through a symbolic link is followed, as a site build follows it; a link
+back to a directory the walk is already inside is not entered again (its content is scanned
+there) but its name is still checked. A directory or file the walk cannot read is exit 2,
+never a skipped one.
 
 Each file is scanned in several renderings, all of which keep its line numbers:
 
@@ -103,7 +103,7 @@ printable runs in binary content), so the three checks agree on what they match.
 
 Usage:
     python3 tools/publish/check_disclosure.py --denylist ../companion/denylist.txt docs/research website/dist
-    python3 tools/publish/check_disclosure.py --denylist-env DISCLOSURE_DENYLIST build/publish/wiki
+    python3 tools/publish/check_disclosure.py --denylist-env DISCLOSURE_DENYLIST website/dist
 
 Stdlib only.
 """

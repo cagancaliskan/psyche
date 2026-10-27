@@ -1,7 +1,7 @@
-# The governance gate (D-031 §2.8), run on every push and pull request.
+# The governance gate (D-031 §2.8), run on every pull request and every push to main.
 #
-# The Pages and wiki workflows call this file through workflow_call, so nothing is published
-# past a red gate. Every step is standard-library Python; nothing is installed beyond the
+# The Pages workflow calls this file through workflow_call, so nothing is published past a red
+# gate. Every step is standard-library Python; nothing is installed beyond the
 # interpreter. While the paper is held (D-012), C2 runs through tools/publish/ci_c2.py, which
 # tolerates findings under docs/paper/ only. tools/ledger_check.py itself is not changed.
 #
@@ -51,8 +51,12 @@
 # The governance job checks that for every workflow in this directory.
 name: governance
 
+# Pull requests, and pushes to main only: a push to a branch with an open pull request would
+# otherwise run the gate twice. The job named `governance` is a required status check of the
+# main branch ruleset; renaming it stops the merge until the ruleset is edited.
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_call:
     inputs:
@@ -70,6 +74,16 @@ on:
           The private denylist, base64-encoded on one line (see the header of this file).
           Required in practice whenever require-disclosure is true.
         required: false
+
+# A newer push to the same pull request replaces the run in flight. Outside a pull request the
+# group is the commit itself, so every push to main has a group of its own and runs to the end
+# (a group per ref would drop a run still waiting when a newer push queued behind it). The group
+# starts with the word governance and holds the workflow name, which inside a workflow_call is
+# the CALLER's name, so a run called from the Pages workflow gets a group of its own. A group
+# equal to the caller's would make GitHub cancel the called run as a deadlock.
+concurrency:
+  group: governance-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -149,7 +163,7 @@ jobs:
 
       # A tag can be moved to other code after it was reviewed; a commit SHA cannot. So every
       # action or reusable workflow a workflow here names carries a full 40-character SHA,
-      # the Pages and wiki workflows included. A local reusable workflow (./...) is this
+      # the Pages workflow included. A local reusable workflow (./...) is this
       # repository's own code at the same commit and needs no pin. The check reads the
       # block style every workflow here is written in, one reference per line; a line that
       # names the key in any other form (a flow mapping, the value on the next line) is an
@@ -195,8 +209,8 @@ jobs:
                 f"external one pinned to a full commit SHA.")
           PY
 
-      # The rule from the header, checked for every workflow here, the Pages and wiki
-      # workflows included: the denylist reaches a job only as DISCLOSURE_DENYLIST_B64,
+      # The rule from the header, checked for every workflow here, the Pages workflow
+      # included: the denylist reaches a job only as DISCLOSURE_DENYLIST_B64,
       # decoded to a file. A plain DISCLOSURE_DENYLIST secret would put each entry in the
       # masker for the whole job; --denylist-env would either need that plain secret or read
       # the base64 line as one entry that matches nothing. Expression contexts are
@@ -258,7 +272,7 @@ jobs:
 
       # The denylist is private and never committed. It reaches CI only as a secret, read by
       # this one step of this one job. Without it the end-state scan cannot run, and then:
-      #   - a caller that kept require-disclosure true (the Pages and wiki gates) fails;
+      #   - a caller that kept require-disclosure true (the Pages gate) fails;
       #   - a push to the default branch fails once the repository variable
       #     DISCLOSURE_REQUIRED is set to 'true' (after the secret is configured);
       #   - anything else (forks, Dependabot, pull requests, a repository where the secret
@@ -350,7 +364,7 @@ jobs:
         if: ${{ steps.denylist.outputs.available == 'true' || github.event_name == 'pull_request' }}
         run: python3 -B tools/publish/test_checks.py
 
-      # Scanned: the sources the site and the wiki publish from (the research pages, the
+      # Scanned: the sources the site publishes from (the research pages, the
       # substrate overview page, the cogmap package, the site's own sources) plus the manifest
       # and the plan file, whose strings reach the site. The list is named path by path, not
       # as whole top-level directories: a walk of website/ would also read
@@ -366,7 +380,7 @@ jobs:
       # available to that run (never for a fork or Dependabot pull request, and not before
       # the secret is set); a direct push is not leak-checked at all.
       # Build output (website/src/content/docs and website/src/data, staged and gitignored;
-      # the built site; the wiki pages) is absent here. A workflow that builds and publishes
+      # the built site) is absent here. A workflow that builds and publishes
       # scans its own output before it publishes.
       - name: Disclosure check (public summary, private detail)
         if: ${{ steps.denylist.outputs.available == 'true' && steps.contract.outcome == 'success' }}

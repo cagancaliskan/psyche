@@ -14,9 +14,21 @@
 # Third-party actions are pinned to full commit SHAs; the tag is in the trailing comment.
 name: tests
 
+# Pull requests, and pushes to main only: a push to a branch with an open pull request would
+# otherwise run every leg twice. The job names below are required status checks of the main
+# branch ruleset; renaming one stops the merge until the ruleset is edited.
 on:
   push:
+    branches: [main]
   pull_request:
+
+# A newer push to the same pull request replaces the run in flight. Outside a pull request the
+# group is the commit itself, so every push to main has a group of its own and runs to the end:
+# were the group the ref, GitHub would drop a run still waiting when a newer push queued behind
+# it, and the middle commit of a quick series would have no record.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read

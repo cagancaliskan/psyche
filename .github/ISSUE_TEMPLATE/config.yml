@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Ask a question
+    url: https://github.com/cagancaliskan/psyche/discussions/new?category=q-a
+    about: How something works, how to run it, what a page means. Questions go in Discussions, not in issues.
+  - name: Propose a battery test
+    url: https://github.com/cagancaliskan/psyche/discussions/new?category=ideas
+    about: A new baseline or a new paradigm for the test battery. Say which published protocol it comes from.
+  - name: Comment on a page
+    url: https://github.com/cagancaliskan/psyche/discussions/new?category=general
+    about: Reader comments on the site or the documents that are not a defect.
+  - name: Read the documentation site
+    url: https://cagancaliskan.github.io/psyche/
+    about: The overview, the roadmap, the battery overview and the claims discipline. Worth reading before you file anything.

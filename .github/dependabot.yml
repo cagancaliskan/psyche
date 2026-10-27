@@ -1,0 +1,52 @@
+# Dependency updates, weekly.
+#
+# - github-actions: the workflows pin every action by full commit SHA with the version in a
+#   trailing comment (the governance job enforces it). Dependabot bumps the SHA and the comment
+#   together, so a pin never goes stale unseen. One pull request per action.
+# - npm in /website: the docs site's dependencies, all pinned to exact versions. Minor and
+#   patch updates arrive as one grouped pull request; a major update is its own pull request,
+#   so a breaking change is reviewed alone.
+#
+# Nothing else is listed on purpose. The substrate (src/, tools/, run_tests.py) uses the Python
+# standard library only (CONTRIBUTING.md rule 8), so there is no Python manifest to update, and
+# cogmap/ declares its own pinned dependencies when its first release arrives.
+#
+# A new release is held for a week before Dependabot proposes it (cooldown), so a release that
+# is withdrawn or found compromised within days is not proposed at all.
+#
+# Dependabot pull requests do not receive repository secrets, so the disclosure scan that needs
+# DISCLOSURE_DENYLIST_B64 warns and skips on them, as it does on forks (see governance.yml).
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Istanbul
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: npm
+    directory: /website
+    schedule:
+      interval: weekly
+      day: monday
+      time: "06:00"
+      timezone: Europe/Istanbul
+    open-pull-requests-limit: 5
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      site-minor-and-patch:
+        patterns:
+          - "*"
+        update-types:
+          - minor
+          - patch
