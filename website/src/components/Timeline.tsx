@@ -1,9 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
 import {
   axisRange,
+  currentPhase,
   dayNumber,
   formatDay,
   fraction,
+  gateLabel,
+  gateNote,
+  gatePhrase,
+  gateState,
+  lineStoppedAt,
   monthTicks,
   nextGate,
   phaseWhen,
@@ -24,17 +30,19 @@ const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /**
  * Interactive phase timeline, drawn as an instrument chart: one band per phase on a date axis,
- * gate diamonds at gate dates (the next upcoming gate in spike amber), and the active phase and the
- * today line in the signal colour. Choosing a phase shows its outputs and gate in the card below.
- * The today line is added after hydration only, so the server-rendered HTML never contains a date
- * that would go stale; until then the next gate is read from the plan's own as_of date.
+ * gate diamonds at gate dates (the gate the line is waiting on in spike amber, a decided gate
+ * filled), and the active phase and the today line in the signal colour. Choosing a phase shows
+ * its outputs and gate in the card below, with the gate's decision status: pending once its date
+ * has passed with no recorded decision, or decided, with the date and the next step. The today
+ * line is added after hydration only, so the server-rendered HTML never contains a date that
+ * would go stale; until then the gates are read from the plan's own as_of date.
  */
 export default function Timeline({ plan }: Props) {
   const rows = useMemo(() => spans(plan), [plan]);
   const range = useMemo(() => axisRange(plan), [plan]);
   const ticks = useMemo(() => monthTicks(range), [range]);
   const gates = useMemo(() => new Map(plan.gates.map((g) => [g.id, g])), [plan]);
-  const active = plan.phases.find((p) => p.status === 'active')?.id ?? plan.phases[0]?.id;
+  const active = currentPhase(plan)?.id ?? plan.phases.find((p) => p.status === 'active')?.id ?? plan.phases[0]?.id;
   const [selected, setSelected] = useState<string>(active);
   const [today, setToday] = useState<string | null>(null);
 
@@ -48,7 +56,14 @@ export default function Timeline({ plan }: Props) {
   const todayVisible = todayDay !== null && todayDay >= range.from && todayDay <= range.to;
   const todayAt = todayVisible ? fraction(todayDay!, range) : 0;
   const todayAlign = todayAt < 0.06 ? 'start' : todayAt > 0.94 ? 'end' : 'center';
-  const next = nextGate(plan, today ?? plan.as_of)?.id ?? null;
+  const asOf = today ?? plan.as_of;
+  const next = nextGate(plan, asOf)?.id ?? null;
+  const stoppedAt = lineStoppedAt(plan)?.id ?? null;
+  const gateInfo = (g: Plan['gates'][number]) => {
+    const state = gateState(g, asOf, stoppedAt);
+    return { state, label: gateLabel(state), note: gateNote(g, state), phrase: gatePhrase(state) };
+  };
+  const chosenGate = gate ? gateInfo(gate) : null;
 
   return (
     <div className="sx-tl-wrap not-content">
@@ -112,8 +127,9 @@ export default function Timeline({ plan }: Props) {
                       <span
                         className="sx-tl__gate"
                         data-next={g!.id === next ? '' : undefined}
+                        data-gate-state={gateInfo(g!).state.kind}
                         style={{ left: pct(fraction(gateDay, range)) }}
-                        title={`Gate ${g!.id}: ${g!.title}, ${formatDay(g!.date!)}`}
+                        title={`Gate ${g!.id}: ${g!.title}, ${formatDay(g!.date!)}, ${gateInfo(g!).phrase}`}
                         aria-hidden="true"
                       />
                     )}
@@ -148,12 +164,20 @@ export default function Timeline({ plan }: Props) {
               <li key={o}>{o}</li>
             ))}
           </ul>
-          {gate && (
+          {gate && chosenGate && (
             <p className="sx-tl__gateline">
-              <span className="sx-diamond" data-next={gate.id === next ? '' : undefined} aria-hidden="true" />
+              <span className="sx-diamond" data-next={gate.id === next ? '' : undefined} data-gate-state={chosenGate.state.kind} aria-hidden="true" />
               <span>
                 Ends at Gate {gate.id} ({gate.title}){gate.date ? `, on ${formatDay(gate.date)}` : `, ${gate.date_rule}`}:{' '}
                 {gate.question}
+                {chosenGate.note && (
+                  <>
+                    {' '}
+                    <span className="sx-tl__gatenote" data-tone={chosenGate.label.tone}>
+                      {chosenGate.note}
+                    </span>
+                  </>
+                )}
               </span>
             </p>
           )}

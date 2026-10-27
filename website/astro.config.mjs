@@ -104,7 +104,7 @@ export default defineConfig({
     starlight({
       title: 'Psyche',
       description:
-        'Psyche, an open research project building toward AGI from original, brain-inspired components: spiking cognitive maps (active) and the substrate that founded it (paused).',
+        'Psyche is an open research project that builds and tests brain-inspired components in stages: spiking cognitive maps (active) and the substrate that founded it (paused). Its long-term aim is AGI.',
       logo: { light: './src/assets/brand/psyche-wordmark-light.svg', dark: './src/assets/brand/psyche-wordmark-dark.svg', replacesTitle: true },
       favicon: '/favicon.svg',
       social: [{ icon: 'github', label: 'Psyche on GitHub', href: 'https://github.com/cagancaliskan/psyche' }],

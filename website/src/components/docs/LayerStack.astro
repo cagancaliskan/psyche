@@ -36,7 +36,9 @@ const layers = [
     tier: 'mechanism',
   },
 ];
-const tierLabel = { proven: 'Proven', mechanism: 'Tester-verified mechanism' } as const;
+// The tier keys are the ledger's own vocabulary (PROVEN, a build status); the words a reader sees
+// say "verified".
+const tierLabel = { proven: 'Verified', mechanism: 'Tester-verified mechanism' } as const;
 
 // One isometric plate on a 176 by 70 grid: the top face, two side faces, a 3 by 3 tile grid on the
 // top face, and dashed construction lines from its outer corners down to the plate below.

@@ -1,9 +1,11 @@
 ---
 // The decision gates in order, each with its date or the rule that will set it, its status, the
-// question it decides and what happens if it is missed. The next upcoming gate is marked in spike
-// amber from the plan's as_of date at build time; a small script moves the mark to match the
-// reader's today.
-import { formatDay, nextGate, type Plan } from '../lib/plan.ts';
+// question it decides and what happens if it is missed. The gate the line is waiting on is marked
+// in spike amber from the plan's as_of date at build time. A gate past its date with no recorded
+// decision reads "decision pending" and stays the marked one; a decided gate reads "decided" with
+// the day it was decided and the next step, and nothing more (D-034). A small script moves the
+// mark and the wording to match the reader's today (lib/gateClock.ts).
+import { formatDay, gateLabel, gateNote, gateState, lineStoppedAt, nextGate, type Plan } from '../lib/plan.ts';
 import '../styles/docs-visuals.css';
 import '../styles/plan.css';
 
@@ -12,6 +14,7 @@ interface Props {
 }
 const { plan } = Astro.props;
 const next = nextGate(plan, plan.as_of)?.id ?? null;
+const stoppedAt = lineStoppedAt(plan)?.id ?? null;
 const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 ---
 
@@ -21,11 +24,19 @@ const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
       plan.gates.map((g) => {
         const isNext = g.id === next;
         const moved = g.date !== null && g.baseline_date !== null && g.date !== g.baseline_date;
+        const state = gateState(g, plan.as_of, stoppedAt);
+        const chip = gateLabel(state);
+        const note = gateNote(g, state);
         return (
           <li
             class="sx-gs__item"
+            data-gate-id={g.id}
+            data-gate-current
+            data-gate-state={state.kind}
             data-state={g.status}
             data-date={g.date ?? ''}
+            data-decided-on={g.decided_on ?? ''}
+            data-next-step={g.next_step ?? ''}
             data-next={isNext ? '' : undefined}
             aria-current={isNext ? 'step' : undefined}
           >
@@ -40,8 +51,9 @@ const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
                   {g.date ? <time datetime={g.date}>{formatDay(g.date)}</time> : label(g.date_rule ?? 'date not yet fixed')}
                   {moved && <span> (moved from {formatDay(g.baseline_date!)})</span>}
                 </span>{' '}
-                <span class="sx-chip" data-tone={g.status}>{label(g.status)}</span> <span class="sx-chip" data-tone="next" data-next-chip hidden={!isNext}>Next</span>
+                <span class="sx-chip" data-tone={chip.tone} data-gate-chip>{chip.text}</span> <span class="sx-chip" data-tone="next" data-next-chip hidden={!isNext}>Next</span>
               </p>
+              <p class="sx-gs__note" data-gate-note hidden={note === null}>{note}</p>
               <p class="sx-gs__question">{g.question}</p>
               <details class="sx-gs__miss sx-disclosure">
                 <summary>If missed</summary>
@@ -56,31 +68,8 @@ const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 </div>
 
 <script>
-  import { todayIn } from '../lib/plan.ts';
+  import { applyGateClock } from '../lib/gateClock.ts';
   import './docs/motion.ts';
 
-  // Move the "next gate" mark to the first upcoming dated gate on or after the reader's today.
-  for (const root of document.querySelectorAll<HTMLElement>('[data-gate-stepper]')) {
-    let today: string;
-    try {
-      today = todayIn(root.dataset.tz ?? 'UTC', new Date());
-    } catch {
-      continue;
-    }
-    const items = [...root.querySelectorAll<HTMLElement>('.sx-gs__item')];
-    let best: HTMLElement | null = null;
-    for (const item of items) {
-      const date = item.dataset.date ?? '';
-      if (item.dataset.state !== 'upcoming' || date === '' || date < today) continue;
-      if (best === null || date < (best.dataset.date ?? '')) best = item;
-    }
-    for (const item of items) {
-      const on = item === best;
-      item.toggleAttribute('data-next', on);
-      if (on) item.setAttribute('aria-current', 'step');
-      else item.removeAttribute('aria-current');
-      const chip = item.querySelector<HTMLElement>('[data-next-chip]');
-      if (chip) chip.hidden = !on;
-    }
-  }
+  for (const root of document.querySelectorAll<HTMLElement>('[data-gate-stepper]')) applyGateClock(root);
 </script>

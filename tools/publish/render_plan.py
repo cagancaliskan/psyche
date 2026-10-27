@@ -57,8 +57,8 @@ bootstrapping a repository that has no blocks yet.
 DETERMINISM. Rendering reads the plan and nothing else: never the clock, never the
 environment. The gantt draws an open-ended phase to a visual horizon DERIVED FROM THE
 PLAN (its latest dated point plus OPEN_END_DAYS), never from today, so the same plan
-renders the same bytes on any day and any machine. --status is the one place today's
-date is read, and it writes nothing.
+renders the same bytes on any day and any machine. --status and --past-due are the only
+places today's date is read, and they write nothing.
 
 C3 SAFETY. A gantt milestone is written '0d', which is a brick id in the ledger. C3 only
 adjudicates a line that also carries a capitalised status label, and this renderer never
@@ -84,6 +84,13 @@ in Markdown under the diagram, so nothing depends on the picture.
 WRITES. --write is all or nothing: every changed file is written to a temporary file
 beside it first, and only then are they renamed into place.
 
+PAST DUE. A gate whose date has passed and whose status is still 'upcoming' is waiting for its
+decision to be recorded; the site shows it as "decision pending". --past-due lists those gates
+(one line each, or a GitHub Actions ::warning:: annotation with --annotations) and exits 0
+whether or not it found any: a late decision is something to see, never a reason to fail a
+build. A gate decided is one the plan says is decided; it carries the date it was decided and
+one word for what follows (core.NEXT_STEPS), and nothing else (D-034).
+
 Exit 0 = clean / written. Exit 1 = --check found stale blocks, unplaced ids or a missing
 README.md / MOC.md, and nothing else. Exit 2 = the tool could not run (invalid plan or
 manifest, a status label in the rendered text, malformed, unknown or stray markers, a
@@ -95,6 +102,8 @@ Usage:
     python3 tools/publish/render_plan.py --check     # CI: exit 1 if any block is stale
     python3 tools/publish/render_plan.py --write     # rewrite blocks in place (idempotent)
     python3 tools/publish/render_plan.py --status    # program state and days to the next gate
+    python3 tools/publish/render_plan.py --past-due  # gates past their date with no recorded decision
+    python3 tools/publish/render_plan.py --past-due --annotations   # the same, as CI warnings
     python3 tools/publish/render_plan.py --root PATH --check
 """
 
@@ -263,9 +272,49 @@ def active_phase(plan: dict) -> Optional[dict]:
     return next((p for p in plan["phases"] if p["status"] == core.PHASE_ACTIVE), None)
 
 
+def stopped_at(plan: dict) -> Optional[dict]:
+    """The decided gate after which the line stops, if the plan records one."""
+    return next((g for g in plan["gates"]
+                 if g["status"] == core.GATE_DECIDED and g.get("next_step") == "stops"), None)
+
+
 def next_gate(plan: dict) -> Optional[dict]:
-    """The first gate in plan order that is still upcoming."""
+    """The first gate in plan order that is still upcoming, or none once the line has
+    stopped: no gate follows a decision that the line stops."""
+    if stopped_at(plan) is not None:
+        return None
     return next((g for g in plan["gates"] if g["status"] == core.GATE_UPCOMING), None)
+
+
+# What a decided gate says is next, in the public record's own words (D-034).
+NEXT_STEP_TEXT = {"continues": "the line continues to the next phase",
+                  "extends": "the line extends",
+                  "stops": "the line stops"}
+
+
+def gate_status_text(g: dict) -> str:
+    """A gate's status as a reader sees it: the vocabulary word, and for a decided gate the
+    date it was decided and what follows. Nothing else is ever recorded about a decision."""
+    if g["status"] != core.GATE_DECIDED:
+        return g["status"]
+    parts = [f"decided on {g['decided_on']}" if g.get("decided_on") else "decided"]
+    if g.get("next_step") in NEXT_STEP_TEXT:
+        parts.append(NEXT_STEP_TEXT[g["next_step"]])
+    return "; ".join(parts)
+
+
+def past_due_gates(plan: dict, today: date) -> List[dict]:
+    """Gates whose date is before `today` and that are still upcoming, in plan order. A gate
+    with no fixed date is never past due, and a gate due today is not yet late. Once the line
+    has stopped at a decided gate no later gate is waited on, so none is past due."""
+    if stopped_at(plan) is not None:
+        return []
+    out = []
+    for g in plan["gates"]:
+        d = core.parse_iso_date(g["date"])
+        if g["status"] == core.GATE_UPCOMING and d is not None and d < today:
+            out.append(g)
+    return out
 
 
 def _start(p: dict) -> str:
@@ -293,7 +342,13 @@ def render_status_line(plan: dict) -> str:
     now = (f"{md(ph['id'])} {md(ph['title'])} ({md(_start(ph))} to {md(_end(ph))})"
            if ph else "no phase is active")
     g = next_gate(plan)
-    nxt = f"{md(g['id'])} {md(g['title'])}, {md(_gate_when(g))}" if g else "none upcoming"
+    stop = stopped_at(plan)
+    if g:
+        nxt = f"{md(g['id'])} {md(g['title'])}, {md(_gate_when(g))}"
+    elif stop:
+        nxt = f"none, the line stops at gate {md(stop['id'])}"
+    else:
+        nxt = "none upcoming"
     return f"**Now:** {now} {DOT} **Next gate:** {nxt}"
 
 
@@ -398,7 +453,8 @@ def render_layers_table(plan: dict) -> str:
 
 
 def render_gates_table(plan: dict) -> str:
-    rows = [[md(g["id"]), md(g["title"]), md(_gate_when(g)), md(g["status"]), md(g["question"])]
+    rows = [[md(g["id"]), md(g["title"]), md(_gate_when(g)), md(gate_status_text(g)),
+             md(g["question"])]
             for g in plan["gates"]]
     return _table(["Gate", "Title", "Date", "Status", "Question"], rows)
 
@@ -937,14 +993,19 @@ def status_report(plan: dict, public_ledger: dict, today: date, zone_note: str) 
                      f" ({ph['status']}{tail})")
     else:
         lines.append("  phase      no phase is active")
+    for g in plan["gates"]:
+        if g["status"] == core.GATE_DECIDED:
+            lines.append(f"  decided    {g['id']} {g['title']}: {gate_status_text(g)}")
     g = next_gate(plan)
     if g:
         d = core.parse_iso_date(g["date"])
         when = (f"{g['date']}, {_days((d - today).days)}" if d
                 else f"date not fixed ({g.get('date_rule', '')})")
         if d and d < today:
-            when += f", still {g['status']}"
+            when += ", decision pending"
         lines.append(f"  next gate  {g['id']} {g['title']}: {when}")
+    elif stopped_at(plan):
+        lines.append(f"  next gate  none, the line stops at gate {stopped_at(plan)['id']}")
     else:
         lines.append("  next gate  none upcoming")
     for dl in plan["deadlines"]:
@@ -953,6 +1014,30 @@ def status_report(plan: dict, public_ledger: dict, today: date, zone_note: str) 
                 else f"due date not set (estimate: {dl['estimate']})")
         lines.append(f"  deadline   {dl['title']}: {when} [{dl['status']}]")
     return "\n".join(lines)
+
+
+def _workflow_message(s: str) -> str:
+    """A GitHub Actions workflow-command message: '%', CR and LF are the only characters
+    the runner reads inside one, and it reads them as escapes."""
+    return s.replace("%", "%25").replace("\r", "%0D").replace("\n", "%0A")
+
+
+def past_due_report(plan: dict, today: date, *, annotations: bool = False) -> List[str]:
+    """One line per gate past its date with no recorded decision. With `annotations` each
+    line is a GitHub Actions warning. Says so in one plain line when there is none. Names
+    the gate, its title and its date and nothing else: a pending decision has no detail."""
+    late = past_due_gates(plan, today)
+    if not late:
+        return ["render_plan: no gate is past its date without a recorded decision"]
+    out = []
+    for g in late:
+        d = core.parse_iso_date(g["date"])
+        text = (f"Gate {g['id']} ({g['title']}) was due on {g['date']}, "
+                f"{_days((d - today).days)}, and {core.PLAN_REL.as_posix()} records no "
+                f"decision. The site shows it as decision pending.")
+        out.append(f"::warning title=Gate decision pending::{_workflow_message(text)}"
+                   if annotations else f"warning: {text}")
+    return out
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -969,11 +1054,18 @@ def main(argv: Optional[List[str]] = None) -> int:
                            "is missing")
     mode.add_argument("--status", action="store_true",
                       help="print program state and days to the next gate (reads today)")
+    mode.add_argument("--past-due", action="store_true",
+                      help="list gates past their date with no recorded decision (reads "
+                           "today); exits 0 whether or not there are any")
+    ap.add_argument("--annotations", action="store_true",
+                    help="with --past-due: print GitHub Actions ::warning:: annotations")
     ap.add_argument("--allow-unplaced", action="store_true",
                     help="with --check: report unplaced ids and missing README.md/MOC.md "
                          "as notices instead of failing (bootstrapping only)")
     ap.add_argument("--root", default=str(core.REPO), help="repository root")
     args = ap.parse_args(argv)
+    if args.annotations and not args.past_due:
+        ap.error("--annotations goes with --past-due")
     root = Path(args.root).resolve()
 
     # Exit 1 means "stale", so nothing else may end the run with 1: any failure that is
@@ -984,6 +1076,10 @@ def main(argv: Optional[List[str]] = None) -> int:
             pub = core.ledger_public(root)
             today, note = today_in_zone(plan["timezone"])
             print(status_report(plan, pub, today, note))
+            return 0
+        if args.past_due:
+            today, _note = today_in_zone(plan["timezone"])
+            print("\n".join(past_due_report(plan, today, annotations=args.annotations)))
             return 0
         stale, unplaced, missing = render_documents(root, plan, write=args.write)
     except core.PublishError as e:
