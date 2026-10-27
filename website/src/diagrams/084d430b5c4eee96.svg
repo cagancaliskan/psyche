@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-084d430b5c4eee96-t" aria-describedby="dg-084d430b5c4eee96-d" data-key="084d430b5c4eee96" data-diagram="flowchart" font-size="12" viewBox="0 0 224.03 364.78" width="225" height="365">
+ <title id="dg-084d430b5c4eee96-t">Flowchart of 4 steps, starting at Setup environment and agent initialised</title>
+ <desc id="dg-084d430b5c4eee96-d">Steps: Setup environment and agent initialised; Exploration pre-generated, same for every agent; Manipulation differs per test; Measurement behaviour after the change, with bounds. Connections: Setup environment and agent initialised to Exploration pre-generated, same for every agent; Exploration pre-generated, same for every agent to Manipulation differs per test; Manipulation differs per test to Measurement behaviour after the change, with bounds.</desc>
+ <g>
+  <marker id="dg-084d430b5c4eee96_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+   <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath"/>
+  </marker>
+  <g class="root">
+   <g class="edgePaths">
+    <path d="M112.016,68.992L112.016,87.992L112.016,102.992" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-084d430b5c4eee96_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M112.016,167.984L112.016,186.984L112.016,201.984" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-084d430b5c4eee96_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M112.016,253.584L112.016,272.584L112.016,287.584" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-084d430b5c4eee96_flowchart-v2-pointEnd)" fill="none"/>
+   </g>
+   <g class="nodes">
+    <g class="node default step" transform="translate(112.015625, 38.496002197265625)">
+     <rect class="basic label-container" x="-91.40625" y="-30.496002197265625" width="182.8125" height="60.99200439453125"/>
+     <g class="label" transform="translate(0, -20.496002197265625)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Setup</tspan><tspan x="0" y="1em" dy="1.1em">environment and</tspan><tspan x="0" y="2.1em" dy="1.1em">agent initialised</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default step" transform="translate(112.015625, 137.48800659179688)">
+     <rect class="basic label-container" x="-104.015625" y="-30.496002197265625" width="208.03125" height="60.99200439453125"/>
+     <g class="label" transform="translate(0, -20.496002197265625)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Exploration</tspan><tspan x="0" y="1em" dy="1.1em">pre-generated,</tspan><tspan x="0" y="2.1em" dy="1.1em">same for every agent</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default change" transform="translate(112.015625, 229.78400993347168)">
+     <rect class="basic label-container" x="-87.2109375" y="-23.80000114440918" width="174.421875" height="47.60000228881836"/>
+     <g class="label" transform="translate(0, -13.80000114440918)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Manipulation</tspan><tspan x="0" y="1em" dy="1.1em">differs per test</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default step" transform="translate(112.015625, 322.0800132751465)">
+     <rect class="basic label-container" x="-99.8125" y="-30.496002197265625" width="199.625" height="60.99200439453125"/>
+     <g class="label" transform="translate(0, -20.496002197265625)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Measurement</tspan><tspan x="0" y="1em" dy="1.1em">behaviour after the</tspan><tspan x="0" y="2.1em" dy="1.1em">change, with bounds</tspan></text>
+      </g>
+     </g>
+    </g>
+   </g>
+  </g>
+ </g>
+</svg>

@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-939c1a7f0e92784d-t" aria-describedby="dg-939c1a7f0e92784d-d" data-key="939c1a7f0e92784d" data-diagram="flowchart" font-size="12" viewBox="0 0 224.03 503.79" width="225" height="504">
+ <title id="dg-939c1a7f0e92784d-t">Flowchart of 6 steps, starting at Config file parameters and seeds</title>
+ <desc id="dg-939c1a7f0e92784d-d">Steps: Config file parameters and seeds; Run one command; Results folder config, commit hash, metrics, log; Analysis scripts statistics; Figures and tables vector files; Paper and public text. Connections: Config file parameters and seeds to Run one command; Run one command to Results folder config, commit hash, metrics, log; Results folder config, commit hash, metrics, log to Analysis scripts statistics; Analysis scripts statistics to Figures and tables vector files; Figures and tables vector files to Paper and public text.</desc>
+ <g>
+  <marker id="dg-939c1a7f0e92784d_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+   <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath"/>
+  </marker>
+  <g class="root">
+   <g class="edgePaths">
+    <path d="M112.016,55.6L112.016,74.6L112.016,89.6" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-939c1a7f0e92784d_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M112.016,140.8L112.016,159.8L112.016,174.8" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-939c1a7f0e92784d_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M112.016,239.792L112.016,258.792L112.016,273.792" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-939c1a7f0e92784d_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M112.016,324.992L112.016,343.992L112.016,358.992" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-939c1a7f0e92784d_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M112.016,410.192L112.016,429.192L112.016,444.192" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-939c1a7f0e92784d_flowchart-v2-pointEnd)" fill="none"/>
+   </g>
+   <g class="nodes">
+    <g class="node default input" transform="translate(112.015625, 31.80000114440918)">
+     <rect class="basic label-container" x="-104.0078125" y="-23.80000114440918" width="208.015625" height="47.60000228881836"/>
+     <g class="label" transform="translate(0, -13.80000114440918)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Config file</tspan><tspan x="0" y="1em" dy="1.1em">parameters and seeds</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default step" transform="translate(112.015625, 117.20000267028809)">
+     <rect class="basic label-container" x="-66.203125" y="-23.600000381469727" width="132.40625" height="47.20000076293945"/>
+     <g class="label" transform="translate(0, -13.600000381469727)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Run</tspan><tspan x="0" y="1em" dy="1.1em">one command</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default store" transform="translate(112.015625, 209.29600524902344)">
+     <rect class="basic label-container" x="-104.015625" y="-30.496002197265625" width="208.03125" height="60.99200439453125"/>
+     <g class="label" transform="translate(0, -20.496002197265625)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Results folder</tspan><tspan x="0" y="1em" dy="1.1em">config, commit hash,</tspan><tspan x="0" y="2.1em" dy="1.1em">metrics, log</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default step" transform="translate(112.015625, 301.3920078277588)">
+     <rect class="basic label-container" x="-87.203125" y="-23.600000381469727" width="174.40625" height="47.20000076293945"/>
+     <g class="label" transform="translate(0, -13.600000381469727)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Analysis scripts</tspan><tspan x="0" y="1em" dy="1.1em">statistics</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default output" transform="translate(112.015625, 386.59200859069824)">
+     <rect class="basic label-container" x="-95.6171875" y="-23.600000381469727" width="191.234375" height="47.20000076293945"/>
+     <g class="label" transform="translate(0, -13.600000381469727)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Figures and tables</tspan><tspan x="0" y="1em" dy="1.1em">vector files</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default output" transform="translate(112.015625, 471.99201011657715)">
+     <rect class="basic label-container" x="-66.203125" y="-23.80000114440918" width="132.40625" height="47.60000228881836"/>
+     <g class="label" transform="translate(0, -13.80000114440918)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Paper and</tspan><tspan x="0" y="1em" dy="1.1em">public text</tspan></text>
+      </g>
+     </g>
+    </g>
+   </g>
+  </g>
+ </g>
+</svg>

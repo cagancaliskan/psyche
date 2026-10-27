@@ -50,3 +50,9 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # TypeScript is held on its current major: `astro check` (in `npm run build`) does not support
+      # TypeScript 7 yet, so a major bump would fail the build. Minor and patch releases still arrive
+      # in the grouped pull request. Delete this entry once `@astrojs/check` supports the new major.
+      - dependency-name: "typescript"
+        update-types: ["version-update:semver-major"]

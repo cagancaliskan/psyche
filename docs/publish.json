@@ -8,7 +8,8 @@
     "slug is the site route below site_base; wiki is a leftover page name from the wiki that is no longer built, and is not published. Relative links to these sources are rewritten to those targets;",
     "links to any other tracked file become GitHub links pinned to the publishing commit, and a dead relative link fails the build.",
     "never_publish entries ending in / are directory prefixes; the others are files. Each must be a canonical relative path (no leading / or ./, no backslash), or the manifest is refused.",
-    "Matching is case-insensitive, so it can only refuse more, never less. tools/publish/render_plan.py also renders generated blocks in the pages listed here."
+    "Matching is case-insensitive, so it can only refuse more, never less. tools/publish/render_plan.py also renders generated blocks in the pages listed here.",
+    "title, where given, replaces a page's first heading as its site title. description is the page's meta description and its link preview: one plain sentence of 120 to 160 characters that no other page repeats, written from the page itself with no figure typed by hand. tools/publish/stage.py writes it into the staged page and refuses a page that has none."
   ],
   "site_base": "/psyche/",
   "repo": "cagancaliskan/psyche",
@@ -16,24 +17,24 @@
     {
       "title": "Cognitive maps (active)",
       "pages": [
-        {"src": "docs/research/README.md", "slug": "research", "wiki": "Research-Overview"},
-        {"src": "docs/research/origins.md", "slug": "research/origins", "wiki": "Research-Origins"},
-        {"src": "docs/research/roadmap.md", "slug": "research/roadmap", "wiki": "Research-Roadmap"},
-        {"src": "docs/research/gates.md", "slug": "research/gates", "wiki": "Research-Gates"},
-        {"src": "docs/research/test-battery.md", "slug": "research/test-battery", "wiki": "Research-Test-Battery"},
-        {"src": "docs/research/claims-and-scope.md", "slug": "research/claims-and-scope", "wiki": "Research-Claims-and-Scope"},
-        {"src": "docs/research/engineering.md", "slug": "research/engineering", "wiki": "Research-Engineering"},
-        {"src": "docs/research/glossary.md", "slug": "research/glossary", "wiki": "Research-Glossary"},
-        {"src": "docs/research/reading-list.md", "slug": "research/reading-list", "wiki": "Research-Reading-List"},
-        {"src": "docs/research/disclosure-policy.md", "slug": "research/disclosure-policy", "wiki": "Research-Disclosure-Policy"}
+        {"src": "docs/research/README.md", "slug": "research", "wiki": "Research-Overview", "description": "Overview of stage 2 of Psyche: a test of whether a spiking network with local plasticity shows, on classic tests, behaviour that an internal map would explain."},
+        {"src": "docs/research/origins.md", "slug": "research/origins", "wiki": "Research-Origins", "description": "How the substrate, stage 1 of Psyche, led to stage 2: what it built and showed, what carries into spiking cognitive maps, and where the stages point."},
+        {"src": "docs/research/roadmap.md", "slug": "research/roadmap", "wiki": "Research-Roadmap", "description": "The phases of stage 2 of Psyche, the layers that keep the line standing if the main goal falls short, and the paper deadline, with dates read from the plan."},
+        {"src": "docs/research/gates.md", "slug": "research/gates", "wiki": "Research-Gates", "description": "The decision gates of stage 2 of Psyche: the question each gate asks, the fallback if it is missed and its public status, with dates read from the plan."},
+        {"src": "docs/research/test-battery.md", "slug": "research/test-battery", "wiki": "Research-Test-Battery", "description": "The classic animal-learning paradigms behind the stage 2 test battery, what each one probes, and the rules that keep every agent on the same footing."},
+        {"src": "docs/research/claims-and-scope.md", "slug": "research/claims-and-scope", "wiki": "Research-Claims-and-Scope", "description": "What stage 2 of Psyche may say about its model, what the line covers, and how a new idea is kept out of it: the rules for every public sentence."},
+        {"src": "docs/research/engineering.md", "slug": "research/engineering", "wiki": "Research-Engineering", "description": "The engineering standards of stage 2 of Psyche: how its code is written and its analysis is done, so that every number the line reports can be traced."},
+        {"src": "docs/research/glossary.md", "slug": "research/glossary", "wiki": "Research-Glossary", "description": "Definitions of the terms used on the cognitive-map pages and in the substrate record, grouped by topic, each explained as these pages use it."},
+        {"src": "docs/research/reading-list.md", "slug": "research/reading-list", "wiki": "Research-Reading-List", "description": "The classic works behind the question of stage 2: behaviour that suggests animals learn maps, the neural findings tied to it, and the limits on energy claims."},
+        {"src": "docs/research/disclosure-policy.md", "slug": "research/disclosure-policy", "wiki": "Research-Disclosure-Policy", "description": "The public summary of the release rule for stage 2 of Psyche: what is public now, what is withheld, and the conditions under which material is released."}
       ]
     },
     {
       "title": "Substrate (foundation)",
       "pages": [
-        {"src": "docs/PSYCHE.md", "slug": "substrate/overview", "wiki": "Substrate-Overview", "title": "The substrate"},
-        {"src": "docs/ARCHITECTURE.md", "slug": "substrate/architecture", "wiki": "Substrate-Architecture", "title": "Architecture"},
-        {"src": "docs/METHODOLOGY.md", "slug": "substrate/methodology", "wiki": "Substrate-Methodology", "title": "Methodology"}
+        {"src": "docs/PSYCHE.md", "slug": "substrate/overview", "wiki": "Substrate-Overview", "title": "The substrate", "description": "The substrate, stage 1 of Psyche: a dependency-free Python memory-and-activation prototype, what is verified, what is not claimed, and where it stands."},
+        {"src": "docs/ARCHITECTURE.md", "slug": "substrate/architecture", "wiki": "Substrate-Architecture", "title": "Architecture", "description": "The as-built reference for the substrate's code: its modules, data model, public surfaces and invariants, and the reasons behind the key design decisions."},
+        {"src": "docs/METHODOLOGY.md", "slug": "substrate/methodology", "wiki": "Substrate-Methodology", "title": "Methodology", "description": "How test-first, adversarial development of the substrate caught structural bugs, each traceable to the code and tests, and where it drew the line on claims."}
       ]
     }
   ],

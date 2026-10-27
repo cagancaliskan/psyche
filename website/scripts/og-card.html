@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Psyche social card</title>
+<!--
+  The social card (1200 x 630) of the docs site, drawn by scripts/make-og.mjs. The generator fills the
+  upper-case placeholders written between double underscores below: the two font files (as data: addresses, so the page needs nothing else), the
+  wordmark (brand/psyche-wordmark-dark.svg) and the three lines of text, which come from
+  tools/publish/og.py and so from the ledger's program state. Colours are the brand's (brand/README.md).
+-->
+<style>
+@font-face { font-family: "Instrument Sans"; src: url(__FONT_SANS__) format("woff2"); font-weight: 400 700; }
+@font-face { font-family: "Martian Mono"; src: url(__FONT_MONO__) format("woff2"); font-weight: 100 800; }
+:root {
+  --canvas: #05070d;
+  --structure: #8aa2ff;
+  --signal: #5ef0c4;
+  --label: #9aa4b8;
+  --lead: #c3cad8;
+  --quiet: #5c6579;
+}
+html, body { margin: 0; padding: 0; width: 1200px; height: 630px; overflow: hidden; }
+body {
+  position: relative;
+  background-color: var(--canvas);
+  background-image:
+    linear-gradient(to right, rgba(138, 162, 255, 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(138, 162, 255, 0.05) 1px, transparent 1px);
+  background-size: 60px 100%, 100% 60px;
+}
+.dot { position: absolute; left: 96px; top: 165px; width: 9px; height: 9px; border-radius: 50%; background: var(--signal); }
+.stage {
+  position: absolute; left: 134px; top: 160px; margin: 0;
+  font: 600 16px/1 "Martian Mono", monospace; letter-spacing: 0.105em; text-transform: uppercase; color: var(--label);
+  white-space: nowrap;
+}
+.wordmark { position: absolute; left: 81px; top: 212px; width: 643px; }
+.wordmark svg { display: block; width: 100%; height: auto; }
+.lead {
+  position: absolute; left: 97px; top: 350px; width: 722px; margin: 0;
+  font: 400 32px/40px "Instrument Sans", sans-serif; color: var(--lead);
+}
+.nb { white-space: nowrap; }
+.url {
+  position: absolute; right: 98px; top: 549px; margin: 0;
+  font: 400 16px/1 "Martian Mono", monospace; letter-spacing: 0.005em; color: var(--quiet); white-space: nowrap;
+}
+</style>
+</head>
+<body>
+<span class="dot"></span>
+<p class="stage">__STAGE__</p>
+<div class="wordmark">__WORDMARK__</div>
+<p class="lead">__TAGLINE__</p>
+<p class="url">__URL__</p>
+</body>
+</html>

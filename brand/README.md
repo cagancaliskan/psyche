@@ -18,9 +18,10 @@ the bowls follows this order.
 | `psyche-wordmark-mono.svg` | One colour (`currentColor`): print, embossing, single-colour contexts |
 | `psyche-mark-dark.svg`, `psyche-mark-light.svg` | The P alone, where the name is already present |
 | `psyche-mark-mono.svg` | The P in one colour (`currentColor`) |
-| `psyche-icon.svg` | App and avatar icon: the simplified P on the dark canvas |
+| `psyche-icon.svg` | App and avatar icon: the simplified P on the dark canvas; the source of the site's PNG icons (`npm run icons` in `website/`) |
 | `favicon.svg` | Browser favicon (same drawing as the icon) |
-| `psyche-social.png` | Social preview, 1200 x 630 |
+| `psyche-social.png` | Social preview, 1200 x 630. It names the active stage, so it is drawn by `website/scripts/make-og.mjs` (`npm run og` in `website/`), never edited by hand |
+| `psyche-social.json` | The stage line the social preview was drawn for, its alt text and its sha256; `tools/publish/og.py --check` compares it with the ledger |
 
 The wordmark letters are outlined from Unbounded (weight 200, tracking 0.08 em), so no file needs the
 font installed. The P is drawn on a 24-unit grid with a 1.68-unit stroke.

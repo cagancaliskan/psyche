@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-147248bae283ef86-t" aria-describedby="dg-147248bae283ef86-d" data-key="147248bae283ef86" data-diagram="flowchart" font-size="12" viewBox="0 0 232.42 338.58" width="233" height="339">
+ <title id="dg-147248bae283ef86-t">Flowchart of 4 steps, starting at Gate A: Novelty 2026-11-15 · upcoming</title>
+ <desc id="dg-147248bae283ef86-d">Steps: Gate A: Novelty 2026-11-15 · upcoming; Gate B: Comparisons 2026-12-31 · upcoming; Gate C: Spiking model 2027-02-28 · upcoming; Gate D: Paper date not fixed upcoming. Connections: Gate A: Novelty 2026-11-15 · upcoming to Gate B: Comparisons 2026-12-31 · upcoming; Gate B: Comparisons 2026-12-31 · upcoming to Gate C: Spiking model 2027-02-28 · upcoming; Gate C: Spiking model 2027-02-28 · upcoming to Gate D: Paper date not fixed upcoming.</desc>
+ <g>
+  <marker id="dg-147248bae283ef86_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+   <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath"/>
+  </marker>
+  <g class="root">
+   <g class="edgePaths">
+    <path d="M116.211,55.792L116.211,74.792L116.211,89.792" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-147248bae283ef86_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M116.211,141.584L116.211,160.584L116.211,175.584" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-147248bae283ef86_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M116.211,227.376L116.211,246.376L116.211,261.376" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-147248bae283ef86_flowchart-v2-pointEnd)" fill="none"/>
+   </g>
+   <g class="nodes">
+    <g class="node default gate" transform="translate(116.2109375, 31.895999908447266)">
+     <rect class="basic label-container" x="-108.2109375" y="-23.895999908447266" width="216.421875" height="47.79199981689453"/>
+     <g class="label" transform="translate(0, -13.895999908447266)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Gate A: Novelty</tspan><tspan x="0" y="1em" dy="1.1em">2026-11-15 · upcoming</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default gate" transform="translate(116.2109375, 117.6879997253418)">
+     <rect class="basic label-container" x="-108.2109375" y="-23.895999908447266" width="216.421875" height="47.79199981689453"/>
+     <g class="label" transform="translate(0, -13.895999908447266)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Gate B: Comparisons</tspan><tspan x="0" y="1em" dy="1.1em">2026-12-31 · upcoming</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default gate" transform="translate(116.2109375, 203.47999954223633)">
+     <rect class="basic label-container" x="-108.2109375" y="-23.895999908447266" width="216.421875" height="47.79199981689453"/>
+     <g class="label" transform="translate(0, -13.895999908447266)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Gate C: Spiking model</tspan><tspan x="0" y="1em" dy="1.1em">2027-02-28 · upcoming</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default gate" transform="translate(116.2109375, 295.8719997406006)">
+     <rect class="basic label-container" x="-78.8125" y="-30.496000289916992" width="157.625" height="60.992000579833984"/>
+     <g class="label" transform="translate(0, -20.496000289916992)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Gate D: Paper</tspan><tspan x="0" y="1em" dy="1.1em">date not fixed</tspan><tspan x="0" y="2.1em" dy="1.1em">upcoming</tspan></text>
+      </g>
+     </g>
+    </g>
+   </g>
+  </g>
+ </g>
+</svg>

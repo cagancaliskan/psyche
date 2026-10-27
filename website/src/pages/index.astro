@@ -16,6 +16,7 @@ import plan from '@/data/plan.json';
 import ledger from '@/data/ledger.public.json';
 import type { PublicLedger } from '@/lib/ledger.ts';
 import type { Plan } from '@/lib/plan.ts';
+import { PROJECT_DESCRIPTION } from '@/lib/seo.ts';
 import { withBase } from '@/lib/url.ts';
 import '@/styles/landing.css';
 import '@/styles/landing/links.css';
@@ -39,8 +40,9 @@ const stats = [
   frontmatter={{
     // The page's own title; Starlight adds the site name after it.
     title: 'An open research project on brain-inspired components',
-    description:
-      'Psyche is an open research project that builds and tests brain-inspired components in stages, with artificial general intelligence as its long-term aim. Stage 2, spiking cognitive maps, is active.',
+    // One sentence: what the project is, then its aim, named as an aim. The stage that is active is on the
+    // page and in the social card (generated from the ledger), not typed here where it could go stale.
+    description: PROJECT_DESCRIPTION,
     template: 'splash',
     // The page ends on its last section, not on a link to the next docs page.
     prev: false,

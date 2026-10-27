@@ -7,7 +7,7 @@
  * skip elements that have a class or sit inside `.not-content`, and have zero specificity, so the
  * custom pages and the site's components keep their own styles. Three groups reach further on
  * purpose: the page title (every page that shows one), prose links (every page but the landing)
- * and Mermaid figures (wherever they render). Colours come only from the theme tokens, so light
+ * and diagrams (wherever they render). Colours come only from the theme tokens, so light
  * and dark switch by themselves.
  */
 
@@ -237,112 +237,186 @@
     background-color: var(--sx-surface);
   }
 
-  /* ---- Mermaid figures ----
-     A hairline card on a faint coordinate grid; nodes on the card surface with a cold hairline,
-     text in ink, edges and arrowheads in the structure colour. In timelines the bars take a
-     structure tint, the active phase the signal tint, and the today line the signal colour.
-     astro-mermaid injects unlayered rules for pre.mermaid, and Mermaid writes its own rules, some
-     !important, into every SVG; declarations marked !important inside this layer win over both. A
-     small script in astro.config.mjs removes the colours Mermaid also copies onto shapes as inline
-     styles. Mermaid sizes its boxes for the font it is given (set in astro.config.mjs), so these
-     rules change colour only, never type. */
-  .sl-markdown-content pre.mermaid {
-    --sx-node-stroke: color-mix(in oklab, var(--sx-structure) 45%, var(--sx-hairline));
-    margin-block: 2rem !important;
-    padding: clamp(1rem, 3vw, 1.75rem) !important;
-    border: 1px solid var(--sx-hairline) !important;
-    border-radius: 14px !important;
-    background-color: var(--sx-surface) !important;
+  /* ---- Diagrams ----
+     The diagrams of the governed pages are drawn ahead of the build (website/scripts/render-diagrams.mjs)
+     and sit in the page as inline SVG inside a `.sx-diagram` figure; no script draws them. The SVG
+     holds geometry, classes and text and no colour, so everything it paints is set here from the
+     tokens and one file reads in both themes. A hairline card on a faint coordinate grid; nodes on the
+     card surface with a hairline in the structure colour, labels in mono ink, edges and arrowheads in
+     the structure colour. In timelines the bars take a structure tint and the phase in progress the
+     signal tint: the signal colour marks only what is current. Strokes do not scale with the figure,
+     so a hairline stays one pixel. The labels were measured in Martian Mono when the diagram was
+     drawn, so the face is set here and nothing else may change its size. A diagram wider than the
+     column scales down to three quarters of its drawn size (nine tenths for a timeline on a narrow
+     screen, whose type is already small) and scrolls sideways beyond that (--dg-w is its drawn
+     width, set by tools/publish/diagrams.py). The box that scrolls fades out at both edges, so a
+     drawing cut off by the column reads as continuing; the fades lie inside its padding, where
+     there is nothing to fade, until the drawing is scrolled.
+     Contrast: what a reader needs to see to read the drawing (a node's outline, a group's box,
+     a bar's outline, a milestone) is at least 3:1 against the card in both themes (WCAG 1.4.11):
+     measured 3.4:1 light and 4.1:1 dark for the lines, the bars and the milestones.
+     A fill that only tints (a bar's, a phase's) carries no meaning on its own and is not held to it. */
+  .sx-diagram {
+    --dg-line: color-mix(in oklab, var(--sx-structure) 65%, var(--sx-hairline));
+    --dg-task: color-mix(in oklab, var(--sx-structure) 70%, var(--sx-surface));
+    --dg-bar: color-mix(in oklab, var(--sx-structure) 18%, var(--sx-surface));
+    margin-block: 2rem;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 14px;
+    background-color: var(--sx-surface);
     background-image:
       linear-gradient(var(--sx-grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--sx-grid) 1px, transparent 1px) !important;
-    background-size: 24px 24px !important;
-    background-position: -1px -1px !important;
+      linear-gradient(90deg, var(--sx-grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: -1px -1px;
     box-shadow: var(--sx-card-edge);
-    animation: none !important;
+    overflow: hidden;
   }
-  @media (scripting: enabled) {
-    .sl-markdown-content pre.mermaid:not([data-processed]) {
-      color: transparent;
+  .sx-diagram__scroll {
+    padding: clamp(1rem, 3vw, 1.75rem);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sx-structure) transparent;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 1rem, #000 calc(100% - 1rem), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 1rem, #000 calc(100% - 1rem), transparent 100%);
+  }
+  /* The scroll box is masked, and a mask would fade a ring drawn on it at the ends, so the figure
+     carries the focus ring instead. */
+  .sx-diagram__scroll:focus-visible {
+    outline: none;
+  }
+  .sx-diagram:has(> .sx-diagram__scroll:focus-visible) {
+    outline: 2px solid var(--sx-agent);
+    outline-offset: -2px;
+  }
+  .sx-diagram svg {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+    max-inline-size: calc(var(--dg-w, 800) * 1px);
+    min-inline-size: calc(var(--dg-w, 800) * 0.75px);
+    margin-inline: auto;
+    overflow: visible;
+    font-family: var(--font-mono, ui-monospace, monospace);
+    color: var(--sl-color-white);
+  }
+  /* A timeline is drawn in 10px type. Where the page has no sidebars (a phone, a tablet held upright)
+     it keeps nine tenths of that and scrolls; beside the sidebars of a laptop screen the column is
+     too narrow for that and the default floor holds. */
+  @media (max-width: 50rem) {
+    .sx-diagram svg[data-diagram="timeline"] {
+      min-inline-size: calc(var(--dg-w, 800) * 0.9px);
     }
   }
-  .sl-markdown-content pre.mermaid svg :is(text, tspan) {
-    fill: var(--sl-color-white) !important;
+  .sx-diagram svg :is(path, rect, polygon, circle, ellipse, line) {
+    vector-effect: non-scaling-stroke;
   }
-  .sl-markdown-content pre.mermaid .nodeLabel {
-    color: var(--sl-color-white) !important;
+  .sx-diagram svg text {
+    fill: var(--sl-color-white);
+    stroke: none;
   }
-  /* Flowcharts */
-  .sl-markdown-content pre.mermaid .node :is(rect, polygon, circle, ellipse, path) {
-    fill: var(--sx-surface) !important;
-    stroke: var(--sx-node-stroke) !important;
-    stroke-width: 1px !important;
+  /* Flowcharts. A node a class definition dashes keeps its dashes (the drawing carries them). */
+  .sx-diagram svg .node :is(rect, polygon, circle, ellipse, path) {
+    fill: var(--sx-surface);
+    stroke: var(--dg-line);
+    stroke-width: 1px;
   }
-  .sl-markdown-content pre.mermaid .cluster rect {
-    fill: color-mix(in oklab, var(--sx-surface-2) 55%, transparent) !important;
-    stroke: var(--sx-hairline) !important;
-    stroke-width: 1px !important;
+  .sx-diagram svg .cluster rect {
+    fill: color-mix(in oklab, var(--sx-surface-2) 55%, transparent);
+    stroke: var(--dg-line);
+    stroke-width: 1px;
   }
-  .sl-markdown-content pre.mermaid .cluster :is(text, tspan) {
-    fill: var(--sx-muted) !important;
+  /* A group's title is drawn after the connections (render-diagrams.mjs), and a halo in the colour of
+     the box keeps a connection that passes under it from showing through the letters. */
+  .sx-diagram svg .cluster-label text {
+    fill: var(--sx-muted);
+    paint-order: stroke;
+    stroke: color-mix(in oklab, var(--sx-surface-2) 55%, var(--sx-surface));
+    stroke-width: 5px;
+    stroke-linejoin: round;
   }
-  .sl-markdown-content pre.mermaid :is(.flowchart-link, .edgePath .path, path.relation, .transition) {
-    stroke: var(--sx-structure) !important;
+  .sx-diagram svg .flowchart-link {
+    fill: none;
+    stroke: var(--sx-structure);
+    stroke-width: 1px;
   }
-  .sl-markdown-content pre.mermaid :is(marker path, .marker, .arrowMarkerPath, .arrowheadPath) {
-    fill: var(--sx-structure) !important;
-    stroke: var(--sx-structure) !important;
+  .sx-diagram svg marker :is(path, circle, polygon) {
+    fill: var(--sx-structure);
+    stroke: none;
   }
-  .sl-markdown-content pre.mermaid :is(.edgeLabel rect, .labelBkg) {
-    fill: var(--sx-surface) !important;
-    background-color: var(--sx-surface) !important;
-    opacity: 1 !important;
+  .sx-diagram svg .edgeLabel rect {
+    fill: var(--sx-surface);
+    stroke: none;
   }
-  .sl-markdown-content pre.mermaid .edgeLabel :is(text, tspan) {
-    fill: var(--sx-muted) !important;
+  .sx-diagram svg .edgeLabel text {
+    fill: var(--sx-muted);
   }
-  /* Timelines (gantt) */
-  .sl-markdown-content pre.mermaid .section {
-    opacity: 1 !important;
+  /* Timelines */
+  .sx-diagram svg .section {
+    stroke: none;
   }
-  .sl-markdown-content pre.mermaid :is(.section0, .section2) {
-    fill: color-mix(in oklab, var(--sx-structure) 6%, transparent) !important;
+  .sx-diagram svg :is(.section0, .section2) {
+    fill: color-mix(in oklab, var(--sx-structure) 6%, transparent);
   }
-  .sl-markdown-content pre.mermaid :is(.section1, .section3) {
-    fill: transparent !important;
+  .sx-diagram svg :is(.section1, .section3) {
+    fill: transparent;
   }
-  .sl-markdown-content pre.mermaid :is(.sectionTitle, .sectionTitle0, .sectionTitle1, .sectionTitle2, .sectionTitle3) {
-    fill: var(--sx-muted) !important;
+  .sx-diagram svg .sectionTitle {
+    fill: var(--sx-muted);
   }
-  .sl-markdown-content pre.mermaid .grid .tick {
-    stroke: var(--sx-hairline) !important;
-    opacity: 1 !important;
+  .sx-diagram svg .grid .tick line {
+    stroke: var(--sx-hairline);
   }
-  .sl-markdown-content pre.mermaid .grid .tick text {
-    fill: var(--sx-muted) !important;
-    stroke: none !important;
+  .sx-diagram svg .grid .tick text {
+    fill: var(--sx-muted);
   }
-  .sl-markdown-content pre.mermaid :is(.task, .task0, .task1, .task2, .task3) {
-    fill: color-mix(in oklab, var(--sx-structure) 18%, var(--sx-surface)) !important;
-    stroke: color-mix(in oklab, var(--sx-structure) 60%, var(--sx-surface)) !important;
-    stroke-width: 1px !important;
+  .sx-diagram svg .task {
+    fill: var(--dg-bar);
+    stroke: var(--dg-task);
+    stroke-width: 1px;
   }
-  .sl-markdown-content pre.mermaid :is(.active0, .active1, .active2, .active3) {
-    fill: color-mix(in oklab, var(--sx-agent) 22%, var(--sx-surface)) !important;
-    stroke: var(--sx-agent) !important;
+  .sx-diagram svg .milestone {
+    fill: var(--dg-task);
   }
-  .sl-markdown-content pre.mermaid :is(.done0, .done1, .done2, .done3) {
-    fill: var(--sx-surface-2) !important;
-    stroke: var(--sx-hairline) !important;
+  .sx-diagram svg :is(.active0, .active1, .active2, .active3) {
+    fill: color-mix(in oklab, var(--sx-agent) 22%, var(--sx-surface));
+    stroke: var(--sx-agent);
   }
-  .sl-markdown-content pre.mermaid :is(.crit0, .crit1, .crit2, .crit3) {
-    fill: color-mix(in oklab, var(--sx-spike) 18%, var(--sx-surface)) !important;
-    stroke: var(--sx-spike) !important;
+  .sx-diagram svg :is(.done0, .done1, .done2, .done3) {
+    fill: var(--sx-surface-2);
+    stroke: var(--dg-task);
   }
-  .sl-markdown-content pre.mermaid .today {
-    stroke: var(--sx-agent) !important;
+  .sx-diagram svg :is(.crit0, .crit1, .crit2, .crit3) {
+    fill: color-mix(in oklab, var(--sx-spike) 18%, var(--sx-surface));
+    stroke: var(--sx-spike);
   }
-  .sl-markdown-content pre.mermaid .vert {
-    stroke: var(--sx-structure) !important;
+  /* Windows High Contrast and other forced-colour modes force the colours of HTML but not the fill and
+     stroke of SVG, so a drawing keeps its token colours on the system canvas: text that sits straight on
+     the canvas (a timeline's labels, a group's title) can vanish when the two disagree. Here every
+     mark takes the system colours. */
+  @media (forced-colors: active) {
+    .sx-diagram svg text {
+      fill: CanvasText !important;
+      stroke: none !important;
+    }
+    .sx-diagram svg :is(.node, .cluster, .task, .milestone) :is(rect, polygon, circle, ellipse, path),
+    .sx-diagram svg :is(rect, polygon).task {
+      fill: Canvas !important;
+      stroke: CanvasText !important;
+    }
+    .sx-diagram svg .edgeLabel rect {
+      fill: Canvas !important;
+      stroke: none !important;
+    }
+    .sx-diagram svg :is(.flowchart-link, .grid .tick line) {
+      stroke: CanvasText !important;
+    }
+    .sx-diagram svg marker :is(path, circle, polygon) {
+      fill: CanvasText !important;
+    }
+    .sx-diagram svg :is(.section0, .section1, .section2, .section3) {
+      fill: transparent !important;
+    }
   }
 }

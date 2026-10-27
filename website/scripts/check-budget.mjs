@@ -3,19 +3,25 @@
 //
 // What is counted for a page, read from the built HTML in dist/:
 //   JS   every external script and module preload the page names, the component and renderer
-//        module of every island, the static imports of each of those files (followed to the
-//        end), and the page's inline scripts. When the page holds a Mermaid diagram, the
-//        module the page script loads on demand to draw it, with its static imports, is
-//        counted as well, because that page always downloads it. The chunks that module
-//        loads in turn for one diagram type or another are not followed: which of them load
-//        depends on the diagram.
+//        module of every island, the imports of each of those files (followed to the end), and the
+//        page's inline scripts. An import is static (`import x from './a.js'`) or dynamic with a
+//        literal address (`import('./a.js')`): a dynamic one is a chunk the page loads later, often on
+//        idle, and it is still the reader's download. Starlight's search loads its interface this
+//        way (about 26 KB gzipped) on every page, which is why a docs page counts about 33 KB, not
+//        the 7 KB its first script weighs. Diagrams are drawn ahead of the build and sit in the
+//        page as inline SVG (tools/publish/diagrams.py), so they add no script; their bytes are
+//        in the HTML, which this check does not count.
+//   Also, whatever the sizes: a file in dist/_astro named for a diagram or maths library (mermaid,
+//   katex, cytoscape, d3-) fails the build. Such a library once shipped to every docs page
+//   through a lazily loaded chunk that only the dynamic imports above can see.
 //   CSS  every stylesheet the page links (print included) and its inline <style> blocks.
 // Each file is gzipped on its own (zlib level 9), because that is how a browser receives it, and
 // a file used twice on a page counts once. Fonts and images are not counted.
 //
 // Budgets sit 3 percent above the sizes measured when they were set, rounded up to 100 bytes, so
 // that a different zlib build does not trip them but real growth does. A page not listed in
-// PAGE_BUDGETS falls under DEFAULT_BUDGET, which is the largest budget of any docs page. To raise
+// PAGE_BUDGETS falls under DEFAULT_BUDGET, which is the largest budget of any docs page, the research
+// roadmap (it hosts the timeline island) excepted. To raise
 // a budget on purpose, change the number here and say why in the commit that does it.
 //
 // Usage: node scripts/check-budget.mjs
@@ -29,25 +35,25 @@ const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const BASE = '/psyche/';
 
 // Bytes, gzipped. The comment on each line is what was measured when the budget was set.
-const DEFAULT_BUDGET = { js: 186500, css: 38500 };
+const DEFAULT_BUDGET = { js: 37400, css: 37600 };
 const PAGE_BUDGETS = {
-  '/':                            { js:  88700, css: 44600 }, // 86037, 43259
-  '/roadmap/':                    { js:  86800, css: 34500 }, // 84210, 33484
-  '/battery/':                    { js:  90300, css: 34600 }, // 87591, 33529
-  '/status/':                     { js:  10100, css: 34500 }, //  9739, 33418
-  '/research/':                   { js: 185000, css: 34500 }, // 179602, 33418
-  '/research/origins/':           { js: 185000, css: 34500 }, // 179602, 33418
-  '/research/roadmap/':           { js: 261600, css: 34500 }, // 253927, 33484
-  '/research/gates/':             { js: 186400, css: 34500 }, // 180958, 33418
-  '/research/test-battery/':      { js: 185400, css: 34500 }, // 179925, 33418
-  '/research/claims-and-scope/':  { js: 184400, css: 34500 }, // 178973, 33418
-  '/research/engineering/':       { js: 185000, css: 34500 }, // 179602, 33418
-  '/research/glossary/':          { js:  10300, css: 34500 }, //   9943, 33418
-  '/research/reading-list/':      { js:  10300, css: 34500 }, //   9943, 33418
-  '/research/disclosure-policy/': { js: 185000, css: 34500 }, // 179602, 33418
-  '/substrate/overview/':         { js:  12700, css: 38500 }, //  12266, 37340
-  '/substrate/architecture/':     { js:  12100, css: 38500 }, //  11740, 37340
-  '/substrate/methodology/':      { js:  10900, css: 34500 }, //  10572, 33418
+  '/':                          { js: 113900, css:  43700 }, // 110538,  42423
+  '/roadmap/':                  { js: 111800, css:  33600 }, // 108502,  32614
+  '/battery/':                  { js: 112600, css:  33700 }, // 109281,  32659
+  '/status/':                   { js:  34300, css:  33600 }, //  33234,  32548
+  '/research/':                 { js:  35100, css:  33600 }, //  34067,  32548
+  '/research/origins/':         { js:  35100, css:  33600 }, //  34067,  32548
+  '/research/roadmap/':         { js: 113100, css:  33600 }, // 109766,  32614
+  '/research/gates/':           { js:  37400, css:  33600 }, //  36259,  32548
+  '/research/test-battery/':    { js:  35500, css:  33600 }, //  34390,  32548
+  '/research/claims-and-scope/':{ js:  34500, css:  33600 }, //  33438,  32548
+  '/research/engineering/':     { js:  35100, css:  33600 }, //  34067,  32548
+  '/research/glossary/':        { js:  34500, css:  33600 }, //  33438,  32548
+  '/research/reading-list/':    { js:  34500, css:  33600 }, //  33438,  32548
+  '/research/disclosure-policy/':{ js:  35100, css:  33600 }, //  34067,  32548
+  '/substrate/overview/':       { js:  36900, css:  37600 }, //  35761,  36470
+  '/substrate/architecture/':   { js:  36300, css:  37600 }, //  35235,  36470
+  '/substrate/methodology/':    { js:  35100, css:  33600 }, //  34067,  32548
 };
 
 const gz = (buf) => gzipSync(buf, { level: 9 }).length;
@@ -77,8 +83,12 @@ function attr(tag, name) {
 const STATIC_IMPORT = [
   /\b(?:import|export)\s*(?:\{[^}]*\}|\*(?:\s*as\s*[\w$]+)?|[\w$]+(?:\s*,\s*\{[^}]*\})?)\s*from\s*["']([^"']+)["']/g,
   /\bimport\s*["']([^"']+)["']/g,
+  // import('./chunk.js'): a literal address only; one built at run time cannot be read here
+  /\bimport\s*\(\s*[`"']([^`"'$]+)[`"']\s*\)/g,
 ];
-const DYNAMIC_IMPORT = /\bimport\(\s*["'`]([^"'`]+)["'`]\s*\)/g;
+
+// Libraries that must never reach a docs page again; matched against file names in dist/_astro.
+const FORBIDDEN_CHUNKS = /mermaid|katex|cytoscape|(?:^|[^a-z])d3-/i;
 
 function specifiers(source, patterns) {
   const out = [];
@@ -168,30 +178,11 @@ function measure(htmlPath, problems) {
   }
 
   const eager = closure(jsRoots, problems, page);
-  let lazy = new Set();
-  if (/class="[^"]*\bmermaid\b/.test(html)) {
-    const targets = [];
-    for (const file of eager) {
-      for (const spec of specifiers(read(file).toString('utf8'), [DYNAMIC_IMPORT])) {
-        if (!relative_(spec)) continue;
-        const r = toFile(spec, file);
-        if (r.file && /mermaid\.core/.test(r.file)) targets.push(r.file);
-      }
-    }
-    // A page with a diagram that finds no renderer module would otherwise count none of its
-    // weight and pass quietly; a bundler change that moves the dynamic import must fail loudly.
-    if (!targets.length) {
-      problems.push(`${page}: has a Mermaid diagram but the renderer module was not found; the budget cannot be measured`);
-    }
-    lazy = closure(targets, problems, page);
-    for (const f of eager) lazy.delete(f);
-  }
 
   const sum = (files) => [...files].reduce((n, f) => n + (existsSync(f) ? gz(read(f)) : 0), 0);
-  const jsEager = sum(eager) + inlineJs;
-  const jsLazy = sum(lazy);
+  const js = sum(eager) + inlineJs;
   const css = sum(cssFiles) + inlineCss;
-  return { page, js: jsEager + jsLazy, jsEager, jsLazy, css };
+  return { page, js, css };
 }
 
 if (!existsSync(DIST)) {
@@ -200,13 +191,19 @@ if (!existsSync(DIST)) {
 }
 
 const problems = [];
+const assets = join(DIST, '_astro');
+if (existsSync(assets)) {
+  for (const name of readdirSync(assets)) {
+    if (FORBIDDEN_CHUNKS.test(name)) problems.push(`dist/_astro/${name}: a diagram or maths library is in the build`);
+  }
+}
 const rows = htmlFiles(DIST)
   .filter((p) => !p.endsWith(`${sep}404.html`))
   .map((p) => measure(p, problems));
 
 const over = [];
 const pad = (v, n) => String(v).padStart(n);
-console.log('check-budget: gzipped bytes per page (JS on load plus the diagram renderer; CSS linked plus inline)');
+console.log('check-budget: gzipped bytes per page (JS on load; CSS linked plus inline)');
 console.log(`${'page'.padEnd(30)}${pad('js', 9)}${pad('budget', 9)}${pad('css', 9)}${pad('budget', 9)}`);
 for (const r of rows) {
   const b = PAGE_BUDGETS[r.page] || DEFAULT_BUDGET;
