@@ -45,7 +45,10 @@ are version-independent but the captured numbers in `results/` are specific to t
 
 The SWOW data are © the Small World of Words project and are provided under their own
 data-use terms — see the project website. They are used here for non-commercial research and
-are **not redistributed** in this repository.
+are **not redistributed** in this repository. The full arm (c) pair list that
+`experiments/priming_1e.py` writes (`priming_1e_pairs_arm_c.txt`) is not kept here either,
+because it carries SWOW strengths in bulk: its SHA-256 stays frozen in
+`docs/experiments/EXP-1e-priming.md`, and the script regenerates it from the SWOW file.
 
 If you use SWOW, cite:
 

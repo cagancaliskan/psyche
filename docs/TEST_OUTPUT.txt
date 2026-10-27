@@ -1032,9 +1032,9 @@ F-1  a second, independent scanner corroborates the shape counts
   NOTE: the sixth naive site (road.charges) is only visible with one-hop alias tracking; the second scanner not seeing it is the expected difference, and it is why the corroboration is a cross-check and not a duplicate
 
 F-1  LOOP-CLOSED: run the census on the project's OWN pre-fix trees
-    c172d0f initial commit                     10 sites, all naive
-    53039ed the parent of fix(0b1)             12 sites, all naive
-    8962ec1 1d-ii, before 0c converted three sums 12 sites, all naive
+    3e2a5b8 initial commit                     10 sites, all naive
+    56509eb the parent of fix(0b1)             12 sites, all naive
+    a0090e5 1d-ii, before 0c converted three sums 12 sites, all naive
 
 F-2  the populated registry leaves zero unregistered candidates
 
@@ -1161,7 +1161,7 @@ F-6  FINDING 0d-5 — the absence bound under-reports on dynamic access
 F-8  CONVERTED: L3 is CLOSED, and the compounding with L7 is what remains
   NOTE: SPEC-2f's recorded warning — 'write the trace update on its own line' — is now OBSOLETE as a requirement and should be struck by architect-pm. It is not the tester's file to edit; recorded here so the instruction does not outlive its reason and get cited as a live constraint.
 
-2f  every re-pointed assertion FAILS against the pre-fix tool (f17d12c)
+2f  every re-pointed assertion FAILS against the pre-fix tool (c451252)
   NOTE: a second dead assertion was found by the same audit and is marked CONVERTED at its site: `a = a, = (a + x,)` reports 1 on both tools, so it never tested the path-exclusivity it claimed to. 2 of 12 for this brick; both now named.
 
 2f  --list-accumulations is a CONSUMED interface, attacked as one
@@ -1184,7 +1184,7 @@ ROBUSTNESS  CONVERTED: the NUL byte no longer diverges by interpreter
   RESULT: 342 passed, 0 failed
 ==============================================================================
   TESTER VERDICT ON SPEC-2f STEP ZERO — PASS  (2026-07-26, re-verification)
-  Both findings fixed in 5bce7a8 and verified against the PRE-FIX tool,
+  Both findings fixed in a444ae6 and verified against the PRE-FIX tool,
   not merely against the current one. SPEC-0d §4 continues to hold in full.
 ==============================================================================
     F-1  HOLDS       RE-RUN after the builder touched the fold a second time:
@@ -1214,7 +1214,7 @@ ROBUSTNESS  CONVERTED: the NUL byte no longer diverges by interpreter
   2f-0-2 RE-POINTED the old assertion named scan_source and passed on BOTH tools:
                     it could not perturb its own property. Re-pointed at the
                     refusal record and the listing, and PROVED live by failing
-                    against f17d12c. 2 of 12 assertions for this brick were dead;
+                    against c451252. 2 of 12 assertions for this brick were dead;
                     both are named, neither is deleted.
 ==============================================================================
   ROUTED TO ARCHITECT, not fixed here: the census digest and the LISTING digest
@@ -1243,7 +1243,7 @@ N-1a the neutral value is byte-identical to omitting the parameter (exception pa
   compared 1989; 0 of them exercised the EXCEPTION path
 
 N-1b byte-identity vs the ACTUAL pre-overlay engine recovered from git
-  recovered pre-overlay engine at c172d0fe9011
+  recovered pre-overlay engine at 3e2a5b87aefe
   compared 2298, of which 351 at the 2-contribution boundary; 692 skipped as outside the oracle's valid region
 
 N-1i exhaustive: every divergence from the pre-overlay engine is one of four DECIDED 0c changes — none is the overlay's
@@ -1649,7 +1649,7 @@ O-17 the assertion count is a property of the code, not of the environment
   everything closes one third of the class while looking like it closed all.
 
   0d SUITE CONVERTED after four aborted passes: 338 assertions, 0 failures.
-  Census 14/8 -> 15/9, each conversion failing against 9081da9.
+  Census 14/8 -> 15/9, each conversion failing against c496daf.
 
   ONE NEW FINDING, 2f-5, not blocking: bound_on_absence DISMISSALS are keyed
   path:line and rot on any edit above them — one comment line fires a false
