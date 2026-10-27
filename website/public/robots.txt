@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://cagancaliskan.github.io/psyche/sitemap-index.xml

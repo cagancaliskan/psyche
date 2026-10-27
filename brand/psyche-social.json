@@ -1,0 +1,9 @@
+{
+  "stage": "Stage 2 · Spiking cognitive maps",
+  "tagline": "An open research project that builds brain-inspired components in stages, with artificial general intelligence as its long-term aim.",
+  "alt": "Psyche. Stage 2 · Spiking cognitive maps. An open research project that builds brain-inspired components in stages, with artificial general intelligence as its long-term aim.",
+  "sha256": "890434a0d023be9edaa5b2cacebb65906ae5f2d8d9c65662fbd94abe3b6ea619",
+  "width": 1200,
+  "height": 630,
+  "generator": "website/scripts/make-og.mjs"
+}

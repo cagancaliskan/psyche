@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-054eb87cd86ed52e-t dg-054eb87cd86ed52e-d" data-key="054eb87cd86ed52e" data-diagram="timeline" font-size="10" viewBox="-8 16 698 298" width="698" height="298">
- <title id="dg-054eb87cd86ed52e-t">Timeline of 10 items, 2026-10-23 to 2027-08-15</title>
- <desc id="dg-054eb87cd86ed52e-d">P0: Novelty review and setup, 2026-10-23 to 2026-11-15, in progress. Gate A Novelty, 2026-11-15. P1: Environments, battery and baselines, 2026-11-16 to 2026-12-31. Gate B Comparisons, 2026-12-31. P2: Spiking model, 2027-01-01 to 2027-02-28. Gate C Spiking model, 2027-02-28. P3: Scaling, ablations and the energy estimate, 2027-03-01 to 2027-04-15. P4: Paper *, 2027-04-15 to 2027-06-15. Gate D Paper *, 2027-06-15. P5: Public release *, 2027-06-15 to 2027-08-15.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-5e791b0e28b36819-t" aria-describedby="dg-5e791b0e28b36819-d" data-key="5e791b0e28b36819" data-diagram="timeline" font-size="10" viewBox="-8 16 698 298" width="698" height="298">
+ <title id="dg-5e791b0e28b36819-t">Timeline of 10 items; the dated ones run 2026-10-23 to 2027-04-15</title>
+ <desc id="dg-5e791b0e28b36819-d">P0: Novelty review and setup, 2026-10-23 to 2026-11-15, in progress. Gate A Novelty, 2026-11-15. P1: Environments, battery and baselines, 2026-11-16 to 2026-12-31. Gate B Comparisons, 2026-12-31. P2: Spiking model, 2027-01-01 to 2027-02-28. Gate C Spiking model, 2027-02-28. P3: Scaling, ablations and the energy estimate, 2027-03-01 to 2027-04-15. P4: Paper, dates not fixed. Gate D Paper, date not fixed. P5: Public release, dates not fixed. Items marked * on the chart have no fixed date; their place on it is not a date.</desc>
  <g class="grid" transform="translate(70, 290)" fill="none" font-size="10" text-anchor="middle">
   <g class="tick" opacity="1" transform="translate(18.5,0)">
    <line stroke="currentColor" y2="-266"/>

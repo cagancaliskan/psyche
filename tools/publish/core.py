@@ -519,12 +519,35 @@ MANIFEST_KEYS = {"site_base", "repo", "sections", "never_publish"}
 MANIFEST_OPTIONAL = {"_README"}
 SECTION_KEYS = {"title", "pages"}
 PAGE_KEYS = {"src", "slug", "wiki"}
-PAGE_OPTIONAL = {"title"}
+PAGE_OPTIONAL = {"title", "description"}
+# A page's description is the snippet a search result and a link preview show. Under about 120
+# characters it says too little; over 160 a search result cuts it. It is one sentence on one line.
+DESCRIPTION_MIN = 120
+DESCRIPTION_MAX = 160
 RESERVED_WIKI = {"home", "_sidebar", "_footer"}
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*$")
 WIKI_RE = re.compile(r"^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$")
 REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
 SHA_RE = re.compile(r"^[0-9a-f]{7,40}$")
+
+
+def description_problem(text: object) -> Optional[str]:
+    """Why `text` cannot be a page description, or None. One sentence on one line, between
+    DESCRIPTION_MIN and DESCRIPTION_MAX characters, closed by a full stop, with no markup:
+    it becomes the page's meta description and its link preview, which show plain text."""
+    if not isinstance(text, str):
+        return "must be a string"
+    if text != text.strip() or "\n" in text or "\r" in text or "\t" in text:
+        return "must be one line with no leading or trailing space"
+    if not DESCRIPTION_MIN <= len(text) <= DESCRIPTION_MAX:
+        return (f"must be {DESCRIPTION_MIN} to {DESCRIPTION_MAX} characters, not {len(text)}")
+    if not text.endswith("."):
+        return "must end with a full stop"
+    if re.search(r"[.!?](?:\s|$)", text[:-1]):
+        return "must be one sentence"
+    if re.search(r"[<>&`*_\[\]]", text):
+        return "must be plain text: no markup characters (< > & ` * _ [ ])"
+    return None
 
 
 def manifest_problems(m: object) -> List[str]:
@@ -563,7 +586,7 @@ def manifest_problems(m: object) -> List[str]:
     if not (isinstance(sections, list) and sections):
         out.append("sections must be a non-empty list")
         return out
-    seen: Dict[str, Set[str]] = {"src": set(), "slug": set(), "wiki": set()}
+    seen: Dict[str, Set[str]] = {"src": set(), "slug": set(), "wiki": set(), "description": set()}
     for si, sec in enumerate(sections):
         where = f"sections[{si}]"
         if not isinstance(sec, dict):
@@ -595,6 +618,15 @@ def manifest_problems(m: object) -> List[str]:
                 out.append(f"{pw}.wiki {wiki!r} is a reserved wiki page name")
             if "title" in page and not (isinstance(page["title"], str) and page["title"].strip()):
                 out.append(f"{pw}.title must be a non-empty string")
+            if "description" in page:
+                bad_desc = description_problem(page["description"])
+                if bad_desc:
+                    out.append(f"{pw}.description {bad_desc}")
+                else:
+                    folded = page["description"].casefold()
+                    if folded in seen["description"]:
+                        out.append(f"{pw}.description is the description of another page too")
+                    seen["description"].add(folded)
             for key, val in (("src", src), ("slug", slug), ("wiki", wiki)):
                 if not isinstance(val, str):
                     continue

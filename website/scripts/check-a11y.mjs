@@ -30,7 +30,11 @@ const FAILING = new Set(['serious', 'critical']);
 const DIST = resolve(fileURLToPath(new URL('../dist/', import.meta.url)));
 // Must equal `base` in astro.config.mjs.
 const BASE = '/psyche/';
-const PAGES = ['', 'battery/', 'roadmap/', 'status/', 'research/'];
+// The home, battery, roadmap, status and research pages, and the three docs pages whose diagrams the
+// others do not show: the timeline and a flowchart (research/roadmap/), a flowchart with labelled and
+// dotted connections (research/claims-and-scope/), and a flowchart on a page with tables
+// (research/disclosure-policy/).
+const PAGES = ['', 'battery/', 'roadmap/', 'status/', 'research/', 'research/roadmap/', 'research/claims-and-scope/', 'research/disclosure-policy/'];
 const VIEWPORTS = [
   { name: 'desktop', width: 1280, height: 800, isMobile: false },
   { name: 'phone', width: 390, height: 844, isMobile: true },

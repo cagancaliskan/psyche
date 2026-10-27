@@ -6,7 +6,6 @@
 // labels fade in. Rendered on the server, so they need no client JavaScript of their own. The
 // battery page passes `ruled` for the faint cell grid of its sheets (and the whole chain strip);
 // the landing's thumbnails leave it off.
-import { clsx } from 'clsx';
 import '@/styles/battery.css';
 import type { ChainStep, GridStep, Test, TransferStep } from '@/lib/battery.ts';
 import { polylinePoints, wallPath, withCell, type Cell, type Grid } from '@/lib/maze.ts';
@@ -16,6 +15,9 @@ type Labelled = { decorative?: boolean };
 
 const svgLabel = (label: string, decorative = false) =>
   decorative ? { 'aria-hidden': true as const, focusable: 'false' as const } : { role: 'img', 'aria-label': label };
+
+/** A class list: `base`, and `extra` after it while `on` holds. */
+const withClass = (base: string, extra: string, on: boolean) => (on ? `${base} ${extra}` : base);
 
 const points = (cells?: readonly Cell[] | null) => (cells ? polylinePoints(cells) : '');
 const cellKey = (cell?: Cell) => (cell ? `${cell[0]},${cell[1]}` : '');
@@ -62,15 +64,15 @@ export function GridPicture({ step, prev, decorative, ruled }: { step: GridStep;
       {ruled && <path className="cells" d={gridLines(g.cols, g.rows)} />}
       <Walls grid={mass} />
       {doors.map(([r, c]) => (
-        <rect key={`d${r},${c}`} className={clsx('door', (!prev || !doorsBefore.has(`${r},${c}`)) && 'appear')} x={c + 0.16} y={r + 0.16} width={0.68} height={0.68} />
+        <rect key={`d${r},${c}`} className={withClass('door', 'appear', !prev || !doorsBefore.has(`${r},${c}`))} x={c + 0.16} y={r + 0.16} width={0.68} height={0.68} />
       ))}
-      {step.trail && <polyline className={clsx('trail', fresh(step.trail, prev?.trail) && 'draw')} pathLength={1} points={points(step.trail)} />}
-      {step.path && <polyline className={clsx('path', fresh(step.path, prev?.path) && 'draw')} pathLength={1} points={points(step.path)} />}
+      {step.trail && <polyline className={withClass('trail', 'draw', fresh(step.trail, prev?.trail))} pathLength={1} points={points(step.trail)} />}
+      {step.path && <polyline className={withClass('path', 'draw', fresh(step.path, prev?.path))} pathLength={1} points={points(step.path)} />}
       {step.start && <circle className="start" cx={step.start[1] + 0.5} cy={step.start[0] + 0.5} r={0.34} />}
       {step.goal && (
         <>
-          <circle className={clsx('goal-ring', newGoal && 'appear')} cx={step.goal[1] + 0.5} cy={step.goal[0] + 0.5} r={0.62} pathLength={1} />
-          <circle className={clsx('goal-dot', newGoal && 'appear')} cx={step.goal[1] + 0.5} cy={step.goal[0] + 0.5} r={0.26} />
+          <circle className={withClass('goal-ring', 'appear', newGoal)} cx={step.goal[1] + 0.5} cy={step.goal[0] + 0.5} r={0.62} pathLength={1} />
+          <circle className={withClass('goal-dot', 'appear', newGoal)} cx={step.goal[1] + 0.5} cy={step.goal[0] + 0.5} r={0.26} />
         </>
       )}
     </svg>
@@ -105,7 +107,7 @@ export function ChainPicture({
       {arc && (
         <>
           <mask id={maskId} maskUnits="userSpaceOnUse" x={0} y={0} width={width} height={CHAIN_HEIGHT}>
-            <path className={clsx('arc-reveal', freshArc && 'draw')} d={arc} pathLength={1} />
+            <path className={withClass('arc-reveal', 'draw', freshArc)} d={arc} pathLength={1} />
           </mask>
           <path className="query" d={arc} mask={`url(#${maskId})`} />
         </>
@@ -137,7 +139,7 @@ export function TransferPicture({
       {marks.map(([r, c], i) => (
         <g key={`${r},${c}`}>
           <circle className="node" cx={c + 0.5} cy={r + 0.5} r={0.42} />
-          <text className={clsx('node-label', fresh && 'appear')} x={c + 0.5} y={r + 0.5}>
+          <text className={withClass('node-label', 'appear', fresh)} x={c + 0.5} y={r + 0.5}>
             {symbols[i]}
           </text>
         </g>

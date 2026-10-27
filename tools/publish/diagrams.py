@@ -235,12 +235,17 @@ def inline_fences(text: str, where: str, renderer: str, get_svg: Callable[[str],
 def figure(svg: str) -> str:
     """The HTML that stands in for a fence: one line, so it is one Markdown HTML block. The
     scroll box takes keyboard focus because a diagram wider than a phone scrolls sideways
-    there, and a scrolling region nobody can reach with a key is an accessibility fault."""
+    there, and a scrolling region nobody can reach with a key is an accessibility fault. It is
+    named after the drawing (a group labelled by the drawing's title), so the stop is not an
+    unnamed one; at widths where nothing scrolls it is a harmless extra stop, since whether a
+    box scrolls is a fact of the reader's screen that no static markup can know."""
     flat = "".join(line.strip() for line in svg.splitlines())
     m = re.search(r'viewBox="-?[0-9.]+ -?[0-9.]+ ([0-9.]+) [0-9.]+"', flat)
     width = f' style="--dg-w:{m.group(1)}"' if m else ""
+    t = re.search(r'<svg\b[^>]*\saria-labelledby="([A-Za-z0-9_:.-]+)"', flat)
+    name = f' role="group" aria-labelledby="{t.group(1)}"' if t else ""
     return ('<figure class="sx-diagram not-content" data-pagefind-ignore>'
-            f'<div class="sx-diagram__scroll" tabindex="0"{width}>{flat}</div></figure>')
+            f'<div class="sx-diagram__scroll"{name} tabindex="0"{width}>{flat}</div></figure>')
 
 
 # ─────────────────────────────────────────────────────────────────────────────

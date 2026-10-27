@@ -3,10 +3,17 @@
 //
 // What is counted for a page, read from the built HTML in dist/:
 //   JS   every external script and module preload the page names, the component and renderer
-//        module of every island, the static imports of each of those files (followed to the
-//        end), and the page's inline scripts. Diagrams are drawn ahead of the build and sit in the
+//        module of every island, the imports of each of those files (followed to the end), and the
+//        page's inline scripts. An import is static (`import x from './a.js'`) or dynamic with a
+//        literal address (`import('./a.js')`): a dynamic one is a chunk the page loads later, often on
+//        idle, and it is still the reader's download. Starlight's search loads its interface this
+//        way (about 26 KB gzipped) on every page, which is why a docs page counts about 33 KB, not
+//        the 7 KB its first script weighs. Diagrams are drawn ahead of the build and sit in the
 //        page as inline SVG (tools/publish/diagrams.py), so they add no script; their bytes are
 //        in the HTML, which this check does not count.
+//   Also, whatever the sizes: a file in dist/_astro named for a diagram or maths library (mermaid,
+//   katex, cytoscape, d3-) fails the build. Such a library once shipped to every docs page
+//   through a lazily loaded chunk that only the dynamic imports above can see.
 //   CSS  every stylesheet the page links (print included) and its inline <style> blocks.
 // Each file is gzipped on its own (zlib level 9), because that is how a browser receives it, and
 // a file used twice on a page counts once. Fonts and images are not counted.
@@ -28,25 +35,25 @@ const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const BASE = '/psyche/';
 
 // Bytes, gzipped. The comment on each line is what was measured when the budget was set.
-const DEFAULT_BUDGET = { js: 10600, css: 38500 };
+const DEFAULT_BUDGET = { js: 37400, css: 37600 };
 const PAGE_BUDGETS = {
-  '/':                           { js:  87100, css:  44700 }, //  84474,  43324
-  '/roadmap/':                   { js:  85000, css:  34600 }, //  82438,  33515
-  '/battery/':                   { js:  87200, css:  34600 }, //  84611,  33560
-  '/status/':                    { js:   7400, css:  34500 }, //   7170,  33449
-  '/research/':                  { js:   8300, css:  34500 }, //   8003,  33449
-  '/research/origins/':          { js:   8300, css:  34500 }, //   8003,  33449
-  '/research/roadmap/':          { js:  86300, css:  34600 }, //  83702,  33515
-  '/research/gates/':            { js:  10600, css:  34500 }, //  10195,  33449
-  '/research/test-battery/':     { js:   8600, css:  34500 }, //   8326,  33449
-  '/research/claims-and-scope/': { js:   7600, css:  34500 }, //   7374,  33449
-  '/research/engineering/':      { js:   8300, css:  34500 }, //   8003,  33449
-  '/research/glossary/':         { js:   7600, css:  34500 }, //   7374,  33449
-  '/research/reading-list/':     { js:   7600, css:  34500 }, //   7374,  33449
-  '/research/disclosure-policy/': { js:   8300, css:  34500 }, //   8003,  33449
-  '/substrate/overview/':        { js:  10000, css:  38500 }, //   9697,  37371
-  '/substrate/architecture/':    { js:   9500, css:  38500 }, //   9171,  37371
-  '/substrate/methodology/':     { js:   8300, css:  34500 }, //   8003,  33449
+  '/':                          { js: 113900, css:  43700 }, // 110538,  42423
+  '/roadmap/':                  { js: 111800, css:  33600 }, // 108502,  32614
+  '/battery/':                  { js: 112600, css:  33700 }, // 109281,  32659
+  '/status/':                   { js:  34300, css:  33600 }, //  33234,  32548
+  '/research/':                 { js:  35100, css:  33600 }, //  34067,  32548
+  '/research/origins/':         { js:  35100, css:  33600 }, //  34067,  32548
+  '/research/roadmap/':         { js: 113100, css:  33600 }, // 109766,  32614
+  '/research/gates/':           { js:  37400, css:  33600 }, //  36259,  32548
+  '/research/test-battery/':    { js:  35500, css:  33600 }, //  34390,  32548
+  '/research/claims-and-scope/':{ js:  34500, css:  33600 }, //  33438,  32548
+  '/research/engineering/':     { js:  35100, css:  33600 }, //  34067,  32548
+  '/research/glossary/':        { js:  34500, css:  33600 }, //  33438,  32548
+  '/research/reading-list/':    { js:  34500, css:  33600 }, //  33438,  32548
+  '/research/disclosure-policy/':{ js:  35100, css:  33600 }, //  34067,  32548
+  '/substrate/overview/':       { js:  36900, css:  37600 }, //  35761,  36470
+  '/substrate/architecture/':   { js:  36300, css:  37600 }, //  35235,  36470
+  '/substrate/methodology/':    { js:  35100, css:  33600 }, //  34067,  32548
 };
 
 const gz = (buf) => gzipSync(buf, { level: 9 }).length;
@@ -76,7 +83,12 @@ function attr(tag, name) {
 const STATIC_IMPORT = [
   /\b(?:import|export)\s*(?:\{[^}]*\}|\*(?:\s*as\s*[\w$]+)?|[\w$]+(?:\s*,\s*\{[^}]*\})?)\s*from\s*["']([^"']+)["']/g,
   /\bimport\s*["']([^"']+)["']/g,
+  // import('./chunk.js'): a literal address only; one built at run time cannot be read here
+  /\bimport\s*\(\s*[`"']([^`"'$]+)[`"']\s*\)/g,
 ];
+
+// Libraries that must never reach a docs page again; matched against file names in dist/_astro.
+const FORBIDDEN_CHUNKS = /mermaid|katex|cytoscape|(?:^|[^a-z])d3-/i;
 
 function specifiers(source, patterns) {
   const out = [];
@@ -179,6 +191,12 @@ if (!existsSync(DIST)) {
 }
 
 const problems = [];
+const assets = join(DIST, '_astro');
+if (existsSync(assets)) {
+  for (const name of readdirSync(assets)) {
+    if (FORBIDDEN_CHUNKS.test(name)) problems.push(`dist/_astro/${name}: a diagram or maths library is in the build`);
+  }
+}
 const rows = htmlFiles(DIST)
   .filter((p) => !p.endsWith(`${sep}404.html`))
   .map((p) => measure(p, problems));

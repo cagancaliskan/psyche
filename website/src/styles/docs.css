@@ -247,10 +247,18 @@
      signal tint: the signal colour marks only what is current. Strokes do not scale with the figure,
      so a hairline stays one pixel. The labels were measured in Martian Mono when the diagram was
      drawn, so the face is set here and nothing else may change its size. A diagram wider than the
-     column scales down to three quarters of its drawn size and scrolls sideways beyond that
-     (--dg-w is its drawn width, set by tools/publish/diagrams.py). */
+     column scales down to three quarters of its drawn size (nine tenths for a timeline on a narrow
+     screen, whose type is already small) and scrolls sideways beyond that (--dg-w is its drawn
+     width, set by tools/publish/diagrams.py). The box that scrolls fades out at both edges, so a
+     drawing cut off by the column reads as continuing; the fades lie inside its padding, where
+     there is nothing to fade, until the drawing is scrolled.
+     Contrast: what a reader needs to see to read the drawing (a node's outline, a group's box,
+     a bar's outline, a milestone) is at least 3:1 against the card in both themes (WCAG 1.4.11):
+     measured 3.4:1 light and 4.1:1 dark for the lines, the bars and the milestones.
+     A fill that only tints (a bar's, a phase's) carries no meaning on its own and is not held to it. */
   .sx-diagram {
-    --dg-line: color-mix(in oklab, var(--sx-structure) 55%, var(--sx-hairline));
+    --dg-line: color-mix(in oklab, var(--sx-structure) 65%, var(--sx-hairline));
+    --dg-task: color-mix(in oklab, var(--sx-structure) 70%, var(--sx-surface));
     --dg-bar: color-mix(in oklab, var(--sx-structure) 18%, var(--sx-surface));
     margin-block: 2rem;
     border: 1px solid var(--sx-hairline);
@@ -268,11 +276,19 @@
     padding: clamp(1rem, 3vw, 1.75rem);
     overflow-x: auto;
     overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sx-structure) transparent;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 1rem, #000 calc(100% - 1rem), transparent 100%);
+    mask-image: linear-gradient(90deg, transparent 0, #000 1rem, #000 calc(100% - 1rem), transparent 100%);
   }
+  /* The scroll box is masked, and a mask would fade a ring drawn on it at the ends, so the figure
+     carries the focus ring instead. */
   .sx-diagram__scroll:focus-visible {
+    outline: none;
+  }
+  .sx-diagram:has(> .sx-diagram__scroll:focus-visible) {
     outline: 2px solid var(--sx-agent);
     outline-offset: -2px;
-    border-radius: 14px;
   }
   .sx-diagram svg {
     display: block;
@@ -284,6 +300,14 @@
     overflow: visible;
     font-family: var(--font-mono, ui-monospace, monospace);
     color: var(--sl-color-white);
+  }
+  /* A timeline is drawn in 10px type. Where the page has no sidebars (a phone, a tablet held upright)
+     it keeps nine tenths of that and scrolls; beside the sidebars of a laptop screen the column is
+     too narrow for that and the default floor holds. */
+  @media (max-width: 50rem) {
+    .sx-diagram svg[data-diagram="timeline"] {
+      min-inline-size: calc(var(--dg-w, 800) * 0.9px);
+    }
   }
   .sx-diagram svg :is(path, rect, polygon, circle, ellipse, line) {
     vector-effect: non-scaling-stroke;
@@ -300,11 +324,17 @@
   }
   .sx-diagram svg .cluster rect {
     fill: color-mix(in oklab, var(--sx-surface-2) 55%, transparent);
-    stroke: var(--sx-hairline);
+    stroke: var(--dg-line);
     stroke-width: 1px;
   }
-  .sx-diagram svg .cluster text {
+  /* A group's title is drawn after the connections (render-diagrams.mjs), and a halo in the colour of
+     the box keeps a connection that passes under it from showing through the letters. */
+  .sx-diagram svg .cluster-label text {
     fill: var(--sx-muted);
+    paint-order: stroke;
+    stroke: color-mix(in oklab, var(--sx-surface-2) 55%, var(--sx-surface));
+    stroke-width: 5px;
+    stroke-linejoin: round;
   }
   .sx-diagram svg .flowchart-link {
     fill: none;
@@ -343,11 +373,11 @@
   }
   .sx-diagram svg .task {
     fill: var(--dg-bar);
-    stroke: color-mix(in oklab, var(--sx-structure) 60%, var(--sx-surface));
+    stroke: var(--dg-task);
     stroke-width: 1px;
   }
   .sx-diagram svg .milestone {
-    fill: color-mix(in oklab, var(--sx-structure) 55%, var(--sx-surface));
+    fill: var(--dg-task);
   }
   .sx-diagram svg :is(.active0, .active1, .active2, .active3) {
     fill: color-mix(in oklab, var(--sx-agent) 22%, var(--sx-surface));
@@ -355,10 +385,38 @@
   }
   .sx-diagram svg :is(.done0, .done1, .done2, .done3) {
     fill: var(--sx-surface-2);
-    stroke: var(--sx-hairline);
+    stroke: var(--dg-task);
   }
   .sx-diagram svg :is(.crit0, .crit1, .crit2, .crit3) {
     fill: color-mix(in oklab, var(--sx-spike) 18%, var(--sx-surface));
     stroke: var(--sx-spike);
+  }
+  /* Windows High Contrast and other forced-colour modes force the colours of HTML but not the fill and
+     stroke of SVG, so a drawing keeps its token colours on the system canvas: text that sits straight on
+     the canvas (a timeline's labels, a group's title) can vanish when the two disagree. Here every
+     mark takes the system colours. */
+  @media (forced-colors: active) {
+    .sx-diagram svg text {
+      fill: CanvasText !important;
+      stroke: none !important;
+    }
+    .sx-diagram svg :is(.node, .cluster, .task, .milestone) :is(rect, polygon, circle, ellipse, path),
+    .sx-diagram svg :is(rect, polygon).task {
+      fill: Canvas !important;
+      stroke: CanvasText !important;
+    }
+    .sx-diagram svg .edgeLabel rect {
+      fill: Canvas !important;
+      stroke: none !important;
+    }
+    .sx-diagram svg :is(.flowchart-link, .grid .tick line) {
+      stroke: CanvasText !important;
+    }
+    .sx-diagram svg marker :is(path, circle, polygon) {
+      fill: CanvasText !important;
+    }
+    .sx-diagram svg :is(.section0, .section1, .section2, .section3) {
+      fill: transparent !important;
+    }
   }
 }

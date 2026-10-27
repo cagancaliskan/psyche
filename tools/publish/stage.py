@@ -21,8 +21,10 @@ Output (both directories are gitignored, and CI fails if a staged copy is ever t
 
 Each staged page starts with `<!-- ledger:ignore-file -->`, so a local ledger_check does not
 report the copy a second time (the governed source is still checked), and a GENERATED line
-naming its source and commit. The output directories are emptied first: a page removed from
-the manifest disappears from the site at the next stage.
+naming its source and commit. Its front matter takes the title and the description from
+docs/publish.json; the description is required, so a docs page never falls back to the site's
+general one in search results and link previews. The output directories are emptied first: a page
+removed from the manifest disappears from the site at the next stage.
 
 Each ```mermaid fence of a page is replaced by the drawing of it that the commit holds under
 website/src/diagrams/ (diagrams.py; drawn ahead of time by website/scripts/render-diagrams.mjs),
@@ -141,12 +143,19 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
         title, body = split_title(text, src)
         title = page.get("title") or title
         titles[page["slug"]] = title
+        description = page.get("description")
+        if not description:
+            raise core.PublishError(
+                f"{src}: its entry in docs/publish.json has no description; the page would show the "
+                f"site's general one in search results and link previews (add one sentence of "
+                f"{core.DESCRIPTION_MIN} to {core.DESCRIPTION_MAX} characters)")
         body = core.rewrite_links(body, src, mapping, sha, repo, root=root, tracked=tracked)
         body, keys = diagrams.inline_fences(body, src, renderer, drawing, {})
         used_keys.update(keys)
         front = (
             "---\n"
             f"title: {yaml_str(title)}\n"
+            f"description: {yaml_str(description)}\n"
             f"editUrl: {yaml_str(f'https://github.com/{repo}/blob/main/{src}')}\n"
             "---\n"
             "<!-- ledger:ignore-file -->\n"

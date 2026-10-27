@@ -20,7 +20,10 @@
 // widths are the ones the reader sees. Everything that paints is then taken out: Mermaid's
 // style sheet, its inline colours, and any literal colour. What stays is the geometry, the
 // classes Mermaid gave the shapes, dash patterns (a class definition may dash a node) and a
-// title and description written from the diagram itself. The colours come from the page:
+// title and description written from the diagram itself (a gantt item the plan leaves undated,
+// marked * by render_plan.py, is described as undated, never with the date it is drawn at; the
+// name is the title and the description is a separate relation, so a reader of the page's
+// accessibility tree hears each once). The colours come from the page:
 // src/styles/docs.css paints `.sx-diagram` from the site's tokens, so one file reads in both
 // themes. The gantt's "today" marker is dropped: a drawing made once cannot know the date.
 //
@@ -179,16 +182,26 @@ async function drawInPage({ key, source: given, font, ganttWidth }) {
   } else if (type === 'gantt') {
     kind = 'timeline';
     const tasks = diagram.db.getTasks();
-    const first = tasks.reduce((a, t) => (a === null || t.startTime < a ? t.startTime : a), null);
-    const last = tasks.reduce((a, t) => (a === null || t.endTime > a ? t.endTime : a), null);
-    title = `Timeline of ${tasks.length} items${first ? `, ${day(first)} to ${day(last)}` : ''}`;
+    // render_plan.py writes " *" after the name of a phase or gate whose date the plan does not fix
+    // and draws it up to a horizon it derives. That position is not a date, so the text alternative
+    // gives none for it, and the range in the title is that of the dated items only.
+    const undated = (t) => / \*$/.test(plain(t.task));
+    const dated = tasks.filter((t) => !undated(t));
+    const first = dated.reduce((a, t) => (a === null || t.startTime < a ? t.startTime : a), null);
+    const last = dated.reduce((a, t) => (a === null || t.endTime > a ? t.endTime : a), null);
+    const range = first ? `${day(first)} to ${day(last)}` : '';
+    const open = dated.length < tasks.length;
+    title = `Timeline of ${tasks.length} items${range ? (open ? `; the dated ones run ${range}` : `, ${range}`) : ''}`;
     let section = null;
     for (const t of tasks) {
       const lead = t.section !== section ? `${plain(t.section)}: ` : '';
       section = t.section;
-      const name = plain(t.task);
-      sentences.push(t.milestone ? `${lead}${name}, ${day(t.startTime)}.` : `${lead}${name}, ${day(t.startTime)} to ${day(t.endTime)}${t.active ? ', in progress' : ''}.`);
+      const name = plain(t.task).replace(/ \*$/, '');
+      if (undated(t)) sentences.push(`${lead}${name}, ${t.milestone ? 'date' : 'dates'} not fixed.`);
+      else if (t.milestone) sentences.push(`${lead}${name}, ${day(t.startTime)}.`);
+      else sentences.push(`${lead}${name}, ${day(t.startTime)} to ${day(t.endTime)}${t.active ? ', in progress' : ''}.`);
     }
+    if (open) sentences.push('Items marked * on the chart have no fixed date; their place on it is not a date.');
   } else {
     throw new Error(`no description for diagram type ${type}`);
   }
@@ -249,7 +262,7 @@ async function drawInPage({ key, source: given, font, ganttWidth }) {
 
   // -- text placement that Mermaid's style sheet gave by class --
   const anchor = (el, value) => el.setAttribute('text-anchor', value);
-  root.querySelectorAll('.node text, .cluster text, .edgeLabel text').forEach((el) => anchor(el, 'middle'));
+  root.querySelectorAll('.node text, .cluster text, .cluster-label text, .edgeLabel text').forEach((el) => anchor(el, 'middle'));
   root.querySelectorAll('text.taskText, text.titleText').forEach((el) => anchor(el, 'middle'));
   root.querySelectorAll('text.taskTextOutsideRight, text.sectionTitle').forEach((el) => anchor(el, 'start'));
   root.querySelectorAll('text.taskTextOutsideLeft').forEach((el) => anchor(el, 'end'));
@@ -260,6 +273,17 @@ async function drawInPage({ key, source: given, font, ganttWidth }) {
     if (/edge-pattern-dotted/.test(c)) el.setAttribute('stroke-dasharray', '1.5 3');
     if (/edge-thickness-thick/.test(c)) el.setAttribute('stroke-width', '2');
   });
+  // A group's title is painted last, so a connection that runs under it does not strike through it
+  // (edges are drawn after the group boxes, and the title is part of its box). The box and the title
+  // have no transform between them and the root group, so the title keeps its place.
+  for (const label of [...root.querySelectorAll('g.cluster-label')]) {
+    const target = label.closest('g.root');
+    let plainPath = Boolean(target);
+    for (let n = label.parentElement; plainPath && n && n !== target; n = n.parentElement) {
+      if (n.hasAttribute('transform')) plainPath = false;
+    }
+    if (plainPath) target.append(label);
+  }
   root.querySelectorAll('.grid').forEach((el) => el.setAttribute('fill', 'none'));
   root.querySelectorAll('.grid .domain').forEach((el) => el.remove());
 
@@ -331,7 +355,10 @@ async function drawInPage({ key, source: given, font, ganttWidth }) {
   const set = (n, v) => root.setAttribute(n, v);
   set('xmlns', NS);
   set('role', 'img');
-  set('aria-labelledby', `${id}-t ${id}-d`);
+  // The name is the title alone; the description is a separate relation, so a screen reader reads
+  // the step list once, not once as part of the name and again as the description.
+  set('aria-labelledby', `${id}-t`);
+  set('aria-describedby', `${id}-d`);
   set('data-key', key);
   set('data-diagram', kind);
   set('font-size', kind === 'flowchart' ? '12' : '10');

@@ -1,0 +1,17 @@
+{
+  "name": "Psyche",
+  "short_name": "Psyche",
+  "description": "An open research project that builds brain-inspired components in stages, with artificial general intelligence as its long-term aim.",
+  "lang": "en",
+  "start_url": "/psyche/",
+  "scope": "/psyche/",
+  "display": "browser",
+  "background_color": "#05070d",
+  "theme_color": "#05070d",
+  "icons": [
+    { "src": "/psyche/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/psyche/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/psyche/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "/psyche/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

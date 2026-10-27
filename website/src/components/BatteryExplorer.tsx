@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState, type CSSProperties, type FocusEvent, type MouseEvent, type PointerEvent } from 'react';
-import { Pause, Play } from 'lucide-react';
 import '@/styles/battery.css';
 import { TestPicture, chainX, viewSize } from '@/components/battery/Pictures.tsx';
 import { TESTS, splitSummary, type Test } from '@/lib/battery.ts';
@@ -101,6 +100,40 @@ export default function BatteryExplorer() {
         ))}
       </div>
     </div>
+  );
+}
+
+/**
+ * The toggle's two glyphs, drawn on a 24-unit grid as a 2-unit round stroke (the stroke width is
+ * set to 1.5 where the button is styled). Decorative: the button's own text names it.
+ */
+const GLYPH = {
+  width: 24,
+  height: 24,
+  viewBox: '0 0 24 24',
+  fill: 'none',
+  stroke: 'currentColor',
+  strokeWidth: 2,
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
+  'aria-hidden': true,
+  focusable: 'false',
+} as const;
+
+function PauseGlyph() {
+  return (
+    <svg {...GLYPH}>
+      <rect x="14" y="3" width="5" height="18" rx="1" />
+      <rect x="5" y="3" width="5" height="18" rx="1" />
+    </svg>
+  );
+}
+
+function PlayGlyph() {
+  return (
+    <svg {...GLYPH}>
+      <path d="M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z" />
+    </svg>
   );
 }
 
@@ -248,7 +281,7 @@ function Sheet({ test, inView }: { test: Test; inView: boolean }) {
               onPointerEnter={() => setOnToggle(true)}
               onPointerLeave={() => setOnToggle(false)}
             >
-              {stopped ? <Play aria-hidden="true" /> : <Pause aria-hidden="true" />}
+              {stopped ? <PlayGlyph /> : <PauseGlyph />}
               <span>{stopped ? 'Play' : 'Pause'}</span>
               <span className="sr-only"> {test.id} steps</span>
             </button>

@@ -6,55 +6,53 @@
  * reading, Martian Mono for labels and figures. Dark is :root; light is :root[data-theme='light'].
  */
 
-/* Cascade layers: Starlight's own styles sit in `starlight`; the site's components and Tailwind
-   utilities come after it. The token blocks below stay unlayered, so they win over every layer. */
+/* Cascade layers: Starlight's own styles sit in `starlight`; the site's components come after it,
+   so a rule here restyles Starlight by layer order alone. The token blocks below stay unlayered,
+   so they win over every layer. Each of the site's stylesheets repeats the statement, so the order
+   holds whichever one a page loads first. */
 @layer base, starlight, theme, components, utilities;
-@import '@astrojs/starlight-tailwind';
-@import 'tailwindcss/theme.css' layer(theme);
-@import 'tailwindcss/utilities.css' layer(utilities);
-@source not "../content";
 
-@theme {
-  --color-*: initial;
-  --font-sans: 'Instrument Sans Variable', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-display: 'Unbounded Variable', 'Instrument Sans Variable', system-ui, sans-serif;
-  --font-mono: 'Martian Mono Variable', ui-monospace, 'SFMono-Regular', Menlo, monospace;
-  --font-serif: var(--font-display);
+@layer base {
+  /* A border with only a width set still draws: every element starts as `0 solid`. */
+  *,
+  ::after,
+  ::before {
+    border: 0 solid;
+  }
+  /* The reading and code faces apply outside Starlight's own content too. */
+  html,
+  :host {
+    font-family: var(--font-sans);
+  }
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+  }
 }
 
-/* Utilities resolve to the theme variables, so light and dark switch without `dark:` variants. */
-@theme inline {
-  --color-sx-agent: var(--sx-agent);
-  --color-sx-spike: var(--sx-spike);
-  --color-sx-surface-2: var(--sx-surface-2);
-  --color-sx-structure: var(--sx-structure);
-  --color-sx-surface: var(--sx-surface);
-  --color-sx-hairline: var(--sx-hairline);
-  --color-sx-muted: var(--sx-muted);
-  --color-ink: var(--sl-color-white);
-  --color-paper: var(--sl-color-black);
-  --color-gray-1: var(--sl-color-gray-1);
-  --color-gray-2: var(--sl-color-gray-2);
-  --color-gray-3: var(--sl-color-gray-3);
-  --color-gray-4: var(--sl-color-gray-4);
-  --color-gray-5: var(--sl-color-gray-5);
-  --color-gray-6: var(--sl-color-gray-6);
-  --color-accent: var(--sl-color-accent);
-  --color-accent-low: var(--sl-color-accent-low);
-  --color-accent-high: var(--sl-color-accent-high);
-  --color-background: var(--sl-color-black);
-  --color-foreground: var(--sl-color-white);
-  --color-card: var(--sx-surface);
-  --color-card-foreground: var(--sl-color-white);
-  --color-muted: var(--sx-surface);
-  --color-muted-foreground: var(--sx-muted);
-  --color-border: var(--sx-hairline);
-  --color-ring: var(--sx-agent);
-  --color-primary: var(--sx-agent);
-  --color-primary-foreground: var(--sl-color-black);
+@layer utilities {
+  /* Hidden to the eye, read aloud. It sits above `components` so that no component rule (a
+     paragraph's margin, say) can pull a hidden label back into the flow. */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    clip-path: inset(50%);
+    border-width: 0;
+  }
 }
 
 :root {
+  /* Each web font is followed by its stand-in (styles/fonts.css), then the system's. */
+  --font-sans: 'Instrument Sans Variable', 'Instrument Sans Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-display: 'Unbounded Variable', 'Unbounded Fallback', 'Instrument Sans Variable', 'Instrument Sans Fallback', system-ui, sans-serif;
+  --font-mono: 'Martian Mono Variable', 'Martian Mono Fallback', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --sl-font: var(--font-sans);
   --sl-font-mono: var(--font-mono);
   --sx-font-display: var(--font-display);

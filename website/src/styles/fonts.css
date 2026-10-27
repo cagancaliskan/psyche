@@ -1,0 +1,98 @@
+/*
+ * Stand-in faces for the three web fonts, used while a font is still on its way (font-display: swap
+ * paints the text at once in the next family of the stack, then swaps).
+ *
+ * Each stand-in is a local system font, scaled so that the site's own text runs to the same width
+ * and sits on the same lines as it will in the web font. The swap then changes the letter shapes
+ * and nothing else: no line re-wraps, nothing below moves. The numbers were measured in Chrome on
+ * the built pages: the width ratio is the sum of the real text's widths in the web font over its
+ * widths in the stand-in, taken over every text node the face sets (its real size, weight and case),
+ * and the three vertical overrides are the web font's own ascent, descent and line gap divided by
+ * that ratio, because size-adjust scales them too.
+ *
+ *   face              stand-in      width ratio        ascent  descent  line gap
+ *   Instrument Sans   Arial         1.024 (400-599)    0.970   0.250    0
+ *                                   0.984 (600-700)
+ *   Unbounded         Arial         1.201 (200-299)    0.995   0.245    0
+ *                                   1.346 (300-900)
+ *   Martian Mono      Courier New   1.165              1.000   0.200    0
+ *
+ * Each stand-in claims exactly the characters its web font's Latin file draws (read from the
+ * font's own character map), no more. A character the web font does not have, such as a prime or a
+ * box-drawing line, is drawn by the same system font as before and not by a scaled stand-in.
+ *
+ * Arial, Courier New and their metric-identical open twins (Liberation, Arimo, Cousine) cover
+ * Windows, macOS, ChromeOS and most Linux desktops. Where none is installed the face is skipped
+ * and the stack falls through to system-ui, as before. Measure again, and update the table and the
+ * character lists, if a web font is replaced or its weights change.
+ */
+
+@font-face {
+  font-family: 'Instrument Sans Fallback';
+  font-weight: 400 599;
+  src: local('Arial'), local('ArialMT'), local('Liberation Sans'), local('Arimo');
+  size-adjust: 102.4%;
+  ascent-override: 94.7%;
+  descent-override: 24.4%;
+  line-gap-override: 0%;
+  unicode-range:
+    U+0020-007E, U+00A0-00A3, U+00A5, U+00A7-00AB, U+00AE-00B0, U+00B4, U+00B6-00B8, U+00BA-00BB,
+    U+00BF-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+2013-2014,
+    U+2018-201A, U+201C-201E, U+2022, U+2026, U+2039-203A, U+20AC, U+2122, U+2191, U+2193, U+2212;
+}
+
+@font-face {
+  font-family: 'Instrument Sans Fallback';
+  font-weight: 600 700;
+  src: local('Arial Bold'), local('Arial-BoldMT'), local('Liberation Sans Bold'), local('Arimo Bold');
+  size-adjust: 98.4%;
+  ascent-override: 98.6%;
+  descent-override: 25.4%;
+  line-gap-override: 0%;
+  unicode-range:
+    U+0020-007E, U+00A0-00A3, U+00A5, U+00A7-00AB, U+00AE-00B0, U+00B4, U+00B6-00B8, U+00BA-00BB,
+    U+00BF-00FF, U+0131, U+0152-0153, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+2013-2014,
+    U+2018-201A, U+201C-201E, U+2022, U+2026, U+2039-203A, U+20AC, U+2122, U+2191, U+2193, U+2212;
+}
+
+@font-face {
+  font-family: 'Unbounded Fallback';
+  font-weight: 200 299;
+  src: local('Arial'), local('ArialMT'), local('Liberation Sans'), local('Arimo');
+  size-adjust: 120.1%;
+  ascent-override: 82.8%;
+  descent-override: 20.4%;
+  line-gap-override: 0%;
+  unicode-range:
+    U+0020-007E, U+00A0-00B4, U+00B6-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2013-2014, U+2018-201A, U+201C-201E, U+2022, U+2026, U+2039-203A,
+    U+2044, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215;
+}
+
+@font-face {
+  font-family: 'Unbounded Fallback';
+  font-weight: 300 900;
+  src: local('Arial'), local('ArialMT'), local('Liberation Sans'), local('Arimo');
+  size-adjust: 134.6%;
+  ascent-override: 73.9%;
+  descent-override: 18.2%;
+  line-gap-override: 0%;
+  unicode-range:
+    U+0020-007E, U+00A0-00B4, U+00B6-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC,
+    U+0304, U+0308, U+0329, U+2013-2014, U+2018-201A, U+201C-201E, U+2022, U+2026, U+2039-203A,
+    U+2044, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215;
+}
+
+@font-face {
+  font-family: 'Martian Mono Fallback';
+  font-weight: 100 900;
+  src: local('Courier New'), local('CourierNewPSMT'), local('Liberation Mono'), local('Cousine');
+  size-adjust: 116.5%;
+  ascent-override: 85.8%;
+  descent-override: 17.2%;
+  line-gap-override: 0%;
+  unicode-range:
+    U+0020-007E, U+00A0-00FF, U+0131, U+0152-0153, U+02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
+    U+2002, U+2013-2014, U+2018-201A, U+201C-201E, U+2022, U+2026, U+2039-203A, U+2044, U+20AC,
+    U+2122, U+2191, U+2193, U+2212;
+}

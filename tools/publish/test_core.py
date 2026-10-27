@@ -22,7 +22,10 @@ Covered:
             filter program runs; published_text reads the commit; the real manifest's
             pages are not self-refusing.
   manifest  key allowlist, duplicates, reserved names, non-canonical never_publish; a JSON
-            key given twice (a second never_publish) and a lone surrogate stop the guard.
+            key given twice (a second never_publish) and a lone surrogate stop the guard; a
+            page's description (one plain sentence of 120 to 160 characters, no two alike;
+            every page of the real manifest has one) and the stager writing it into the front
+            matter and refusing a page that has none.
   json      a key given twice at every level of the plan is refused, even unvalidated;
             parse_json, the one parser, refuses it in text and in a plan as a commit
             holds it, and refuses a lone surrogate, non-JSON and bytes.
@@ -73,6 +76,12 @@ Covered:
             shapes where GitHub's parser and the site's disagree, definitions with an
             escaped ']' or a label over several lines, CRLF and CR-only line endings, and
             'https:' without '//'.
+  og        the social image names the stage the ledger says is active: the stage line for
+            every program state (stage 1, stage 2, both, none), a program line with no stage
+            number refused, the check on a repository (a ledger that moved on, a sidecar edited
+            to match without a new image, an image replaced by hand, a copy that differs, a
+            missing or malformed sidecar, a wrong size, bytes that are no PNG), and the real
+            card against the real ledger.
   diagrams  Mermaid fences found the way Markdown reads them (info string, tildes, CRLF;
             a fence in a list item, indented, unclosed or inside a longer fence is refused
             or ignored), the key (source, renderer, nothing else), the SVG the site may
@@ -90,6 +99,7 @@ from __future__ import annotations
 import ast
 import contextlib
 import copy
+import hashlib
 import io
 import json
 import os
@@ -110,6 +120,7 @@ import core                    # noqa: E402
 import render_plan as RP       # noqa: E402
 import ci_c2                   # noqa: E402
 import diagrams as DG          # noqa: E402
+import og as OG                # noqa: E402
 import stage                   # noqa: E402
 
 REPO = core.REPO
@@ -195,11 +206,13 @@ GUARD_LEDGER = {
     "claim_quarantine_paths": ["notes/claims/"],
     "count_quarantine_paths": ["notes/counts/", "frozen.md"],
 }
+FIXTURE_DESCRIPTION = ("A page of a fixture repository, written to give the stager the one sentence of "
+                       "description it requires, in plain words and within the bounds.")
 GUARD_MANIFEST = {
     "site_base": "/psyche/",
     "repo": "owner/name",
     "sections": [{"title": "Fixture", "pages": [
-        {"src": "docs/ok.md", "slug": "ok", "wiki": "Ok"}]}],
+        {"src": "docs/ok.md", "slug": "ok", "wiki": "Ok", "description": FIXTURE_DESCRIPTION}]}],
     "never_publish": ["docs/design/", "DECISIONS.md"],
 }
 
@@ -244,6 +257,10 @@ def problems_of(p: dict) -> list:
 
 def has(problems: list, needle: str) -> bool:
     return any(needle in x for x in problems)
+
+
+def starts(problems: list, prefix: str) -> bool:
+    return any(x.startswith(prefix) for x in problems)
 
 
 _N = [0]
@@ -599,6 +616,54 @@ def test_guard(tmp: Path) -> None:
               f"a non-canonical never_publish entry {entry!r} is refused (it would match nothing)")
     m2 = dict(GUARD_MANIFEST, never_publish=["docs/design/", "docs/paper/", "x.md"])
     check(core.manifest_problems(m2) == [], "canonical files and '/'-ended directories pass")
+
+    section("manifest: a page's description")
+    check(len(FIXTURE_DESCRIPTION) >= core.DESCRIPTION_MIN and len(FIXTURE_DESCRIPTION) <= core.DESCRIPTION_MAX,
+          "(the fixture description is inside the bounds)")
+    ok_text = FIXTURE_DESCRIPTION
+    check(core.description_problem(ok_text) is None, "a plain sentence inside the bounds is accepted")
+    check(core.DESCRIPTION_MIN == 120 and core.DESCRIPTION_MAX == 160, "the bounds are 120 and 160 characters")
+    for label, text, needle in (
+            ("a non-string", 7, "string"),
+            ("one character short", ok_text[:core.DESCRIPTION_MIN - 2] + ".", "characters"),
+            ("one character over", "w" * core.DESCRIPTION_MAX + ".", "characters"),
+            ("one character under", "w" * (core.DESCRIPTION_MIN - 2) + ".", "characters"),
+            ("no full stop", ok_text[:-1], "full stop"),
+            ("a trailing space", ok_text + " ", "one line"),
+            ("a line break", ok_text.replace(", in plain", ",\nin plain"), "one line"),
+            ("a tab", ok_text.replace(", in plain", ",\tin plain"), "one line"),
+            ("two sentences", ok_text.replace(", in plain words", ". In plain words"), "one sentence"),
+            ("an angle bracket", ok_text.replace("a fixture", "a <b>fixture"), "plain text"),
+            ("an ampersand", ok_text.replace("a fixture", "a fixture &"), "plain text"),
+            ("emphasis", ok_text.replace("a fixture", "a *fixture*"), "plain text"),
+            ("a link", ok_text.replace("a fixture", "a [fixture](x)"), "plain text"),
+            ("a code span", ok_text.replace("a fixture", "a `fixture`"), "plain text")):
+        got = core.description_problem(text)
+        check(got is not None and needle in got, f"a description with {label} is refused ({got})")
+    check(core.description_problem("w" * (core.DESCRIPTION_MIN - 1) + ".") is None
+          and core.description_problem("w" * (core.DESCRIPTION_MAX - 1) + ".") is None,
+          "a description of exactly 120 and of exactly 160 characters is accepted")
+    for label, desc in (("an empty", ""), ("a short", "Too short."), ("a non-string", ["x"])):
+        m_bad = copy.deepcopy(GUARD_MANIFEST)
+        m_bad["sections"][0]["pages"][0]["description"] = desc
+        check(has(core.manifest_problems(m_bad), ".description"),
+              f"manifest_problems refuses {label} description")
+    m_two = copy.deepcopy(GUARD_MANIFEST)
+    m_two["sections"][0]["pages"].append({"src": "docs/two.md", "slug": "two", "wiki": "Two",
+                                          "description": FIXTURE_DESCRIPTION.upper()})
+    check(has(core.manifest_problems(m_two), "description of another page"),
+          "two pages with the same description (in any case) are refused")
+    m_two["sections"][0]["pages"][1]["description"] = FIXTURE_DESCRIPTION.replace("fixture", "second fixture")
+    check(core.manifest_problems(m_two) == [], "two pages with different descriptions are accepted")
+    m_none = copy.deepcopy(GUARD_MANIFEST)
+    del m_none["sections"][0]["pages"][0]["description"]
+    check(core.manifest_problems(m_none) == [],
+          "a manifest without descriptions is valid (stage_site, not the manifest, requires one)")
+    real = core.manifest_pages(core.load_manifest(REPO))
+    check(all(core.description_problem(p.get("description")) is None for p in real),
+          "every page of the real manifest has a valid description")
+    check(len({p["description"].casefold() for p in real}) == len(real),
+          "no two pages of the real manifest share a description")
 
     section("manifest: a key given twice, or a lone surrogate, stops the run before any guard")
     good = (root / "docs/publish.json").read_bytes()
@@ -2649,6 +2714,189 @@ def test_ledger_public(tmp: Path) -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# og: the social image names the stage the ledger says is active
+# ─────────────────────────────────────────────────────────────────────────────
+
+def png_bytes(label=None, *, width: int = 1200, height: int = 630, extra: bytes = b"") -> bytes:
+    """The smallest byte string the check reads as a PNG of that size, with the stage line the
+    generator writes into it as a tEXt chunk (when `label` is given)."""
+    def chunk(kind: bytes, body: bytes) -> bytes:
+        return len(body).to_bytes(4, "big") + kind + body + b"\x00\x00\x00\x00"
+    ihdr = width.to_bytes(4, "big") + height.to_bytes(4, "big") + b"\x08\x02\x00\x00\x00"
+    out = b"\x89PNG\r\n\x1a\n" + chunk(b"IHDR", ihdr)
+    if label is not None:
+        out += chunk(b"tEXt", OG.TEXT_KEYWORD.encode("latin-1") + b"\x00" + label.encode("latin-1"))
+    return out + chunk(b"IDAT", extra) + chunk(b"IEND", b"")
+
+
+def og_fixture(tmp: Path, *, states: dict = None):
+    """A repository with the real ledger (its program states overridden by `states`), and a card
+    and sidecar made for exactly those states. Returns (root, sidecar dict, png bytes)."""
+    root = new_root(tmp)
+    led = json.loads((REPO / "tools" / "ledger.json").read_text(encoding="utf-8"))
+    for line, state in (states or {}).items():
+        led["program"][line]["state"] = state
+    write(root, "tools/ledger.json", json.dumps(led))
+    card = OG.card(root)
+    png = png_bytes(card["stage"], extra=b"fixture")
+    write(root, OG.CARD_REL, png, binary=True)
+    write(root, OG.PUBLIC_REL, png, binary=True)
+    side = {"stage": card["stage"], "tagline": card["tagline"], "alt": card["alt"],
+            "sha256": hashlib.sha256(png).hexdigest(), "width": 1200, "height": 630,
+            "generator": OG.GENERATOR_REL}
+    write(root, OG.SIDECAR_REL, json.dumps(side))
+    return root, side, png
+
+
+def test_og(tmp: Path) -> None:
+    section("og: the stage line for a program state")
+    label = OG.stage_label
+    check(label({"substrate": "paused", "cognitive_map": "active"}) == "Stage 2 " + MIDDOT + " Spiking cognitive maps",
+          "stage 2 active, stage 1 paused: the card names stage 2")
+    check(label({"substrate": "active", "cognitive_map": "paused"}) == "Stage 1 " + MIDDOT + " The substrate",
+          "stage 1 active, stage 2 paused: the card names stage 1")
+    check(label({"substrate": "active", "cognitive_map": "active"})
+          == "Stages 1 and 2 " + MIDDOT + " The substrate and spiking cognitive maps",
+          "both active: both stages are named, in stage order")
+    check(label({"cognitive_map": "active", "substrate": "active"}) == label({"substrate": "active", "cognitive_map": "active"}),
+          "the order of the ledger's keys does not change the line")
+    check(label({"substrate": "paused", "cognitive_map": "closed"}) == "No stage active"
+          and label({"substrate": "closed", "cognitive_map": "paused"}) == "No stage active",
+          "paused and closed are not active: no stage is named")
+    check(all(isinstance(OG.STAGES[k][0], int) for k in OG.STAGES)
+          and sorted(OG.STAGES) == sorted(core.PUBLIC_PROGRAM_LINES),
+          "every program line the public projection knows has a stage number")
+
+    section("og: the card text, from the ledger")
+    if not GIT:
+        note("(no git needed for these; running on plain directories)")
+    root, side, png = og_fixture(tmp)
+    states = OG.program_states(root)
+    check(states == {"substrate": "paused", "cognitive_map": "active"},
+          f"program_states reads the real ledger's two lines ({states})")
+    card = OG.card(root)
+    check(card["stage"] == "Stage 2 " + MIDDOT + " Spiking cognitive maps" and card["tagline"] == OG.TAGLINE
+          and card["url"] == OG.URL_TEXT and card["stage"] in card["alt"] and card["tagline"] in card["alt"]
+          and "long-term aim" in card["tagline"] and "is AGI" not in card["tagline"],
+          "the card text is the stage line, the tagline (the aim named as an aim) and the address; the alt text holds both")
+    rc, out, err = capture(OG.main, ["--card", "--root", str(root)])
+    check(rc == 0 and json.loads(out) == card, "--card prints the same text as JSON")
+    led = json.loads((root / "tools/ledger.json").read_text(encoding="utf-8"))
+    led["program"]["future"] = {"state": "active", "since": "2027-01-01", "decision": "D-0"}
+    write(root, "tools/ledger.json", json.dumps(led))
+    check(raises(lambda: OG.card(root)) and has(OG.check(root), "STAGES"),
+          "a program line with no stage number is refused, naming the table to extend")
+    led["program"].pop("future")
+    led["program"].pop("cognitive_map")
+    write(root, "tools/ledger.json", json.dumps(led))
+    check(raises(lambda: OG.card(root)), "a program block missing a line is refused")
+    write(root, "tools/ledger.json", "{not json")
+    check(raises(lambda: OG.card(root)) and OG.check(root) != [], "an unreadable ledger fails the check")
+
+    section("og: the check")
+    root, side, png = og_fixture(tmp)
+    check(OG.check(root) == [], "a card drawn for the ledger's program state passes")
+    rc, out, err = capture(OG.main, ["--check", "--root", str(root)])
+    check(rc == 0 and "Stage 2" in out and err == "", "the command line exits 0 and names the stage")
+    check(OG.png_text(png) == {OG.TEXT_KEYWORD: card["stage"]} and OG.png_size(png) == (1200, 630),
+          "(the fixture PNG carries its stage line and its size)")
+    real = OG.check(REPO)
+    check(real == [], f"the real card passes against the real ledger ({real[:2]})")
+    real_side = json.loads((REPO / OG.SIDECAR_REL).read_text(encoding="utf-8"))
+    check(real_side["stage"] == OG.card(REPO)["stage"] and real_side["generator"] == OG.GENERATOR_REL
+          and set(real_side) == set(OG.SIDECAR_KEYS),
+          "the real sidecar names the real active stage and is written by the generator")
+    check((REPO / OG.CARD_REL).read_bytes() == (REPO / OG.PUBLIC_REL).read_bytes(),
+          "the site's image is a byte copy of the brand's")
+
+    # the ledger moves on: the stage the card names is no longer the active one
+    for label_, states_ in (("stage 1 becomes the active line", {"substrate": "active", "cognitive_map": "paused"}),
+                            ("both lines are paused", {"substrate": "paused", "cognitive_map": "paused"}),
+                            ("the cognitive-map line is closed", {"substrate": "paused", "cognitive_map": "closed"})):
+        led = json.loads((root / "tools/ledger.json").read_text(encoding="utf-8"))
+        for line, state in states_.items():
+            led["program"][line]["state"] = state
+        write(root, "tools/ledger.json", json.dumps(led))
+        probs = OG.check(root)
+        want = OG.stage_label(states_)
+        check(has(probs, "Stage 2 " + MIDDOT + " Spiking cognitive maps") and has(probs, want) and has(probs, "npm run og"),
+              f"when {label_}, the check fails, names both stage lines and the command to run")
+        rc, out, err = capture(OG.main, ["--check", "--root", str(root)])
+        check(rc == 1 and "problem(s)" in err, f"(and exits 1 when {label_})")
+    led = json.loads((root / "tools/ledger.json").read_text(encoding="utf-8"))
+    led["program"]["substrate"]["since"] = "2030-01-01"
+    led["program"]["substrate"]["state"] = "paused"
+    led["program"]["cognitive_map"]["state"] = "active"
+    write(root, "tools/ledger.json", json.dumps(led))
+    check(OG.check(root) == [], "a change that leaves the active stage as it was (a date) needs no new card")
+
+    # a sidecar edited to match the ledger, with no new image: the image still says the old stage
+    root, side, png = og_fixture(tmp)
+    led = json.loads((root / "tools/ledger.json").read_text(encoding="utf-8"))
+    led["program"]["substrate"]["state"], led["program"]["cognitive_map"]["state"] = "active", "paused"
+    write(root, "tools/ledger.json", json.dumps(led))
+    new = OG.card(root)
+    write(root, OG.SIDECAR_REL, json.dumps(dict(side, stage=new["stage"], alt=new["alt"])))
+    probs = OG.check(root)
+    check(starts(probs, OG.CARD_REL + " carries the stage line") and starts(probs, OG.PUBLIC_REL + " carries the stage line")
+          and not has(probs, "sha256 differs"),
+          "a sidecar edited to the new stage, with the old image, fails: each image carries the old stage line (and its hash still matches)")
+
+    # an image replaced by hand
+    root, side, png = og_fixture(tmp)
+    other = png_bytes(side["stage"], extra=b"another picture")
+    write(root, OG.CARD_REL, other, binary=True)
+    probs = OG.check(root)
+    check(starts(probs, OG.CARD_REL + ": is not the image") and has(probs, "sha256 differs")
+          and has(probs, "never edited or replaced by hand") and not starts(probs, OG.PUBLIC_REL + ":"),
+          "the brand image changed on its own fails against the sidecar's hash; the untouched site copy does not")
+    write(root, OG.SIDECAR_REL, json.dumps(dict(side, sha256=hashlib.sha256(other).hexdigest())))
+    probs = OG.check(root)
+    check(starts(probs, OG.PUBLIC_REL + ": is not the image") and not starts(probs, OG.CARD_REL + ":"),
+          "with the sidecar's hash updated to the new image, the site's copy, which is no longer a copy, fails alone")
+    write(root, OG.PUBLIC_REL, other, binary=True)
+    check(OG.check(root) == [], "(and with the copy refreshed the card passes again)")
+
+    # missing and malformed pieces
+    root, side, png = og_fixture(tmp)
+    os.remove(root / OG.PUBLIC_REL)
+    check(starts(OG.check(root), OG.PUBLIC_REL + ": missing"), "a missing site image fails")
+    os.remove(root / OG.CARD_REL)
+    check(starts(OG.check(root), OG.CARD_REL + ": missing"), "a missing brand image fails")
+    root, side, png = og_fixture(tmp)
+    os.remove(root / OG.SIDECAR_REL)
+    check(starts(OG.check(root), OG.SIDECAR_REL + ": missing"), "a missing sidecar fails")
+    write(root, OG.SIDECAR_REL, "[1]")
+    check(has(OG.check(root), "not a JSON object"), "a sidecar that is not an object fails")
+    write(root, OG.SIDECAR_REL, "{")
+    check(has(OG.check(root), "not readable JSON"), "a sidecar that is not JSON fails")
+    write(root, OG.SIDECAR_REL, json.dumps(dict(side, extra=1)))
+    check(has(OG.check(root), "unknown"), "a sidecar with a key of its own fails")
+    write(root, OG.SIDECAR_REL, json.dumps({k: v for k, v in side.items() if k != "alt"}))
+    check(has(OG.check(root), "missing"), "a sidecar without its alt text fails")
+    write(root, OG.SIDECAR_REL, json.dumps(dict(side, tagline="Something else.")))
+    check(has(OG.check(root), "tagline"), "a tagline that is not the one og.py gives fails")
+    write(root, OG.SIDECAR_REL, json.dumps(dict(side, alt="Something else.")))
+    check(has(OG.check(root), "alt text"), "an alt text that is not the one og.py gives fails")
+    write(root, OG.SIDECAR_REL, json.dumps(side))
+    small = png_bytes(side["stage"], width=600, height=315, extra=b"fixture")
+    write(root, OG.CARD_REL, small, binary=True)
+    write(root, OG.PUBLIC_REL, small, binary=True)
+    write(root, OG.SIDECAR_REL, json.dumps(dict(side, sha256=hashlib.sha256(small).hexdigest())))
+    check(has(OG.check(root), "1200 x 630"), "an image of another size fails even when its hash matches")
+    write(root, OG.CARD_REL, b"not a png", binary=True)
+    write(root, OG.PUBLIC_REL, b"not a png", binary=True)
+    write(root, OG.SIDECAR_REL, json.dumps(dict(side, sha256=hashlib.sha256(b"not a png").hexdigest())))
+    probs = OG.check(root)
+    check(has(probs, "1200 x 630") and has(probs, "carries the stage line None"),
+          "bytes that are no PNG fail: no size, no stage line")
+    check(OG.png_text(b"") == {} and OG.png_size(b"") is None and OG.png_text(png[:30]) == {},
+          "png_text and png_size never raise on short or foreign bytes")
+    check(OG.png_text(png_bytes("A" + MIDDOT + "B")) == {OG.TEXT_KEYWORD: "A" + MIDDOT + "B"},
+          "a stage line with the middle dot reads back as written (Latin-1)")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # diagrams: Mermaid fences drawn ahead of time, inlined by the stager
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -2659,7 +2907,7 @@ FLOW2 = "flowchart TD\n  a[\"One\"] --> c[\"Three\"]"
 def svg_for(key: str, extra: str = "") -> str:
     """The smallest drawing the site may inline, as the render script writes it."""
     return ('<svg xmlns="http://www.w3.org/2000/svg" role="img" '
-            f'aria-labelledby="dg-{key}-t dg-{key}-d" data-key="{key}" font-size="12" '
+            f'aria-labelledby="dg-{key}-t" aria-describedby="dg-{key}-d" data-key="{key}" font-size="12" '
             'viewBox="-8 4 120.5 60" width="121" height="60">\n'
             f' <title id="dg-{key}-t">Flowchart of 2 steps</title>\n'
             f' <desc id="dg-{key}-d">Steps: One; Two.</desc>\n'
@@ -2745,10 +2993,16 @@ def test_diagrams(tmp: Path) -> None:
           "the figure carries its class, a focusable scroll box, no search indexing and its drawn width")
     check('<tspan x="0" dy="1.1em">One two</tspan>' in html_line[0],
           "the text of the drawing is not altered by joining its lines")
+    check(f'<div class="sx-diagram__scroll" role="group" aria-labelledby="dg-{key1}-t" tabindex="0"' in html_line[0],
+          "the focusable scroll box is a group named by the drawing's title, so it is not an unnamed stop")
     out2, used2 = DG.inline_fences(page + "\n```mermaid\n" + FLOW + "\n```\n", "docs/x.md", renderer, have.get, {})
     ids = re.findall(r'\bid="([^"]+)"', out2)
     check(used2 == [key1, key1] and len(ids) == len(set(ids)) and len(ids) >= 6,
           "a fence repeated on one page keeps every id on the page unique")
+    again = [ln for ln in out2.split("\n") if ln.startswith("<figure")][1]
+    check(f'role="group" aria-labelledby="dg-{key1}-2-t"' in again and f'id="dg-{key1}-2-t"' in again
+          and f'aria-describedby="dg-{key1}-2-d"' in again,
+          "the second copy of a drawing names its group and describes its image by its own ids")
     check(DG.inline_fences("no fence\n", "docs/x.md", renderer, have.get, {}) == ("no fence\n", []),
           "a page with no fence is returned as it was")
     try:
@@ -2873,8 +3127,26 @@ def test_stage_diagrams(tmp: Path) -> None:
           "the page holds the drawing in a figure between its own text")
     check(staged.startswith("---\n") and "ledger:ignore-file" in staged and "GENERATED by" in staged,
           "the staged page keeps its front matter, its pragma and its GENERATED line")
+    front = staged.split("---\n")[1]
+    check(f"description: {json.dumps(FIXTURE_DESCRIPTION)}\n" in front and front.startswith("title: "),
+          "the staged front matter carries the page's description from the manifest")
     rc, out, err = capture(stage.main, ["--target", "site", "--root", str(root)])
     check(rc == 0 and "1 diagram(s)" in out, "the command line says how many diagrams were staged")
+
+    # a page with no description is refused: the site never falls back to its general one
+    no_desc = copy.deepcopy(GUARD_MANIFEST)
+    del no_desc["sections"][0]["pages"][0]["description"]
+    write(root, "docs/publish.json", json.dumps(no_desc))
+    git_ok(root, "add", "--", "docs/publish.json")
+    git_ok(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-q",
+           "--no-verify", "-m", "fixture manifest without a description")
+    rc, out, err = capture(stage.main, ["--target", "site", "--root", str(root)])
+    check(rc == 1 and "docs/ok.md" in err and "no description" in err,
+          "a published page with no description stops staging, naming the page")
+    write(root, "docs/publish.json", json.dumps(GUARD_MANIFEST))
+    git_ok(root, "add", "--", "docs/publish.json")
+    git_ok(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-q",
+           "--no-verify", "-m", "fixture manifest with its description")
 
     # the commit is what is staged, never the disk
     write(root, DG.svg_rel(key), svg_for(key, "<rect x=\"3\" y=\"3\" width=\"3\" height=\"3\"/>"))
@@ -2983,6 +3255,7 @@ def main() -> int:
         test_ci_c2(tmp)
         test_links(tmp)
         test_ledger_public(tmp)
+        test_og(tmp)
         test_diagrams(tmp)
         test_diagrams_repo(tmp)
         test_stage_diagrams(tmp)
