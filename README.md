@@ -5,8 +5,8 @@
   </picture>
 </h1>
 
-> An open research project building toward artificial general intelligence (AGI) from original,
-> brain-inspired components. It grows in stages; each stage is built test-first and kept as a
+> An open research project that builds brain-inspired components in stages, with artificial
+> general intelligence (AGI) as its long-term aim. Each stage is built test-first and kept as a
 > citable artifact.
 
 Psyche is designed and built by its author as one long-running project. AGI is its long-term
@@ -40,13 +40,13 @@ flowchart LR
 Each stage builds on the one before it:
 
 1. **Stage 1, the substrate (foundation; development paused since 2026-10-23, D-031).** A
-   dependency-free Python memory-and-activation substrate whose lower layers are proven correct
+   dependency-free Python memory-and-activation substrate whose lower layers are verified correct
    and deterministic. It produced the project's method, and its attempts at a first cognitive
    claim taught the lesson stage 2 is built around: a claim needs an external yardstick.
    [Read more below](#stage-1-the-substrate).
 2. **Stage 2, spiking cognitive maps (active since 2026-10-23).** A spiking network that learns
-   only through local synaptic plasticity, evaluated on classic cognitive-map tests with published
-   protocols, against baselines reproduced from their published behaviour.
+   only through local synaptic plasticity, evaluated on classic cognitive-map paradigms, against
+   baselines reproduced from their published behaviour.
    [Read more below](#stage-2-spiking-cognitive-maps).
 3. **Later stages toward AGI.** They build on the same discipline and on the project's own
    designs. They are not specified publicly yet.
@@ -68,16 +68,18 @@ of the environment explains such behaviour better than memorised stimulus-respon
 do. This line of research asks three questions:
 
 - Does a brain-inspired network of spiking neurons that learns only through local synaptic
-  plasticity show, on classic cognitive-map tests, the behaviours that an internal map explains
-  and memorised responses do not?
+  plasticity show, on classic cognitive-map tests, the behaviours that an internal map would
+  explain and memorised responses would not?
 - Do other families of agents, given the same experience, show them too?
 - What does the behaviour cost, as an analytic estimate of synaptic operations?
 
 Every agent, the spiking model and the baseline agents alike, receives the same pre-generated
 exploration of the same environments and is scored by the same test battery, built from classic
-paradigms: latent learning, detour, shortcut, structural transfer and transitive inference. Each
-agent is reported on three axes: behaviour on the battery, the structure of its internal
-representations, and the estimated synaptic operations.
+paradigms: latent learning, detour, shortcut, structural transfer and transitive inference. The
+paradigms are published; how each is operationalised for an agent, and its pass criterion, are the
+project's own and are pre-registered privately. Each agent is reported on three axes: behaviour on
+the battery, the structure of its internal representations, and the estimated synaptic
+operations.
 
 The plan does not rest on its riskiest part. The environments, the battery and the comparisons
 form a safe base that stands on its own; if the spiking model falls short, a documented account
@@ -140,8 +142,9 @@ The phase table, the layers and the paper submission deadline are on the
 
 A gate is a fixed point in the plan where a decision is taken against criteria written in
 advance. The question and the fallback are public; the criteria are written before the work
-they judge and stay private until submission. Public status reads `upcoming` or `decided`,
-without the verdict.
+they judge and stay private until submission. Public status reads `upcoming` or `decided`. A
+decided gate shows only the date it was decided and the next step (the line continues to the next
+phase, extends, or stops), with no verdict detail, evidence or reasoning.
 
 <!-- generated:gates-table:start -->
 | Gate | Title | Date | Status | Question |
@@ -159,7 +162,8 @@ Each gate is described on [Decision gates](docs/research/gates.md).
 - **Public here:** the overview, roadmap, gates, test battery, claims discipline and engineering
   standards of this line, plus the substrate's full record.
 - **Private until release:** hypotheses beyond the research questions, the criteria, the
-  experiment plan, the model, and the related-work analysis. They are developed privately.
+  verdict, evidence and reasoning behind any decided gate, the experiment plan, the model, and
+  the related-work analysis. They are developed privately.
 - **Released later:** the line's code reaches [`cogmap/`](cogmap/README.md) only as older,
   complete, working versions, under the
   [disclosure policy](docs/research/disclosure-policy.md).
@@ -180,7 +184,8 @@ information without loss and spends only the activation its inputs support, with
 output its inputs do not support.
 
 **What is established.** Its assurance comes in three tiers, kept strictly apart. The store and
-the activation layers are proven correct and deterministic. The closed cycle is tester-verified
+the activation layers are verified correct and deterministic by the full adversarial suite on
+every interpreter; that is verification, not a formal proof. The closed cycle is tester-verified
 as mechanism. The experiment scaffolding is exploratory. Every registered suite passes with zero
 failures on five CPython minor versions under six hash seeds; the counts live in
 [`tools/ledger.json`](tools/ledger.json), and the captured run is

@@ -12,8 +12,10 @@ Where a component is exploratory, or where a property is mechanism-verified but 
 meaning* is not claimed, it is labeled as such. The development history that produced these
 decisions (the bugs found and fixed) is a separate document: [METHODOLOGY.md](METHODOLOGY.md).
 
-**Assurance, in one line:** the substrate store and spreading-activation engine are `PROVEN`
-(determinism, integrity, purity); the field, coalitions, source-clustering, and workspace are
+**Assurance, in one line:** the substrate store and spreading-activation engine are verified
+(determinism, integrity, purity; the ledger's status name for this tier is `PROVEN`, meaning
+verified by the full adversarial suite on every interpreter, not a formal proof); the field,
+coalitions, source-clustering, and workspace are
 **tester-verified mechanism** that make the cognitive cycle *close end-to-end* — a mechanism
 result, with **no cognitive claim**. The body-state sensor (2c) is likewise tester-verified
 mechanism, shipped default-off. The first behavioral cognitive claim has been attempted three
@@ -34,9 +36,9 @@ text ─► perceive() ─► cluster_sources() ─► build_activation_field() 
 ```
 
 - **`psyche_store.py`: SubstrateStore (Layer 1):** Holds the graph; the only component that
-  mutates. Contains no "cognitive" logic. **`PROVEN`: determinism, integrity, purity.**
+  mutates. Contains no "cognitive" logic. **Verified: determinism, integrity, purity.**
 - **`psyche_activation.py`: spreading activation:** The first operation that *reads across* the
-  graph. Pure read. **`PROVEN`: determinism, purity; principled approximation.**
+  graph. Pure read. **Verified: determinism, purity; principled approximation.**
 - **`psyche_field.py`: multi-source field:** Composes per-source spreads into basins.
   Deterministic, pure. *Tester-verified mechanism; no cognitive claim.*
 - **`psyche_coalitions.py`: coalition formation:** Groups co-activated nodes. Deterministic,
@@ -256,7 +258,7 @@ community membership near the seed. The fix is upstream of the segmentation algo
 simultaneous sources: percept, goals, emotion), which yields multiple genuine peaks so that
 *basins around peaks* become natural. See METHODOLOGY finding (e).
 
-It reuses the proven single-source `spread_activation` unchanged, once per source, and assembles:
+It reuses the verified single-source `spread_activation` unchanged, once per source, and assembles:
 - `per_source: SourceID → (NodeID → activation)`,
 - `total: NodeID → Σ activation across sources` (genuine convergence across concerns),
 - `dominant: NodeID → the source that activated it most` (its **basin**),
@@ -397,7 +399,7 @@ substrate: a **bounded strengthening of the winner's internal roads** (reusing t
   `(1 − strength)` saturation (fixed point 1.0, approached from below, never exceeded) — there is
   **no clamp, cap, or tunable magnitude** added in `broadcast()`. It also **does not lock in**:
   after deeply biasing winner A over many cycles, a strong fresh percept favoring domain B
-  **switches** the winner to B (escape proven **non-vacuously** — A is verified dominant
+  **switches** the winner to B (escape shown **non-vacuously** — A is verified dominant
   immediately before the switch — on a hostile bridged graph, with a freeze-mode probe and a
   close-competition differential control).
 - **The broadcast magnitude is uncalibrated.** It inherits `strengthen()`'s default gain and is
@@ -502,7 +504,7 @@ for non-determinism.
 ### 9.4 Status
 
 Mechanism is tester-verified: default-off byte-identity under attack, replay determinism in fresh
-processes, live telemetry proven off the deterministic surface (timers monkeypatched to detonate),
+processes, live telemetry verified off the deterministic surface (timers monkeypatched to detonate),
 and the anti-circularity guard that two distinct frictions mapping to the same effective decay
 produce the *same* winner. A couplability pilot cleared its pre-fixed floor, establishing that the
 loop genuinely can be moved by this channel.
@@ -531,7 +533,8 @@ which the anti-manufacture guard forbids. This is recorded as the finding rather
   first-pass / inherited defaults; tests pin only the qualitative regime, and nothing downstream
   may depend on the magnitudes until an externally-graded result can calibrate them.
 - **Honest boundary (three tiers, kept distinct):**
-  - **`PROVEN`** — substrate + activation: mechanism proven (determinism, integrity, purity).
+  - **verified** (ledger status name `PROVEN`) — substrate + activation: mechanism verified
+    (determinism, integrity, purity).
   - **tester-verified mechanism (`BUILT · UNVALIDATED`)** — field, coalitions, source-clustering,
     and the workspace (competition + pruning + bounded broadcast). The cognitive cycle **closes
     end-to-end** and is independently, adversarially tester-verified — but **as mechanism only**.

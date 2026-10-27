@@ -9,6 +9,6 @@ import type { Plan } from '@/lib/plan.ts';
 const p = plan as unknown as Plan;
 ---
 
-<Figure kicker="Decision gates" lead="Each gate is decided against criteria written before the work it judges. Public status shows only whether a gate is decided." bare>
+<Figure kicker="Decision gates" lead="Each gate is decided against criteria written before the work it judges. Once a gate is decided, the public record states only the date and the next step." bare>
   <GateStepper plan={p} />
 </Figure>

@@ -58,7 +58,7 @@ data is even loaded.
   association strength to traverse count (and thus, via the store's strengthen dynamics, to
   edge strength).
 - **Activation knobs:** library defaults (energy 1.0, decay_per_hop 0.65, floor 0.02,
-  hop_budget 6) — unchanged from the proven engine.
+  hop_budget 6) — unchanged from the verified engine.
 - **Substrate choice:** the **full** graph, not the cue-core subgraph. The cue-core is too
   dense to host a topological UNRELATED condition (98% of nodes reachable within 3 hops);
   the full graph leaves a large unreachable pool. Documented in `EXPERIMENT_NOTES.md`.

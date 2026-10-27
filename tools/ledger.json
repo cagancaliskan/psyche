@@ -25,7 +25,7 @@
   },
   "program": {
     "_README": "Program state (D-031): a THIRD axis, orthogonal to bricks[*].status (build) and meaning_bar (meaning). It says which line of Psyche is being worked on, never what is true of a brick. Changed only by the project lead, with a DECISIONS.md entry.",
-    "aim": "artificial general intelligence (AGI), built from original, brain-inspired components",
+    "aim": "artificial general intelligence (AGI), pursued through brain-inspired components built and tested in stages",
     "aim_rule": "the long-term aim of the whole project (D-033): it may be named anywhere, as an aim; no text may say that a current component is or achieves it (C4)",
     "substrate": {
       "state": "paused",
@@ -325,7 +325,7 @@
     "phenomenal"
   ],
   "research_forbidden_claim_terms": {
-    "_README": "Claim rules for the cognitive-map research line (D-031), from its claims-and-scope discipline. Read by tools/publish/check_copy.py for the public research surfaces (README.md, MOC.md, docs/research/, website/, cogmap/). Matched case-insensitively, with the same negation logic as C4. Lifting a term (e.g. a 'first' claim after Gate A) needs a DECISIONS entry.",
+    "_README": "Claim rules for the cognitive-map research line (D-031), from its claims-and-scope discipline. Read by tools/publish/check_copy.py for the public research surfaces (README.md, MOC.md, docs/research/, website/, cogmap/). Matched case-insensitively, with the same negation logic as C4. A decided gate lifts no term (D-034); lifting one at release needs a DECISIONS entry.",
     "terms": [
       "the model understands",
       "the network understands",

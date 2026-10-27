@@ -12,6 +12,7 @@ import '../styles/docs-visuals.css';
 const p = plan as unknown as Plan;
 const roadmapDoc = withBase('research/roadmap/');
 const gatesDoc = withBase('research/gates/');
+const disclosureDoc = withBase('research/disclosure-policy/');
 ---
 
 <StarlightPage
@@ -41,8 +42,10 @@ const gatesDoc = withBase('research/gates/');
       <p class="sx-kicker"><span class="sx-kicker__index">02</span> Gates</p>
       <h2>Decision gates</h2>
       <p>
-        Each gate is decided against criteria written before the work it judges. Public status shows only
-        whether a gate is decided; verdicts are disclosed when the paper is submitted. Details in <a href={gatesDoc}>Decision gates</a>.
+        Each gate is decided against criteria written before the work it judges. Once a gate is decided, the
+        public record states only the date it was decided and the next step: the line continues to the next
+        phase, extends, or stops. The rest of a decision stays private and moves here only under the{' '}
+        <a href={disclosureDoc}>disclosure policy</a>. Details in <a href={gatesDoc}>Decision gates</a>.
       </p>
       <GateStepper plan={p} />
     </section>

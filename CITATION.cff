@@ -1,11 +1,43 @@
 cff-version: 1.2.0
-message: "If you use this work, please cite it as below."
-title: "Nous: Adversarial Testing of a Dependency-Free Memory-and-Activation Substrate for Cognitive Architectures"
+message: "If you use Psyche, please cite the archived report of its first stage."
+title: "Psyche"
 type: software
 authors:
   - family-names: Caliskan
     given-names: Cagan
-doi: 10.5281/zenodo.20474613
-url: "https://doi.org/10.5281/zenodo.20474613"
-license: CC-BY-4.0
-date-released: "2026-05-31"
+repository-code: "https://github.com/cagancaliskan/psyche"
+url: "https://cagancaliskan.github.io/psyche/"
+license: MIT
+abstract: >-
+  Psyche is an open research project that builds brain-inspired components in stages, with
+  artificial general intelligence (AGI) as its long-term aim. Each stage is built test-first and
+  kept as a citable artifact. Stage 1, a dependency-free Python memory-and-activation substrate,
+  is the foundation; its development is paused and its report is archived with a DOI. Stage 2,
+  spiking cognitive maps, is the active line: it asks whether a spiking network that learns only
+  through local synaptic plasticity shows, on classic cognitive-map paradigms, the behaviours that
+  an internal map would explain, and what that behaviour costs as an analytic estimate of synaptic
+  operations. No stage 2 results are reported yet.
+keywords:
+  - brain-inspired computing
+  - cognitive maps
+  - spiking neural networks
+  - local plasticity
+  - spreading activation
+  - adversarial testing
+  - determinism
+  - reproducibility
+# No version or date-released is given: the repository has no tagged release yet.
+preferred-citation:
+  type: report
+  title: "Nous: Adversarial Testing of a Dependency-Free Memory-and-Activation Substrate for Cognitive Architectures"
+  authors:
+    - family-names: Caliskan
+      given-names: Cagan
+  year: 2026
+  date-released: "2026-05-31"
+  doi: 10.5281/zenodo.20474613
+  url: "https://doi.org/10.5281/zenodo.20474613"
+  publisher:
+    name: Zenodo
+  license: CC-BY-4.0
+  notes: "The archived title uses the project's earlier name; the project is Psyche."

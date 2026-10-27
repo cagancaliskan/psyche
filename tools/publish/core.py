@@ -34,7 +34,10 @@ What lives here, used by render_plan.py, ci_c2.py and stage.py:
                              strict KEY ALLOWLIST at every level, so no threshold or
                              criterion field can ever exist in the public plan, and a
                              changelog that may only record fields the plan already has.
-                             load_plan validates unless told not to.
+                             A decided gate carries only the date it was decided and one
+                             word for what follows (continues, extends, stops); the phase
+                             a deciding gate closes must be done. load_plan validates
+                             unless told not to.
   ledger_public(root)        the public projection of tools/ledger.json. Never a fact the
                              ledger does not hold, never a field it was not asked for.
   rewrite_links(...)         relative links to manifest pages become their published
@@ -756,7 +759,12 @@ VOCAB_KEYS = {"phase", "gate", "deadline"}
 PHASE_KEYS = {"id", "title", "start", "end", "gate", "status", "outputs"}
 PHASE_OPTIONAL = {"start_rule", "end_rule"}
 GATE_KEYS = {"id", "title", "baseline_date", "date", "status", "question", "if_missed"}
-GATE_OPTIONAL = {"date_rule"}
+# decided_on and next_step are the whole public record of a decision (D-034): the date it was
+# decided and what follows. Both exist only on a decided gate. next_step is one word from
+# NEXT_STEPS and nothing else, so a verdict, an evidence summary or a reason cannot be typed
+# into the plan as free text.
+GATE_OPTIONAL = {"date_rule", "decided_on", "next_step"}
+NEXT_STEPS = ("continues", "extends", "stops")   # to the next phase / the phase is extended / the line stops
 DEADLINE_KEYS = {"id", "title", "due", "estimate", "status"}
 LAYER_KEYS = {"id", "title", "summary"}
 COMMITMENT_KEYS = {"id", "date", "subject", "sha256", "reveal"}
@@ -1011,6 +1019,8 @@ def plan_problems(plan: object) -> List[str]:
             moves.setdefault(c["item"], []).append(c)
     gate_date: Dict[str, date] = {}
     gate_order: Dict[str, int] = {}
+    closed_by: Dict[str, str] = {}   # decided gates that close the phase leading to them
+    as_of = parse_iso_date(plan.get("as_of"))
     latest: Optional[Tuple[str, date]] = None
     for gi, (where, g) in enumerate(gates):
         _texts(g, where, ("title", "question", "if_missed"), out)
@@ -1018,10 +1028,32 @@ def plan_problems(plan: object) -> List[str]:
         d = _fixed_or_rule(g, "date", "date_rule", where, out)
         status(where, g, "gate")
         gid = g.get("id")
+        # the public record of a decision (D-034): only on a decided gate, and only the
+        # date and one word for what follows
+        decided = g.get("status") == GATE_DECIDED
+        if "decided_on" in g:
+            decided_on = _date_field(g, "decided_on", where, out, nullable=False)
+            if not decided:
+                out.append(f"{where}: decided_on is given although the gate is not decided")
+            if decided_on is not None and as_of is not None and decided_on > as_of:
+                out.append(f"{where}: decided_on {g['decided_on']} is after the plan's as_of "
+                           f"{plan['as_of']}; move as_of to the day the plan was last confirmed")
+        elif decided:
+            out.append(f"{where}: a decided gate needs decided_on, the date it was decided")
+        if "next_step" in g:
+            if not decided:
+                out.append(f"{where}: next_step is given although the gate is not decided")
+            if not (isinstance(g["next_step"], str) and g["next_step"] in NEXT_STEPS):
+                out.append(f"{where}.next_step = {g['next_step']!r} must be one of "
+                           f"{list(NEXT_STEPS)}")
+        elif decided:
+            out.append(f"{where}: a decided gate needs next_step, one of {list(NEXT_STEPS)}")
         if isinstance(gid, str):
             gate_order.setdefault(gid, gi)
             if d is not None:
                 gate_date.setdefault(gid, d)
+            if decided and g.get("next_step") in ("continues", "stops"):
+                closed_by[gid] = g["next_step"]
         # Dated gates come in date order: the gate flow, "Next gate" and the gantt all
         # read gates[] in list order, and a list that disagrees with its dates misleads.
         if d is not None:
@@ -1067,6 +1099,13 @@ def plan_problems(plan: object) -> List[str]:
                 if reached is None or idx >= reached[2]:
                     reached = (where, g, idx)
         status(where, p, "phase")
+        # A phase ends at its gate. Once that gate is decided and the line goes on or stops,
+        # the phase is over; one that is 'extends' stays open. A plan that still calls the
+        # phase planned or active would show the line waiting at a decision already made.
+        if (isinstance(g, str) and g in closed_by and p.get("status") != PHASE_DONE
+                and PHASE_DONE in vocab.get("phase", ())):
+            out.append(f"{where}: its gate {g} is decided (the line {closed_by[g]}), so the "
+                       f"phase must be {PHASE_DONE!r}, not {p.get('status')!r}")
         if p.get("status") == PHASE_ACTIVE:
             active.append(p.get("id"))
         if "outputs" in p and not (isinstance(p["outputs"], list)

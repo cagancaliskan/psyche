@@ -11,9 +11,9 @@ repeat them.
 
 ## What this repository is (D-031, D-033)
 
-Psyche is one open research project building toward artificial general intelligence (AGI) from
-original, brain-inspired components. It grows in stages; each is built test-first and kept as a
-citable artifact.
+Psyche is one open research project that builds brain-inspired components in stages, with
+artificial general intelligence (AGI) as its long-term aim. Each stage is built test-first and
+kept as a citable artifact.
 
 - **Stage 1, the substrate** (`src/`, `tests/`, `experiments/`, `docs/PSYCHE.md`): a
   memory-and-activation substrate, the project's foundation. **Paused** since 2026-10-23.
@@ -21,7 +21,7 @@ citable artifact.
   *Cognitive Map Formation and Energy Efficiency in Spiking Neural Networks with Local
   Plasticity* (short name SCM). It is framed as a test. It asks whether a spiking network that
   learns only through local synaptic plasticity shows, on classic cognitive-map tests, the
-  behaviours that an internal map explains and memorised responses do not; whether other
+  behaviours that an internal map would explain and memorised responses would not; whether other
   families of agents, given the same experience, show them too; and what the behaviour costs, as
   an analytic estimate of synaptic operations. The plan does not depend on a positive answer.
   **Active.**
@@ -60,15 +60,16 @@ When unsure whether something is private, it is.
 
 Public text describes the project this way.
 
-Psyche is an open research project toward AGI, built from original, brain-inspired components.
-Its first stage, the substrate, is a biologically-motivated, dependency-free Python prototype of a
-**memory-and-activation substrate for a cognitive architecture**; its aim is stated above and is
-paused. Its second stage, spiking cognitive maps, is active. The current built artifact is a
-proven substrate plus an honest, well-tested exploration of higher layers.
+Psyche is an open research project that builds brain-inspired components in stages, with AGI as
+its long-term aim. Its first stage, the substrate, is a biologically-motivated, dependency-free
+Python prototype of a **memory-and-activation substrate for a cognitive architecture**; its aim is
+stated above and is paused. Its second stage, spiking cognitive maps, is active. The current built
+artifact is a verified substrate plus an honest, well-tested exploration of higher layers.
 
-**What is proven** is that the substrate's lower layers are *correct and deterministic*. **What
-is not claimed** is that any layer *reproduces a cognitive phenomenon*, constitutes a mind, or is
-AGI. These are different claims and the line between them is sacred.
+**What is verified** is that the substrate's lower layers are *correct and deterministic*:
+verified by the full adversarial suite on every interpreter; not a formal proof. **What is not
+claimed** is that any layer *reproduces a cognitive phenomenon*, constitutes a mind, or is AGI.
+These are different claims and the line between them is sacred.
 
 The project is **Psyche** everywhere: the paper, the codebase, and the repository.
 
@@ -110,14 +111,17 @@ These are the disciplines the project has already paid for in bugs.
    structure. It is "brain-inspired" or, where it can be argued, "biologically plausible",
    never "the brain does it this way". Energy appears only as an analytic estimate or lower
    bound, reported with its sensitivity analysis: never GPU wall-clock time or watts as
-   evidence, and never a general claim that spiking networks are more efficient. No "first"
-   claim until Gate A is decided and recorded. Every number traces to a captured results file.
+   evidence, and never a general claim that spiking networks are more efficient. No priority claim
+   ("first", "the first to") before release: a decided gate lifts none of the claim terms
+   (D-034). Every number traces to a captured results file.
 
 2. **Mechanism ≠ meaning.** "The code is correct and deterministic" and "the code reproduces
    a cognitive effect" are separate claims with separate evidence bars. Mechanism is
    verified by the tester; meaning by the validator, against external data.
 
-3. **`PROVEN` and `DESIGNED` stay in separate boxes.** Vision documents are *description,
+3. **`PROVEN` and `DESIGNED` stay in separate boxes.** `PROVEN` is the ledger's internal status
+   name; its plain meaning is "verified by the full adversarial suite on every interpreter; not a
+   formal proof", and public prose says "verified" (D-035). Vision documents are *description,
    not specification*. Nothing is built until it is tested. Track build status and meaning
    verdict as **two orthogonal axes** — a brick is routinely `BUILT-UNVALIDATED` with a
    `NOT-YET` verdict at the same time.
@@ -130,10 +134,11 @@ These are the disciplines the project has already paid for in bugs.
    answer is invalid. Relatedness norms, baselines, ground-truth directions: all from outside
    the project.
 
-   For the cognitive-map line, the external yardsticks are the published behavioural
-   protocols and the published behaviour of the baselines. Each baseline is reproduced against
-   its published behaviour before any comparison is made, and development and test
-   environments stay strictly split.
+   For the cognitive-map line, the behavioural paradigms are published and the published
+   behaviour of the baselines is the reference. The agent-side operationalisation of each
+   paradigm and its pass criteria are the project's own and are pre-registered privately. Each
+   baseline is reproduced against its published behaviour before any comparison is made, and
+   development and test environments stay strictly split.
 
 6. **Reinvent the idea, borrow the scaffolding.** The novelty is the architecture. Spend
    invention only where the genuinely new thing lives.
@@ -290,7 +295,7 @@ yardsticks*, never a general law about spreading activation or cognition.
 **A code module is done** when: it passes its full suite on every available interpreter; it
 is deterministic across processes and versions, integrity-preserving, and pure; it has been
 hit with adversarial and loop-closed inputs; no test encodes its own answer; and its verification
-notes honestly state what is proven, what is not claimed, and any known limitation —
+notes honestly state what is verified, what is not claimed, and any known limitation —
 written as an explicit asserted-negative test, not hidden.
 
 **A cognitive claim is done** when: it is reproduced on external data the project did not

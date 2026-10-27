@@ -59,4 +59,4 @@ mechanistic explanation, which in turn tells the priming study (2B) what kind of
 **Determinism note.** The probe (and all experiments) build against `Clock(simulated=True)`
 so that elapsed-time decay is a no-op (dt = 0). That makes "all edges equal strength" exact
 rather than approximate and keeps the build deterministic; the only remaining randomness
-(uuid4 IDs, hash-seeded set iteration) is what the library is already proven invariant to.
+(uuid4 IDs, hash-seeded set iteration) is what the library is already verified invariant to.

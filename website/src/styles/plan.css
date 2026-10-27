@@ -95,11 +95,11 @@
     background: var(--sx-agent);
     box-shadow: var(--sx-glow);
   }
-  .sx-chip[data-tone='next'] {
+  .sx-chip:is([data-tone='next'], [data-tone='pending']) {
     border-color: color-mix(in oklab, var(--sx-spike) 55%, transparent);
     color: var(--sx-spike);
   }
-  .sx-chip[data-tone='next']::before {
+  .sx-chip:is([data-tone='next'], [data-tone='pending'])::before {
     border-color: var(--sx-spike);
     border-radius: 1px;
     background: var(--sx-spike);
@@ -233,6 +233,12 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     white-space: nowrap;
+  }
+  /* A gate past its date with no recorded decision: the same chip, filled, so it does not read as
+     a count of days. */
+  .sx-pair__days[data-pending] {
+    border-color: var(--sx-spike);
+    background: color-mix(in oklab, var(--sx-spike) 14%, transparent);
   }
   @keyframes sx-now-pulse {
     0%,
@@ -412,6 +418,9 @@
     background: color-mix(in oklab, var(--sx-spike) 25%, var(--sl-color-black));
     box-shadow: 0 0 0.6rem color-mix(in oklab, var(--sx-spike) 45%, transparent);
   }
+  .sx-tl__gate[data-gate-state='decided'] {
+    background: var(--sx-structure);
+  }
   .sx-tl__today {
     pointer-events: none;
     z-index: 2;
@@ -537,6 +546,16 @@
     border-color: var(--sx-spike);
     background: color-mix(in oklab, var(--sx-spike) 25%, transparent);
   }
+  .sx-diamond[data-gate-state='decided'] {
+    background: var(--sx-structure);
+  }
+  /* The gate's decision status under the question in the timeline's card. */
+  .sx-tl__gatenote {
+    color: var(--sl-color-white);
+  }
+  .sx-tl__gatenote[data-tone='pending'] {
+    color: var(--sx-spike);
+  }
 
   /* Narrow screens and no width to spare: the same phases as a list. */
   .sx-tll {
@@ -615,6 +634,14 @@
     margin: 0.35rem 0 0;
     font-size: 0.875rem;
     color: var(--sl-color-gray-2);
+  }
+  .sx-tll__note {
+    display: block;
+    margin-top: 0.15rem;
+    color: var(--sx-muted);
+  }
+  .sx-tll__note[hidden] {
+    display: none;
   }
   @container sx-plan (max-width: 36rem) {
     .sx-tl {
@@ -706,6 +733,15 @@
     font-size: 0.75rem;
     color: var(--sl-color-gray-1);
     font-variant-numeric: tabular-nums;
+  }
+  .sx-gs__note {
+    margin: 0;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: var(--sl-color-white);
+  }
+  .sx-gs__note[hidden] {
+    display: none;
   }
   .sx-gs__question {
     margin: 0;

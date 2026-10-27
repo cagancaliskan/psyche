@@ -129,11 +129,11 @@ removes the failure mode rather than avoiding it.
 
 ## 5. What this does and does not mean
 
-**Does not affect the Tier 1 `PROVEN` claim.** `psyche_store` and `psyche_activation` are
-untouched; the paper's engine-determinism sentence is about the store and the spread, and
-`spread_activation` accumulates convergent activation as a commutative sum into a dict per
-target — the value at a node does not depend on arrival order. Only the *aggregation across
-members* in `psyche_coalitions` was order-sensitive.
+**Does not affect the Tier 1 verified claim (ledger status name `PROVEN`).** `psyche_store` and
+`psyche_activation` are untouched; the paper's engine-determinism sentence is about the store and
+the spread, and `spread_activation` accumulates convergent activation as a commutative sum into a
+dict per target — the value at a node does not depend on arrival order. Only the *aggregation
+across members* in `psyche_coalitions` was order-sensitive.
 
 > **RETRACTED 2026-07-25 — this paragraph was wrong, and §8 records how it was caught.** The
 > accumulation in `spread_activation` is commutative in exact arithmetic and **is not commutative in

@@ -50,7 +50,7 @@ accumulated activation (0.0 if unreached). It is a **pure read** — asserted in
 "retrieval strength" for the study.
 
 **Aggregation.** `harness.run_trials` rebuilds each condition `N_TRIALS = 5` times (fresh
-uuid4 IDs each time) and reports mean and spread. Because the engine is proven invariant to
+uuid4 IDs each time) and reports mean and spread. Because the engine is verified invariant to
 the uuid4 / hash-seed randomness, every trial is identical and **spread = 0.0** — itself a
 determinism confirmation.
 

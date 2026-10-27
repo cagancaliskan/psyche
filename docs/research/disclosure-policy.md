@@ -17,7 +17,7 @@ follows from that.
 |---|---|
 | The overview of the line: title, aim, research questions as questions, planned contributions, non-claims | [Overview](README.md) |
 | Phases, layers, deadlines and their dates | [Roadmap](roadmap.md), generated from [`tools/research_plan.json`](../../tools/research_plan.json) |
-| The decision gates: the question each one asks, its fallback, its public status | [Gates](gates.md) |
+| The decision gates: the question each one asks, its fallback, its public status; for a decided gate, the date it was decided and the next step | [Gates](gates.md) |
 | The test battery: the classic paradigms, the environment families, the fairness rules | [Test battery](test-battery.md) |
 | What the line may and may not claim | [Claims and scope](claims-and-scope.md) |
 | Coding, reproducibility and statistics standards | [Engineering](engineering.md) |
@@ -36,6 +36,8 @@ would itself be a hint, so this page goes no further than the list.
 
 - Hypotheses beyond the research questions as stated in the [overview](README.md).
 - Pre-registered criteria and thresholds, including what counts as passing a gate.
+- The verdict, the evidence and the reasoning behind a decided gate. Only the date it was decided
+  and the next step are public.
 - The experiment plan: which experiments are run, in what order and in what combinations.
 - The model: how it works, and its code.
 - The analysis of related work and how the line is positioned against it.
@@ -151,9 +153,13 @@ Public status words are lowercase and few:
 | Gates | upcoming, decided |
 | Deadlines | upcoming, met, missed |
 
-When a gate is decided, its public status changes to `decided` and nothing more. Whether it was
-passed is not shown. Verdicts are disclosed at submission, because an early verdict tells a
-reader how far the work has come and which route it is on. A phase's status says what is being
+When a gate is decided, its public status changes to `decided` and the public record adds two
+facts: the date it was decided and the next step, which is that the line continues to the next
+phase, extends, or stops ([D-034](../../DECISIONS.md)). No verdict detail, evidence or reasoning
+is published. The full record stays in the private companion repository and moves here only under
+this policy, because an early verdict would tell a reader how far the work has come. A decision
+also lifts no claim rule: a term that the [claims discipline](claims-and-scope.md) forbids before
+a gate stays forbidden until release, whatever the outcome. A phase's status says what is being
 worked on, not how well it is going. [Gates](gates.md) describes each gate and its fallback.
 
 ## Double-blind review

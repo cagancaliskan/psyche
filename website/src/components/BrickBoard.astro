@@ -12,8 +12,16 @@ interface Brick {
   status: string;
 }
 
-const groups: { status: string; tone: string; heading: string; note: string; collapsed?: boolean }[] = [
-  { status: 'PROVEN', tone: 'proven', heading: 'Proven', note: 'Deterministic, integrity-preserving and pure, verified in a separate tester pass.' },
+// `status` is the ledger's own name for the group and stays as it is there. `heading` is the word a
+// reader sees, and `meaning` is what the status name means in plain words where the card names it.
+const groups: { status: string; tone: string; heading: string; note: string; meaning?: string; collapsed?: boolean }[] = [
+  {
+    status: 'PROVEN',
+    tone: 'proven',
+    heading: 'Verified',
+    note: 'Deterministic, integrity-preserving and pure, verified in a separate tester pass.',
+    meaning: 'verified by the full adversarial suite on every interpreter; not a formal proof',
+  },
   { status: 'BUILT-UNVALIDATED', tone: 'built', heading: 'Built; meaning not validated', note: 'The mechanism is tester-verified; no cognitive claim is made.' },
   { status: 'NO-GO', tone: 'stopped', heading: 'Stopped before a graded run', note: 'Attempts at a cognitive claim stopped before any graded number existed, each at its own wall: a circular yardstick, or a mechanism the effect needs that the engine lacks.' },
   { status: 'DESIGNED', tone: 'designed', heading: 'Designed, not built', note: 'Specified only. Paused with the rest of the substrate.', collapsed: true },
@@ -53,6 +61,11 @@ const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
               </p>
             </div>
             <p class="sx-bricks__note">{c.note}</p>
+            {'meaning' in c && c.meaning && (
+              <p class="sx-bricks__note">
+                Ledger status <code>{c.status}</code>: {c.meaning}.
+              </p>
+            )}
             {'collapsed' in c && c.collapsed ? (
               <details class="sx-disclosure">
                 <summary>Show the list</summary>

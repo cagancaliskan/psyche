@@ -215,6 +215,19 @@ def plan(**over) -> dict:
     return p
 
 
+def decided_plan(step: str = "continues", gate: int = 0, on: str = "2026-11-14") -> dict:
+    """The fixture plan as of 2026-11-20 with one gate decided (D-034): the date it was
+    decided and one word for what follows. A phase its decision closes is marked done."""
+    p = plan(as_of="2026-11-20")
+    g = p["gates"][gate]
+    g.update(status="decided", decided_on=on, next_step=step)
+    if step in ("continues", "stops"):
+        for ph in p["phases"]:
+            if ph["gate"] == g["id"]:
+                ph["status"] = "done"
+    return p
+
+
 def problems_of(p: dict) -> list:
     return core.plan_problems(p)
 
@@ -536,7 +549,7 @@ def test_guard(tmp: Path) -> None:
     check(len(pages) >= 1, "the real manifest lists pages")
     required = {"docs/design/", "docs/paper/", "docs/report/", "docs/specs/",
                 "docs/experiments/", "docs/psyche_roadmap.md", "docs/CONSCIOUSNESS-YARDSTICK.md",
-                "DECISIONS.md", "MOC.md", "docs/outreach/"}
+                "DECISIONS.md", "MOC.md"}
     check(required <= set(m["never_publish"]), "never_publish holds every required entry")
     exempt = [s.casefold() for s in core.c3_exempt_suffixes()]
     for p in pages:
@@ -582,8 +595,8 @@ def test_guard(tmp: Path) -> None:
     check(refusal(lambda: core.publishable_guard(root, "docs/design/v.md")) == "never-publish",
           "(base: docs/design/v.md is refused by never_publish alone)")
     full = json.dumps(GUARD_MANIFEST)
-    dup = full[:-1] + ', "never_publish": ["docs/outreach/"]}'
-    check(json.loads(dup)["never_publish"] == ["docs/outreach/"]
+    dup = full[:-1] + ', "never_publish": ["docs/drafts/"]}'
+    check(json.loads(dup)["never_publish"] == ["docs/drafts/"]
           and core.manifest_problems(json.loads(dup)) == [],
           "(not vacuous: json.loads keeps the last value, and the validator alone sees a "
           "valid manifest)")
@@ -817,6 +830,69 @@ def test_plan() -> None:
     p["changelog"] = [dict(CHANGE, item="B")]
     check(has(problems_of(p), "no changelog entry"),
           "a changelog entry for another gate does not excuse the move")
+
+    section("plan: a decided gate carries only its date and one word for what follows")
+    for step in core.NEXT_STEPS:
+        check(problems_of(decided_plan(step)) == [],
+              f"a gate decided with next_step {step!r} is valid {problems_of(decided_plan(step))}")
+    p = decided_plan("continues", gate=1, on="2026-11-19")
+    check(problems_of(p) == [], f"a later gate may be decided on its own {problems_of(p)}")
+    p["phases"][1]["status"] = "planned"
+    check(has(problems_of(p), "its gate B is decided"),
+          "gate B decided while its phase P1 is still planned is refused")
+    p = decided_plan()
+    del p["gates"][0]["decided_on"]
+    check(has(problems_of(p), "needs decided_on"), "a decided gate without its date is refused")
+    p = decided_plan()
+    del p["gates"][0]["next_step"]
+    check(has(problems_of(p), "needs next_step"), "a decided gate without its next step is refused")
+    p = plan()
+    p["gates"][0]["decided_on"] = "2026-10-01"
+    check(has(problems_of(p), "decided_on is given although the gate is not decided"),
+          "a decision date on an upcoming gate is refused")
+    p = plan()
+    p["gates"][0]["next_step"] = "continues"
+    check(has(problems_of(p), "next_step is given although the gate is not decided"),
+          "a next step on an upcoming gate is refused")
+    for bad in ("passed", "Continues", "continues because the baselines held", "", None, 1,
+                ["continues"], True):
+        p = decided_plan()
+        p["gates"][0]["next_step"] = bad
+        check(has(problems_of(p), "must be one of"),
+              f"next_step {bad!r} is refused: the word comes from a fixed list, never free text")
+    for key in ("verdict", "evidence", "reason", "outcome"):
+        p = decided_plan()
+        p["gates"][0][key] = "x"
+        check(has(problems_of(p), f"unknown key '{key}'"),
+              f"a gate cannot carry a '{key}' field: the record is the date and the next step")
+    for bad, needle in (("20261114", "not an ISO date"), ("2026-11-31", "not an ISO date"),
+                        (None, "may not be null"), ("2026-11-21", "after the plan's as_of")):
+        p = decided_plan()
+        p["gates"][0]["decided_on"] = bad
+        check(has(problems_of(p), needle), f"decided_on {bad!r} is refused ({needle})")
+    p = decided_plan(on="2026-11-20")
+    check(problems_of(p) == [], "a gate decided on the plan's own as_of date is valid")
+    p = decided_plan(on="2026-11-10")
+    check(problems_of(p) == [], "a gate decided before its date is valid")
+    p = decided_plan("continues")
+    p["phases"][0]["status"] = "active"
+    check(has(problems_of(p), "so the phase must be 'done'"),
+          "a phase whose gate is decided (the line continues) cannot stay active")
+    p = decided_plan("stops")
+    p["phases"][0]["status"] = "planned"
+    check(has(problems_of(p), "so the phase must be 'done'"),
+          "a phase whose gate is decided (the line stops) cannot stay planned")
+    p = decided_plan("extends")
+    p["phases"][0]["status"] = "active"
+    check(problems_of(p) == [], f"a phase stays active when its gate extends it {problems_of(p)}")
+    p = decided_plan("continues")
+    p["phases"][1]["status"] = "active"
+    check(problems_of(p) == [], f"the next phase may be active once the gate is decided "
+                                f"{problems_of(p)}")
+    for old_plan in (plan(), core.load_plan(REPO, validate=False)):
+        check(not any("decided_on" in g or "next_step" in g for g in old_plan["gates"])
+              and core.plan_problems(old_plan) == [],
+              "a plan with no decided gate stays valid: the new fields are optional")
 
     section("plan: the changelog records only fields the item has, typed")
     ok = {"date": "2026-11-01", "item": "P1", "field": "end", "from": "2026-12-31",
@@ -1124,6 +1200,28 @@ def test_render_pure(tmp: Path) -> None:
     p["changelog"] = [dict(CHANGE)]
     check("2026-11-22 (baseline 2026-11-15)" in RP.render_gates_table(p),
           "a moved gate shows its baseline beside the new date")
+    table = RP.render_gates_table(decided_plan("continues"))
+    check("| decided on 2026-11-14; the line continues to the next phase |" in table
+          and "| upcoming |" in table,
+          "the gates table gives a decided gate its date and next step, and an undecided one its status")
+    check("the line extends |" in RP.render_gates_table(decided_plan("extends"))
+          and "the line stops |" in RP.render_gates_table(decided_plan("stops")),
+          "the other two next steps read in the project's own words")
+    line = RP.render_status_line(decided_plan("continues"))
+    check("**Next gate:** B Comparisons, 2026-12-31" in line and "Novelty" not in line,
+          "once gate A is decided the status line leads with gate B")
+    check(RP.render_status_line(decided_plan("stops")).endswith(
+          "**Next gate:** none, the line stops at gate A"),
+          "after a decision that the line stops, the status line says so and names no later gate")
+    check(RP.render_status_line(decided_plan("extends")).startswith(
+          "**Now:** P0 Novelty review and setup"),
+          "a decision that extends the phase leaves it the current one")
+    for step in core.NEXT_STEPS:
+        out = "\n".join(RP.render_all(decided_plan(step)).values())
+        check(RP.render_all(decided_plan(step)) == RP.render_all(decided_plan(step))
+              and "decided on 2026-11-14" in out
+              and not any(lab in out for lab in STATUS_LABELS),
+              f"a plan with a gate decided ({step}) renders deterministically, with no status label")
     rp_src = (HERE / "render_plan.py").read_text(encoding="utf-8")
     check(not re.search(r'== "(?:active|done|upcoming|decided|planned)"', rp_src),
           "the renderer compares statuses only through core's shared constants")
@@ -1197,9 +1295,58 @@ def test_render_pure(tmp: Path) -> None:
     check("Research plan (tools/research_plan.json, as of 2026-10-23)" in rep,
           "the plan header names the research plan")
     rep = RP.status_report(plan(), pub, date(2026, 11, 20), "fixture zone")
-    check("5 days ago, still upcoming" in rep, "an overdue gate says it is still upcoming")
+    check("5 days ago, decision pending" in rep, "an overdue gate says its decision is pending")
+    rep = RP.status_report(decided_plan("continues"), pub, date(2026, 11, 20), "fixture zone")
+    check("decided    A Novelty: decided on 2026-11-14; the line continues to the next phase" in rep
+          and "next gate  B Comparisons: 2026-12-31, in 41 days" in rep,
+          "a decided gate is reported with its date and next step, and the next gate moves on")
+    rep = RP.status_report(decided_plan("stops"), pub, date(2026, 11, 20), "fixture zone")
+    check("next gate  none, the line stops at gate A" in rep,
+          "no gate follows a decision that the line stops")
     rep = RP.status_report(plan(), pub, date(2026, 11, 15), "fixture zone")
     check("2026-11-15, today" in rep, "a gate due today says today")
+
+
+def test_past_due() -> None:
+    section("render: --past-due lists gates past their date with no recorded decision")
+    ids = lambda p, d: [g["id"] for g in RP.past_due_gates(p, d)]   # noqa: E731
+    check(ids(plan(), date(2026, 11, 14)) == [] and ids(plan(), date(2026, 11, 15)) == [],
+          "a gate is not late before its date, nor on it")
+    check(ids(plan(), date(2026, 11, 16)) == ["A"], "the day after its date, gate A is late")
+    check(ids(plan(), date(2099, 1, 1)) == ["A", "B"],
+          "a gate with no fixed date (gate C) is never past due, however late the day")
+    check(ids(decided_plan("continues"), date(2026, 11, 20)) == [],
+          "a decided gate is never past due")
+    check(ids(decided_plan("continues"), date(2027, 1, 5)) == ["B"],
+          "the next gate becomes past due on its own date")
+    check(ids(decided_plan("stops"), date(2027, 1, 5)) == []
+          and ids(decided_plan("stops"), date(2099, 1, 1)) == [],
+          "after a decision that stops the line no later gate is waited on, so none is past due")
+    check(ids(decided_plan("extends"), date(2027, 1, 5)) == ["B"],
+          "a decision that extends the phase leaves the later gates waiting")
+    check(RP.past_due_report(decided_plan("stops"), date(2027, 1, 5), annotations=True)
+          == ["render_plan: no gate is past its date without a recorded decision"],
+          "the report raises no warning for a gate the line stopped before")
+    rep = RP.past_due_report(plan(), date(2026, 11, 20))
+    check(len(rep) == 1 and rep[0].startswith("warning: Gate A (Novelty) was due on 2026-11-15, "
+                                              "5 days ago") and "::" not in rep[0],
+          f"the plain report names the gate, its date and how late: {rep}")
+    ann = RP.past_due_report(plan(), date(2027, 1, 1), annotations=True)
+    check(len(ann) == 2 and all(a.startswith("::warning title=Gate decision pending::") for a in ann)
+          and "Gate A (Novelty)" in ann[0] and "Gate B (Comparisons)" in ann[1],
+          f"each late gate is one GitHub warning annotation: {ann}")
+    none = RP.past_due_report(plan(), date(2026, 10, 23), annotations=True)
+    check(none == ["render_plan: no gate is past its date without a recorded decision"],
+          "with none late the line says so and is not an annotation")
+    p = plan()
+    p["gates"][0]["title"] = "100% sure\r\n::error::forged"
+    one = RP.past_due_report(p, date(2026, 11, 20), annotations=True)
+    check(len(one) == 1 and "\n" not in one[0] and "\r" not in one[0]
+          and "100%25 sure%0D%0A::error::forged" in one[0],
+          "a plan string cannot start a second workflow command: %, CR and LF are escaped")
+    rep = "\n".join(RP.past_due_report(plan(), date(2026, 11, 20)))
+    check(not any(lab in rep for lab in STATUS_LABELS) and "verdict" not in rep.lower(),
+          "the report names the gate, its title and its date, and carries no detail")
 
 
 def test_gantt() -> None:
@@ -1963,6 +2110,40 @@ def test_render_documents(tmp: Path) -> None:
     check(rc == 0 and "next gate" in out and "Program state" in out,
           f"--status exits 0 with program state and the next gate ({rc})")
 
+    section("documents: --past-due exits 0 whatever it finds, and 2 only when it cannot run")
+    r17 = new_root(tmp)
+    _doc_fixture(r17, plan(as_of="2020-01-01", gates=[
+        dict(FIXTURE_PLAN["gates"][0], date="2020-02-01", baseline_date="2020-02-01"),
+        *FIXTURE_PLAN["gates"][1:]],
+        phases=[dict(FIXTURE_PLAN["phases"][0], start="2020-01-01", end="2020-02-01"),
+                *FIXTURE_PLAN["phases"][1:]]))
+    rc, out, _ = capture(RP.main, ["--root", str(r17), "--past-due", "--annotations"])
+    check(rc == 0 and out.startswith("::warning title=Gate decision pending::Gate A (Novelty)"),
+          f"a gate long past its date: exit 0 and a warning annotation ({rc}) {out[:80]}")
+    rc, out, _ = capture(RP.main, ["--root", str(r17), "--past-due"])
+    check(rc == 0 and out.startswith("warning: Gate A") and "::" not in out,
+          f"without --annotations the same finding is plain text ({rc})")
+    r18 = new_root(tmp)
+    _doc_fixture(r18, plan(as_of="2999-01-01"))
+    rc, out, _ = capture(RP.main, ["--root", str(r18), "--past-due", "--annotations"])
+    check(rc == 0 and "::" not in out and "no gate is past its date" in out,
+          f"nothing late: exit 0 and no annotation ({rc}) {out[:80]}")
+    write(r18, "tools/research_plan.json", json.dumps(dict(plan(), schema_version=9)))
+    rc, _, err = capture(RP.main, ["--root", str(r18), "--past-due"])
+    check(rc == 2 and "schema_version" in err, f"an invalid plan exits 2, as every mode does ({rc})")
+    try:
+        capture(RP.main, ["--root", str(r18), "--check", "--annotations"])
+        code = 0
+    except SystemExit as e:
+        code = e.code
+    check(code == 2, f"--annotations without --past-due is a usage error ({code})")
+    try:
+        capture(RP.main, ["--root", str(r18), "--check", "--past-due"])
+        code = 0
+    except SystemExit as e:
+        code = e.code
+    check(code == 2, f"--past-due is its own mode, not combined with --check ({code})")
+
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Markdown structure (shared by render_plan and rewrite_links)
@@ -2518,6 +2699,7 @@ def main() -> int:
         test_plan_fuzz()
         test_load_plan_errors(tmp)
         test_render_pure(tmp)
+        test_past_due()
         test_gantt()
         test_render_documents(tmp)
         test_markdown()

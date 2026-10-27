@@ -211,6 +211,9 @@
     background: currentColor;
     opacity: 0.5;
   }
+  .sx-landing-now .sx-pair[data-tone] .sx-pair__days[data-pending] {
+    color: var(--sx-spike);
+  }
 
   /* ---------- The timeline: bands on a ruled axis ---------- */
 
@@ -368,6 +371,10 @@
   .sx-landing-roadmap .sx-tl__row .sx-tl__gate[data-next] {
     --m: var(--sx-spike);
     background: var(--sl-color-black);
+  }
+  /* A decided gate is filled. */
+  .sx-landing-roadmap .sx-tl__row .sx-tl__gate[data-gate-state='decided'] {
+    background: var(--m);
   }
 
   /* Today: a hairline in signal from the axis to the last rule, its label in mono beneath it. */
@@ -560,6 +567,9 @@
   .sx-landing-roadmap :is(.sx-tl, .sx-tll) .sx-diamond[data-next] {
     --m: var(--sx-spike);
     background: none;
+  }
+  .sx-landing-roadmap :is(.sx-tl, .sx-tll) .sx-diamond[data-gate-state='decided'] {
+    background: var(--m);
   }
 
   /* ---------- The narrow-screen list: phases on a ruled rail ---------- */
