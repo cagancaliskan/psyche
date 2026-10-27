@@ -23,10 +23,12 @@ Changing a criterion after it has been written needs a recorded decision with it
 never a silent edit. This is the same discipline the substrate, stage 1 of Psyche, applied to its
 pre-registrations (see [Origins](origins.md)).
 
-A gate that is not passed does not end the line. The plan is layered so that the line stands
-on its safe base even if the spiking model does not work, and a documented account of where and
-why it fell short is kept as a result in its own right. The layers are described in the
-[roadmap](roadmap.md).
+Missing a gate sends the work along the fallback fixed in advance for it; it does not by default
+end the line. The plan is layered so that the line stands on its safe base even if the spiking
+model does not work, and a documented account of where and why it fell short is kept as a result
+in its own right. The layers are described in the [roadmap](roadmap.md). After any gate, the
+next step is one of three: the line continues to the next phase, extends, or stops (see
+[what the public status means](#what-the-public-status-means)).
 
 ## The gates at a glance
 
@@ -58,7 +60,7 @@ flowchart LR
 
 Each arrow leads to the next gate in plan order. If a gate is missed:
 
-- **Gate A** (Novelty): Reposition the contribution and record the decision before work continues.
+- **Gate A** (Novelty): Reposition the contribution and record the decision privately before work continues.
 - **Gate B** (Comparisons): Extend briefly, then narrow the baseline set to the strongest published reference.
 - **Gate C** (Spiking model): Shift the submission target; the work proceeds on the safe base and the failure analysis.
 - **Gate D** (Paper): A workshop paper and a preprint; a later main-track venue.
@@ -73,8 +75,9 @@ Gate A closes the phase "Novelty review and setup". It asks whether this line's 
 aims is new. If closely related work has been published, the gate asks instead whether the
 difference from it is written down and can be defended.
 
-If the answer is no, the contribution is repositioned, and that decision is recorded before work
-continues.
+If the answer is no, the contribution is repositioned, and that decision is recorded privately
+before work continues. The public record of any gate decision is only its date and the next step (see
+[what the public status means](#what-the-public-status-means)).
 
 ## Gate B: Comparisons
 
@@ -113,11 +116,27 @@ Each gate shows one of two public status words:
 | Status | Meaning |
 |---|---|
 | upcoming | The decision has not been taken yet. |
-| decided | The decision has been taken against its criteria and recorded. The outcome is not shown. |
+| decided | The decision has been taken against its criteria. The public record holds two facts and no others, listed below. |
 
-A `decided` gate does not say whether it was passed. Verdicts are disclosed at submission,
-because an early verdict is itself a hint: it tells a reader how far the work has come and which
-route it is on.
+When a gate is decided, the public record states only:
+
+- **The date it was decided.**
+- **The next step:** the line continues to the next phase, extends, or stops.
+
+The gate table shows both in the Status cell of a decided gate. Nothing else about a decision is
+public: no verdict detail, no evidence and no reasoning ([D-034](../../DECISIONS.md)). The next
+step says whether the line goes on, not why. The full record of a decision stays in the private
+companion repository and moves here only under the [disclosure policy](disclosure-policy.md).
+How the plan is edited when a gate is decided is described on the [roadmap](roadmap.md).
+
+The site also reads each gate against the day a page is opened. A gate whose date has passed with
+no recorded decision shows as "decision pending", with its date. After a decision that stops the
+line, the gates behind it show as "not reached". Both are display wording only; the plan's status
+words stay upcoming and decided.
+
+A decision does not lift a claim rule. A term that the [claims discipline](claims-and-scope.md)
+forbids before a gate stays forbidden until release, whatever the outcome. A decided Gate A, in
+particular, does not allow a priority claim.
 
 The criteria behind each gate are pre-registered privately. When a criteria file is frozen, a
 salted SHA-256 hash of it is added to the commitments list in the plan, with the date. The date

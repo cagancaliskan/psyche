@@ -12,9 +12,12 @@ the observations change, or a question is asked about a pair never presented tog
 stimulus-response mapping memorised during learning is not the most direct account of good
 behaviour after the change; knowledge of the structure of the environment is.
 
-The paradigms are borrowed as behavioural tests. A result on a test is evidence about the
-agent's behaviour on that test. It is not a statement about how animals solve the task, and it
-says nothing about the agent beyond the behaviour measured ([claims-and-scope.md](claims-and-scope.md)).
+The paradigms are borrowed as behavioural tests, and they are published. How each is
+operationalised for an agent, and its pass criterion, are the project's own and are pre-registered
+privately; they are not a published protocol for artificial agents. A result on a test is evidence
+about the agent's behaviour on that test. It is not a statement about how animals solve the task,
+and it says nothing about the agent beyond the behaviour measured
+([claims-and-scope.md](claims-and-scope.md)).
 
 The battery is model-agnostic. Every agent, the spiking model included, runs through the same
 interface, on the same environments, under the same rules.

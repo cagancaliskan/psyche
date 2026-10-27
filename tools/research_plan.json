@@ -4,7 +4,8 @@
     "README.md, docs/research/ and the docs site render from it: python3 tools/publish/render_plan.py --write.",
     "Public granularity only. Criteria, thresholds, experiment ids, venues and funding live in the private companion,",
     "keyed by these ids. tools/publish/core.py validates this file against a key allowlist, so no other field can exist.",
-    "A date that differs from its baseline_date needs a changelog entry. Status words are lowercase on purpose."
+    "A date that differs from its baseline_date needs a changelog entry. Status words are lowercase on purpose.",
+    "A decided gate is recorded in one edit; the steps are in docs/research/roadmap.md, under Recording a decision."
   ],
   "schema_version": 1,
   "as_of": "2026-10-23",
@@ -85,7 +86,7 @@
       "date": "2026-11-15",
       "status": "upcoming",
       "question": "Is this line's combination of aims new, or is its difference from the closest published work written down and defensible?",
-      "if_missed": "Reposition the contribution and record the decision before work continues."
+      "if_missed": "Reposition the contribution and record the decision privately before work continues."
     },
     {
       "id": "B",

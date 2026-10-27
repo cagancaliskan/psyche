@@ -21,10 +21,6 @@ venv/
 .idea/
 .vscode/
 
-# Social card build artifacts (regenerable; fonts are embedded in the committed HTML)
-docs/outreach/social/_fontfaces.css
-docs/outreach/social/*.2x.png
-
 # Office temp / lock files
 ~$*
 

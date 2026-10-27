@@ -10,7 +10,8 @@
      study, never as a mind, conscious, AGI or a validated cognitive model. The cognitive
      cycle closes end-to-end, but that is a tester-verified mechanism result, not a
      cognitive one; no cognitive meaning is claimed above the substrate.
-   - The three assurance tiers stay distinct: PROVEN (substrate + activation);
+   - The three assurance tiers stay distinct: verified, ledger status name PROVEN (substrate +
+     activation);
      tester-verified mechanism (field, coalitions, source-clustering, workspace, the closed
      cycle); disciplined-exploratory (the experiment scaffolding, incl. the §6.2 SWOW
      structural check, which returned an honest NOT YET).
@@ -44,10 +45,12 @@ that runs one competition among coalitions, prunes the bridged unperceived mater
 winner, and performs a single **bounded broadcast** back onto the substrate — so the cognitive
 cycle *perceive → activate → cluster → compete → prune → broadcast → next cycle* now **closes
 end-to-end**. The work is reported in **three assurance tiers, kept strictly distinct**.
-**(1) `PROVEN`:** the substrate store and the spreading-activation engine are verified, by an
+**(1) Verified:** the substrate store and the spreading-activation engine are verified, by an
 adversarial property-style test suite, for **determinism** (identical output across process runs,
 confirmed in fresh interpreters under randomized hash seeds), **integrity** (graph indices stay
-mutually consistent across every mutation), and **purity** (reads never mutate stored state).
+mutually consistent across every mutation), and **purity** (reads never mutate stored state). The
+ledger's status name for this tier is `PROVEN`; it means verified by the full adversarial suite on
+every interpreter, and it is not a formal proof.
 **(2) Tester-verified mechanism:** the field, coalitions, source-clustering, and workspace layers
 are independently and adversarially verified for the same hard properties — plus, for the feedback
 write, that it is bounded **both ways** (no divergence, no lock-in) — which is what lets the cycle
@@ -76,7 +79,7 @@ external yardstick rather than the mechanism.
 ## 1. Introduction
 
 Most write-ups of ambitious systems describe what the system is meant to become. This one separates
-that aspiration from what was actually built and proven, and reports the engineering discipline in
+that aspiration from what was actually built and verified, and reports the engineering discipline in
 between. The subject is a cognitive-architecture prototype; the contribution is the **testing
 methodology** applied to it.
 
@@ -100,7 +103,7 @@ documents only the two layer-plan files correspond to anything implemented. This
 - Psyche is an **engineering prototype** and a **testing-methodology case study**.
 - It is **not** a mind, consciousness, AGI, or a validated cognitive model, and makes **no claim of
   machine cognition**.
-- The substrate store and spreading-activation engine are **`PROVEN`** deterministic,
+- The substrate store and spreading-activation engine are **verified** deterministic,
   integrity-preserving, and pure. These are claims about *mechanism*.
 - The field, coalition, source-clustering, and workspace layers are **tester-verified mechanism**:
   they are independently and adversarially verified for determinism, integrity, and purity (and the
@@ -122,7 +125,7 @@ documents only the two layer-plan files correspond to anything implemented. This
    **loop-closure** caught a sequence of **six structural bugs** in a memory/activation substrate,
    and that the same discipline — now split across an independent builder and an independent
    adversarial tester — governed three further bricks that closed the cognitive cycle.
-2. A **`PROVEN` substrate**: a graph store and a spreading-activation engine that are deterministic,
+2. A **verified substrate**: a graph store and a spreading-activation engine that are deterministic,
    integrity-preserving, and pure, with the verification shipped as runnable tests.
 3. A **tester-verified, end-to-end-closing cognitive cycle** (source-clustering + workspace
    competition + pruning + bounded broadcast), with the bounded-feedback write verified to neither
@@ -186,13 +189,13 @@ Psyche is pure-Python standard library, organized bottom-up across **seven modul
 reads the one below through its public surface only. The full pipeline is the closed cognitive
 cycle *perceive → cluster → activate (field) → form coalitions → compete → prune → broadcast →
 next cycle*. The honest boundary runs **through** the tiers, not between two halves: the substrate
-store and spreading-activation engine are `PROVEN`; the field, coalitions, source-clustering, and
+store and spreading-activation engine are verified; the field, coalitions, source-clustering, and
 workspace are **tester-verified mechanism** (no cognitive claim).
 
 ![Figure 1: architecture layer stack](diagrams/rendered/architecture_stack.png)
 
 **Figure 1: The layer stack and the honest boundary.** The substrate store and spreading
-activation are **`PROVEN`** (determinism, integrity, purity); the higher layers (multi-source
+activation are **verified** (determinism, integrity, purity); the higher layers (multi-source
 field, coalitions, source-clustering, workspace) are **tester-verified mechanism** that make the
 cycle close end-to-end. The figure establishes *where verification stops* — it does **not** claim
 any layer is cognitively meaningful. (This rendered figure predates the source-clustering and
@@ -234,7 +237,7 @@ separate from ordering (`creation_seq`). Describes the data structures only.
 
 **Figure 3: Read vs. write paths (the purity invariant).** Reads compute decay into a *copy* and never
 mutate; only writes persist decay; closure changes only on an active crossing. Visualizes finding (a);
-it proves a *mechanism* property, not anything about cognition.
+it verifies a *mechanism* property, not anything about cognition.
 
 ### 3.2 Spreading activation (`psyche_activation.py`, 281 lines)
 
@@ -263,7 +266,7 @@ out-roads and report what lit up. **Pure read:**
 
 ### 3.3 Multi-source activation field (`psyche_field.py`, 161 lines)
 
-Runs the proven single-source spread once **per source** and assembles a field: each node's
+Runs the verified single-source spread once **per source** and assembles a field: each node's
 activation from each source, the **summed total** across sources, and the **dominant source** (the
 one that activates it most: the node's *basin*). Dominant-source ties break on the stable
 `creation_seq`, so the field is deterministic given store state. Pure read. This exists because a
@@ -552,7 +555,7 @@ known limitation. It documents the *development path*, not a working capability.
 
 ### 7.1 Verified properties (the positive results)
 
-For the substrate store and the spreading-activation engine (Tier 1, `PROVEN`), the test suite
+For the substrate store and the spreading-activation engine (Tier 1, verified), the test suite
 establishes, as runnable checks:
 
 - **Determinism:** identical output across process runs, confirmed in fresh interpreters under the
@@ -646,7 +649,7 @@ second, independent pass, `test_tester_0b2_reverify.py`, returned **PASS** on al
 (This rendered figure predates the source-clustering and workspace suites and shows an earlier
 five-suite run — a historical snapshot, not the current count; the current canonical total is the
 one tabulated above and recorded in `tools/ledger.json`.)
-Proves *mechanism* (and the *mechanics* of the higher layers); it does **not** measure cognitive
+Verifies *mechanism* (and the *mechanics* of the higher layers); it does **not** measure cognitive
 quality.
 
 **Code size (measured):**
@@ -749,7 +752,7 @@ existed; the meaning bar remains open (§9).
   since brought into the canonical runner and are tester-verified (SPEC-1e §10). The data-dependent
   *experiment-result* scripts stay out of the runner: they need the uncommitted ~53 MB SWOW file and
   make meaning claims. Its existence does not establish a cognitive result.
-- **Determinism is "given store state," not over the abstract graph:** The proven property is that the
+- **Determinism is "given store state," not over the abstract graph:** The verified property is that the
   output is a deterministic function of the *store's state*, where state includes the integer
   `creation_seq` assigned in build order. Two stores that are isomorphic as abstract graphs but built
   in a different order can therefore differ in `creation_seq` and, where ties are broken on it, can
@@ -823,8 +826,8 @@ spreading-activation models or about cognition.
 
 What was earned is concrete and modest, and kept in three strictly-distinct tiers. A correct,
 deterministic, integrity-preserving, and pure memory-and-activation substrate, built in
-dependency-free Python and shipped with the tests that prove those properties across process hash
-seeds (`PROVEN`). Above it, a **tester-verified cognitive cycle that now closes end-to-end** —
+dependency-free Python and shipped with the tests that verify those properties across process hash
+seeds (verified). Above it, a **tester-verified cognitive cycle that now closes end-to-end** —
 source-clustering, workspace competition, pruning, and a bounded broadcast whose feedback write is
 verified to neither diverge nor lock in — delivered explicitly as **mechanism, not meaning**, with the
 one residual over-swallow corner case shipped as a standing asserted-negative. And, separately, a
@@ -832,12 +835,13 @@ disciplined-exploratory experiment scaffolding on which one structural check ret
 YET. The larger contribution is the **method**: adversarial/property-based testing and loop-closure
 caught six structural bugs that happy-path testing passes over, and the same discipline — now split
 across an independent builder and an independent adversarial tester — drew the boundary the project
-refuses to cross: proving mechanism while explicitly declining to claim cognition. What remains open
+refuses to cross: verifying mechanism while explicitly declining to claim cognition. What remains open
 is exactly what the method recommends next, and it is the headline of the next phase: evaluate the
 *closed cycle* against a behavioral effect whose direction is known independently of Psyche (semantic
 priming, graded against human association norms) — a result that has not yet been produced. The honest
-version of "it works" used throughout this project is the useful one: *this part is proven; that part
-is tester-verified as mechanism; that part is not yet earned, and here is exactly where the line is.*
+version of "it works" used throughout this project is the useful one: *this part is verified (not a
+formal proof); that part is tester-verified as mechanism; that part is not yet earned, and here is
+exactly where the line is.*
 
 ---
 

@@ -208,14 +208,15 @@ hand-chosen input and fails on an adversarial or system-generated one.** Each fi
 
 The honest boundary that falls out of this:
 
-> **Proven:** the substrate store and the spreading-activation engine are **deterministic**,
+> **Verified:** the substrate store and the spreading-activation engine are **deterministic**,
 > **integrity-preserving**, and **pure** (verified, including across process hash seeds).
 > **Amended 2026-07-25:** the determinism half of that sentence is **contested for the activation
 > engine**. Convergent accumulation is an order-dependent float sum, so on graphs where three or
 > more contributions reach one node, fresh processes disagree in the last place at library
 > defaults (DEFECT-A, `docs/BUG-0b1-coalition-strength-determinism.md` §8). The store is not
-> affected. Whether the engine keeps the `PROVEN` label is an open decision (D-011) and is
-> deliberately not settled inside a methodology document.
+> affected. Whether the engine keeps the `PROVEN` label (the ledger's status name for "verified by
+> the full adversarial suite on every interpreter; not a formal proof") is an open decision
+> (D-011) and is deliberately not settled inside a methodology document.
 >
 > **Tester-verified mechanism:** the field, coalitions, source-clustering, and workspace layers
 > make the cognitive cycle **close end-to-end** and are independently, adversarially verified for

@@ -4,8 +4,9 @@
 
 **Cognitive Map Formation and Energy Efficiency in Spiking Neural Networks with Local Plasticity**
 
-Stage 2 of Psyche, an open research project building toward artificial general intelligence
-(AGI), and the project's active line of research since 2026-10-23.
+Stage 2 of Psyche, an open research project that builds brain-inspired components in stages with
+artificial general intelligence (AGI) as its long-term aim, and the project's active line of
+research since 2026-10-23.
 
 <!-- generated:status-line:start -->
 **Now:** P0 Novelty review and setup (2026-10-23 to 2026-11-15) · **Next gate:** A Novelty, 2026-11-15
@@ -34,10 +35,10 @@ cells in the medial entorhinal cortex fire at many locations that together form 
 triangular lattice across the environment (Hafting et al., 2005). These findings motivate
 brain-inspired models of map learning. They do not by themselves say how a map is learned.
 
-The open question this line takes up is narrower: whether behaviours that only an internal
-map explains can arise in a network of spiking neurons that learns only through local synaptic
-plasticity (see the [glossary](glossary.md)), and what such behaviour costs in estimated
-synaptic operations.
+The open question this line takes up is narrower: whether behaviours that an internal map
+would explain, and memorised responses would not, can arise in a network of spiking neurons
+that learns only through local synaptic plasticity (see the [glossary](glossary.md)), and what
+such behaviour costs in estimated synaptic operations.
 
 ## Aim
 
@@ -45,7 +46,7 @@ The line is framed as a test. It asks:
 
 - whether a spiking network, loosely inspired by hippocampal circuitry and trained only with
   local synaptic plasticity, shows on classic cognitive-map tests the behaviours that an
-  internal map explains and memorised responses do not;
+  internal map would explain and memorised responses would not;
 - whether other families of agents, given the same experience, show them too;
 - how many synaptic operations the spiking network needs, estimated analytically.
 
@@ -62,7 +63,7 @@ submission.
 | # | Question |
 |---|---|
 | RQ1 | Can a network of spiking neurons that learns only through local synaptic plasticity form a cognitive map of its environment? |
-| RQ2 | Does it show behaviours that memorised stimulus-response associations cannot explain? |
+| RQ2 | Does it show behaviours that memorised stimulus-response associations would not explain? |
 | RQ3 | Do place-like representations emerge in the network without being built in? |
 | RQ4 | What does the behaviour cost, expressed as an analytic estimate of synaptic operations? |
 
@@ -71,11 +72,13 @@ submission.
 These are plans, not results.
 
 1. **A spiking model that learns only through local plasticity**, evaluated on the public battery
-   below, with what it does and does not show reported either way. The model stays private until
-   its release under the [disclosure policy](disclosure-policy.md).
+   below. What it does and does not show will be reported at release, whichever way it falls. The
+   model stays private until its release under the [disclosure policy](disclosure-policy.md).
 2. **An open cognitive-map test battery** derived from classic animal-behaviour paradigms
    (latent learning, detour, shortcut, structural transfer, transitive inference), with
-   comparisons across families of agents. See [test-battery.md](test-battery.md).
+   comparisons across families of agents. The paradigms are published; how each is operationalised
+   for an agent, and its pass criterion, are the project's own and are pre-registered privately.
+   See [test-battery.md](test-battery.md).
 3. **A measurement framework** that reports every agent on three axes: behaviour on the
    battery, the structure of its internal representations, and an analytic estimate of its
    synaptic operations.
@@ -83,8 +86,8 @@ These are plans, not results.
 ## What this line does not claim
 
 - **No general claim about cognition.** "Cognitive map" names a measurable class of behaviour:
-  behaviour that memorised stimulus-response associations cannot explain and an internal model
-  of the environment can. Passing a test is evidence of that behaviour and nothing more. Words
+  behaviour that memorised stimulus-response associations would not explain and an internal
+  model of the environment would. Passing a test is evidence of that behaviour and nothing more. Words
   for mental states are not applied to the model; results describe behaviour and internal
   structure.
 - **Brain-inspired, not a statement about biology.** The model is described as brain-inspired
@@ -95,7 +98,8 @@ These are plans, not results.
   There is no general claim that spiking networks cost less than conventional ones; any
   comparison holds for this task, this metric and these assumptions.
 - **No priority claim.** Whether the combination of aims is new is the question of a decision
-  gate ([gates.md](gates.md)). These pages make no priority claim.
+  gate ([gates.md](gates.md)). These pages make no priority claim, and a decided gate does not
+  change that before release.
 - **No claim of general intelligence.** AGI is the long-term aim of the whole project, named only
   as an aim. This line studies one measurable class of behaviour, and nothing on these pages
   presents its model as general intelligence or as a measured step toward it.

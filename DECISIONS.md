@@ -1959,3 +1959,122 @@ AGI is the project's long-term aim, and leaving it unsaid misstates the project.
 Rule 1 of the project rules and the documents that restate it are reworded.
 `tools/ledger_check.py` and `forbidden_claim_terms` are unchanged. Documents that say the
 substrate is not AGI stay as written: that is still true.
+
+---
+
+## D-034 — A decided gate is public as a date and a next step, and nothing more
+
+**Date:** 2026-10-27 · **Decided by:** Cagan · **Lane:** architect-pm (documents, plan file
+text); builder (plan validator, rendering, docs site) · **Status:** decided
+
+### 1. Context
+
+D-031 item 5 fixed the principle for the cognitive-map line: a public summary, a private detail.
+It did not say what the public record of a decided gate holds. The public pages said that a
+decided gate reads `decided`, that its verdict is not shown and that verdicts are disclosed at
+submission; the claims rule let a priority claim follow once Gate A was decided and an entry in
+this file recorded it. The status word alone does not tell a reader whether the line goes on, and
+the arrangement promised a disclosure date in public.
+
+### 2. The decision
+
+1. **What the public record of a decided gate holds.** Only the date on which the gate was decided
+   and the next step: the line continues to the next phase, extends, or stops. No verdict detail,
+   evidence or reasoning appears in this repository, on the docs site or in any other public text.
+2. **Claim terms stay forbidden until release.** A term that the claims discipline forbids before
+   a gate, such as a priority claim ("the first"), stays forbidden until release, whatever the
+   outcome of the gate. A decided Gate A lifts none of them.
+3. **The full record stays private.** The verdict, the evidence and the reasoning stay in the
+   private companion repository and move here only under
+   `docs/research/disclosure-policy.md`.
+
+### 3. Options considered
+
+- Keep the status word `decided` alone and disclose the verdict at submission, as the pages said:
+  nothing is shown early, but a reader cannot tell whether the line goes on, and a disclosure date
+  is promised in public.
+- Publish the verdict, its evidence and its reasoning when the gate is decided: transparent, but it
+  shows the state of the work and the substance of the pre-registered criteria before they are due,
+  against the release rule.
+- The date and the next step only: chosen. It tells a reader whether the line goes on without
+  saying why.
+
+### 4. Cost
+
+The research pages that described the earlier arrangement are reworded: the decision gates page,
+the disclosure policy, the roadmap, the claims and scope page and the glossary, and the README. The
+plan file's validator and the pages that render a gate gain the two facts; that is builder work.
+`CONTRIBUTING.md` (rule 1, which ties the priority claim to a decided and recorded Gate A) and the
+note on `research_forbidden_claim_terms` in `tools/ledger.json` restate the earlier arrangement and
+must be reworded to match. No brick status, test figure or forbidden term changes, and no term is
+lifted.
+
+## D-035 — Public prose says "verified"; descriptions lead with what Psyche does; `docs/outreach/` is removed
+
+**Date:** 2026-10-27 · **Decided by:** Cagan · **Lane:** architect-pm (documents, `tools/ledger.json`
+program wording); builder (website, `tools/publish/**`, `.gitignore`) · **Status:** decided; one
+point is open for the project lead (section 5)
+
+### 1. Context
+
+Before the first gate, the project lead reviewed the public wording and ruled on the points below.
+The state they changed: the ledger's status name `PROVEN` appeared in public prose and labels;
+descriptions led with the long-term aim and called the components "original"; stage 2's tests
+were called an "external yardstick" and "published protocols"; the battery page lead and the hero
+lead carried the earlier wording that item 2 replaces; and `docs/outreach/` held outreach
+material.
+
+### 2. The decision
+
+1. **"Verified", not "proven", in public prose and labels.** The status page group "Proven"
+   becomes "Verified", and "proven correct and deterministic" becomes "verified correct and
+   deterministic". The ledger's internal status name `PROVEN` stays as it is in
+   `tools/ledger.json` and in the tools. Where the glossary or a table names that status, it shows
+   the status name with its plain meaning: verified by the full adversarial suite on every
+   interpreter; not a formal proof.
+2. **Wording fixes.**
+   - The battery page lead reads: each was designed to probe behaviour that memorised responses
+     would not explain.
+   - The hero lead ends: and will report the result at release, whichever way it falls.
+   - The status page notes that brick names, such as "depression path", name mechanisms in the
+     substrate, not clinical models.
+   - "Original" is removed from "original, brain-inspired components" in public descriptions,
+     including `program.aim` in `tools/ledger.json`, until Gate A decides novelty. The aim now
+     reads: artificial general intelligence (AGI), pursued through brain-inspired components built
+     and tested in stages. This supersedes the wording quoted in D-033 item 1, which stays as
+     written because this file is append-only.
+   - Public descriptions lead with what Psyche is and does, with AGI named as the long-term aim
+     later in the sentence.
+   - Where public text called stage 2's tests an "external yardstick" or "published protocols", it
+     says that the behavioural paradigms are published, while the agent-side operationalisation and
+     the pass criteria are the project's own and are pre-registered privately.
+3. **`docs/outreach/` is removed** from the repository, with the links and references to it:
+   the entry in `docs/publish.json`, the lines in `.gitignore` and the entry in the publish
+   tests. Earlier entries of this file that mention it are history and are not edited. The
+   docstring of `tools/ledger_check.py` still names it as history; that file is protected and is
+   not touched here.
+
+### 3. Options considered
+
+- Keep `PROVEN` in public prose and explain it in the glossary: the word and its explanation
+  stay in one place, but a reader meets the word first.
+- Keep "original" in descriptions and rely on the claims rule, which asks for evidence.
+- Keep `docs/outreach/` in the repository.
+
+The ruling takes the other course in each case.
+
+### 4. Cost
+
+Every public page that used the retired wording was reworded: the README, the map of content, the
+architecture, methodology and report pages, the research pages, the status, battery and landing
+pages, the site metadata and the citation file. The social card image carries the earlier lead and
+is replaced. `CONTRIBUTING.md` (the opening sections and rules 1, 3 and 5) and the note on
+`research_forbidden_claim_terms` in `tools/ledger.json` are reworded to match. No brick status,
+test figure or forbidden term changes.
+
+### 5. Open for the project lead
+
+The ruling ties the return of "original" to Gate A deciding novelty. Under D-034 a decided gate
+shows only a date and a next step, and the word returning after Gate A would itself show the
+outcome. Until the lead confirms otherwise, the word stays out until release and then only with
+evidence, as `docs/research/claims-and-scope.md` already says.

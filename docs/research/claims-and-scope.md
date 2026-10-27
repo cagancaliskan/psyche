@@ -9,12 +9,12 @@ claims rule that the whole project follows (rule 1 in [CONTRIBUTING.md](../../CO
 
 ## The project's aim
 
-Psyche's long-term aim is artificial general intelligence (AGI), built from original,
-brain-inspired components ([D-033](../../DECISIONS.md)). It may be named anywhere, as an aim. No
-public text describes Psyche, the substrate, the spiking model or any other component as having
-reached that aim, and no result of this line is presented as a measured step toward it. The line
-asks a narrow question about one measurable class of behaviour, and its claims stay inside that
-question.
+Psyche is an open research project that builds brain-inspired components in stages, with
+artificial general intelligence (AGI) as its long-term aim ([D-033](../../DECISIONS.md)). The aim
+may be named anywhere, as an aim. No public text describes Psyche, the substrate, the spiking
+model or any other component as having reached that aim, and no result of this line is presented
+as a measured step toward it. The line asks a narrow question about one measurable class of
+behaviour, and its claims stay inside that question.
 
 ## The core rule
 
@@ -42,8 +42,9 @@ Each line below applies to every public text about the cognitive-map line.
 - Never: call it a mind, sentient, aware, general intelligence or a validated cognitive model.
 - Never: "the brain does it this way". Say "brain-inspired" or "biologically plausible".
 - Never: a general claim that spiking networks are more efficient than conventional networks.
-- Never: a priority claim, such as "the first" or "first model to", unless [Gate A](gates.md)
-  has checked it and an entry in [DECISIONS.md](../../DECISIONS.md) records that.
+- Never: a priority claim, such as "the first" or "first model to", before release. A decided
+  [Gate A](gates.md) does not lift this, whatever its outcome
+  ([D-034](../../DECISIONS.md)).
 - Never: energy presented as measured. It is an analytic estimate or a lower bound.
 - Never: a number without a captured source, meaning a results file produced by code.
 - Never: a planned result written as if it had been obtained.
@@ -149,7 +150,7 @@ the withheld method.
 | Sentences | Short and active. "X does Y (Fig. N)" rather than "we show that". |
 | Terms | One name for one thing, used the same way everywhere. A second name for the same thing is a defect. |
 | Numbers | Mean with a confidence interval. A value rather than "approximately". "Significant" only with a statistical test behind it. |
-| Restraint | "Novel" only with evidence. No priority claim unless Gate A has checked it and DECISIONS.md records it, no marketing language, no exclamation marks. |
+| Restraint | "Novel" and "original", as claims about the work, only with evidence. No priority claim before release, whatever a gate decides, no marketing language, no exclamation marks. |
 | Figures | Every axis labelled with its unit, a colour-blind-safe palette, and every figure cited in the text. Figures are generated from code. |
 | Citations | Primary sources, with a DOI, and the year and venue checked. A reference is used only after it has been checked against its primary source; a second-hand citation is not enough. |
 | Status words | Lowercase in the line's prose, exactly the vocabulary of `tools/research_plan.json`: planned, active and done for phases; upcoming and decided for gates; upcoming, met and missed for deadlines. |

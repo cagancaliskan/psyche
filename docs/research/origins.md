@@ -2,10 +2,11 @@
 
 > Public summary. Detail is withheld until submission under the [disclosure policy](disclosure-policy.md).
 
-Psyche is one open research project building toward artificial general intelligence (AGI), named
-here only as its long-term aim. It grows in stages. This page tells how the first stage, the
-substrate, led to the second, spiking cognitive maps: what the substrate built and showed, what
-carries over into the new line, what does not, and where the stages point.
+Psyche is one open research project that builds brain-inspired components in stages, with
+artificial general intelligence (AGI) as its long-term aim, named here only as an aim. This page
+tells how the first stage, the substrate, led to the second, spiking cognitive maps: what the
+substrate built and showed, what carries over into the new line, what does not, and where the
+stages point.
 
 The short version: the substrate gave the project its method, its tooling and one hard lesson
 about evidence. The cognitive-map line is built around that lesson. It is a separate codebase and
@@ -20,10 +21,10 @@ spreading activation, a multi-source activation field and source clustering; a w
 competition, prunes activated material that no perceived input supports, and broadcasts back
 within a bounded budget. The cycle closes end to end.
 
-What it proves is mechanism: its lower layers are correct and deterministic, reproducibly, and
-its closed cycle is tester-verified as mechanism. It makes no cognitive claim. It is archived on
-Zenodo ([doi:10.5281/zenodo.20474613](https://doi.org/10.5281/zenodo.20474613)), and its full
-account is in [PSYCHE.md](../PSYCHE.md).
+What it establishes is mechanism: its lower layers are verified correct and deterministic,
+reproducibly, and its closed cycle is tester-verified as mechanism. It makes no cognitive claim.
+It is archived on Zenodo ([doi:10.5281/zenodo.20474613](https://doi.org/10.5281/zenodo.20474613)),
+and its full account is in [PSYCHE.md](../PSYCHE.md).
 
 Its development has been paused since 2026-10-23 under D-031 in
 [DECISIONS.md](../../DECISIONS.md), so that the cognitive-map line can run at full pace: no new
@@ -36,9 +37,8 @@ figure; every registered suite still passes with no failures, as the ledger reco
 Two aims are recorded in [`tools/ledger.json`](../../tools/ledger.json), both as aims and never
 as properties of any system.
 
-The project's long-term aim (D-033) is artificial general intelligence, built from original,
-brain-inspired components. Nothing built so far is general intelligence, and no page here
-presents any component as having reached that aim.
+The project's long-term aim (D-033) is artificial general intelligence. Nothing built so far is
+general intelligence, and no page here presents any component as having reached that aim.
 
 The substrate's own aim is narrower:
 
@@ -67,11 +67,12 @@ missing was an external yardstick the mechanism could both produce and be graded
 
 ## How that led to stage 2
 
-The cognitive-map line is built around the external yardstick from the start.
+The cognitive-map line is built around external references from the start.
 
-- **Published protocols.** Its tests are classic behavioural paradigms with published protocols,
-  from Tolman's mazes onward, not yardsticks the project designs for itself. See the
-  [test battery](test-battery.md).
+- **Published paradigms.** Its tests are classic behavioural paradigms, from Tolman's mazes
+  onward. The paradigms are published. How each is operationalised for an agent, and its pass
+  criterion, are the project's own and are pre-registered privately, so they are not an external
+  protocol for artificial agents. See the [test battery](test-battery.md).
 - **Baselines checked against their papers.** Every baseline agent is reproduced against the
   behaviour its own paper reports before anything is compared against it. That is the question of
   [Gate B](gates.md).
@@ -182,7 +183,7 @@ earlier one by a new entry. D-031, which pauses the substrate and makes spiking 
 active line, is one such entry; D-033, which names AGI as the project's long-term aim, is another.
 
 The cognitive-map line keeps decision records in the same form. Those that change this
-repository appear here: a change of program state or a lifted claim term of the line needs an
+repository appear here: a change of program state, or a claim term lifted at release, needs an
 entry in DECISIONS.md, and a moved public date needs an entry in the plan's change log. The
 line's other decision records stay private and are not released (see the
 [disclosure policy](disclosure-policy.md)).

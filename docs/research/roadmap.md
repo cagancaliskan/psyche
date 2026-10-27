@@ -131,8 +131,17 @@ to it rather than as dates.
   value, the date of the change and the reason. The plan's validator rejects a moved gate date
   that has no such entry. The change log is part of the public plan file.
 - **Fixed status words.** A phase is planned, active or done; a gate is upcoming or decided; a
-  deadline is upcoming, met or missed. A decided gate does not show its verdict until submission
-  (see [Decision gates](gates.md)).
+  deadline is upcoming, met or missed. A decided gate shows only the date it was decided and the
+  next step: the line continues to the next phase, extends, or stops (see
+  [Decision gates](gates.md)).
+- **Recording a decision.** A decided gate is recorded in one edit to the plan, and the plan's
+  validator refuses a partial one. The edit sets the gate to decided; adds `decided_on`, the date it
+  was decided, and `next_step`, one of `continues`, `extends` or `stops`; and moves `as_of` to a
+  date on or after `decided_on`. When the next step is `continues` or `stops`, it also marks the
+  phase the gate closes as done. When it is `continues`, the same edit marks the next phase
+  active, because the site and the generated blocks read the phase status from the plan and not
+  from the date. When it is `extends`, the phase stays active, so the same edit gives it a new end
+  date or adds a gate that ends it. No other text about the decision is added to the plan.
 
 ## Not on this page
 

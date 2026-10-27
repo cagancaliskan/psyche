@@ -10,9 +10,9 @@ listed in full in the [reading list](reading-list.md).
 
 ## The project
 
-**Psyche.** One open research project building toward artificial general intelligence, from
-original, brain-inspired components. It grows in stages, and each stage is built test-first and
-kept as a citable artifact. The overview is the [repository README](../../README.md).
+**Psyche.** One open research project that builds brain-inspired components in stages, with
+artificial general intelligence as its long-term aim. Each stage is built test-first and kept as
+a citable artifact. The overview is the [repository README](../../README.md).
 
 **Stage.** One step of the project, with its own code, record and claims. Stage 1 is the
 [substrate](#the-substrate), the project's foundation, whose development is paused. Stage 2 is the
@@ -30,8 +30,8 @@ described as having reached it, and no result is presented as a measured step to
 **Cognitive map.** An internal model of how places, or items, relate to one another. Tolman
 (1948) proposed it to explain maze behaviour in rats that chains of learned stimulus-response
 associations did not explain. In this line the term names a measurable class of behaviour:
-behaviour that memorised stimulus-response associations cannot explain and an internal model of
-the environment can. Showing that behaviour on a test is evidence of the behaviour and of
+behaviour that memorised stimulus-response associations would not explain and an internal model
+of the environment would. Showing that behaviour on a test is evidence of the behaviour and of
 nothing more ([claims and scope](claims-and-scope.md)).
 
 The five behaviours below are the tests of the [battery](test-battery.md). Each is adapted from a
@@ -129,8 +129,10 @@ the shape of the underlying distribution. The line reports uncertainty over seed
 **Gate.** A fixed point in the plan where a decision is taken against criteria written in
 advance. Each gate falls at or near the end of a phase, and its decision sets the route the next
 phase takes. A gate has a public question, criteria written before the work they judge and kept
-private until submission, and a fallback fixed in advance. Its public status is `upcoming` or `decided`; a
-decided gate does not show its verdict. The gates are labelled A to D ([gates](gates.md)).
+private until submission, and a fallback fixed in advance. Its public status is `upcoming` or
+`decided`. A decided gate shows only the date it was decided and the next step (the line
+continues to the next phase, extends, or stops), never its verdict. The gates are labelled A to D
+([gates](gates.md)).
 
 **Layer.** One of three levels the plan is built in, so that the line does not rest on its
 riskiest part. The authoritative wording is generated from the plan file on the
@@ -229,11 +231,11 @@ tester before anything builds on it. Each brick has a short id, such as 0a for t
 store, and the ledger records its status. Build and meaning are tracked as two separate axes and
 are never collapsed into one.
 
-**Build axis.** Whether a brick is built and verified, as a mechanism. Its labels:
+**Build axis.** Whether a brick is built and verified, as a mechanism. Its status names:
 
-| Label | Meaning |
+| Status name | Meaning |
 |---|---|
-| `PROVEN` | Built and verified by the tester against hard properties; for the substrate, determinism, integrity and purity |
+| `PROVEN` | Verified by the full adversarial suite on every interpreter; not a formal proof. For the substrate: determinism, integrity and purity |
 | `BUILT-UNVALIDATED` | Built and tester-verified as mechanism, with no positive meaning verdict |
 | `DESIGNED` | Designed on paper, in a vision document or a specification, and not built |
 | `HORIZON` | Open research, with no agreed definition of done |

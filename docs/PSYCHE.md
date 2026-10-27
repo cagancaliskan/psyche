@@ -1,13 +1,13 @@
 # The substrate: stage 1 of Psyche
 
 > **Stage 1 of Psyche: the substrate.** This is the foundation of Psyche, an open research
-> project building toward AGI, and the origin of the project's method. Its development has been
-> paused since 2026-10-23 (D-031) while stage 2, spiking cognitive maps, is the active line; its
-> code, suites, ledger and this record stay maintained. Project overview: [README](../README.md);
-> how the substrate led to stage 2: [Origins](research/origins.md). The text below was the
-> repository README until 2026-10-23, when the substrate was the whole project, so in it the
-> name "Psyche" refers to the substrate; [About this page](#about-this-page) lists every edit
-> made since.
+> project that builds brain-inspired components in stages with AGI as its long-term aim, and the
+> origin of the project's method. Its development has been paused since 2026-10-23 (D-031) while
+> stage 2, spiking cognitive maps, is the active line; its code, suites, ledger and this record
+> stay maintained. Project overview: [README](../README.md); how the substrate led to stage 2:
+> [Origins](research/origins.md). The text below was the repository README until 2026-10-23, when
+> the substrate was the whole project, so in it the name "Psyche" refers to the substrate;
+> [About this page](#about-this-page) lists every edit made since.
 
 A **biologically-motivated, dependency-free Python prototype** of a memory-and-activation
 substrate for a cognitive architecture. Psyche implements, with no third-party
@@ -23,7 +23,7 @@ unperceived material from the winner, and performs a single **bounded broadcast*
 the substrate that biases the next cycle — closing the loop
 *perceive → activate → cluster → compete → prune → broadcast → next cycle*.
 
-The substrate and activation layers are **proven** correct and deterministic. The
+The substrate and activation layers are **verified** correct and deterministic. The
 source-clustering and workspace layers are **mechanism-verified** (independently and
 adversarially tester-verified for determinism, purity, integrity, and stability) but their
 **cognitive meaning is not claimed** — closing the loop is a *mechanism* result, not a
@@ -48,7 +48,7 @@ only as an aim. This substrate is not AGI and makes no such claim. It is **not**
 claim of machine cognition, and **not** a "mind" or "consciousness." The neuroscience it borrows
 vocabulary from
 (below) is **conceptual inspiration**, not an implemented or reproduced result. Where the
-system does something unproven, this documentation says so plainly.
+system does something unverified, this documentation says so plainly.
 
 > Note on the `docs/design/` folder: it contains the project's **original aspirational
 > vision documents**, written *before* this code and using far grander language than the
@@ -81,7 +81,10 @@ Not everything in the repository carries the same assurance, and the project's f
 is to never let one tier borrow the credibility of another. Three tiers are in play, from
 strongest to weakest.
 
-### Tier 1 — `PROVEN` (substrate + activation)
+### Tier 1 — verified (substrate + activation)
+
+The ledger's status name for this tier is `PROVEN`. It means: verified by the full adversarial
+suite on every interpreter; it is not a formal proof.
 
 The substrate store and the spreading-activation engine are verified for three properties:
 
@@ -142,7 +145,7 @@ earned.
 A separate body of pre-registered experiment scaffolding (a SWOW association-norm loader, a
 fan-effect characterization, and a graded semantic-priming harness) lives under `experiments/`
 and is genuinely depended upon by the structural check below. It is disciplined and
-pre-registered, but it is a **distinct, lower** tier: it is **not** `PROVEN` and it has **not**
+pre-registered, but it is a **distinct, lower** tier: it does **not** hold `PROVEN` and it has **not**
 had a validator pass. It is an *instrument*; its existence does not establish a cognitive
 result. (The instruments' **mechanism** suites — `test_harness.py`, `test_priming_instrument.py`,
 `test_priming_1e.py` — were since brought into the canonical runner and are tester-verified, per
@@ -160,7 +163,7 @@ out of `BUILT · UNVALIDATED`.
 
 ### The line that matters
 
-**"The mechanism is correct and deterministic" is proven (Tier 1) or tester-verified
+**"The mechanism is correct and deterministic" is verified (Tier 1) or tester-verified
 (Tier 2); "the mechanism reproduces a cognitive phenomenon" has not been shown.** The meaning
 bar remains open after three structurally distinct refusals — see "Limitations & future work".
 
@@ -403,7 +406,8 @@ figures that had gone stale or were wrong are corrected (the source-module count
 that follows from those two; and the BUG-0b1 flip count and interpreter, now matching [the
 BUG-0b1 record](BUG-0b1-coalition-strength-determinism.md) section 1); one module is added to
 the project tree and one wrong tree label is corrected; and a later-record note follows the open
-defect, with another note under the project tree.
+defect, with another note under the project tree; and the word "proven" is replaced by "verified"
+in prose, with the ledger's status name `PROVEN` explained where the tiers are set out.
 
 ---
 
