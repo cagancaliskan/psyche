@@ -13,19 +13,11 @@ import sitemap from '@astrojs/sitemap';
 import starlightLinksValidator from 'starlight-links-validator';
 import { ORIGIN, PROJECT_DESCRIPTION, THEME_COLOR } from './src/lib/seo.ts';
 import { makeSerialize } from './scripts/sitemap-lastmod.mjs';
+import { tableRegionIntegration } from './scripts/table-region.mjs';
 
 const BASE = '/psyche';
 const SITE = ORIGIN + BASE + '/';
-
-// One small inline script for the chrome, run once the page is parsed: the previous / next cards
-// carry a light that follows a mouse pointer. Its position is written to --sx-spot-x / --sx-spot-y
-// on the card under it, once per frame (global.css draws the light).
-const CHROME_SCRIPT = `(()=>{
-let frame=0;
-const spot=(e)=>{if(e.pointerType==='touch')return;const card=e.target instanceof Element?e.target.closest('.pagination-links a'):null;if(!card)return;cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{const r=card.getBoundingClientRect();card.style.setProperty('--sx-spot-x',e.clientX-r.left+'px');card.style.setProperty('--sx-spot-y',e.clientY-r.top+'px');});};
-const start=()=>{document.querySelector('.pagination-links')?.addEventListener('pointermove',spot,{passive:true});};
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
-})();`;
+const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
 
 // What the social card says, for people who cannot see it. The card is drawn by scripts/make-og.mjs,
 // which writes this description of itself beside the image (brand/psyche-social.json), so the alt
@@ -56,14 +48,20 @@ export default defineConfig({
   trailingSlash: 'always',
   vite: {
     build: { sourcemap: false },
+    // The repository root, for the footer's "Last updated" (src/lib/lastUpdated.ts): the path the
+    // sitemap's dates are read from.
+    define: { __REPO_ROOT__: JSON.stringify(REPO_ROOT) },
   },
   integrations: [
+    // Puts every table of a Markdown page in a named, keyboard-reachable scroll region (WCAG 2.1.1);
+    // the Satteri counterpart of a rehype plugin (scripts/table-region.mjs).
+    tableRegionIntegration(),
     // Registered here so each entry can carry a <lastmod> from git (scripts/sitemap-lastmod.mjs).
     // Starlight adds its own, with no dates, only when none is registered.
-    sitemap({ serialize: makeSerialize({ repoRoot: fileURLToPath(new URL('../', import.meta.url)), base: BASE }) }),
+    sitemap({ serialize: makeSerialize({ repoRoot: REPO_ROOT, base: BASE }) }),
     starlight({
       title: 'Psyche',
-      // The description of any page that has none of its own (the 404 page): the project in a sentence.
+      // The description of any page that sets none of its own: the project in a sentence.
       description: PROJECT_DESCRIPTION,
       logo: { light: './src/assets/brand/psyche-wordmark-light.svg', dark: './src/assets/brand/psyche-wordmark-dark.svg', replacesTitle: true },
       favicon: '/favicon.svg',
@@ -78,7 +76,19 @@ export default defineConfig({
         '@fontsource-variable/martian-mono',
         './src/styles/docs.css',
       ],
-      components: { PageTitle: './src/components/docs/PageTitle.astro' },
+      // PageTitle: a ruled strip above the title: the stage and its section (or the sidebar's group) and, on
+      // stage 1 and stage 2 pages, the stage's state.
+      // Footer: Starlight's (edit link, previous and next) with a title block below: the sheet, its stage,
+      // the next gate, the project's links and the page's date.
+      // Search: Starlight's, with the key cap drawn rather than written, so the button's name holds the
+      // text drawn on it (WCAG 2.5.3); src/lib/searchOverride.test.ts keeps it in step with Starlight's.
+      components: {
+        PageTitle: './src/components/chrome/PageTitle.astro',
+        Footer: './src/components/chrome/Footer.astro',
+        Search: './src/components/chrome/Search.astro',
+      },
+      // The 404 page is src/pages/404.astro, a StarlightPage set as a drafting sheet.
+      disable404Route: true,
       routeMiddleware: './src/routeData.ts',
       sidebar: stagedSidebar(),
       lastUpdated: false,
@@ -103,7 +113,6 @@ export default defineConfig({
         { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
         { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE}og.png` } },
         { tag: 'meta', attrs: { name: 'twitter:image:alt', content: socialCardAlt() } },
-        { tag: 'script', content: CHROME_SCRIPT },
       ],
     }),
     react(),

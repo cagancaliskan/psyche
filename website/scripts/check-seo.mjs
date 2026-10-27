@@ -3,7 +3,7 @@
 //
 // Every built page (the 404 page included):
 //   head      one title; a canonical address under the site; a description of 120 to 160 characters,
-//             different on every page but the 404 page; og:title, og:description (the page's own),
+//             different on every page; og:title, og:description (the page's own),
 //             og:url (the canonical address), og:locale, og:site_name; twitter:card, twitter:title and
 //             twitter:description (the og values), twitter:image
 //   image     og:image and twitter:image name a file that is in dist/, a PNG of the size og:image:width
@@ -12,6 +12,8 @@
 //   colour    two theme-color tags, light and dark, with their media queries
 //   icons     the 32 px icon, the 180 px touch icon and the manifest exist, at the sizes they claim
 //   robots    noindex on the 404 page and on no other
+//   404 page  its own title ("Page not found", a name and not a status code), the description in
+//             lib/seo.ts NOT_FOUND, and its own canonical address; every other page keeps the rules above
 //   JSON-LD   on the landing page only: parses, and holds a WebSite and a ResearchProject
 // The site:
 //   robots.txt             allows everything and names the sitemap
@@ -21,12 +23,14 @@
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BASE, ORIGIN, SITE_URL, THEME_COLOR } from '../src/lib/seo.ts';
+import { BASE, NOT_FOUND, ORIGIN, SITE_URL, THEME_COLOR } from '../src/lib/seo.ts';
 import { historyAvailable } from './sitemap-lastmod.mjs';
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const REPO = fileURLToPath(new URL('../../', import.meta.url));
 const DESCRIPTION = { min: 120, max: 160 };
+// Starlight writes `<title>` as the page's title, a bar and the site's title.
+const TITLE_SUFFIX = ' | Psyche';
 
 const problems = [];
 const bad = (where, message) => problems.push(`${where}: ${message}`);
@@ -119,16 +123,20 @@ for (const file of pages().sort()) {
   if (h.title.length !== 1 || !h.title[0].trim()) bad(where, `${h.title.length} <title> elements, expected one with text`);
   const canonical = h.links.filter((l) => l.rel === 'canonical');
   if (canonical.length !== 1 || !canonical[0].href?.startsWith(SITE_URL)) bad(where, `needs one canonical address under ${SITE_URL}`);
+  if (is404) {
+    // The 404 page is a page of its own: a name for a title, the address it is built at, its own description.
+    if (h.title.length === 1 && h.title[0] !== NOT_FOUND.title + TITLE_SUFFIX) bad(where, `the title is "${h.title[0]}", expected "${NOT_FOUND.title + TITLE_SUFFIX}"`);
+    if (canonical.length === 1 && canonical[0].href !== `${SITE_URL}${NOT_FOUND.route}/`) bad(where, `the canonical address is ${canonical[0].href}, expected ${SITE_URL}${NOT_FOUND.route}/`);
+  }
 
   const description = one('name', 'description');
   if (description !== undefined) {
     if (description.length < DESCRIPTION.min || description.length > DESCRIPTION.max) {
       bad(where, `description is ${description.length} characters, not ${DESCRIPTION.min} to ${DESCRIPTION.max}`);
     }
-    if (!is404) {
-      if (seen.has(description)) bad(where, `description is also the description of /${seen.get(description)}`);
-      seen.set(description, route);
-    }
+    if (is404 && description !== NOT_FOUND.description) bad(where, 'the description is not NOT_FOUND.description in src/lib/seo.ts');
+    if (seen.has(description)) bad(where, `description is also the description of /${seen.get(description)}`);
+    seen.set(description, route);
   }
   const ogTitle = one('property', 'og:title');
   const ogDescription = one('property', 'og:description');

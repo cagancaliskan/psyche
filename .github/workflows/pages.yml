@@ -77,7 +77,7 @@ jobs:
         working-directory: website
         run: npm ci
 
-      - name: Unit tests (plan, maze, battery, search-engine head and sitemap dates)
+      - name: Unit tests (plan, maze, battery, search-engine head, sitemap dates, page chrome, search override, table regions, a11y tool lock)
         working-directory: website
         run: npm test
 
@@ -95,11 +95,11 @@ jobs:
             exit 1
           fi
 
-      # What the disclosure job scans: the HTML of the research and custom pages. Not
-      # included on purpose: dist/substrate/ (the substrate's own pre-existing record, which
-      # uses some denylisted words in the substrate's sense), dist/pagefind/ (the search
-      # index of every page) and dist/_astro/ (library bundles, whose code legitimately
-      # contains common words). The research sources and docs/PSYCHE.md are
+      # What the disclosure job scans: the HTML of the research and custom pages, the 404 page
+      # included. Not included on purpose: dist/substrate/ (the substrate's own pre-existing
+      # record, which uses some denylisted words in the substrate's sense), dist/pagefind/
+      # (the search index of every page) and dist/_astro/ (library bundles, whose code
+      # legitimately contains common words). The research sources and docs/PSYCHE.md are
       # disclosure-scanned by the governance workflow; docs/ARCHITECTURE.md and
       # docs/METHODOLOGY.md are deliberately not, and only the pull request leak check reads
       # changes to them.
@@ -109,6 +109,7 @@ jobs:
           name: research-pages
           path: |
             website/dist/index.html
+            website/dist/404.html
             website/dist/roadmap/
             website/dist/battery/
             website/dist/status/
@@ -121,27 +122,34 @@ jobs:
         with:
           path: website/dist
 
-      # Accessibility of the built pages: website/scripts/check-a11y.mjs serves website/dist on
-      # a free local port, drives the runner's Chrome and runs axe-core at WCAG 2.2 AA over the
-      # key pages (home, battery, roadmap, status, research, and three docs pages that carry the
-      # timeline and the other diagram kinds), light and dark, desktop and phone width. It fails
-      # on any serious or critical violation and closes everything it starts.
-      # Its two dev packages (puppeteer-core, axe-core) are installed by the script itself at
-      # the exact versions pinned at its top; they are not site dependencies, and their own
-      # dependencies are not locked. That is why this is the LAST step of the job, after the
-      # site has been uploaded: nothing the step installs or runs can change what is published.
-      # TODO(a11y): report-only for now. The first run reports serious violations of the rule
-      # label-content-name-mismatch (WCAG 2.5.3) on the search button and two links of the
-      # home page, and axe cannot decide color-contrast on a few hundred elements, which need
-      # a look by hand. The docs pages with wide tables also report scrollable-region-focusable
-      # at phone width (a table that scrolls sideways cannot take keyboard focus): older than the
-      # diagrams, the fix is a focusable wrapper around each table. Remove `continue-on-error`
-      # once the violations are fixed, so that a serious or critical violation fails this job.
+      # Accessibility of the built pages: website/scripts/check-a11y.mjs serves website/dist on a free
+      # local port, drives the runner's Chrome and runs axe-core at WCAG 2.2 AA over every page of the
+      # site (found in dist, the 404 page included) and over the interface states a reader opens (the
+      # search dialog with results, the phone menu, the phone contents list), light and dark, desktop
+      # and phone width. The step fails on any serious or critical violation, and on a page or state
+      # it cannot audit; moderate and minor ones are listed, and what axe cannot decide (text contrast
+      # over gradients, pseudo-elements and images) is listed for a human look and never fails it. It
+      # closes everything it starts.
+      # Its two dev packages (puppeteer-core, axe-core) are installed by the script itself, at the exact
+      # versions pinned at its top and with their own dependencies as website/scripts/a11y-tools/
+      # package-lock.json locks them (`npm ci`, tried three times); they are not site dependencies. That
+      # is why this is the LAST step of the job, after the site has been uploaded: nothing the step
+      # installs or runs can change what is published. A failure here fails the build job, so a pull
+      # request cannot merge on it and the deploy job, which needs the build job, does not run. The
+      # script's exit code says why: 1 is a violation or a page it could not audit, 2 is that it could not
+      # set itself up (npm, Chrome), which says nothing about the site, so that one is run once more.
       - name: Accessibility check (axe-core, WCAG 2.2 AA)
-        continue-on-error: true
-        timeout-minutes: 10
+        timeout-minutes: 15
         working-directory: website
-        run: npm run check:a11y -- --json "${RUNNER_TEMP}/axe-report.json"
+        run: |
+          status=0
+          node scripts/check-a11y.mjs --json "${RUNNER_TEMP}/axe-report.json" || status=$?
+          if [ "$status" -eq 2 ]; then
+            echo "::warning title=check-a11y::the check could not set itself up; trying once more"
+            status=0
+            node scripts/check-a11y.mjs --json "${RUNNER_TEMP}/axe-report.json" || status=$?
+          fi
+          exit "$status"
 
   disclosure:
     needs: build

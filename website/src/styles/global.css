@@ -76,13 +76,37 @@
   --sx-surface: #0b0f18;
   --sx-surface-2: #111726;
   --sx-hairline: #1c2333;
+  /* The edge of a control, or the mark of a state, where nothing else identifies it: 3:1 or more
+     against the canvas and both surfaces (WCAG 1.4.11). Decorative rules stay --sx-hairline. */
+  --sx-rule-strong: #646e84;
   --sx-muted: #9aa4b8;
   --sx-glow: 0 0 0.9rem color-mix(in oklab, var(--sx-agent) 45%, transparent);
   --sx-grid: color-mix(in oklab, var(--sx-structure) 9%, transparent);
   --sx-ease: cubic-bezier(0.2, 0.7, 0.1, 1);
-  /* The landing page's one mono label: its size and tracking, as in the hero's stage list. */
+  /* The one mono label of the site, on the landing page, the battery and the chrome alike: a field
+     label or a section head. Heads take weight 500, field labels 400. Chips are the only smaller
+     mono type (10px, 0.12em), in plan.css. */
   --sx-lab-size: 0.65625rem;
   --sx-lab-track: 0.13em;
+  /* The gutter of the landing page's sheet, and so of the footer beneath it (landing.css, hero.css). */
+  --sx-gutter: max(clamp(24px, 6vw, 104px), calc((100vw - 90rem) / 2));
+  /* How long a state change takes in the chrome: a colour, a bar that runs a rule, an underline that
+     draws. All three are 0s under prefers-reduced-motion: reduce, so no rule needs its own override. */
+  --sx-dur: 180ms;
+  --sx-dur-bar: 550ms;
+  --sx-dur-line: 450ms;
+}
+@media (max-width: 900px) {
+  :root {
+    --sx-gutter: 24px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --sx-dur: 0s;
+    --sx-dur-bar: 0s;
+    --sx-dur-line: 0s;
+  }
 }
 
 :root[data-theme='light'] {
@@ -105,19 +129,47 @@
   --sx-surface: #ffffff;
   --sx-surface-2: #eef1f7;
   --sx-hairline: #dde2ec;
+  --sx-rule-strong: #76809a;
   --sx-muted: #4a5468;
   --sx-glow: 0 0 0.75rem color-mix(in oklab, var(--sx-agent) 25%, transparent);
   --sx-grid: color-mix(in oklab, var(--sx-structure) 7%, transparent);
 }
 
-/* ---------- Site chrome: Starlight's header, sidebars, pagination and asides ----------
-   Starlight's own CSS sits in the `starlight` layer, so these rules win over it by layer order
-   alone and keep low specificity. Hover and state changes take 180ms on --sx-ease; with
-   prefers-reduced-motion: reduce nothing in the chrome moves. */
+/* ---------- Site chrome: Starlight's header, search, sidebars, pagination and asides ----------
+   Set as a drafting sheet, in the language of the landing, the battery and the drawn diagrams:
+   hairline rules instead of cards, square corners, mono labels with a little tracking, no fill, no
+   glow and no shadow. The signal colour is kept for what is current or active: the page you are on,
+   the heading you are reading, a row you point at. Hover is an ink colour change.
+   Starlight's own CSS sits in the `starlight` layer, so these rules win over it by layer order alone
+   and keep low specificity. State changes take --sx-dur (180ms) on --sx-ease; with
+   prefers-reduced-motion: reduce the durations are 0s, whatever a rule's specificity, so nothing in the
+   chrome moves.
+
+   Where a border is the only thing that identifies a control (the search field, the menu button, the
+   contents toggle, the search input) it is drawn in --sx-rule-strong, which holds 3:1 against the
+   canvas and both surfaces (WCAG 1.4.11). Every other rule is --sx-hairline: it separates and
+   decorates, and the text beside it says what it is.
+
+   Catalog sources (21st.dev), rewritten in plain CSS on Starlight's markup:
+   - the search field after "Kbd Input Group" by uiable and "Input Group with Keyboard Shortcut" by
+     sean0205 (a boxed field with a key cap at its end), "Search Input with Keyboard Shortcut" by
+     shadcnspace, and the key cap after "Kbd" by shadcn;
+   - the search dialog after "Command Menu" by victor-teles (results grouped under small labels, the
+     match in ink, the active row told by colour and not by a fill), with the corner marks after
+     "Corner Frame" by kevingirelli;
+   - the sidebar after "Sidebar Light" by inference-sh (a rail with plain text rows, the current one
+     in ink) and "Animated Sidebar" by unlumen (the active bar);
+   - the contents list after "Table of Contents" by appica-dev and by mohammadshehadeh (a bar that
+     rides on the rail beside the current heading, no fill);
+   - previous and next after "Numberless Pagination" by shadcnui-blocks (two joined cells, one for
+     each direction, with no page numbers), the short bar on the rule after "Spec Sheet" by
+     isaiahbjork and the title's underline after "Underline Link" by balick;
+   - asides after "Note" by shugar (a labelled note with no fill) and "Admonition" by deltacomponents. */
 
 @layer components {
   /* Starlight's surface variables, pointed at the tokens: one canvas behind the header and both
-     sidebars, one hairline for every rule, and ink (not a tint) for its default accent text. */
+     sidebars, one hairline for every rule, ink (not a tint) for its default accent text, and no
+     shadow anywhere in its chrome. */
   :root {
     --sl-color-bg-nav: var(--sl-color-black);
     --sl-color-bg-sidebar: var(--sl-color-black);
@@ -126,6 +178,8 @@
     --sl-color-hairline-shade: var(--sx-hairline);
     --sl-color-bg-inline-code: var(--sx-surface-2);
     --sl-color-text-accent: var(--sl-color-white);
+    --sl-shadow-md: none;
+    --sl-shadow-lg: none;
     --sx-card-edge: inset 0 1px 0 color-mix(in oklab, white 4%, transparent);
   }
 
@@ -143,7 +197,8 @@
     outline-offset: -3px;
   }
 
-  /* ---- Header: translucent canvas over a blur, a hairline under it ---- */
+  /* ---- Header: a nearly solid canvas over a light blur, a hairline under it. Text that scrolls under it
+     is softened, not smeared into a bright patch behind the search field. ---- */
   header.header {
     border-block-end: 1px solid var(--sx-hairline);
     background-color: var(--sl-color-black);
@@ -151,9 +206,9 @@
   @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     header.header,
     mobile-starlight-toc nav {
-      background-color: color-mix(in oklab, var(--sl-color-black) 72%, transparent);
-      -webkit-backdrop-filter: blur(14px) saturate(1.4);
-      backdrop-filter: blur(14px) saturate(1.4);
+      background-color: color-mix(in oklab, var(--sl-color-black) 94%, transparent);
+      -webkit-backdrop-filter: blur(6px);
+      backdrop-filter: blur(6px);
     }
   }
 
@@ -172,44 +227,55 @@
     width: auto;
   }
 
-  /* Search: a pill with a mono shortcut chip, after "Search Input with Keyboard Shortcut" by
-     shadcnspace and "Kbd" by shadcn (21st.dev), on Starlight's own search button. */
+  /* ---- Search ----
+     On a phone it is a bare icon. From 50rem it is a ruled field: a square box in the strong rule, a
+     mono label ("Search") for the placeholder and the shortcut as a small key cap at the end. */
   button[data-open-modal] {
     color: var(--sx-muted);
+    transition:
+      color var(--sx-dur) var(--sx-ease),
+      border-color var(--sx-dur) var(--sx-ease);
   }
   button[data-open-modal]:hover {
     color: var(--sl-color-white);
+  }
+  button[data-open-modal] > span {
+    font-family: var(--sl-font-mono);
+    font-size: var(--sx-lab-size);
+    font-weight: 500;
+    letter-spacing: var(--sx-lab-track);
+    line-height: 1;
+    text-transform: uppercase;
   }
   @media (min-width: 50rem) {
     button[data-open-modal] {
       height: 2.25rem;
       max-width: 20rem;
-      gap: 0.625rem;
-      padding-inline: 0.875rem 0.3125rem;
-      border: 1px solid var(--sx-hairline);
-      border-radius: 999px;
-      background-color: var(--sx-surface);
-      box-shadow: var(--sx-card-edge);
+      gap: 0.75rem;
+      padding-inline: 0.75rem 0.375rem;
+      border: 1px solid var(--sx-rule-strong);
+      border-radius: 0;
+      background-color: transparent;
       color: var(--sx-muted);
-      font-size: 0.875rem;
     }
     button[data-open-modal]:hover {
-      border-color: color-mix(in oklab, var(--sx-agent) 30%, var(--sx-hairline));
+      border-color: var(--sl-color-white);
       color: var(--sl-color-white);
     }
   }
+  /* The key cap: one square cap around the modifier and the key. */
   button[data-open-modal] > kbd {
     align-items: center;
     gap: 0.3em;
     height: 1.5rem;
     padding-inline: 0.5rem;
     border: 1px solid var(--sx-hairline);
-    border-radius: 999px;
-    background-color: var(--sx-surface-2);
+    border-radius: 0;
+    background: none;
     color: var(--sx-muted);
     font-family: var(--sl-font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.04em;
+    font-size: 0.625rem;
+    letter-spacing: 0.06em;
     line-height: 1;
   }
   button[data-open-modal] > kbd kbd {
@@ -218,26 +284,228 @@
     background: none;
     font: inherit;
   }
+  /* The keys are drawn, not written (components/chrome/Search.astro): the button's visible text is its label. */
+  button[data-open-modal] kbd[data-key]::before {
+    content: attr(data-key);
+  }
 
-  /* The search dialog: a hairline card on the card surface. */
+  /* ---- Registration corners ----
+     Hairline L shapes on the corners of a sheet's box, never a full frame of their own: the one recipe
+     of the search dialog, the footer's title block and the 404 page's sheet (`.sx-reg`). The box keeps
+     its own border, if it has one; the marks sit over it in the structure colour. After "Corner Frame" by
+     kevingirelli. */
+  .sx-reg {
+    position: relative;
+  }
+  .sx-reg::before,
+  site-search dialog::before {
+    --sx-reg: var(--sx-structure);
+    --sx-reg-len: 14px;
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 0 / var(--sx-reg-len) 1px,
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 0 / 1px var(--sx-reg-len),
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 0 / var(--sx-reg-len) 1px,
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 0 / 1px var(--sx-reg-len),
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 100% / var(--sx-reg-len) 1px,
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 100% / 1px var(--sx-reg-len),
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 100% / var(--sx-reg-len) 1px,
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 100% / 1px var(--sx-reg-len);
+    background-repeat: no-repeat;
+  }
+  @media (forced-colors: active) {
+    .sx-reg::before,
+    site-search dialog::before {
+      --sx-reg: CanvasText;
+    }
+  }
+
+  /* ---- Search dialog ----
+     A sheet on the card surface with a hairline and registration corners on a wide screen, and the
+     whole screen on a phone. The field is a box in the strong rule. A result is a page label in
+     mono, then its sections in a ruled list: a hairline rail that takes a 2px signal bar on the row
+     you point at or focus, as in the sidebar. */
   site-search dialog {
     border: 1px solid var(--sx-hairline);
     background-color: var(--sx-surface);
+    box-shadow: none;
   }
   @media (min-width: 50rem) {
     site-search dialog {
-      border-radius: 14px;
-      box-shadow:
-        var(--sx-card-edge),
-        0 1.5rem 4rem color-mix(in oklab, black 45%, transparent);
+      border-radius: 0;
     }
   }
-  #starlight__search {
-    --pagefind-ui-border: var(--sx-hairline);
-    --pagefind-ui-tag: var(--sx-surface-2);
+  @media (max-width: 49.99rem) {
+    site-search dialog::before {
+      display: none;
+    }
   }
-  #starlight__search input:focus {
+  /* "Cancel", on a phone. */
+  button[data-close-modal] {
+    font-family: var(--sl-font-mono);
+    font-size: var(--sx-lab-size);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+  button[data-close-modal]:hover {
+    color: var(--sl-color-white);
+  }
+
+  /* Pagefind UI reads these variables; the rest is set below. */
+  #starlight__search {
+    --pagefind-ui-primary: var(--sl-color-white);
+    --pagefind-ui-text: var(--sl-color-gray-2);
+    --pagefind-ui-background: var(--sx-surface);
+    --pagefind-ui-border: var(--sx-rule-strong);
+    --pagefind-ui-border-width: 1px;
+    --pagefind-ui-border-radius: 0;
+    --pagefind-ui-tag: var(--sx-surface-2);
+    --sl-search-corners: 0;
+  }
+  #starlight__search .pagefind-ui__search-input {
+    font-family: var(--sl-font-mono);
+    font-size: 0.875rem;
+  }
+  #starlight__search .pagefind-ui__search-input::placeholder {
+    color: var(--sx-muted);
+    opacity: 1;
+  }
+  #starlight__search .pagefind-ui__search-input:focus {
     --pagefind-ui-border: var(--sx-agent);
+  }
+  /* One ring, not two frames: the border turns to the signal colour and the outline sits flush over it. */
+  #starlight__search .pagefind-ui__search-input:focus-visible {
+    outline: 2px solid var(--sx-agent);
+    outline-offset: -2px;
+  }
+  #starlight__search .pagefind-ui__search-clear {
+    border-radius: 0;
+  }
+  #starlight__search .pagefind-ui__search-clear:focus {
+    outline: 0;
+  }
+  #starlight__search .pagefind-ui__search-clear:focus-visible {
+    outline: 2px solid var(--sx-agent);
+    outline-offset: -4px;
+  }
+  /* The count line, as a mono readout. */
+  #starlight__search .pagefind-ui__message {
+    height: auto;
+    padding: 0 0 0.75rem;
+    color: var(--sx-muted);
+    font-family: var(--sl-font-mono);
+    font-size: var(--sx-lab-size);
+    font-weight: 500;
+    letter-spacing: var(--sx-lab-track);
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+  /* The empty sheet says what to do instead of showing a blank panel: one mono line under the field,
+     gone as soon as there is a query (Pagefind hides its drawer while the field is empty). */
+  #starlight__search .pagefind-ui__form:has(.pagefind-ui__drawer.pagefind-ui__hidden)::after {
+    content: 'Type to search.';
+    display: block;
+    padding-block-start: 1rem;
+    color: var(--sx-muted);
+    font-family: var(--sl-font-mono);
+    font-size: 0.6875rem;
+    line-height: 1.5;
+  }
+  @media (hover: hover) and (pointer: fine) {
+    #starlight__search .pagefind-ui__form:has(.pagefind-ui__drawer.pagefind-ui__hidden)::after {
+      content: 'Type to search. Esc closes.';
+    }
+  }
+  /* Room under the last result or the "Load more" button, so the sheet's corner marks do not sit on it. */
+  #starlight__search .pagefind-ui__results-area {
+    padding-block-end: 1.5rem;
+  }
+  #starlight__search .pagefind-ui__results > * + * {
+    margin-top: 0;
+  }
+  #starlight__search .pagefind-ui__result + .pagefind-ui__result {
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--sx-hairline);
+  }
+  /* The page: a mono label above its sections, no icon and no fill. */
+  #starlight__search .pagefind-ui__result-title:not(:where(.pagefind-ui__result-nested *)),
+  #starlight__search .pagefind-ui__result-nested {
+    background-color: transparent;
+  }
+  #starlight__search .pagefind-ui__result-inner > .pagefind-ui__result-title {
+    padding: 0.375rem 0;
+  }
+  #starlight__search .pagefind-ui__result-inner > .pagefind-ui__result-title::before,
+  #starlight__search .pagefind-ui__result-nested::before {
+    display: none;
+  }
+  #starlight__search .pagefind-ui__result-inner > .pagefind-ui__result-title .pagefind-ui__result-link {
+    color: var(--sx-muted);
+    font-family: var(--sl-font-mono);
+    font-size: var(--sx-lab-size);
+    font-weight: 500;
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
+    transition: color var(--sx-dur) var(--sx-ease);
+  }
+  #starlight__search .pagefind-ui__result-inner > .pagefind-ui__result-title:is(:hover, :focus-within) .pagefind-ui__result-link {
+    color: var(--sl-color-white);
+  }
+  /* A section: on a hairline rail, with the bar on the one you point at. */
+  #starlight__search .pagefind-ui__result-nested {
+    margin-inline-start: 0.125rem;
+    padding: 0.5rem 0.5rem 0.5rem 1rem;
+    border-inline-start: 2px solid transparent;
+    background-image: linear-gradient(var(--sx-hairline), var(--sx-hairline));
+    background-repeat: no-repeat;
+    background-size: 1px 100%;
+    background-origin: border-box;
+    transition: border-color var(--sx-dur) var(--sx-ease);
+  }
+  #starlight__search .pagefind-ui__result-nested .pagefind-ui__result-link {
+    color: var(--sl-color-white);
+    font-size: 0.9375rem;
+    font-weight: 500;
+  }
+  #starlight__search .pagefind-ui__result-excerpt {
+    color: var(--sx-muted);
+    font-size: 0.8125rem;
+    line-height: 1.5;
+  }
+  #starlight__search .pagefind-ui__result-title:not(:where(.pagefind-ui__result-nested *)):is(:hover, :focus-within),
+  #starlight__search .pagefind-ui__result-nested:is(:hover, :focus-within) {
+    outline: 0;
+    background-color: transparent;
+  }
+  #starlight__search .pagefind-ui__result-nested:is(:hover, :focus-within) {
+    border-inline-start-color: var(--sx-agent);
+  }
+  /* The match in ink and underlined with the strong rule: not a highlighter. */
+  #starlight__search mark {
+    color: var(--sl-color-white);
+    background-color: transparent;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: var(--sx-rule-strong);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.2em;
+  }
+  #starlight__search .pagefind-ui__button {
+    border-radius: 0;
+    font-family: var(--sl-font-mono);
+    font-size: var(--sx-lab-size);
+    font-weight: 500;
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
+    transition:
+      color var(--sx-dur) var(--sx-ease),
+      border-color var(--sx-dur) var(--sx-ease);
   }
 
   /* Right-hand group: GitHub and the theme picker, muted until hovered. */
@@ -252,25 +520,38 @@
   starlight-theme-select label:hover {
     color: var(--sl-color-white);
   }
-
-  /* Mobile menu button: a hairline circle instead of a filled disc. */
-  .sl-menu-button {
-    border: 1px solid var(--sx-hairline);
-    background-color: var(--sx-surface);
-    color: var(--sl-color-white);
-    box-shadow: var(--sx-card-edge);
+  /* The theme picker reads as the other labels of the header do: mono, small, uppercase. Starlight sizes
+     the box in em of the select's own type, so the width is set here for the smaller face. */
+  starlight-theme-select select {
+    width: 6.5rem;
+    font-family: var(--sl-font-mono);
+    font-size: var(--sx-lab-size);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
   }
+
+  /* Mobile menu button: a square in the strong rule, on no fill. */
+  .sl-menu-button {
+    border: 1px solid var(--sx-rule-strong);
+    border-radius: 0;
+    background-color: transparent;
+    color: var(--sx-muted);
+    box-shadow: none;
+    transition:
+      color var(--sx-dur) var(--sx-ease),
+      border-color var(--sx-dur) var(--sx-ease);
+  }
+  .sl-menu-button:hover,
   .sl-menu-button:has(~ :popover-open) {
-    border-color: color-mix(in oklab, var(--sx-agent) 30%, var(--sx-hairline));
-    background-color: var(--sx-surface-2);
+    border-color: var(--sl-color-white);
+    background-color: transparent;
+    color: var(--sl-color-white);
   }
 
   /* ---- Sidebar ----
      Group labels set as instrument readouts: mono, uppercase, indexed 01, 02, 03 by a counter.
-     Items hang off a hairline rail; the current page thickens the rail into a 2px signal bar over a
-     faint raised surface. The rail and bar follow "Table of Contents" by mohammadshehadeh and the
-     active indicator of "Animated Sidebar" by unlumen (both 21st.dev), as plain CSS on Starlight's
-     sidebar markup. */
+     Items hang off a hairline rail; the current page puts a 2px signal bar on the rail and sets its
+     text in ink, with no fill. Hover only changes the colour of the text. */
   .sidebar-content {
     padding-block-start: 1.5rem;
   }
@@ -282,7 +563,7 @@
   }
   .sidebar-content .top-level summary {
     padding: 0.375rem 0.5rem;
-    border-radius: 10px;
+    border-radius: 0;
     line-height: 1.3;
   }
   .sidebar-content .group-label {
@@ -291,11 +572,12 @@
   }
   .sidebar-content .top-level summary .large {
     font-family: var(--sl-font-mono);
-    font-size: 0.6875rem;
+    font-size: var(--sx-lab-size);
     font-weight: 500;
-    letter-spacing: 0.12em;
+    letter-spacing: var(--sx-lab-track);
     text-transform: uppercase;
     color: var(--sx-muted);
+    transition: color var(--sx-dur) var(--sx-ease);
   }
   .sidebar-content .top-level > li > details > summary .group-label::before {
     counter-increment: sx-group;
@@ -303,9 +585,9 @@
     content: counter(sx-group, decimal-leading-zero) / '';
     margin-inline-end: 0.875em;
     font-family: var(--sl-font-mono);
-    font-size: 0.6875rem;
+    font-size: var(--sx-lab-size);
     font-weight: 500;
-    letter-spacing: 0.12em;
+    letter-spacing: var(--sx-lab-track);
     color: var(--sx-structure);
   }
   .sidebar-content .top-level summary:hover .large {
@@ -314,7 +596,7 @@
   .sidebar-content .top-level .caret {
     font-size: 0.875rem;
     color: var(--sl-color-gray-3);
-    transition: transform 180ms var(--sx-ease);
+    transition: transform var(--sx-dur) var(--sx-ease);
   }
 
   .sidebar-content .top-level ul {
@@ -332,16 +614,13 @@
   }
   .sidebar-content .top-level a {
     border-inline-start: 2px solid transparent;
-    border-radius: 0 10px 10px 0;
+    border-radius: 0;
     padding: 0.3125rem 0.75rem;
     color: var(--sl-color-gray-2);
     font-size: 0.875rem;
     font-weight: 400;
     line-height: 1.4;
-    transition:
-      color 180ms var(--sx-ease),
-      border-color 180ms var(--sx-ease),
-      background-color 180ms var(--sx-ease);
+    transition: color var(--sx-dur) var(--sx-ease);
   }
   .sidebar-content .top-level ul a {
     margin-inline-start: -1px;
@@ -349,13 +628,10 @@
   .sidebar-content .top-level a:is(:hover, :focus) {
     color: var(--sl-color-white);
   }
-  .sidebar-content .top-level a:hover {
-    border-inline-start-color: var(--sl-color-gray-5);
-  }
   .sidebar-content .top-level a[aria-current='page'],
   .sidebar-content .top-level a[aria-current='page']:is(:hover, :focus) {
     border-inline-start-color: var(--sx-agent);
-    background-color: var(--sx-surface-2);
+    background-color: transparent;
     color: var(--sl-color-white);
     font-weight: 500;
   }
@@ -365,7 +641,14 @@
       font-size: 1rem;
     }
   }
+  /* Forced colours repaint a transparent border as a bar in the link colour, on every row, and leave
+     the current page told only by its text. Rows rest on the canvas colour; the current one takes the
+     highlight. */
   @media (forced-colors: active) {
+    .sidebar-content .top-level a,
+    .sidebar-content .top-level ul {
+      border-inline-start-color: Canvas;
+    }
     .sidebar-content .top-level a[aria-current='page'] {
       border-inline-start-color: Highlight;
     }
@@ -378,9 +661,9 @@
   .right-sidebar-panel h2 {
     margin-bottom: 0.875rem;
     font-family: var(--sl-font-mono);
-    font-size: 0.6875rem;
+    font-size: var(--sx-lab-size);
     font-weight: 500;
-    letter-spacing: 0.14em;
+    letter-spacing: var(--sx-lab-track);
     line-height: 1.4;
     text-transform: uppercase;
     color: var(--sx-muted);
@@ -398,9 +681,7 @@
     font-family: var(--sl-font-mono);
     font-size: 0.6875rem;
     line-height: 1.5;
-    transition:
-      color 180ms var(--sx-ease),
-      border-color 180ms var(--sx-ease);
+    transition: color var(--sx-dur) var(--sx-ease);
   }
   starlight-toc a:hover {
     color: var(--sl-color-white);
@@ -410,110 +691,133 @@
     color: var(--sl-color-white);
   }
   @media (forced-colors: active) {
+    starlight-toc a {
+      border-inline-start-color: Canvas;
+    }
     starlight-toc a[aria-current='true'] {
       border-inline-start-color: Highlight;
     }
   }
 
-  /* Contents on narrow screens: the bar under the header. */
+  /* ---- Contents on narrow screens: the bar under the header. The toggle is a square in the strong
+     rule; the list is ruled rows, and the current heading takes the same bar as the sidebar in
+     place of Starlight's check mark. ---- */
   mobile-starlight-toc nav {
     border-top-color: var(--sx-hairline);
   }
   mobile-starlight-toc .toggle {
-    border-color: var(--sx-hairline);
-    border-radius: 999px;
-    background-color: var(--sx-surface);
+    border-color: var(--sx-rule-strong);
+    border-radius: 0;
+    background-color: transparent;
     color: var(--sx-muted);
     font-family: var(--sl-font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.12em;
+    font-size: var(--sx-lab-size);
+    letter-spacing: var(--sx-lab-track);
     text-transform: uppercase;
+    transition:
+      color var(--sx-dur) var(--sx-ease),
+      border-color var(--sx-dur) var(--sx-ease);
   }
   mobile-starlight-toc details[open] .toggle,
   mobile-starlight-toc details .toggle:hover {
-    border-color: color-mix(in oklab, var(--sx-agent) 40%, var(--sx-hairline));
+    border-color: var(--sl-color-white);
     color: var(--sl-color-white);
   }
   mobile-starlight-toc .dropdown {
     border-color: var(--sx-hairline);
     background-color: var(--sl-color-black);
+    box-shadow: none;
   }
   mobile-starlight-toc .isMobile a {
     border-top-color: var(--sx-hairline);
+    border-inline-start: 2px solid transparent;
+    padding-inline-start: calc(1rem - 2px);
+    color: var(--sl-color-gray-2);
+    transition: color var(--sx-dur) var(--sx-ease);
+  }
+  mobile-starlight-toc .isMobile a:hover {
+    color: var(--sl-color-white);
+  }
+  mobile-starlight-toc .isMobile a[aria-current='true'] {
+    border-inline-start-color: var(--sx-agent);
+    color: var(--sl-color-white);
+    font-weight: 500;
   }
   mobile-starlight-toc .isMobile a[aria-current='true']::after {
-    background-color: var(--sx-agent);
+    display: none;
+  }
+  @media (forced-colors: active) {
+    mobile-starlight-toc .isMobile a {
+      border-inline-start-color: Canvas;
+    }
+    mobile-starlight-toc .isMobile a[aria-current='true'] {
+      border-inline-start-color: Highlight;
+    }
+    #starlight__search .pagefind-ui__result-nested {
+      border-inline-start-color: Canvas;
+    }
+    #starlight__search .pagefind-ui__result-nested:is(:hover, :focus-within) {
+      border-inline-start-color: Highlight;
+    }
   }
 
-  /* ---- Previous / next: hairline cards. On hover the edge warms toward the signal colour and a
-     soft light, with a lit stretch of edge, follows the pointer, after "Spotlight" by kevingirelli
-     (21st.dev); the pointer position comes from the small script in astro.config.mjs. ---- */
+  /* ---- Previous / next: ruled rows, the same on every page ----
+     A hairline above each row and one under the pair, a mono "Previous" or "Next" over the page
+     title in the reading face, and an arrow. A short bar sits on the top rule and runs the row's
+     width, in the signal colour, when the row is pointed at or focused; the title draws the hero's
+     Underline Link (after "Underline Link" by balick). */
   .pagination-links {
-    gap: 0.75rem;
+    gap: 0;
+  }
+  /* A page with neither (the landing, the 404) still gets Starlight's empty box: it draws nothing. The
+     pair is closed by the top rule of the title block beneath it, so there is one rule, not two. */
+  .pagination-links:not(:has(a)) {
+    display: none;
+  }
+  .pagination-links:has(a) + .sx-foot {
+    margin-block-start: -1.5rem;
   }
   .pagination-links a {
     position: relative;
-    isolation: isolate;
-    gap: 0.875rem;
-    padding: 1.125rem 1.25rem;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 14px;
-    background-color: var(--sx-surface);
-    box-shadow: var(--sx-card-edge);
+    gap: 1rem;
+    padding: 1.25rem 0;
+    border: 0;
+    border-block-start: 1px solid var(--sx-hairline);
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
     color: var(--sx-muted);
     font-family: var(--sl-font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.14em;
+    font-size: var(--sx-lab-size);
+    letter-spacing: var(--sx-lab-track);
     line-height: 1.5;
     text-transform: uppercase;
-    transition: border-color 180ms var(--sx-ease);
-  }
-  .pagination-links a::before,
-  .pagination-links a::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 180ms var(--sx-ease);
   }
   .pagination-links a::before {
-    background: radial-gradient(
-      20rem circle at var(--sx-spot-x, 50%) var(--sx-spot-y, 50%),
-      color-mix(in oklab, var(--sx-agent) 9%, transparent),
-      transparent 70%
-    );
+    content: '';
+    position: absolute;
+    top: -1px;
+    inset-inline-start: 0;
+    width: 28px;
+    height: 2px;
+    background: var(--sx-structure);
+    transition:
+      width var(--sx-dur-bar) var(--sx-ease),
+      background-color var(--sx-dur-bar) var(--sx-ease);
   }
-  /* The lit edge: the same light, masked to a 1px ring. */
-  .pagination-links a::after {
-    inset: -1px;
-    padding: 1px;
-    background: radial-gradient(
-      20rem circle at var(--sx-spot-x, 50%) var(--sx-spot-y, 50%),
-      color-mix(in oklab, var(--sx-agent) 45%, transparent),
-      transparent 60%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask-composite: exclude;
+  .pagination-links [rel='next']::before {
+    inset-inline-start: auto;
+    inset-inline-end: 0;
   }
-  .pagination-links a:is(:hover, :focus-visible) {
-    border-color: color-mix(in oklab, var(--sx-agent) 30%, var(--sx-hairline));
-  }
-  .pagination-links a:is(:hover, :focus-visible)::before,
-  .pagination-links a:is(:hover, :focus-visible)::after {
-    opacity: 1;
+  .pagination-links a:is(:hover, :focus-visible)::before {
+    width: 100%;
+    background: var(--sx-agent);
   }
   .pagination-links .link-title {
+    --open: 0;
     display: inline-block;
-    margin-top: 0.375rem;
+    margin-top: 0.25rem;
+    padding-block: 3px;
     color: var(--sl-color-white);
     font-family: var(--sl-font);
     font-size: 1.0625rem;
@@ -521,29 +825,50 @@
     letter-spacing: -0.005em;
     line-height: 1.35;
     text-transform: none;
+    background-image:
+      linear-gradient(currentColor, currentColor),
+      linear-gradient(color-mix(in oklab, currentColor 22%, transparent), color-mix(in oklab, currentColor 22%, transparent));
+    background-repeat: no-repeat;
+    background-size:
+      calc(var(--open) * 100%) 1px,
+      100% 1px;
+    background-position:
+      calc((1 - var(--open)) * 100%) 100%,
+      0 100%;
+    transition: background-size var(--sx-dur-line) var(--sx-ease);
+  }
+  .pagination-links a:is(:hover, :focus-visible) .link-title {
+    --open: 1;
   }
   .pagination-links svg {
     font-size: 1.25rem;
     color: var(--sx-muted);
     transition:
-      transform 180ms var(--sx-ease),
-      color 180ms var(--sx-ease);
+      transform var(--sx-dur) var(--sx-ease),
+      color var(--sx-dur) var(--sx-ease);
   }
-  .pagination-links a:hover svg {
-    color: var(--sx-agent);
+  .pagination-links a:is(:hover, :focus-visible) svg {
+    color: var(--sl-color-white);
   }
-  .pagination-links [rel='prev']:hover svg {
+  .pagination-links [rel='prev']:is(:hover, :focus-visible) svg {
     transform: translateX(-3px);
   }
-  .pagination-links [rel='next']:hover svg {
+  .pagination-links [rel='next']:is(:hover, :focus-visible) svg {
     transform: translateX(3px);
+  }
+  /* Windows High Contrast repaints a background-only mark as the canvas; the bar keeps a system colour. */
+  @media (forced-colors: active) {
+    .pagination-links a::before {
+      background: Highlight;
+      forced-color-adjust: none;
+    }
   }
 
   /* Footer meta (the edit link) as a quiet mono label. */
   .main-pane footer .meta {
     font-family: var(--sl-font-mono);
-    font-size: 0.6875rem;
-    letter-spacing: 0.12em;
+    font-size: var(--sx-lab-size);
+    letter-spacing: var(--sx-lab-track);
     text-transform: uppercase;
     color: var(--sx-muted);
   }
@@ -551,43 +876,171 @@
     color: var(--sl-color-white);
   }
 
-  /* ---- Asides: hairline cards tinted about 8% with their role colour, mono titles. Notes take the
-     structure colour, tips the signal colour, cautions and dangers the spike colour. Structure after
-     "Admonition" by deltacomponents (21st.dev). ---- */
+  /* ---- Footer: the title block of the sheet (components/chrome/Footer.astro) ----
+     A hairline frame with registration corners (`.sx-reg`) whose cells share their rules: one row of
+     the sheet's own facts (its title and number, its stage, the next gate) and, under a shared rule, a
+     quieter row of the repository's links and the page's date in mono. No logo, no fill, no icon. On a
+     phone the cells stack, label beside value; from 40rem they sit side by side under their labels. A
+     link rests on an underline in the strong rule (3:1) and turns signal on hover and focus. On the
+     landing page the block runs on the landing's own gutter, so it sits on the grid of the sections
+     above it. After the outer and column borders of "Reshaped Table" by reshaped, the ruled list of
+     "404 Search And Popular Links" by olewandowski1 and the bottom row of "Footer with Navigation
+     Grid" by shadcnui-blocks (21st.dev). */
+  .sx-foot {
+    border: 1px solid var(--sx-hairline);
+  }
+  .sx-foot__cells {
+    display: grid;
+    margin: 0;
+  }
+  .sx-foot__c {
+    display: grid;
+    grid-template-columns: 6rem minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: baseline;
+    padding: 0.75rem 1rem;
+    border-block-start: 1px solid var(--sx-hairline);
+  }
+  .sx-foot__c:first-child {
+    border-block-start: 0;
+  }
+  @media (min-width: 40rem) {
+    .sx-foot__cells {
+      display: flex;
+    }
+    .sx-foot__c {
+      display: block;
+      flex: 1 1 0;
+      min-inline-size: 0;
+      padding: 0.875rem 1rem 1rem;
+      border-block-start: 0;
+      border-inline-start: 1px solid var(--sx-hairline);
+    }
+    .sx-foot__c:first-child {
+      flex-grow: 1.6;
+      border-inline-start: 0;
+    }
+  }
+  .sx-foot dt {
+    color: var(--sx-muted);
+    font-family: var(--sl-font-mono);
+    font-size: var(--sx-lab-size);
+    letter-spacing: var(--sx-lab-track);
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+  .sx-foot dd {
+    margin: 0;
+    color: var(--sl-color-white);
+    font-size: 0.875rem;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    text-wrap: pretty;
+  }
+  @media (min-width: 40rem) {
+    .sx-foot dd {
+      margin-block-start: 0.375rem;
+    }
+  }
+  .sx-foot__n {
+    margin-inline-start: 0.375rem;
+    color: var(--sx-muted);
+    font-family: var(--sl-font-mono);
+    font-size: var(--sx-lab-size);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+  }
+  .sx-foot__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 1.5rem;
+    margin: 0;
+    padding: 0.5rem 1rem;
+    list-style: none;
+    color: var(--sx-muted);
+    font-family: var(--sl-font-mono);
+    font-size: 0.6875rem;
+    line-height: 1.6;
+  }
+  .sx-foot__cells + .sx-foot__links {
+    border-block-start: 1px solid var(--sx-hairline);
+  }
+  .sx-foot__links li {
+    margin: 0;
+    padding: 0;
+  }
+  /* Two classes, so that the reset of the row's items above does not undo it: the date's text sits on the
+     links' line, which their own padding sets. */
+  .sx-foot__links .sx-foot__upd {
+    padding-block: 0.25rem;
+  }
+  /* A link is 24px tall at least (WCAG 2.5.8): 17.6px of line and 4px above and below. */
+  .sx-foot__links a {
+    display: inline-block;
+    padding-block: 0.25rem;
+    color: var(--sl-color-white);
+    text-decoration: underline;
+    text-decoration-color: var(--sx-rule-strong);
+    text-underline-offset: 3px;
+    transition: text-decoration-color var(--sx-dur) var(--sx-ease);
+  }
+  .sx-foot__links a:is(:hover, :focus-visible) {
+    text-decoration-color: var(--sx-agent);
+  }
+  @media (min-width: 40rem) {
+    .sx-foot__links .sx-foot__upd {
+      margin-inline-start: auto;
+    }
+  }
+  /* On the landing page the block leaves Starlight's 1080px column for the gutter of the sections above
+     it (--sx-gutter, the same as landing.css's), so its edges meet theirs. */
+  body:has(.sx-landing) .sx-foot {
+    box-sizing: border-box;
+    inline-size: calc(100vw - 2 * var(--sx-gutter));
+    margin-inline: calc(50% - 50vw + var(--sx-gutter));
+  }
+  /* ---- Asides: a rule down the start edge in the aside's colour, a mono label above the text and
+     nothing else: no card, no fill, no icon. The label says the kind (Note, Tip, Caution, Danger, or
+     the title the page gives), so colour is never the only difference; a danger also takes a doubled
+     rule. Notes take the structure colour, tips ink, cautions and dangers the spike colour. The
+     signal colour is not used: an aside is not what is current. ---- */
   .starlight-aside {
     --sx-aside: var(--sx-structure);
     --sl-color-asides-border: var(--sx-aside);
     --sl-color-asides-text-accent: var(--sx-aside);
-    padding: 1rem 1.25rem;
-    border: 1px solid color-mix(in oklab, var(--sx-aside) 35%, var(--sx-hairline));
-    border-radius: 14px;
-    background-color: color-mix(in oklab, var(--sx-aside) 8%, var(--sx-surface));
-    box-shadow: var(--sx-card-edge);
+    max-inline-size: calc(var(--sx-measure, 36rem) + 1.25rem + 2px);
+    padding: 0.125rem 0 0.125rem 1.25rem;
+    border: 0;
+    border-inline-start: 2px solid var(--sx-aside);
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
     color: var(--sl-color-gray-1);
   }
   .starlight-aside--tip {
-    --sx-aside: var(--sx-agent);
+    --sx-aside: var(--sl-color-gray-2);
   }
   .starlight-aside--caution,
   .starlight-aside--danger {
     --sx-aside: var(--sx-spike);
   }
   .starlight-aside--danger {
-    border-color: color-mix(in oklab, var(--sx-aside) 60%, var(--sx-hairline));
-    background-color: color-mix(in oklab, var(--sx-aside) 12%, var(--sx-surface));
+    padding-inline-start: calc(1.25rem - 2px);
+    border-inline-start: 4px double var(--sx-aside);
   }
   .starlight-aside__title {
-    gap: 0.625rem;
+    gap: 0;
     color: var(--sx-aside);
     font-family: var(--sl-font-mono);
-    font-size: 0.6875rem;
+    font-size: var(--sx-lab-size);
     font-weight: 500;
-    letter-spacing: 0.14em;
+    letter-spacing: var(--sx-lab-track);
     line-height: 1.4;
     text-transform: uppercase;
   }
   .starlight-aside__icon {
-    font-size: 1rem;
+    display: none;
   }
   .starlight-aside__content a {
     color: var(--sl-color-white);
@@ -603,15 +1056,10 @@
     border-top: 0;
   }
 
+  /* A hover that moves an arrow moves it in one step under prefers-reduced-motion: reduce. (The
+     durations themselves go to 0s with the variables at the top of the file.) */
   @media (prefers-reduced-motion: reduce) {
-    .sidebar-content .top-level :is(a, .caret),
-    starlight-toc a,
-    .pagination-links :is(a, svg),
-    .pagination-links a::before,
-    .pagination-links a::after {
-      transition: none;
-    }
-    .pagination-links a:hover svg {
+    .pagination-links :is([rel='prev'], [rel='next']):is(:hover, :focus-visible) svg {
       transform: none;
     }
   }

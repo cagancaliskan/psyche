@@ -1,0 +1,10 @@
+{
+  "name": "psyche-a11y-tools",
+  "version": "0.0.0",
+  "private": true,
+  "description": "The two packages scripts/check-a11y.mjs runs, locked so that a release of one of their own dependencies cannot change the check. Not a dependency of the site. The versions here must equal TOOLS in check-a11y.mjs (scripts/a11y-tools.test.mjs checks).",
+  "dependencies": {
+    "axe-core": "4.14.0",
+    "puppeteer-core": "25.12.0"
+  }
+}

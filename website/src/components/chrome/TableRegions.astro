@@ -1,0 +1,35 @@
+---
+// A table that does not scroll is not a tab stop. scripts/table-region.mjs wraps every table of a
+// Markdown page in a named, focusable region, because static markup cannot know the reader's screen and
+// a box that scrolls has to be reachable from the keyboard (WCAG 2.1.1). Here the screen is known: a
+// region whose table fits gives up its role, its name and its tab stop, so a page of five tables does
+// not cost five dead stops and five landmarks, and takes them back the moment it scrolls (a narrower
+// window, a larger text size, a font that arrives late). Without script the static attributes stay, so
+// the page is as accessible as before, only with more stops. Rendered by Footer.astro, which is on every
+// page, so the script is bundled once.
+---
+
+<script>
+  const KEPT = ['role', 'tabindex', 'aria-label'] as const;
+  const regions = Array.from(document.querySelectorAll<HTMLElement>('.sx-table'));
+  if (regions.length && 'ResizeObserver' in window) {
+    const kept = new Map(regions.map((region) => [region, KEPT.map((name) => region.getAttribute(name))]));
+    const fit = (region: HTMLElement) => {
+      const scrolls = region.scrollWidth > region.clientWidth;
+      KEPT.forEach((name, i) => {
+        const value = kept.get(region)?.[i] ?? null;
+        if (!scrolls) region.removeAttribute(name);
+        else if (value !== null) region.setAttribute(name, value);
+      });
+    };
+    // The region's own box changes with the window; its table's width changes with the type.
+    const observer = new ResizeObserver((entries) => {
+      for (const { target } of entries) fit(target instanceof HTMLElement && target.classList.contains('sx-table') ? target : (target.parentElement as HTMLElement));
+    });
+    for (const region of regions) {
+      observer.observe(region);
+      if (region.firstElementChild) observer.observe(region.firstElementChild);
+    }
+    document.fonts?.ready.then(() => regions.forEach(fit));
+  }
+</script>

@@ -7,7 +7,7 @@
 //        page's inline scripts. An import is static (`import x from './a.js'`) or dynamic with a
 //        literal address (`import('./a.js')`): a dynamic one is a chunk the page loads later, often on
 //        idle, and it is still the reader's download. Starlight's search loads its interface this
-//        way (about 26 KB gzipped) on every page, which is why a docs page counts about 33 KB, not
+//        way (about 26 KB gzipped) on every page, which is why a docs page counts about 34 KB, not
 //        the 7 KB its first script weighs. Diagrams are drawn ahead of the build and sit in the
 //        page as inline SVG (tools/publish/diagrams.py), so they add no script; their bytes are
 //        in the HTML, which this check does not count.
@@ -34,26 +34,32 @@ const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 // Must equal `base` in astro.config.mjs, without the trailing slash handling done below.
 const BASE = '/psyche/';
 
-// Bytes, gzipped. The comment on each line is what was measured when the budget was set.
-const DEFAULT_BUDGET = { js: 37400, css: 37600 };
+// Bytes, gzipped. The comment on each line is what was measured when the budget was set (JavaScript,
+// then CSS). Last set when the site chrome was redrawn: the title strip, the footer's title block, the
+// shared registration-corner recipe, the search dialog and the forced-colours rules grew every page's CSS
+// by about 1.2 KB (they are in global.css and docs.css), and the script that takes the tab stop off a
+// table that does not scroll (components/chrome/TableRegions.astro) and, on stage 2 pages, the one that
+// reads the next gate against the reader's day (components/chrome/NextGateClock.astro) grew the
+// JavaScript of the docs pages by up to about 400 bytes.
+const DEFAULT_BUDGET = { js: 37700, css: 38900 };
 const PAGE_BUDGETS = {
-  '/':                          { js: 113900, css:  43700 }, // 110538,  42423
-  '/roadmap/':                  { js: 111800, css:  33600 }, // 108502,  32614
-  '/battery/':                  { js: 112600, css:  33700 }, // 109281,  32659
-  '/status/':                   { js:  34300, css:  33600 }, //  33234,  32548
-  '/research/':                 { js:  35100, css:  33600 }, //  34067,  32548
-  '/research/origins/':         { js:  35100, css:  33600 }, //  34067,  32548
-  '/research/roadmap/':         { js: 113100, css:  33600 }, // 109766,  32614
-  '/research/gates/':           { js:  37400, css:  33600 }, //  36259,  32548
-  '/research/test-battery/':    { js:  35500, css:  33600 }, //  34390,  32548
-  '/research/claims-and-scope/':{ js:  34500, css:  33600 }, //  33438,  32548
-  '/research/engineering/':     { js:  35100, css:  33600 }, //  34067,  32548
-  '/research/glossary/':        { js:  34500, css:  33600 }, //  33438,  32548
-  '/research/reading-list/':    { js:  34500, css:  33600 }, //  33438,  32548
-  '/research/disclosure-policy/':{ js:  35100, css:  33600 }, //  34067,  32548
-  '/substrate/overview/':       { js:  36900, css:  37600 }, //  35761,  36470
-  '/substrate/architecture/':   { js:  36300, css:  37600 }, //  35235,  36470
-  '/substrate/methodology/':    { js:  35100, css:  33600 }, //  34067,  32548
+  '/':                          { js: 114100, css:  45000 }, // 110690,  43636
+  '/roadmap/':                  { js: 112000, css:  34900 }, // 108654,  33869
+  '/battery/':                  { js: 112700, css:  35000 }, // 109410,  33914
+  '/status/':                   { js:  34300, css:  34900 }, //  33244,  33803
+  '/research/':                 { js:  35600, css:  34900 }, //  34481,  33803
+  '/research/origins/':         { js:  35600, css:  34900 }, //  34481,  33803
+  '/research/roadmap/':         { js: 113500, css:  34900 }, // 110127,  33869
+  '/research/gates/':           { js:  37700, css:  34900 }, //  36598,  33803
+  '/research/test-battery/':    { js:  35900, css:  34900 }, //  34804,  33803
+  '/research/claims-and-scope/':{ js:  34900, css:  34900 }, //  33852,  33803
+  '/research/engineering/':     { js:  35600, css:  34900 }, //  34481,  33803
+  '/research/glossary/':        { js:  34900, css:  34900 }, //  33852,  33803
+  '/research/reading-list/':    { js:  34900, css:  34900 }, //  33852,  33803
+  '/research/disclosure-policy/':{ js:  35600, css:  34900 }, //  34481,  33803
+  '/substrate/overview/':       { js:  36900, css:  38900 }, //  35771,  37725
+  '/substrate/architecture/':   { js:  36400, css:  38900 }, //  35245,  37725
+  '/substrate/methodology/':    { js:  35100, css:  34900 }, //  34077,  33803
 };
 
 const gz = (buf) => gzipSync(buf, { level: 9 }).length;

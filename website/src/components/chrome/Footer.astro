@@ -1,0 +1,108 @@
+---
+// The footer of every page. The markup and the first style rules (the edit link, previous and next, the
+// layout of the footer) are Starlight's own Footer component, version 0.42.6, used under its MIT licence
+// (see THIRD_PARTY_NOTICES.md, section 3); what is added is the title block below them.
+//
+// The title block is the corner of a drawing sheet. A frame with registration corners holds, in a first
+// row, the facts of the sheet being shown: its title and its number among the sidebar's pages, the stage
+// it belongs to and that stage's state, and on a page of stage 2 the next gate. Each is read from the
+// sidebar, the public ledger or the public plan (lib/pageChrome.ts); none is typed per page, and a cell
+// is left out when its data is absent, so the landing page and the 404 page, which are not sheets, have
+// no first row. The next gate is the plan's reading as of the day the plan was written; NextGateClock
+// reads it against the reader's day, as the roadmap does. A second, quieter row holds the repository's
+// links, each saying what it does, and the date of the last commit that touched the files the page is
+// made from, from the same helper that dates the sitemap (lib/lastUpdated.ts); with no git history the
+// date is left out, and the build date is never used. The block is left out of search
+// (data-pagefind-ignore), so its words do not match on every page. The corner marks after "Corner Frame"
+// by kevingirelli (the shared `.sx-reg` recipe in global.css); shared rules between the cells after the
+// outer and column borders of "Reshaped Table" by reshaped and the ruled list of "404 Search And Popular
+// Links" by olewandowski1; the link row's structure after the divider and bottom row of "Footer with
+// Navigation Grid" by shadcnui-blocks (21st.dev), without its logo, columns of marketing links or social
+// icons.
+import EditLink from '@astrojs/starlight/components/EditLink.astro';
+import LastUpdated from '@astrojs/starlight/components/LastUpdated.astro';
+import Pagination from '@astrojs/starlight/components/Pagination.astro';
+import NextGateClock from './NextGateClock.astro';
+import TableRegions from './TableRegions.astro';
+import ledger from '../../data/ledger.public.json';
+import plan from '../../data/plan.json';
+import type { PublicLedger } from '../../lib/ledger.ts';
+import { lastUpdatedOf } from '../../lib/lastUpdated.ts';
+import { footerLinks, titleBlock } from '../../lib/pageChrome.ts';
+import type { Plan } from '../../lib/plan.ts';
+import { routeOf } from '../../lib/seo.ts';
+
+const route = Astro.locals.starlightRoute;
+const here = routeOf(Astro.url.pathname);
+const links = footerLinks();
+const updated = lastUpdatedOf(here);
+const cells = titleBlock({
+  id: here,
+  title: route.entry.data.title,
+  sidebar: route.sidebar,
+  ledger: ledger as unknown as Pick<PublicLedger, 'program'>,
+  plan: plan as unknown as Plan,
+});
+---
+
+<footer class="sl-flex">
+	<div class="meta sl-flex">
+		<EditLink />
+		<LastUpdated />
+	</div>
+	<Pagination />
+	<div class="sx-foot sx-reg not-content" data-pagefind-ignore>
+		{
+			cells.length > 0 && (
+				<dl class="sx-foot__cells">
+					{cells.map((cell) => (
+						<div class="sx-foot__c">
+							<dt>{cell.label}</dt>
+							<dd
+								data-next-gate={cell.clock ? '' : undefined}
+								data-gate-id={cell.clock?.gate}
+								data-date={cell.clock?.date}
+								data-tz={cell.clock?.tz}
+							>
+								{cell.text}
+								{cell.note && <>{' '}<span class="sx-foot__n">{cell.note}</span></>}
+							</dd>
+						</div>
+					))}
+				</dl>
+			)
+		}
+		<ul class="sx-foot__links" role="list">
+			{links.map((link) => <li><a href={link.href}>{link.text}</a></li>)}
+			{
+				updated && (
+					<li class="sx-foot__upd">
+						Last updated <time datetime={updated.iso}>{updated.label}</time>
+					</li>
+				)
+			}
+		</ul>
+	</div>
+</footer>
+<TableRegions />
+{cells.some((cell) => cell.clock) && <NextGateClock />}
+
+<style>
+	@layer starlight.core {
+		footer {
+			flex-direction: column;
+			gap: 1.5rem;
+		}
+		.meta {
+			gap: 0.75rem 3rem;
+			justify-content: space-between;
+			flex-wrap: wrap;
+			margin-top: 3rem;
+			font-size: var(--sl-text-sm);
+			color: var(--sl-color-gray-3);
+		}
+		.meta > :global(p:only-child) {
+			margin-inline-start: auto;
+		}
+	}
+</style>

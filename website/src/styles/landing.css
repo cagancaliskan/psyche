@@ -15,20 +15,15 @@
 
   /* Full width like the hero, with the hero's own gutters, so every section's left edge sits on the
      left edge of the hero's copy and the content stops where the hero's figure stops. The hero
-     already clips the sliver a 100vw box adds beside the scrollbar. */
+     already clips the sliver a 100vw box adds beside the scrollbar. --sx-gutter is defined once, at the
+     top of global.css (24px up to 900px wide, as the hero pins its own), and the footer's title block
+     takes it too. */
   .sx-lp {
-    --sx-gutter: max(clamp(24px, 6vw, 104px), calc((100vw - 90rem) / 2));
     box-sizing: border-box;
     width: 100vw;
     margin-block: 0;
     margin-inline: calc(50% - 50vw);
     padding-inline: var(--sx-gutter);
-  }
-  /* The hero pins its own gutter to 24px up to this width (hero.css), so the sections do too. */
-  @media (max-width: 900px) {
-    .sx-lp {
-      --sx-gutter: 24px;
-    }
   }
 
   /* ---------- Rhythm: the space above a section, the space under its header ---------- */

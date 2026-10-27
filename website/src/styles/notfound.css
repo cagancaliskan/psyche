@@ -1,0 +1,156 @@
+/*
+ * The 404 page (src/pages/404.astro): a drafting sheet. Under the strip every page opens with ("Error 404
+ * ... Not filed"), a hairline-framed sheet with registration corners (`.sx-reg`, global.css) holds the
+ * address that was asked for, in mono, and one plain sentence. Then a ruled list of places to go: each
+ * row a hairline above it with a short bar on the rule, a title, a line under it and an arrow. The signal
+ * colour marks only the row you point at or focus, as in previous and next. The sheet and the list run
+ * the same column as the title block at the foot of the page. Colours are tokens; nothing is filled,
+ * shadowed or rounded; nothing moves under prefers-reduced-motion: reduce. The layer statement repeats
+ * global.css.
+ *
+ * Catalog sources (21st.dev): the list after "Not Found 404 Page" by mohammadshehadeh (a mono label,
+ * then a ruled "try one of these" list with an arrow) and "404 Search And Popular Links" by
+ * olewandowski1 (rows that share their rules), the address and the nearest page after "404 Did You Mean"
+ * by ziegfiroyt, the corner marks after "Corner Frame" by kevingirelli and the bar on each rule after
+ * "Spec Sheet" by isaiahbjork.
+ */
+@layer base, starlight, theme, components, utilities;
+
+@layer components {
+  .sx-nf [hidden] {
+    display: none;
+  }
+  /* The title panel's rule and the body's would run to the edge of the page on a screen with no
+     contents list, and meet nothing: the column has its own rules. */
+  body:has(.sx-nf) .content-panel {
+    border-top: 0;
+  }
+
+  /* ---- The sheet: a hairline frame, the registration corners from `.sx-reg` ---- */
+  .sx-nf__sheet {
+    padding: 1.25rem 1.5rem 1.5rem;
+    border: 1px solid var(--sx-hairline);
+  }
+  .sx-nf__sheet > p {
+    margin: 0;
+  }
+  .sx-nf__k {
+    margin: 0;
+    color: var(--sx-muted);
+    font-family: var(--font-mono);
+    font-size: var(--sx-lab-size);
+    font-weight: 500;
+    letter-spacing: var(--sx-lab-track);
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+  .sx-nf__asked {
+    display: grid;
+    gap: 0.375rem;
+    margin-block-end: 1.25rem;
+    padding-block-end: 1.25rem;
+    border-block-end: 1px solid var(--sx-hairline);
+  }
+  .sx-nf__addr {
+    color: var(--sl-color-white);
+    font-family: var(--font-mono);
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .sx-nf__lead {
+    color: var(--sl-color-gray-2);
+    font-size: 1.0625rem;
+    line-height: 1.55;
+    text-wrap: pretty;
+  }
+
+  /* ---- The list: a mono label, then ruled rows ---- */
+  .sx-nf__k--list {
+    margin-block: 2.5rem 0.875rem;
+  }
+  .sx-nf__list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-block-end: 1px solid var(--sx-hairline);
+  }
+  .sx-nf__list > li {
+    margin: 0;
+    padding: 0;
+  }
+  .sx-nf__row {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      't a'
+      'd a';
+    align-items: center;
+    column-gap: 1rem;
+    inline-size: 100%;
+    padding: 1rem 0;
+    border: 0;
+    border-block-start: 1px solid var(--sx-hairline);
+    background: none;
+    color: var(--sl-color-white);
+    font: inherit;
+    text-align: start;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  /* A short bar on the top rule that runs the row's width when the row is pointed at or focused. */
+  .sx-nf__row::before {
+    content: '';
+    position: absolute;
+    top: -1px;
+    inset-inline-start: 0;
+    inline-size: 28px;
+    block-size: 2px;
+    background: var(--sx-structure);
+    transition:
+      inline-size var(--sx-dur-bar) var(--sx-ease),
+      background-color var(--sx-dur-bar) var(--sx-ease);
+  }
+  .sx-nf__row:is(:hover, :focus-visible)::before {
+    inline-size: 100%;
+    background: var(--sx-agent);
+  }
+  .sx-nf__t {
+    grid-area: t;
+    font-size: 1.0625rem;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+    line-height: 1.35;
+  }
+  .sx-nf__d {
+    grid-area: d;
+    margin-block-start: 0.125rem;
+    color: var(--sx-muted);
+    font-size: 0.875rem;
+    line-height: 1.45;
+    text-wrap: pretty;
+  }
+  .sx-nf__arrow {
+    grid-area: a;
+    color: var(--sx-muted);
+    transition:
+      transform var(--sx-dur) var(--sx-ease),
+      color var(--sx-dur) var(--sx-ease);
+  }
+  .sx-nf__row:is(:hover, :focus-visible) .sx-nf__arrow {
+    color: var(--sl-color-white);
+    transform: translateX(3px);
+  }
+  @media (forced-colors: active) {
+    .sx-nf__row::before {
+      background: Highlight;
+      forced-color-adjust: none;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .sx-nf__row:is(:hover, :focus-visible) .sx-nf__arrow {
+      transform: none;
+    }
+  }
+}

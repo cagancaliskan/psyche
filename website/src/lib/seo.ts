@@ -15,10 +15,25 @@ export const ORIGIN = 'https://cagancaliskan.github.io';
 /** The base path of the site, with the trailing slash (astro.config.mjs `base` without it). */
 export const BASE = '/psyche/';
 export const SITE_URL = ORIGIN + BASE;
+/** The project's public repository, where the footer's links and the structured data point. */
+export const REPO_URL = 'https://github.com/cagancaliskan/psyche';
 
 /** The project in one sentence, in the words CONTRIBUTING.md gives it: what it is, then its aim, named as an aim. */
 export const PROJECT_DESCRIPTION =
   'Psyche is an open research project that builds brain-inspired components in stages, with artificial general intelligence as its long-term aim.';
+
+/**
+ * The 404 page, which the host serves for an address that does not exist (src/pages/404.astro). It has
+ * its own title, a name and not a status code, and its own description, so a preview of a dead address
+ * says what it is. It is noindex (seoHead) and left out of the sitemap, and scripts/check-seo.mjs
+ * expects exactly these values in the built page.
+ */
+export const NOT_FOUND = {
+  route: '404',
+  title: 'Page not found',
+  description:
+    'The address you followed does not match a page of this site. These lead to the home page, the research overview, the test battery and the substrate status.',
+} as const;
 
 /** The brand canvas colours (brand/README.md), for the browser's address bar. */
 export const THEME_COLOR = { light: '#f5f7fb', dark: '#05070d' } as const;
@@ -63,7 +78,7 @@ export function projectJsonLd(): Record<string, unknown> {
           sameAs: 'https://github.com/cagancaliskan',
         },
         // The code lives in a public repository; ResearchProject has no codeRepository property.
-        sameAs: ['https://github.com/cagancaliskan/psyche'],
+        sameAs: [REPO_URL],
         keywords: [
           'brain-inspired components',
           'spiking neural networks',

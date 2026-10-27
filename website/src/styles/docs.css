@@ -23,6 +23,86 @@
     text-wrap: balance;
   }
 
+  /* ---- Title strip: a ruled strip above the title (components/chrome/PageTitle.astro) ----
+     The head of a drawing sheet. On a page of a stage: the stage and its section at the start ("Stage 1
+     Substrate"), the stage's state at the end, with the day a paused stage was paused. On other pages
+     the sidebar's number for the group and its name; on the 404 page "Error 404" and "Not filed". A
+     hairline under it with a short structure bar, as on the previous and next rows. The marker before a
+     state is a square: the signal colour when the stage is active, an outline when it is paused or
+     anything else. The day never splits; below 30rem the two ends stack, so the strip never wraps to
+     three lines. After "Page Header with Breadcrumbs" by olewandowski1 (21st.dev), with the bar after
+     "Spec Sheet" by isaiahbjork. */
+  .sx-pt {
+    position: relative;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.25rem 1.5rem;
+    padding-block-end: 0.75rem;
+    border-block-end: 1px solid var(--sx-hairline);
+    color: var(--sx-muted);
+    font-family: var(--sl-font-mono);
+    font-size: var(--sx-lab-size);
+    font-weight: 500;
+    letter-spacing: var(--sx-lab-track);
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+  .sx-pt::after {
+    content: '';
+    position: absolute;
+    bottom: -1px;
+    inset-inline-start: 0;
+    inline-size: 28px;
+    block-size: 2px;
+    background: var(--sx-structure);
+  }
+  .sx-pt > p {
+    margin: 0;
+  }
+  .sx-pt + h1#_top {
+    margin-block-start: 1.25rem;
+  }
+  .sx-pt__idx {
+    margin-inline-end: 0.5em;
+    color: var(--sx-structure);
+    font-variant-numeric: tabular-nums;
+  }
+  .sx-pt time {
+    white-space: nowrap;
+  }
+  .sx-pt__stage[data-state] {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0 0.625rem;
+  }
+  .sx-pt__stage[data-state]::before {
+    content: '';
+    flex: none;
+    align-self: center;
+    inline-size: 6px;
+    block-size: 6px;
+    border: 1px solid currentColor;
+  }
+  .sx-pt__stage[data-state='active']::before {
+    border-color: var(--sx-agent);
+    background-color: var(--sx-agent);
+  }
+  @media (max-width: 29.99rem) {
+    .sx-pt {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+  /* Windows High Contrast repaints a background-only mark as the canvas; the bar keeps a system colour. */
+  @media (forced-colors: active) {
+    .sx-pt::after {
+      background: Highlight;
+      forced-color-adjust: none;
+    }
+  }
+
   /* ---- Reading size, leading and measure ----
      The measure is in rem, not ch: Instrument Sans has a wide zero, so 66ch would run to about 95
      characters. 33rem at 17px holds about 66. */
@@ -80,9 +160,9 @@
     margin-block-end: 0.875rem;
     color: var(--sx-structure);
     font-family: var(--sl-font-mono);
-    font-size: 0.6875rem;
+    font-size: var(--sx-lab-size);
     font-weight: 500;
-    letter-spacing: 0.14em;
+    letter-spacing: var(--sx-lab-track);
     line-height: 1;
   }
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper.level-h2:first-child) {
@@ -115,12 +195,13 @@
     margin-block-start: 0.375rem;
   }
 
-  /* ---- Links: ink text over a quiet underline; the underline turns signal on hover and focus ---- */
+  /* ---- Links: ink text over an underline in the strong rule (3:1 against the canvas: it is what tells a link
+     from the text around it); the underline turns signal on hover and focus ---- */
   :where(body:not(:has(.sx-landing)) .sl-markdown-content a:not([class], .not-content *)) {
     color: var(--sl-color-white);
     text-decoration-line: underline;
     text-decoration-thickness: 1px;
-    text-decoration-color: color-mix(in oklab, var(--sl-color-white) 32%, transparent);
+    text-decoration-color: var(--sx-rule-strong);
     text-underline-offset: 0.22em;
   }
   :where(body:not(:has(.sx-landing)) .sl-markdown-content a:not([class], .not-content *):is(:hover, :focus-visible)) {
@@ -171,18 +252,30 @@
   }
 
   /* ---- Tables: hairline cards with a mono header row and tabular figures, after "Table" by
-     originui (21st.dev). The table hugs its content and grows to the column; a table wider than
-     the column scrolls inside its card. ---- */
-  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content table:not([class], .not-content *)) {
+     originui (21st.dev). The card is the region that scripts/table-region.mjs puts around
+     every table: it hugs the table and grows to the column, and a table wider than the column
+     scrolls inside it. The region is a tab stop and takes the focus ring, because a box that scrolls
+     has to be reachable from the keyboard. ---- */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .sx-table) {
     inline-size: fit-content;
     max-inline-size: 100%;
     overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--sx-structure) transparent;
     border: 1px solid var(--sx-hairline);
     border-radius: 14px;
-    border-collapse: separate;
-    border-spacing: 0;
     background-color: var(--sx-surface);
     box-shadow: var(--sx-card-edge);
+  }
+  .sl-markdown-content .sx-table:focus-visible {
+    outline: 2px solid var(--sx-agent);
+    outline-offset: 2px;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .sx-table > table:not([class], .not-content *)) {
+    display: table;
+    overflow: visible;
+    border-collapse: separate;
+    border-spacing: 0;
     font-size: 0.9375rem;
     line-height: 1.5;
     font-variant-numeric: tabular-nums;
@@ -199,9 +292,9 @@
     background-color: var(--sx-surface-2);
     color: var(--sx-muted);
     font-family: var(--sl-font-mono);
-    font-size: 0.6875rem;
+    font-size: var(--sx-lab-size);
     font-weight: 500;
-    letter-spacing: 0.12em;
+    letter-spacing: var(--sx-lab-track);
     line-height: 1.4;
     text-transform: uppercase;
     vertical-align: bottom;

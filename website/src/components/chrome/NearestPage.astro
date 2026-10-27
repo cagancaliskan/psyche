@@ -1,0 +1,26 @@
+---
+// The 404 page's "nearest filed page" row. At build time it bakes in the pages of the site (the links of
+// the sidebar Starlight built for the page: the address below the base, the full address and the
+// title); the script of pages/404.astro compares the address that was asked for with them, and shows
+// this row only when one is close. It is a component of its own because the sidebar is only on the
+// page's route data once StarlightPage is rendering, which is after the page's own front matter. After
+// "404 Did You Mean" by ziegfiroyt (21st.dev): the closest matching page for a mistyped address, drawn
+// as one more ruled row, with no box and no button.
+import { Icon } from '@astrojs/starlight/components';
+import { flattenLinks } from '../../lib/pageChrome.ts';
+import { BASE, routeOf } from '../../lib/seo.ts';
+
+// [route below the base, address, title] of every page but the home page, which is no near miss for a
+// typed address.
+const pages = flattenLinks(Astro.locals.starlightRoute.sidebar)
+  .map((l) => [routeOf(l.href), l.href, l.label])
+  .filter(([route]) => route !== '');
+---
+
+<li data-near data-base={BASE} data-pages={JSON.stringify(pages)} hidden>
+	<a class="sx-nf__row" href={BASE}>
+		<span class="sx-nf__t" data-near-title></span>
+		<span class="sx-nf__d">Nearest filed page: <span data-near-route></span></span>
+		<Icon name="right-arrow" size="1.25rem" class="sx-nf__arrow" />
+	</a>
+</li>

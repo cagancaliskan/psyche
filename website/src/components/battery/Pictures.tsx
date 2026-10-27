@@ -11,7 +11,26 @@ import type { ChainStep, GridStep, Test, TransferStep } from '@/lib/battery.ts';
 import { polylinePoints, wallPath, withCell, type Cell, type Grid } from '@/lib/maze.ts';
 import { gridLines, wallOutline } from '@/lib/sheet.ts';
 
-type Labelled = { decorative?: boolean };
+/** `decorative` marks a picture beside a text that says the same (the landing's rows, the battery
+ *  page's sheet): hidden from assistive technology. `sharedGlyphs` draws its node letters through <use>
+ *  from glyphs defined once per page, which only components/battery/BatteryTeaser.astro writes: a
+ *  thumbnail inside a link then holds no text but the link's own label, which is the whole of its name
+ *  (WCAG 2.5.3). A picture that is in no link keeps its letters as text. */
+type Labelled = { decorative?: boolean; sharedGlyphs?: boolean };
+
+/** The id of a node letter's glyph in the page's definitions. */
+export const glyphId = (letter: string) => `sx-gl-${[...letter].map((c) => c.codePointAt(0)!.toString(16)).join('-')}`;
+
+/** A node's letter: text, or a reference to the page's glyph in a thumbnail inside a link. */
+function NodeLabel({ letter, x, y, className, sharedGlyphs }: { letter: string; x: number; y: number; className: string; sharedGlyphs?: boolean }) {
+  return sharedGlyphs ? (
+    <use className={className} href={`#${glyphId(letter)}`} x={x} y={y} />
+  ) : (
+    <text className={className} x={x} y={y}>
+      {letter}
+    </text>
+  );
+}
 
 const svgLabel = (label: string, decorative = false) =>
   decorative ? { 'aria-hidden': true as const, focusable: 'false' as const } : { role: 'img', 'aria-label': label };
@@ -84,6 +103,7 @@ export function ChainPicture({
   step,
   prev,
   decorative,
+  sharedGlyphs,
   ruled,
   idPrefix = 'sx-chain',
 }: { nodes: string[]; step: ChainStep; prev?: ChainStep; ruled?: boolean; idPrefix?: string } & Labelled) {
@@ -115,9 +135,7 @@ export function ChainPicture({
       {nodes.map((n, i) => (
         <g key={n}>
           <circle className="node" cx={chainX(i)} cy={y} r={0.42} />
-          <text className="node-label" x={chainX(i)} y={y}>
-            {n}
-          </text>
+          <NodeLabel letter={n} x={chainX(i)} y={y} className="node-label" sharedGlyphs={sharedGlyphs} />
         </g>
       ))}
     </svg>
@@ -130,6 +148,7 @@ export function TransferPicture({
   symbols,
   fresh = false,
   decorative,
+  sharedGlyphs,
   ruled,
 }: { grid: Grid; marks: readonly Cell[]; symbols: string[]; fresh?: boolean; ruled?: boolean } & Labelled) {
   return (
@@ -139,9 +158,7 @@ export function TransferPicture({
       {marks.map(([r, c], i) => (
         <g key={`${r},${c}`}>
           <circle className="node" cx={c + 0.5} cy={r + 0.5} r={0.42} />
-          <text className={withClass('node-label', 'appear', fresh)} x={c + 0.5} y={r + 0.5}>
-            {symbols[i]}
-          </text>
+          <NodeLabel letter={symbols[i]} x={c + 0.5} y={r + 0.5} className={withClass('node-label', 'appear', fresh)} sharedGlyphs={sharedGlyphs} />
         </g>
       ))}
     </svg>
@@ -154,6 +171,7 @@ export function TestPicture({
   index,
   prev,
   decorative,
+  sharedGlyphs,
   ruled,
   idPrefix,
 }: { test: Test; index: number; prev?: number | null; ruled?: boolean; idPrefix?: string } & Labelled) {
@@ -168,6 +186,7 @@ export function TestPicture({
           step={test.steps[index]}
           prev={before === undefined ? undefined : test.steps[before]}
           decorative={decorative}
+          sharedGlyphs={sharedGlyphs}
           ruled={ruled}
           idPrefix={idPrefix}
         />
@@ -175,7 +194,7 @@ export function TestPicture({
     case 'transfer': {
       const step: TransferStep = test.steps[index];
       const changed = before !== undefined && test.steps[before].set !== step.set;
-      return <TransferPicture grid={test.grid} marks={test.marks} symbols={test.symbols[step.set]} fresh={changed} decorative={decorative} ruled={ruled} />;
+      return <TransferPicture grid={test.grid} marks={test.marks} symbols={test.symbols[step.set]} fresh={changed} decorative={decorative} sharedGlyphs={sharedGlyphs} ruled={ruled} />;
     }
   }
 }

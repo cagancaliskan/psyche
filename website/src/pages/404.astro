@@ -1,0 +1,144 @@
+---
+// The page a reader sees for an address that does not exist, set as a drafting sheet in the language
+// of the landing and the battery. Above the title, the strip every page opens with says "Error 404 ...
+// Not filed" (components/chrome/PageTitle.astro); then a framed sheet with registration corners holds
+// the address that was asked for and one plain sentence, and a ruled list leads to places to go. When
+// the address is close to a page of the site, one more row names it. Starlight's own 404 route is
+// switched off in astro.config.mjs (`disable404Route`), and this page takes its place; the host serves
+// it as 404.html.
+//
+// The title is a name, "Page not found", never the status code. The page is noindex (lib/seo.ts) and not
+// in the sitemap, and Starlight keeps it out of search. Three things need script and are left out
+// without it: the address that was asked for (the page is static, so only the browser knows it), the
+// nearest filed page, and the row that opens the search, which cannot work without script either.
+//
+// Structure after "Not Found 404 Page" by mohammadshehadeh (a mono label, a short sentence, a ruled
+// "try one of these" list of routes with an arrow), "404 Did You Mean" by ziegfiroyt (the address that
+// was asked for, and the closest matching page) and "404 Search And Popular Links" by olewandowski1
+// (a list whose rows share their rules), without their buttons, boxes or fills.
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { Icon } from '@astrojs/starlight/components';
+import NearestPage from '@/components/chrome/NearestPage.astro';
+import { NOT_FOUND } from '@/lib/seo.ts';
+import { withBase } from '@/lib/url.ts';
+import '@/styles/notfound.css';
+
+// Where a reader can go. Each description says what the page is; none states a count or a status, which
+// the pages themselves read from the ledger and the plan.
+const places = [
+  { href: withBase(''), title: 'Home', note: 'Psyche, an open research project that builds in stages.' },
+  { href: withBase('research/'), title: 'Research overview', note: 'Stage 2, spiking cognitive maps: the question and how it is tested.' },
+  { href: withBase('battery/'), title: 'Test battery', note: 'The classic cognitive-map paradigms, one test at a time.' },
+  { href: withBase('status/'), title: 'Substrate status', note: 'Stage 1, the substrate: its captured test run and its bricks.' },
+];
+---
+
+<StarlightPage
+  frontmatter={{
+    title: NOT_FOUND.title,
+    description: NOT_FOUND.description,
+    tableOfContents: false,
+    prev: false,
+    next: false,
+  }}
+>
+  <div class="sx-nf not-content">
+    <div class="sx-nf__sheet sx-reg">
+      <p class="sx-nf__asked" data-asked hidden>
+        <span class="sx-nf__k">Requested</span>
+        <span class="sx-nf__addr" data-asked-path></span>
+      </p>
+      <p class="sx-nf__lead">No sheet is filed at this address.</p>
+    </div>
+
+    <h2 class="sx-nf__k sx-nf__k--list">Try one of these</h2>
+    <ul class="sx-nf__list" role="list">
+      <NearestPage />
+      {
+        places.map((place) => (
+          <li>
+            <a class="sx-nf__row" href={place.href}>
+              <span class="sx-nf__t">{place.title}</span>
+              <span class="sx-nf__d">{place.note}</span>
+              <Icon name="right-arrow" size="1.25rem" class="sx-nf__arrow" />
+            </a>
+          </li>
+        ))
+      }
+      <li data-search-row hidden>
+        <button class="sx-nf__row" type="button" data-search-open>
+          <span class="sx-nf__t">Search</span>
+          <span class="sx-nf__d">Find a page by what it says.</span>
+          <Icon name="magnifier" size="1.25rem" class="sx-nf__arrow" />
+        </button>
+      </li>
+    </ul>
+  </div>
+</StarlightPage>
+
+<script>
+  // The address asked for, as the browser has it. textContent, so nothing in it is read as markup.
+  const asked = document.querySelector<HTMLElement>('[data-asked]');
+  const path = document.querySelector<HTMLElement>('[data-asked-path]');
+  if (asked && path && location.pathname) {
+    path.textContent = location.pathname;
+    asked.hidden = false;
+  }
+
+  // The nearest filed page: the address below the base, against every page's, by edit distance. Close
+  // means two edits at most, counting a right last segment under a wrong folder as one more edit. When
+  // none is close the row stays hidden.
+  const near = document.querySelector<HTMLElement>('[data-near]');
+  if (near) {
+    try {
+      const pages: [string, string, string][] = JSON.parse(near.dataset.pages ?? '[]');
+      const base = near.dataset.base ?? '/';
+      const edits = (a: string, b: string) => {
+        let row = Array.from({ length: b.length + 1 }, (_, j) => j);
+        for (let i = 1; i <= a.length; i++) {
+          const next = [i];
+          for (let j = 1; j <= b.length; j++) {
+            next[j] = Math.min(row[j] + 1, next[j - 1] + 1, row[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+          }
+          row = next;
+        }
+        return row[b.length];
+      };
+      const last = (s: string) => s.slice(s.lastIndexOf('/') + 1);
+      const typed = decodeURIComponent(location.pathname)
+        .replace(base, '')
+        .replace(/(\/index)?(\.html?)?\/*$/, '')
+        .toLowerCase();
+      let best: { cost: number; page: [string, string, string] } | null = null;
+      for (const page of pages) {
+        const cost = Math.min(edits(typed, page[0]), edits(last(typed), last(page[0])) + 1);
+        if (!best || cost < best.cost) best = { cost, page };
+      }
+      if (typed.length > 2 && best && best.cost <= 2) {
+        const link = near.querySelector<HTMLAnchorElement>('a');
+        if (link) link.href = best.page[1];
+        near.querySelector('[data-near-title]')!.textContent = best.page[2];
+        near.querySelector('[data-near-route]')!.textContent = best.page[0];
+        near.hidden = false;
+        // A page in the list below that is the nearest one is named once, in the nearest row.
+        for (const other of document.querySelectorAll<HTMLAnchorElement>('.sx-nf__list li:not([data-near]) a')) {
+          if (other.getAttribute('href') === best.page[1]) other.closest('li')!.hidden = true;
+        }
+      }
+    } catch {
+      // An address that cannot be read is no near miss; the list below it is all there is.
+    }
+  }
+
+  // The search is Starlight's own dialog, opened by the button in the header. This click must not go on to
+  // the window: Starlight's dialog closes itself on a click outside it, and would close at once.
+  const row = document.querySelector<HTMLElement>('[data-search-row]');
+  const opener = document.querySelector<HTMLButtonElement>('button[data-open-modal]');
+  if (row && opener) {
+    row.hidden = false;
+    row.querySelector('button')?.addEventListener('click', (event) => {
+      event.stopPropagation();
+      opener.click();
+    });
+  }
+</script>
