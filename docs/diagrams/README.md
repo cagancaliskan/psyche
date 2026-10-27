@@ -10,7 +10,7 @@ stood when the report was written. The `.mmd` sources and the PNGs are not read 
 `tools/ledger_check.py`, which reads Markdown, LaTeX and Python files but not Mermaid sources
 or images. [`tools/publish/check_copy.py`](../../tools/publish/check_copy.py) does not read
 them either. They are archived figures, historical by design, and are published nowhere: the
-docs site and the wiki take no `.mmd` from here. A stale figure in one of them is a record, not
+docs site takes no `.mmd` from here. A stale figure in one of them is a record, not
 current copy. For the current state of the substrate,
 read [`tools/ledger.json`](../../tools/ledger.json) and [`ARCHITECTURE.md`](../ARCHITECTURE.md).
 

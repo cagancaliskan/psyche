@@ -1,11 +1,11 @@
 {
   "_README": [
-    "THE PUBLICATION MANIFEST (D-031): the only list of repository documents that may reach a public surface (the docs site and the generated wiki).",
+    "THE PUBLICATION MANIFEST (D-031): the only list of repository documents that may reach a public surface (the docs site).",
     "A page is published only if tools/publish/core.py's publishable_guard accepts its src: the file exists, is Markdown, is not under never_publish, is not a file C3 skips by name",
     "(a path ending in psyche_roadmap.md or DECISIONS.md), sits outside every directory ledger_check skips (SKIP_DIRS and every hidden directory), is in neither claim_quarantine_paths nor count_quarantine_paths of tools/ledger.json,",
     "carries no ledger ignore-file pragma, is in the tree of the commit being published and does not differ from that commit on disk.",
     "So only text that ledger_check's C2, C3 and C4 actually govern, as a commit holds it, can be published. Adding a page here never bypasses the guard.",
-    "slug is the site route below site_base; wiki is the generated wiki page name. Relative links to these sources are rewritten to those targets;",
+    "slug is the site route below site_base; wiki is a leftover page name from the wiki that is no longer built, and is not published. Relative links to these sources are rewritten to those targets;",
     "links to any other tracked file become GitHub links pinned to the publishing commit, and a dead relative link fails the build.",
     "never_publish entries ending in / are directory prefixes; the others are files. Each must be a canonical relative path (no leading / or ./, no backslash), or the manifest is refused.",
     "Matching is case-insensitive, so it can only refuse more, never less. tools/publish/render_plan.py also renders generated blocks in the pages listed here."

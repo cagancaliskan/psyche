@@ -2,7 +2,7 @@
 
 The project's rules, and the shared ground truth for everyone who works on this repository.
 Read it first. Where a proposed change conflicts with a rule below, raise the conflict in the
-issue or pull request rather than resolving it silently.
+pull request or in a GitHub Discussion rather than resolving it silently.
 
 Current counts, statuses and program state live in `tools/ledger.json`; this file does not
 repeat them.
@@ -183,8 +183,8 @@ tie-break that a 1-ULP asymmetry pre-empts is not a tie-break.
 The project lead, Cagan Caliskan, sets direction and makes the calls; contributors propose. When
 a decision shapes the project's direction — a constant, a default, anything carrying a
 re-validation cost — the proposal sets out the options, their tradeoffs and a recommendation, and
-the project lead decides. If a claim or a goal is unclear, ask in an issue before writing it
-into the repository.
+the project lead decides. If a claim or a goal is unclear, ask in a GitHub Discussion before
+writing it into the repository.
 
 ---
 

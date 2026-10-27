@@ -4,6 +4,16 @@ __pycache__/
 *.egg-info/
 .pytest_cache/
 .mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local environments, secrets and logs
+.env*
+!.env.example
+.venv/
+venv/
+*.log
 
 # OS / editor
 .DS_Store
@@ -39,5 +49,5 @@ website/.astro/
 website/src/content/docs/
 website/src/data/
 
-# Generated publishing output (wiki pages, scratch builds); regenerated from the repository.
+# Generated publishing output (scratch builds); regenerated from the repository.
 build/
