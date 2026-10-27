@@ -137,7 +137,7 @@ function measure(htmlPath, problems) {
     else set.add(r.file);
   };
 
-  for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
+  for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\b[^>]*>/gi)) {
     const type = (attr(m[1], 'type') || '').toLowerCase();
     if (type && !['module', 'text/javascript', 'application/javascript'].includes(type)) continue;
     const src = attr(m[1], 'src');

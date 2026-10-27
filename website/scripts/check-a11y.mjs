@@ -263,7 +263,7 @@ async function main() {
       `${runs} page loads; ${failing.length} serious or critical element(s); ${other.length} lesser. Undecided by axe, for a human look: ${undecidedText}.`, ''];
     if (all.length) {
       md.push('| Impact | Rule | Page | Element |', '|---|---|---|---|');
-      for (const f of sorted(all).slice(0, 60)) md.push(`| ${f.impact} | [${f.id}](${f.helpUrl}) | \`${f.route}\` | \`${f.target.replace(/\|/g, '\\|')}\` |`);
+      for (const f of sorted(all).slice(0, 60)) md.push(`| ${f.impact} | [${f.id}](${f.helpUrl}) | \`${f.route}\` | \`${f.target.replace(/\\/g, '\\\\').replace(/\|/g, '\\|')}\` |`);
     }
     appendFileSync(process.env.GITHUB_STEP_SUMMARY, md.join('\n') + '\n');
   }
