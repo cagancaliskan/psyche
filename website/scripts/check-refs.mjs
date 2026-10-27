@@ -46,8 +46,13 @@ let problems = 0;
 let refs = 0;
 const all = pages();
 for (const page of all) {
-  // Scripts hold strings that look like markup; what they build at run time is not in the file.
-  const html = readFileSync(join(DIST, page), 'utf8').replace(/<script\b[\s\S]*?<\/script\b[^>]*>/gi, '');
+  // Scripts hold strings that look like markup; what they build at run time is not in the file. The
+  // removal is repeated until nothing changes, so that no script is left behind by one it joined up.
+  let html = readFileSync(join(DIST, page), 'utf8');
+  for (let before = ''; before !== html; ) {
+    before = html;
+    html = html.replace(/<script\b[\s\S]*?<\/script\b[^>]*>/gi, '');
+  }
   const ids = new Set([...html.matchAll(/\sid\s*=\s*["']([^"']+)["']/gi)].map((m) => m[1]));
   for (const [what, pattern, arity] of REFS) {
     for (const m of html.matchAll(pattern)) {

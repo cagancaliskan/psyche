@@ -44,8 +44,13 @@ for (const page of allPages()) {
   const html = readFileSync(join(DIST, page), 'utf8');
   for (const m of html.matchAll(/<figcaption\b[^>]*>([\s\S]*?)<\/figcaption>/g)) {
     captions++;
-    // textContent: tags removed with nothing put in their place, as a reader's search index sees it
-    const text = m[1].replace(/<[^>]+>/g, '');
+    // textContent: tags removed with nothing put in their place, as a reader's search index sees it;
+    // repeated until nothing changes, so that no tag is left behind by one that a removal joined up
+    let text = m[1];
+    for (let before = ''; before !== text; ) {
+      before = text;
+      text = text.replace(/<[^>]*>/g, '');
+    }
     for (const glued of text.matchAll(GLUED_CAPTION)) {
       console.error(`check-spacing: ${page}: words run together in a figure caption: "${glued[0]}"`);
       problems++;
