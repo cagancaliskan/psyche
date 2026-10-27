@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-698f72918ea76bcf-t dg-698f72918ea76bcf-d" data-key="698f72918ea76bcf" data-diagram="flowchart" font-size="12" viewBox="0 0 389.07 561.15" width="390" height="562">
+ <title id="dg-698f72918ea76bcf-t">Flowchart of 7 steps, starting at Private head current work, never released</title>
+ <desc id="dg-698f72918ea76bcf-d">Steps: Private head current work, never released; Tagged older version, complete and working; Lag head moved well past; Allowlist and scans withheld terms, secrets, tests; Review the author reads the full diff; Public in this repository; Release stops nothing stripped automatically. Connections: Private head current work, never released to Tagged older version, complete and working; Tagged older version, complete and working to Lag head moved well past; Lag head moved well past to Allowlist and scans withheld terms, secrets, tests; Allowlist and scans withheld terms, secrets, tests to Review the author reads the full diff; Review the author reads the full diff to Public in this repository; Allowlist and scans withheld terms, secrets, tests to Release stops nothing stripped automatically (dotted); Review the author reads the full diff to Release stops nothing stripped automatically (dotted).</desc>
+ <g>
+  <marker id="dg-698f72918ea76bcf_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+   <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath"/>
+  </marker>
+  <g class="root">
+   <g class="edgePaths">
+    <path d="M193.591,68.4L193.591,87.4L193.591,102.4" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-698f72918ea76bcf_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M193.591,167.392L193.591,186.392L193.591,201.392" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-698f72918ea76bcf_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M193.591,252.992L193.591,271.992L193.591,286.992" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-698f72918ea76bcf_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M138.126,351.552L103.324,370.552L103.324,385.552" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-698f72918ea76bcf_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M97.185,449.952L93.324,468.952L93.759,496.053" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-698f72918ea76bcf_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M261.345,351.552L303.858,370.552L303.858,419.752L303.858,468.952L300.812,484.031" class="edge-thickness-normal edge-pattern-dotted edge-pattern-solid flowchart-link" marker-end="url(#dg-698f72918ea76bcf_flowchart-v2-pointEnd)" fill="none" stroke-dasharray="1.5 3"/>
+    <path d="M164.87,449.952L203.591,468.952L234.734,486.029" class="edge-thickness-normal edge-pattern-dotted edge-pattern-solid flowchart-link" marker-end="url(#dg-698f72918ea76bcf_flowchart-v2-pointEnd)" fill="none" stroke-dasharray="1.5 3"/>
+   </g>
+   <g class="nodes">
+    <g class="node default priv" transform="translate(193.59097290039062, 38.20000076293945)">
+     <rect class="basic label-container" x="-78.8046875" y="-30.200000762939453" width="157.609375" height="60.400001525878906"/>
+     <g class="label" transform="translate(0, -20.200000762939453)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Private head</tspan><tspan x="0" y="1em" dy="1.1em">current work,</tspan><tspan x="0" y="2.1em" dy="1.1em">never released</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default priv" transform="translate(193.59097290039062, 136.8960018157959)">
+     <rect class="basic label-container" x="-91.40625" y="-30.496000289916992" width="182.8125" height="60.992000579833984"/>
+     <g class="label" transform="translate(0, -20.496000289916992)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Tagged older</tspan><tspan x="0" y="1em" dy="1.1em">version, complete</tspan><tspan x="0" y="2.1em" dy="1.1em">and working</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default check" transform="translate(193.59097290039062, 229.19200325012207)">
+     <rect class="basic label-container" x="-104.0078125" y="-23.80000114440918" width="208.015625" height="47.60000228881836"/>
+     <g class="label" transform="translate(0, -13.80000114440918)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Lag</tspan><tspan x="0" y="1em" dy="1.1em">head moved well past</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default check" transform="translate(193.59097290039062, 321.2720069885254)">
+     <rect class="basic label-container" x="-99.8125" y="-30.28000259399414" width="199.625" height="60.56000518798828"/>
+     <g class="label" transform="translate(0, -20.28000259399414)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Allowlist and scans</tspan><tspan x="0" y="1em" dy="1.1em">withheld terms,</tspan><tspan x="0" y="2.1em" dy="1.1em">secrets, tests</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default check" transform="translate(103.32366943359375, 419.752010345459)">
+     <rect class="basic label-container" x="-87.2109375" y="-30.200000762939453" width="174.421875" height="60.400001525878906"/>
+     <g class="label" transform="translate(0, -20.200000762939453)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Review</tspan><tspan x="0" y="1em" dy="1.1em">the author reads</tspan><tspan x="0" y="2.1em" dy="1.1em">the full diff</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default open" transform="translate(93.32366943359375, 518.4480133056641)">
+     <rect class="basic label-container" x="-85.32" y="-18.9" width="170.65" height="37.79" rx="18.9" ry="18.9"/>
+     <g class="label" transform="translate(0, -13.896000862121582)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Public</tspan><tspan x="0" y="1em" dy="1.1em">in this repository</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default halt" transform="translate(293.8582763671875, 518.4480133056641)">
+     <rect class="basic label-container" x="-87.2109375" y="-30.496002197265625" width="174.421875" height="60.99200439453125"/>
+     <g class="label" transform="translate(0, -20.496002197265625)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Release stops</tspan><tspan x="0" y="1em" dy="1.1em">nothing stripped</tspan><tspan x="0" y="2.1em" dy="1.1em">automatically</tspan></text>
+      </g>
+     </g>
+    </g>
+   </g>
+  </g>
+ </g>
+</svg>

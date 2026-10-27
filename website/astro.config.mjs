@@ -8,25 +8,18 @@ import { readFileSync } from 'node:fs';
 import { defineConfig } from 'astro/config';
 import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
-import mermaid from 'astro-mermaid';
 import starlightLinksValidator from 'starlight-links-validator';
 import tailwindcss from '@tailwindcss/vite';
 
 const BASE = '/psyche';
 
-const MERMAID_FONT = "'Instrument Sans Variable', system-ui, sans-serif";
-
-// One small inline script for the chrome, run once the page is parsed.
-// - Mermaid copies each classDef's fill, stroke and text colour onto the shapes as inline
-//   !important styles, which no stylesheet can override. Removing those three properties after
-//   each render lets the token theme in docs.css apply; dash patterns and widths stay.
-// - The previous / next cards carry a light that follows a mouse pointer: its position is written
-//   to --sx-spot-x / --sx-spot-y on the card under it, once per frame (global.css draws the light).
+// One small inline script for the chrome, run once the page is parsed: the previous / next cards
+// carry a light that follows a mouse pointer. Its position is written to --sx-spot-x / --sx-spot-y
+// on the card under it, once per frame (global.css draws the light).
 const CHROME_SCRIPT = `(()=>{
-const strip=(root)=>root.querySelectorAll('svg :is(.node,.cluster)[style],svg :is(.node,.cluster) [style]').forEach((el)=>{for(const p of ['fill','stroke','color'])el.style.removeProperty(p);});
 let frame=0;
 const spot=(e)=>{if(e.pointerType==='touch')return;const card=e.target instanceof Element?e.target.closest('.pagination-links a'):null;if(!card)return;cancelAnimationFrame(frame);frame=requestAnimationFrame(()=>{const r=card.getBoundingClientRect();card.style.setProperty('--sx-spot-x',e.clientX-r.left+'px');card.style.setProperty('--sx-spot-y',e.clientY-r.top+'px');});};
-const start=()=>{document.querySelectorAll('pre.mermaid').forEach((pre)=>{strip(pre);new MutationObserver(()=>strip(pre)).observe(pre,{childList:true});});document.querySelector('.pagination-links')?.addEventListener('pointermove',spot,{passive:true});};
+const start=()=>{document.querySelector('.pagination-links')?.addEventListener('pointermove',spot,{passive:true});};
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
 })();`;
 
@@ -48,59 +41,6 @@ export default defineConfig({
     plugins: [tailwindcss()],
   },
   integrations: [
-    // Mermaid on the site's tokens. `base` is the only Mermaid theme that takes themeVariables; the
-    // values below are the dark tokens, and src/styles/docs.css recolours every rendered diagram
-    // from the live tokens in both themes. autoTheme stays off: it swaps to Mermaid's built-in
-    // 'default' and 'dark' themes, which ignore themeVariables.
-    mermaid({
-      theme: 'base',
-      autoTheme: false,
-      enableLog: false,
-      mermaidConfig: {
-        fontFamily: MERMAID_FONT,
-        themeVariables: {
-          darkMode: true,
-          fontFamily: MERMAID_FONT,
-          fontSize: '14px',
-          background: '#0b0f18',
-          mainBkg: '#0b0f18',
-          primaryColor: '#0b0f18',
-          primaryBorderColor: '#4a5888',
-          primaryTextColor: '#f4f6fb',
-          secondaryColor: '#111726',
-          secondaryBorderColor: '#1c2333',
-          secondaryTextColor: '#f4f6fb',
-          tertiaryColor: '#111726',
-          tertiaryBorderColor: '#1c2333',
-          tertiaryTextColor: '#f4f6fb',
-          nodeBorder: '#4a5888',
-          textColor: '#f4f6fb',
-          titleColor: '#f4f6fb',
-          lineColor: '#8aa2ff',
-          clusterBkg: '#0b0f18',
-          clusterBorder: '#1c2333',
-          edgeLabelBackground: '#0b0f18',
-          sectionBkgColor: '#111623',
-          sectionBkgColor2: '#111623',
-          altSectionBkgColor: '#0b0f18',
-          gridColor: '#1c2333',
-          taskBkgColor: '#1e263b',
-          taskBorderColor: '#526299',
-          taskTextColor: '#f4f6fb',
-          taskTextLightColor: '#f4f6fb',
-          taskTextDarkColor: '#f4f6fb',
-          taskTextOutsideColor: '#f4f6fb',
-          activeTaskBkgColor: '#1e3939',
-          activeTaskBorderColor: '#5ef0c4',
-          doneTaskBkgColor: '#111726',
-          doneTaskBorderColor: '#1c2333',
-          critBkgColor: '#2f2927',
-          critBorderColor: '#ffb45e',
-          todayLineColor: '#5ef0c4',
-          vertLineColor: '#8aa2ff',
-        },
-      },
-    }),
     starlight({
       title: 'Psyche',
       description:

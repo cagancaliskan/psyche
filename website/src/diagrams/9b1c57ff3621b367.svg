@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-9b1c57ff3621b367-t dg-9b1c57ff3621b367-d" data-key="9b1c57ff3621b367" data-diagram="flowchart" font-size="12" viewBox="0 0 331.03 342.38" width="332" height="343">
+ <title id="dg-9b1c57ff3621b367-t">Flowchart of 4 steps, starting at Safe base environments, battery, baselines, analysis</title>
+ <desc id="dg-9b1c57ff3621b367-d">Steps: Safe base environments, battery, baselines, analysis; Main goal spiking model with local plasticity; Failure analysis where and why; Reported result. Connections: Safe base environments, battery, baselines, analysis to Main goal spiking model with local plasticity; Safe base environments, battery, baselines, analysis to Reported result; Main goal spiking model with local plasticity to Reported result; Main goal spiking model with local plasticity to Failure analysis where and why (dotted); Failure analysis where and why to Reported result.</desc>
+ <g>
+  <marker id="dg-9b1c57ff3621b367_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+   <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath"/>
+  </marker>
+  <g class="root">
+   <g class="edgePaths">
+    <path d="M157.254,68.992L180.211,87.992L180.211,102.992" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-9b1c57ff3621b367_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M79.985,68.992L54.801,87.992L54.801,137.488L54.801,186.984L54.801,229.88L54.801,272.776L89.755,291.813" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-9b1c57ff3621b367_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M145.951,167.984L124.605,186.984L124.605,229.88L124.605,272.776L125.003,288.277" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-9b1c57ff3621b367_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M214.471,167.984L235.816,186.984L235.816,201.984" class="edge-thickness-normal edge-pattern-dotted edge-pattern-solid flowchart-link" marker-end="url(#dg-9b1c57ff3621b367_flowchart-v2-pointEnd)" fill="none" stroke-dasharray="1.5 3"/>
+    <path d="M235.816,253.776L235.816,272.776L166.951,296.693" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-9b1c57ff3621b367_flowchart-v2-pointEnd)" fill="none"/>
+   </g>
+   <g class="nodes">
+    <g class="node default base" transform="translate(120.40625, 38.496002197265625)">
+     <rect class="basic label-container" x="-112.40625" y="-30.496002197265625" width="224.8125" height="60.99200439453125"/>
+     <g class="label" transform="translate(0, -20.496002197265625)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Safe base</tspan><tspan x="0" y="1em" dy="1.1em">environments, battery,</tspan><tspan x="0" y="2.1em" dy="1.1em">baselines, analysis</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default goal" transform="translate(180.2109375, 137.48800659179688)">
+     <rect class="basic label-container" x="-95.609375" y="-30.496002197265625" width="191.21875" height="60.99200439453125"/>
+     <g class="label" transform="translate(0, -20.496002197265625)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Main goal</tspan><tspan x="0" y="1em" dy="1.1em">spiking model with</tspan><tspan x="0" y="2.1em" dy="1.1em">local plasticity</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default analysis" transform="translate(235.81640625, 229.88000869750977)">
+     <rect class="basic label-container" x="-87.2109375" y="-23.895999908447266" width="174.421875" height="47.79199981689453"/>
+     <g class="label" transform="translate(0, -13.895999908447266)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Failure analysis</tspan><tspan x="0" y="1em" dy="1.1em">where and why</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default out" transform="translate(124.60546875, 310.37600898742676)">
+     <rect class="basic label-container" x="-43.24" y="-18.6" width="86.48" height="37.2" rx="18.6" ry="18.6"/>
+     <g class="label" transform="translate(0, -13.600000381469727)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Reported</tspan><tspan x="0" y="1em" dy="1.1em">result</tspan></text>
+      </g>
+     </g>
+    </g>
+   </g>
+  </g>
+ </g>
+</svg>

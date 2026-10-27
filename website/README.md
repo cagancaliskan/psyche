@@ -9,7 +9,8 @@ Nothing in `src/content/docs/` or `src/data/` is written by hand. `npm run stage
 `tools/publish/stage.py`, which:
 
 - copies every page listed in `docs/publish.json` from its governed source (checked by
-  `tools/ledger_check.py`) into `src/content/docs/`, rewriting links for the site;
+  `tools/ledger_check.py`) into `src/content/docs/`, rewriting links for the site and replacing each
+  Mermaid fence with its committed drawing from `src/diagrams/` (see Diagrams below);
 - writes `src/data/plan.json` (from `tools/research_plan.json`), `src/data/ledger.public.json` (a
   public projection of `tools/ledger.json`, including the project's aim and the program state of
   each stage) and `src/data/sidebar.json`.
@@ -34,16 +35,43 @@ long-term aim. Stage states and dates are read from the ledger projection, never
 | `npm run preview` | Serve `dist/` locally |
 | `npm run check:spacing` | Only the spacing step: look for words run together in `dist/` |
 | `npm run check:budget` | Only the budget step: gzipped JavaScript and CSS per page against `scripts/check-budget.mjs` |
+| `npm run diagrams` | Draw the Mermaid diagrams of the published pages into `src/diagrams/` (see Diagrams below) |
+| `npm run check:diagrams` | Fail if a diagram has no current drawing, or a drawing no diagram uses |
 | `npm run check:a11y` | After a build: axe-core at WCAG 2.2 AA over the key pages of `dist/` (see below) |
 | `npm test` | Unit tests for the plan, maze and battery logic |
+
+### Diagrams
+
+The governed Markdown keeps its ```` ```mermaid ```` fences, which GitHub draws on the repository.
+The site draws none of them in the browser: no Mermaid ships, there is no flash of source, and a
+reader with JavaScript off sees the drawing. Each fence is drawn once, ahead of the build, by
+`scripts/render-diagrams.mjs` into `src/diagrams/<key>.svg`, and `tools/publish/stage.py` puts
+that file inline in the page in place of the fence, inside a `figure` with a text alternative
+(`title` and `desc`, written from the diagram itself). The drawing holds geometry, classes and
+text and no colour; `src/styles/docs.css` paints it from the site's tokens. A diagram wider than
+the column scales to three quarters of its drawn size and scrolls sideways beyond that, and the
+scroll box takes keyboard focus. A flowchart written left to right is drawn top to bottom, because
+a row of labelled boxes in a mono face is 900 to 1300px wide and the column is about 600; the
+timeline's "today" marker is left out, because a drawing made once cannot know the date.
+
+`npm run diagrams` draws what is missing and deletes what no page uses. Run it after changing a
+diagram, after `python3 tools/publish/render_plan.py --write` moves a date in the gantt or the gate
+flow, or after editing the script, then commit `src/diagrams/`. The file name is a key over the
+script's own bytes and the fence's text (`tools/publish/diagrams.py`), so a changed fence or a
+changed renderer names new keys: staging stops, and governance runs
+`python3 tools/publish/diagrams.py --check`, until the drawings are redrawn. The check needs
+nothing installed. Drawing needs Google Chrome or Chromium (`--chrome PATH` or `CHROME_PATH`) and
+installs `mermaid` and `puppeteer-core`, at the exact versions pinned at the top of the script,
+into a temporary directory (`DIAGRAM_TOOLS_DIR` changes where); they are not dependencies of the
+site. The Mono face is the one the site already ships.
 
 ### Size budget
 
 `scripts/check-budget.mjs` reads the built HTML in `dist/` and fails the build when a page ships
 more gzipped JavaScript, or links more gzipped CSS, than its budget. JavaScript is what the page
-loads (scripts, module preloads, island modules and what they import, inline scripts) plus, on a
-page with a Mermaid diagram, the module that draws it; CSS is every linked stylesheet and every
-inline `<style>`. Fonts and images are not counted. The budgets sit 3 percent above the sizes
+loads (scripts, module preloads, island modules and what they import, inline scripts); CSS is
+every linked stylesheet and every inline `<style>`. Fonts, images and the inline SVG of a diagram
+are not counted. The budgets sit 3 percent above the sizes
 measured when they were set and are listed page by page at the top of the script. Raise one on
 purpose by editing the number there, and say why in the commit.
 
@@ -135,11 +163,10 @@ off them.
   and focus; inline code is mono on the raised surface; tables are hairline cards with a mono
   header row and tabular figures; quotes carry a structure bar; images and diagrams sit in
   hairline cards.
-- Mermaid diagrams are written for GitHub and carry their own colours. On the site Mermaid runs
-  with its `base` theme on the dark tokens (`astro.config.mjs`), `docs.css` recolours every
-  rendered diagram from the live tokens in both themes, and a small inline script removes the
-  colours Mermaid copies onto shapes as inline styles. Mermaid measures its labels in Instrument
-  Sans, so the stylesheet changes colour only, never type.
+- Mermaid diagrams are written for GitHub and carry their own colours. The site draws none of them
+  in the browser: each is drawn ahead of time into a colourless SVG (see Diagrams) and `docs.css`
+  paints it from the live tokens, so one file reads in both themes. The labels were measured in
+  Martian Mono when the diagram was drawn, so the stylesheet changes colour only, never type.
 
 ### Motion
 

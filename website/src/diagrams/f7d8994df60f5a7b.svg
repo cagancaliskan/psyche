@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-f7d8994df60f5a7b-t dg-f7d8994df60f5a7b-d" data-key="f7d8994df60f5a7b" data-diagram="flowchart" font-size="12" viewBox="0 0 618.03 580.74" width="619" height="581">
+ <title id="dg-f7d8994df60f5a7b-t">Flowchart of 9 steps, starting at Environments seeded, deterministic</title>
+ <desc id="dg-f7d8994df60f5a7b-d">Steps: Environments seeded, deterministic; Shared exploration pre-generated, same for every agent; Baseline agents; Spiking model private for now; Test battery classic animal paradigms; Behaviour; Internal structure; Synaptic-operation estimate, analytic; Results. Agents holds Baseline agents, Spiking model private for now. Metrics holds Behaviour, Internal structure, Synaptic-operation estimate, analytic. Connections: Environments seeded, deterministic to Shared exploration pre-generated, same for every agent; Shared exploration pre-generated, same for every agent to Baseline agents; Shared exploration pre-generated, same for every agent to Spiking model private for now; Baseline agents to Test battery classic animal paradigms; Spiking model private for now to Test battery classic animal paradigms; Test battery classic animal paradigms to Behaviour; Test battery classic animal paradigms to Internal structure; Test battery classic animal paradigms to Synaptic-operation estimate, analytic; Behaviour to Results; Internal structure to Results; Synaptic-operation estimate, analytic to Results.</desc>
+ <g>
+  <marker id="dg-f7d8994df60f5a7b_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+   <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath"/>
+  </marker>
+  <g class="root">
+   <g class="clusters">
+    <g class="cluster">
+     <rect x="8" y="414.94400787353516" width="602.03125" height="85.79199981689453"/>
+     <g class="cluster-label" transform="translate(279.609375, 414.94400787353516)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Metrics</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="cluster">
+     <rect x="86.1015625" y="192.3520050048828" width="408.046875" height="85.60000228881836"/>
+     <g class="cluster-label" transform="translate(264.921875, 192.3520050048828)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Agents</tspan></text>
+      </g>
+     </g>
+    </g>
+   </g>
+   <g class="edgePaths">
+    <path d="M271.211,55.36L271.211,74.36L271.211,89.36" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-f7d8994df60f5a7b_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M223.09,154.352L193.109,173.352L193.109,192.352L193.109,213.856" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-f7d8994df60f5a7b_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M342.634,154.352L387.133,173.352L387.133,192.352L387.133,207.352" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-f7d8994df60f5a7b_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M193.109,252.448L193.109,277.952L193.109,296.952L219.712,313.811" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-f7d8994df60f5a7b_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M387.133,258.952L387.133,277.952L387.133,296.952L346.313,314.381" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-f7d8994df60f5a7b_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M192.398,367.952L89.805,395.944L89.805,414.944L89.805,436.84" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-f7d8994df60f5a7b_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M271.211,376.944L271.211,395.944L271.211,414.944L271.211,436.84" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-f7d8994df60f5a7b_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M350.023,364.243L490.422,395.944L490.422,414.944L490.422,429.944" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-f7d8994df60f5a7b_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M89.805,474.84L89.805,500.736L89.805,519.736L230.473,545.838" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-f7d8994df60f5a7b_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M271.211,474.84L271.211,500.736L271.211,519.736L276.54,534.961" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-f7d8994df60f5a7b_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M490.422,481.736L490.422,500.736L490.422,519.736L337.159,546.441" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-f7d8994df60f5a7b_flowchart-v2-pointEnd)" fill="none"/>
+   </g>
+   <g class="nodes">
+    <g class="node default env" transform="translate(271.2109375, 31.68000030517578)">
+     <rect class="basic label-container" x="-108.2109375" y="-23.68000030517578" width="216.421875" height="47.36000061035156"/>
+     <g class="label" transform="translate(0, -13.680000305175781)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Environments</tspan><tspan x="0" y="1em" dy="1.1em">seeded, deterministic</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default data" transform="translate(271.2109375, 123.85600280761719)">
+     <rect class="basic label-container" x="-104.015625" y="-30.496002197265625" width="208.03125" height="60.99200439453125"/>
+     <g class="label" transform="translate(0, -20.496002197265625)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Shared exploration</tspan><tspan x="0" y="1em" dy="1.1em">pre-generated,</tspan><tspan x="0" y="2.1em" dy="1.1em">same for every agent</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default agent" transform="translate(193.109375, 235.152006149292)">
+     <rect class="basic label-container" x="-83.0078125" y="-17.296000003814697" width="166.015625" height="34.592000007629395"/>
+     <g class="label" transform="translate(0, -7.296000003814697)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Baseline agents</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default priv" transform="translate(387.1328125, 235.152006149292)">
+     <rect class="basic label-container" x="-83.015625" y="-23.80000114440918" width="166.03125" height="47.60000228881836" stroke-dasharray="5 5"/>
+     <g class="label" transform="translate(0, -13.80000114440918)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Spiking model</tspan><tspan x="0" y="1em" dy="1.1em">private for now</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default battery" transform="translate(271.2109375, 346.44800758361816)">
+     <rect class="basic label-container" x="-78.8125" y="-30.496000289916992" width="157.625" height="60.992000579833984"/>
+     <g class="label" transform="translate(0, -20.496000289916992)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Test battery</tspan><tspan x="0" y="1em" dy="1.1em">classic animal</tspan><tspan x="0" y="2.1em" dy="1.1em">paradigms</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default metric" transform="translate(89.8046875, 457.8400077819824)">
+     <rect class="basic label-container" x="-57.8046875" y="-17" width="115.609375" height="34"/>
+     <g class="label" transform="translate(0, -7)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Behaviour</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default metric" transform="translate(271.2109375, 457.8400077819824)">
+     <rect class="basic label-container" x="-95.6015625" y="-17" width="191.203125" height="34"/>
+     <g class="label" transform="translate(0, -7)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Internal structure</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default metric" transform="translate(490.421875, 457.8400077819824)">
+     <rect class="basic label-container" x="-95.609375" y="-23.896000862121582" width="191.21875" height="47.792001724243164"/>
+     <g class="label" transform="translate(0, -13.896000862121582)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Synaptic-operation</tspan><tspan x="0" y="1em" dy="1.1em">estimate, analytic</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default result" transform="translate(283.8125, 555.7360076904297)">
+     <rect class="basic label-container" x="-49.40625" y="-17" width="98.8125" height="34"/>
+     <g class="label" transform="translate(0, -7)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Results</tspan></text>
+      </g>
+     </g>
+    </g>
+   </g>
+  </g>
+ </g>
+</svg>

@@ -73,6 +73,14 @@ Covered:
             shapes where GitHub's parser and the site's disagree, definitions with an
             escaped ']' or a label over several lines, CRLF and CR-only line endings, and
             'https:' without '//'.
+  diagrams  Mermaid fences found the way Markdown reads them (info string, tildes, CRLF;
+            a fence in a list item, indented, unclosed or inside a longer fence is refused
+            or ignored), the key (source, renderer, nothing else), the SVG the site may
+            inline (tags, event attributes, references, key), the replacement (text around
+            it kept, one line of HTML, a repeated fence keeps unique ids, no drawing is
+            refused with the command to run), the check on a working tree and on a commit
+            (missing, left over, renamed, wrong key, renderer changed), and stage_site on a
+            fixture repository (drawings read from the commit, never the disk).
   source    this file holds no Turkish letter and no raw invisible character, and every
             character outside ASCII in its test data is built with chr() or an escape.
 """
@@ -101,6 +109,8 @@ sys.path.insert(0, str(HERE))
 import core                    # noqa: E402
 import render_plan as RP       # noqa: E402
 import ci_c2                   # noqa: E402
+import diagrams as DG          # noqa: E402
+import stage                   # noqa: E402
 
 REPO = core.REPO
 LC = core.ledger_check()
@@ -2639,6 +2649,273 @@ def test_ledger_public(tmp: Path) -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# diagrams: Mermaid fences drawn ahead of time, inlined by the stager
+# ─────────────────────────────────────────────────────────────────────────────
+
+FLOW = "flowchart TD\n  a[\"One\"] --> b[\"Two\"]"
+FLOW2 = "flowchart TD\n  a[\"One\"] --> c[\"Three\"]"
+
+
+def svg_for(key: str, extra: str = "") -> str:
+    """The smallest drawing the site may inline, as the render script writes it."""
+    return ('<svg xmlns="http://www.w3.org/2000/svg" role="img" '
+            f'aria-labelledby="dg-{key}-t dg-{key}-d" data-key="{key}" font-size="12" '
+            'viewBox="-8 4 120.5 60" width="121" height="60">\n'
+            f' <title id="dg-{key}-t">Flowchart of 2 steps</title>\n'
+            f' <desc id="dg-{key}-d">Steps: One; Two.</desc>\n'
+            ' <g>\n'
+            f'  <marker id="dg-{key}_end" viewBox="0 0 10 10"><path d="M 0 0 L 10 5 z"/></marker>\n'
+            f'  <path d="M0,0L10,10" marker-end="url(#dg-{key}_end)" fill="none"/>\n'
+            '  <rect x="0" y="0" width="10" height="10"/>\n'
+            '  <text text-anchor="middle"><tspan x="0" dy="1.1em">One two</tspan></text>\n'
+            f' {extra}</g>\n'
+            '</svg>\n')
+
+
+def test_diagrams(tmp: Path) -> None:
+    section("diagrams: fences, keys, drawings")
+    page = "# Title\n\nBefore.\n\n```mermaid\n" + FLOW + "\n```\n\nAfter.\n"
+    found = DG.fences(page)
+    check(len(found) == 1 and found[0].source == FLOW and found[0].line == 5
+          and (found[0].first, found[0].last) == (4, 7),
+          "a top-level fence is found with its source and its line")
+    check(DG.fences("```python\nx = 1\n```\n") == [], "a fence of another language is not a diagram")
+    check(DG.fences("````text\n```mermaid\n" + FLOW + "\n```\n````\n") == [],
+          "a Mermaid fence shown inside a longer fence is code, not a diagram")
+    check([f.source for f in DG.fences("~~~mermaid\n" + FLOW + "\n~~~\n")] == [FLOW],
+          "a tilde fence counts")
+    check([f.source for f in DG.fences("```Mermaid title=\"x\"\n" + FLOW + "\n```\n")] == [FLOW],
+          "the info string is read by its first word, in any case")
+    check([f.source for f in DG.fences("```mermaid\r\n" + FLOW.replace("\n", "\r\n") + "\r\n```\r\n")] == [FLOW],
+          "CRLF line endings give the same source")
+    check(len(DG.fences(page + "\n```mermaid\n" + FLOW2 + "\n```\n")) == 2, "two fences on a page are both found")
+    check(DG.fences("") == [] and DG.fences("no fence here\n") == [], "a page with no fence has none")
+    for label, bad in (
+            ("a list item", "- item\n\n  ```mermaid\n  " + FLOW.replace("\n", "\n  ") + "\n  ```\n"),
+            ("a block quote", "> ```mermaid\n> " + FLOW.replace("\n", "\n> ") + "\n> ```\n"),
+            ("an indent", " ```mermaid\n" + FLOW + "\n ```\n"),
+            ("an unclosed fence", "```mermaid\n" + FLOW + "\n")):
+        check(raises(lambda b=bad: DG.fences(b)), f"a Mermaid fence in {label} is refused, never guessed at")
+
+    section("diagrams: the key")
+    k = DG.diagram_key("r" * 64, FLOW)
+    check(len(k) == DG.KEY_LEN and set(k) <= set("0123456789abcdef"), "a key is 16 hex digits")
+    check(k == DG.diagram_key("r" * 64, FLOW), "the key is deterministic")
+    check(k != DG.diagram_key("r" * 64, FLOW2), "a changed source changes the key")
+    check(k != DG.diagram_key("s" * 64, FLOW), "a changed renderer changes the key")
+    check(k != DG.diagram_key("r" * 64, FLOW + " "), "a space in the source changes the key")
+    check(DG.renderer_id(b"a") != DG.renderer_id(b"a "), "the renderer id is the hash of the script's bytes")
+
+    section("diagrams: the SVG the site may inline")
+    check(DG.svg_problems(svg_for(k), k) == [], "the drawing the render script writes passes")
+    check(DG.svg_problems(svg_for(k), "0" * 16) != [], "a drawing made for another key is refused")
+    check(DG.svg_problems(svg_for(k).replace('data-key="%s"' % k, ""), k) != [], "a drawing with no key is refused")
+    for label, evil in (
+            ("a script", "<script>alert(1)</script>"),
+            ("a foreignObject", "<foreignObject><div/></foreignObject>"),
+            ("an image", "<image x=\"0\" y=\"0\"/>"),
+            ("an event attribute", "<rect width=\"1\" height=\"1\" onload=\"x()\"/>"),
+            ("an event attribute after a quote", "<rect width=\"1\" height=\"1\"/><rect width='1'onclick='x()'/>"),
+            ("a link", "<a>x</a>"),
+            ("an href", "<use href=\"#x\"/>"),
+            ("a style attribute", "<rect width=\"1\" height=\"1\" style=\"fill:red\"/>"),
+            ("a style element", "<style>*{fill:red}</style>"),
+            ("a remote url", "<rect width=\"1\" height=\"1\" fill=\"url(http://example.invalid/x)\"/>"),
+            ("a javascript url", "<rect width=\"1\" height=\"1\" fill=\"javascript:x()\"/>"),
+            ("a comment", "<!-- x -->")):
+        check(DG.svg_problems(svg_for(k, evil), k) != [], f"a drawing with {label} is refused")
+    check(DG.svg_problems("<div>" + svg_for(k), k) != [], "text before <svg> is refused")
+    check(DG.svg_problems(svg_for(k, "<text>Metadata: data: 1 &amp; 2</text>"), k) == [],
+          "the words data: and an escaped ampersand in a label are text, not a URL")
+
+    section("diagrams: replacing the fences")
+    renderer = "r" * 64
+    key1, key2 = DG.diagram_key(renderer, FLOW), DG.diagram_key(renderer, FLOW2)
+    have = {key1: svg_for(key1), key2: svg_for(key2)}
+    out, used = DG.inline_fences(page, "docs/x.md", renderer, have.get, {})
+    check(used == [key1] and "```" not in out and "mermaid" not in out.lower(),
+          "the fence is gone and its key is reported")
+    check(out.startswith("# Title\n\nBefore.\n\n<figure") and out.endswith("</figure>\n\nAfter.\n"),
+          "the text around the fence is kept, with a blank line on each side of the figure")
+    html_line = [ln for ln in out.split("\n") if ln.startswith("<figure")]
+    check(len(html_line) == 1 and "\n" not in html_line[0] and "<svg" in html_line[0],
+          "the figure is one line, so Markdown reads it as one HTML block")
+    check('class="sx-diagram not-content"' in html_line[0] and 'tabindex="0"' in html_line[0]
+          and "data-pagefind-ignore" in html_line[0] and 'style="--dg-w:120.5"' in html_line[0],
+          "the figure carries its class, a focusable scroll box, no search indexing and its drawn width")
+    check('<tspan x="0" dy="1.1em">One two</tspan>' in html_line[0],
+          "the text of the drawing is not altered by joining its lines")
+    out2, used2 = DG.inline_fences(page + "\n```mermaid\n" + FLOW + "\n```\n", "docs/x.md", renderer, have.get, {})
+    ids = re.findall(r'\bid="([^"]+)"', out2)
+    check(used2 == [key1, key1] and len(ids) == len(set(ids)) and len(ids) >= 6,
+          "a fence repeated on one page keeps every id on the page unique")
+    check(DG.inline_fences("no fence\n", "docs/x.md", renderer, have.get, {}) == ("no fence\n", []),
+          "a page with no fence is returned as it was")
+    try:
+        DG.inline_fences(page, "docs/x.md", renderer, {}.get, {})
+        msg = ""
+    except core.PublishError as e:
+        msg = str(e)
+    check("npm run diagrams" in msg and "docs/x.md" in msg and key1 in msg,
+          "a fence with no drawing is refused, naming the page, the key and the command to run")
+    bad = {key1: svg_for(key1, "<script/>")}
+    check(raises(lambda: DG.inline_fences(page, "docs/x.md", renderer, bad.get, {})),
+          "a drawing that is not a plain SVG is never inlined")
+    crlf = page.replace("\n", "\r\n")
+    out3, _ = DG.inline_fences(crlf, "docs/x.md", renderer, have.get, {})
+    check("\r\n<figure" in out3 and out3.endswith("</figure>\r\n\r\nAfter.\r\n"),
+          "CRLF line endings are kept around the figure")
+
+
+def diagram_fixture(tmp: Path, *, script: bytes = b"// renderer one\n", body: str = None, draw: bool = True):
+    """A committed repository with one published page holding a Mermaid fence, the render
+    script, and (when `draw`) the drawing of the fence. Returns (root, key, renderer)."""
+    root = new_root(tmp)
+    page = body if body is not None else "# Title\n\nBefore.\n\n```mermaid\n" + FLOW + "\n```\n\nAfter.\n"
+    write(root, "docs/ok.md", page)
+    write(root, "docs/publish.json", json.dumps(GUARD_MANIFEST))
+    write(root, "tools/ledger.json", (REPO / "tools" / "ledger.json").read_text(encoding="utf-8"))
+    write(root, "tools/research_plan.json", json.dumps(plan(), indent=1))
+    write(root, DG.SCRIPT_REL, script, binary=True)
+    renderer = DG.renderer_id(script)
+    key = DG.diagram_key(renderer, FLOW)
+    tracked = ["docs/ok.md", "docs/publish.json", "tools/ledger.json", "tools/research_plan.json",
+               DG.SCRIPT_REL]
+    if draw:
+        write(root, DG.svg_rel(key), svg_for(key))
+        tracked.append(DG.svg_rel(key))
+    git_repo(root, tracked)
+    return root, key, renderer
+
+
+def test_diagrams_repo(tmp: Path) -> None:
+    section("diagrams: the check on a repository")
+    if not GIT:
+        check(False, "git is required for the diagram tests and was not found")
+        return
+    root, key, renderer = diagram_fixture(tmp)
+    check(DG.check(root) == [] and DG.check(root, "HEAD") == [],
+          "a drawing made for its fence passes, on the disk and in the commit")
+    rc, out, err = capture(DG.main, ["--check", "--root", str(root)])
+    check(rc == 0 and "1 drawing" in out, "the command line exits 0 and says how many drawings")
+    listing = DG.listing(root)
+    check([d["key"] for d in listing["diagrams"]] == [key] and listing["diagrams"][0]["source"] == FLOW
+          and listing["diagrams"][0]["where"] == ["docs/ok.md:5"] and listing["directory"] == DG.DIR_REL
+          and listing["renderer"] == renderer,
+          "--list gives the fence, its key, where it stands and the directory the drawings go to")
+
+    # a changed diagram, not yet redrawn
+    write(root, "docs/ok.md", "# Title\n\n```mermaid\n" + FLOW2 + "\n```\n")
+    problems = DG.check(root)
+    check(any("no drawing" in x and "npm run diagrams" in x for x in problems)
+          and any(key in x and "matches no Mermaid diagram" in x for x in problems),
+          "a changed fence is reported twice: no drawing for the new one, a drawing left for the old")
+    rc, out, err = capture(DG.main, ["--check", "--root", str(root)])
+    check(rc == 1 and "problem(s)" in err, "the command line exits 1 with a count")
+    check(DG.check(root, "HEAD") == [], "the commit is still current: the edit is not committed")
+    git_ok(root, "checkout", "-q", "--", "docs/ok.md")
+
+    # a renderer changed (the script's bytes), drawings not redrawn
+    write(root, DG.SCRIPT_REL, b"// renderer two\n", binary=True)
+    problems = DG.check(root)
+    check(any("no drawing" in x for x in problems) and any("matches no Mermaid" in x for x in problems),
+          "a changed render script makes every drawing stale")
+    git_ok(root, "checkout", "-q", "--", DG.SCRIPT_REL)
+
+    # a drawing nothing uses, a file that is not a drawing, a drawing copied under another name
+    other = "0123456789abcdef"
+    write(root, DG.svg_rel(other), svg_for(other))
+    write(root, DG.DIR_REL + "/notes.txt", "x\n")
+    problems = DG.check(root)
+    check(sum("matches no Mermaid diagram" in x for x in problems) == 2,
+          "a drawing no fence uses, and any other file in the directory, are reported")
+    os.remove(root / DG.svg_rel(other))
+    os.remove(root / (DG.DIR_REL + "/notes.txt"))
+    write(root, DG.svg_rel(key), svg_for(other))
+    check(any("data-key" in x for x in DG.check(root)),
+          "a drawing under the wrong name (its key is another's) is caught")
+    write(root, DG.svg_rel(key), svg_for(key, "<script/>"))
+    check(any("tags the site does not inline" in x for x in DG.check(root)),
+          "a drawing with a script in it is caught")
+    git_ok(root, "checkout", "-q", "--", DG.svg_rel(key))
+    check(DG.check(root) == [], "(restored)")
+
+    # a fence that cannot be replaced, a page missing, no script
+    write(root, "docs/ok.md", "- item\n\n  ```mermaid\n  " + FLOW.replace("\n", "\n  ") + "\n  ```\n")
+    check(any("left margin" in x for x in DG.check(root)), "a Mermaid fence in a list item fails the check")
+    git_ok(root, "checkout", "-q", "--", "docs/ok.md")
+    os.remove(root / DG.SCRIPT_REL)
+    check(any(DG.SCRIPT_REL in x for x in DG.check(root)), "a missing render script fails the check")
+    rc, out, err = capture(DG.main, ["--list", "--root", str(root)])
+    check(rc == 2, "--list without the script exits 2")
+    git_ok(root, "checkout", "-q", "--", DG.SCRIPT_REL)
+
+    # no drawing at all
+    root2, key2, _ = diagram_fixture(tmp, draw=False)
+    check(any("no drawing" in x for x in DG.check(root2)) and not (root2 / DG.DIR_REL).exists(),
+          "a repository with fences and no drawings fails, and the check creates nothing")
+    root3, _, _ = diagram_fixture(tmp, body="# Title\n\nNo diagram here.\n", draw=False)
+    check(DG.check(root3) == [], "a repository with no fence and no drawing is clean")
+
+
+def test_stage_diagrams(tmp: Path) -> None:
+    section("stage: Mermaid fences become the committed drawings")
+    if not GIT:
+        check(False, "git is required for the stage tests and was not found")
+        return
+    root, key, _ = diagram_fixture(tmp)
+    res = stage.stage_site(root, "HEAD")
+    staged = (root / "website/src/content/docs/ok.md").read_text(encoding="utf-8")
+    check(res["diagrams"] == 1 and "```" not in staged and "mermaid" not in staged.lower(),
+          "stage_site reports one diagram and no Mermaid fence is left in the staged page")
+    check('<figure class="sx-diagram not-content"' in staged and f'data-key="{key}"' in staged
+          and "Before." in staged and "After." in staged and staged.count("<figure") == 1,
+          "the page holds the drawing in a figure between its own text")
+    check(staged.startswith("---\n") and "ledger:ignore-file" in staged and "GENERATED by" in staged,
+          "the staged page keeps its front matter, its pragma and its GENERATED line")
+    rc, out, err = capture(stage.main, ["--target", "site", "--root", str(root)])
+    check(rc == 0 and "1 diagram(s)" in out, "the command line says how many diagrams were staged")
+
+    # the commit is what is staged, never the disk
+    write(root, DG.svg_rel(key), svg_for(key, "<rect x=\"3\" y=\"3\" width=\"3\" height=\"3\"/>"))
+    stage.stage_site(root, "HEAD")
+    staged = (root / "website/src/content/docs/ok.md").read_text(encoding="utf-8")
+    check('x="3" y="3"' not in staged, "a drawing edited after the commit is not staged: the commit's is")
+    git_ok(root, "checkout", "-q", "--", DG.svg_rel(key))
+
+    # a drawing committed later is what the next commit stages
+    write(root, "docs/ok.md", "# Title\n\n```mermaid\n" + FLOW2 + "\n```\n")
+    git_ok(root, "add", "--", "docs/ok.md")
+    git_ok(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-q",
+           "--no-verify", "-m", "fixture edit")
+    rc, out, err = capture(stage.main, ["--target", "site", "--root", str(root)])
+    check(rc == 1 and "npm run diagrams" in err and DG.DIR_REL in err,
+          "a changed fence with no new drawing stops staging, with the command to run")
+    key2 = DG.diagram_key(DG.read_renderer(root, None), FLOW2)
+    write(root, DG.svg_rel(key2), svg_for(key2))
+    git_ok(root, "add", "--", DG.svg_rel(key2))
+    git_ok(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-q",
+           "--no-verify", "-m", "fixture drawing")
+    rc, out, err = capture(stage.main, ["--target", "site", "--root", str(root)])
+    check(rc == 1 and "no published page uses" in err and key in err,
+          "the old drawing, now unused, stops staging until it is dropped")
+    git_ok(root, "rm", "-q", "--", DG.svg_rel(key))
+    git_ok(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-q",
+           "--no-verify", "-m", "fixture drop")
+    rc, out, err = capture(stage.main, ["--target", "site", "--root", str(root)])
+    check(rc == 0 and "1 diagram(s)" in out, "with the drawing replaced and the old one dropped, staging passes")
+
+    # an unsafe drawing is never staged
+    root2, key3, _ = diagram_fixture(tmp)
+    write(root2, DG.svg_rel(key3), svg_for(key3, "<rect width=\"1\" height=\"1\" onclick=\"x()\"/>"))
+    git_ok(root2, "add", "--", DG.svg_rel(key3))
+    git_ok(root2, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-q",
+           "--no-verify", "-m", "fixture unsafe")
+    rc, out, err = capture(stage.main, ["--target", "site", "--root", str(root2)])
+    check(rc == 1 and "event-handler" in err, "a committed drawing with an event handler is refused at staging")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # this file's own source
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -2706,6 +2983,9 @@ def main() -> int:
         test_ci_c2(tmp)
         test_links(tmp)
         test_ledger_public(tmp)
+        test_diagrams(tmp)
+        test_diagrams_repo(tmp)
+        test_stage_diagrams(tmp)
         test_source_hygiene()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

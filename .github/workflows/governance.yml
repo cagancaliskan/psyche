@@ -138,6 +138,14 @@ jobs:
         if: ${{ !cancelled() && steps.py.outcome == 'success' }}
         run: python3 -B tools/publish/render_plan.py --check
 
+      # Every Mermaid fence of a published page has a drawing committed under website/src/diagrams/
+      # that was made for that fence and for the current render script, and no drawing is left
+      # over. Nothing is drawn here: a changed diagram (or a changed date in the generated gantt
+      # and gate flow) needs `npm run diagrams` in website/ and a commit of the result.
+      - name: Every Mermaid diagram has a current drawing
+        if: ${{ !cancelled() && steps.py.outcome == 'success' }}
+        run: python3 -B tools/publish/diagrams.py --check
+
       # A gate whose date has passed and that the plan does not record as decided is shown on the
       # site as "decision pending". This step raises a warning annotation for each such gate, so
       # a late decision is seen in the run. It is a warning and never a failure: the tool exits 0

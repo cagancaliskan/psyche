@@ -24,6 +24,11 @@ report the copy a second time (the governed source is still checked), and a GENE
 naming its source and commit. The output directories are emptied first: a page removed from
 the manifest disappears from the site at the next stage.
 
+Each ```mermaid fence of a page is replaced by the drawing of it that the commit holds under
+website/src/diagrams/ (diagrams.py; drawn ahead of time by website/scripts/render-diagrams.mjs),
+so the site runs no Mermaid in the browser. A fence with no current drawing, and a drawing no
+fence uses, stop staging.
+
 Standard library only.
 """
 
@@ -34,10 +39,11 @@ import json
 import shutil
 import sys
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Set, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import core  # noqa: E402
+import diagrams  # noqa: E402
 
 SITE_DIR = Path("website")
 DOCS_OUT = SITE_DIR / "src" / "content" / "docs"
@@ -119,6 +125,15 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
             shutil.rmtree(d)
         d.mkdir(parents=True)
 
+    renderer = diagrams.read_renderer(root, sha)
+    drawn: Dict[str, Optional[str]] = {}
+
+    def drawing(key: str) -> Optional[str]:
+        if key not in drawn:
+            drawn[key] = diagrams.read_svg(root, sha, key)
+        return drawn[key]
+
+    used_keys: Set[str] = set()
     titles: Dict[str, str] = {}
     for page in pages:
         src = page["src"]
@@ -127,6 +142,8 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
         title = page.get("title") or title
         titles[page["slug"]] = title
         body = core.rewrite_links(body, src, mapping, sha, repo, root=root, tracked=tracked)
+        body, keys = diagrams.inline_fences(body, src, renderer, drawing, {})
+        used_keys.update(keys)
         front = (
             "---\n"
             f"title: {yaml_str(title)}\n"
@@ -138,6 +155,13 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
         target = docs_dir / out_path(page["slug"], slugs)
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(front + body, encoding="utf-8")
+
+    unused = diagrams.orphans(root, sha, used_keys)
+    if unused:
+        raise core.PublishError(
+            f"{diagrams.DIR_REL}/ holds {len(unused)} drawing(s) no published page uses ("
+            f"{', '.join(unused[:3])}{', ...' if len(unused) > 3 else ''}); run `npm run diagrams` in "
+            f"website/ to drop them")
 
     # Starlight prefixes the site base onto every sidebar link that has no protocol
     # (utils/navigation.js makeSidebarLink -> formatPath -> pathWithBase), so these links are
@@ -160,7 +184,7 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
     dump("ledger.public.json", public)
     dump("sidebar.json", sidebar)
     dump("stage.json", {"commit": sha, "repo": repo, "pages": len(pages)})
-    return {"commit": sha, "pages": len(pages)}
+    return {"commit": sha, "pages": len(pages), "diagrams": len(used_keys)}
 
 
 def main(argv=None) -> int:
@@ -174,7 +198,8 @@ def main(argv=None) -> int:
     except core.PublishError as e:
         print(f"stage: {e}", file=sys.stderr)
         return 1
-    print(f"stage: {res['pages']} page(s) and the site data staged from {res['commit'][:12]}")
+    print(f"stage: {res['pages']} page(s), {res['diagrams']} diagram(s) and the site data staged "
+          f"from {res['commit'][:12]}")
     return 0
 
 

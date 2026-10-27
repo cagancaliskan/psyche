@@ -153,10 +153,6 @@ async function audit(browser, axeSource, url, viewport, scheme) {
       }
       scrollTo(0, 0);
     });
-    // Mermaid draws after the page is idle; wait until no diagram is still source text.
-    await page
-      .waitForFunction(() => [...document.querySelectorAll('pre.mermaid')].every((p) => p.querySelector('svg')), { timeout: 20000 })
-      .catch(() => {});
     await new Promise((r) => setTimeout(r, 400));
     await page.evaluate(axeSource);
     return await page.evaluate(
