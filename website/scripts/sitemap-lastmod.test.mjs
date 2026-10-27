@@ -130,6 +130,13 @@ test('without git history no date is written: a shallow clone, and a folder that
 
 const REPO = resolve(fileURLToPath(new URL('../../', import.meta.url)));
 const SRC = join(REPO, 'website', 'src');
+// Data the build writes into src/data from a file of tools/ (`npm run stage`; the copies are
+// gitignored). Each stands for its source: it need not exist when the test runs, and in CI
+// `npm test` runs before anything is staged.
+const DERIVED = {
+  'website/src/data/plan.json': 'tools/research_plan.json',
+  'website/src/data/ledger.public.json': 'tools/ledger.json',
+};
 
 /** The modules a page file imports, followed to the end, as repository-relative paths. Imports of
  *  packages are skipped; one that cannot be found is returned in `unresolved`. */
@@ -147,6 +154,10 @@ function importClosure(entry) {
       const spec = m[1].split('?')[0];
       const base = spec.startsWith('@/') ? join(SRC, spec.slice(2)) : spec.startsWith('.') ? resolve(dirname(file), spec) : null;
       if (!base) continue;
+      if (DERIVED[relative(REPO, base)]) {
+        seen.add(base);
+        continue;
+      }
       const found = ['', '.ts', '.tsx', '.astro', '.mjs', '.js', '/index.ts', '/index.tsx']
         .map((ext) => base + ext)
         .find((c) => existsSync(c) && statSync(c).isFile());
@@ -159,9 +170,7 @@ function importClosure(entry) {
 
 test('every module a site page imports is in that page\'s source list, so a change to it moves the date', () => {
   const entries = { '': 'index', roadmap: 'roadmap', battery: 'battery', status: 'status' };
-  // Not text of the page: stylesheets. Data the build writes into src/data from a file of tools/ is
-  // covered by that file.
-  const derived = { 'website/src/data/plan.json': 'tools/research_plan.json', 'website/src/data/ledger.public.json': 'tools/ledger.json' };
+  // Not text of the page: stylesheets. Data the build writes into src/data is covered by its source.
   for (const [route, name] of Object.entries(entries)) {
     const listed = SITE_PAGES[route];
     const covered = (rel) => listed.some((l) => rel === l || rel.startsWith(`${l}/`));
@@ -169,7 +178,7 @@ test('every module a site page imports is in that page\'s source list, so a chan
     assert.deepEqual(unresolved, [], `page "${route}" imports something that cannot be found`);
     const missing = files.filter((rel) => {
       if (rel.endsWith('.css')) return false;
-      return !covered(derived[rel] ?? rel);
+      return !covered(DERIVED[rel] ?? rel);
     });
     assert.deepEqual(missing, [], `page "${route}" imports files that are in no part of its lastmod list: add them to SITE_PAGES`);
   }

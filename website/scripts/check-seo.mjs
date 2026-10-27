@@ -44,13 +44,14 @@ function attributes(tag) {
 }
 
 function head(html) {
-  const text = html.slice(0, html.indexOf('</head>'));
-  const tags = (name) => [...text.matchAll(new RegExp(`<${name}\\b[^>]*>`, 'g'))].map((m) => attributes(m[0]));
+  const end = html.search(/<\/head\b/i);
+  const text = end === -1 ? html : html.slice(0, end);
+  const tags = (name) => [...text.matchAll(new RegExp(`<${name}\\b[^>]*>`, 'gi'))].map((m) => attributes(m[0]));
   return {
     metas: tags('meta'),
     links: tags('link'),
-    title: [...text.matchAll(/<title>([^<]*)<\/title>/g)].map((m) => decode(m[1])),
-    scripts: [...text.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)].map((m) => ({ attrs: attributes(`<script ${m[1]}>`), body: m[2] })),
+    title: [...text.matchAll(/<title\b[^>]*>([^<]*)<\/title\b[^>]*>/gi)].map((m) => decode(m[1])),
+    scripts: [...text.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script\b[^>]*>/gi)].map((m) => ({ attrs: attributes(`<script ${m[1]}>`), body: m[2] })),
   };
 }
 
