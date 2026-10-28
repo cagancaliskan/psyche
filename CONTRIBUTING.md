@@ -9,6 +9,126 @@ repeat them.
 
 ---
 
+## Taking part from outside the project
+
+Psyche has one maintainer, the project lead, who decides what is merged
+([The project lead decides](#the-project-lead-decides)). `.github/CODEOWNERS` names the project
+lead as the owner of every path, so every pull request goes to the project lead for review.
+Nothing here promises that a change is accepted, or how soon it is read.
+
+### Where each thing goes
+
+| You have | It goes to |
+|---|---|
+| A question | [GitHub Discussions](https://github.com/cagancaliskan/psyche/discussions), category Q&A |
+| A comment on a page or a document that is not a defect | Discussions, category General |
+| A battery proposal, a new baseline or paradigm | Discussions, category Ideas. Name the published paradigm or source it comes from. |
+| A wrong claim, a stale number or a broken link | The [bug report form](https://github.com/cagancaliskan/psyche/issues/new/choose) |
+| A security problem | Privately, as [SECURITY.md](SECURITY.md) describes: never in a public issue, discussion or pull request |
+
+[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) covers conduct in issues, pull requests and Discussions.
+
+### Sending a pull request
+
+Ask in a Discussion before a large change, and before anything the list below does not mention.
+
+- **Closed while the substrate is paused (D-031).** No new substrate brick starts and no
+  substrate default changes (see the
+  [program state](#what-this-repository-is-d-031-d-033)).
+- **Closed to hand edits.** `cogmap/` is export-only: it changes only through a release export
+  that the project lead runs, under the
+  [disclosure policy](docs/research/disclosure-policy.md). The archived report in `docs/report/`
+  and the frozen pre-registrations in `docs/experiments/` are records (D-012, D-030), and
+  `docs/TEST_OUTPUT.txt` is written by `make capture`. None of them is edited by hand, a typo
+  included.
+- **Small fixes.** A wrong sentence, a typo or a broken link in the prose of `README.md` or of a
+  page listed in `docs/publish.json`, or a fix to the docs site in `website/`, read against rule 1
+  and the disclosure policy. A figure or a plan date is never typed: counts come from
+  `tools/ledger.json`, and plan dates from `render_plan.py --write`. Nothing inside a generated
+  block is edited by hand.
+- **Ask first.**
+  - A change to `src/`, `tests/`, `experiments/`, `tools/` or `.github/workflows/`. A change to
+    a test moves the counts that CI compares with `tools/ledger.json`, and the capture that
+    updates the ledger (`make capture`) is for maintainers.
+  - A change to a record or a design document: `DECISIONS.md`, `docs/specs/`, `docs/design/`, or
+    any other file of `docs/` that is not a page listed in `docs/publish.json`.
+  - A constant, a default or anything else that carries a re-validation cost. The proposal sets
+    out the options, their tradeoffs and a recommendation, and the project lead decides.
+  - A new dependency. Rule 8 keeps `src/psyche_*.py` and `tools/` on the standard library unless
+    the project lead approves one.
+  - A change to what the research plan (`tools/research_plan.json`), the claims discipline or the
+    disclosure policy says, as opposed to a typo or a broken link in them. They set the project's
+    direction.
+
+### Set up
+
+```
+git clone https://github.com/cagancaliskan/psyche.git   # your fork, if you will send a pull request
+cd psyche
+make          # lists the targets
+make setup    # only if python3.10 to python3.14 are not all on your PATH yet; needs uv
+make test     # the substrate's suites
+make check    # the commit gate, the plan and diagram checks and the tool suites
+```
+
+You need git, a `python3` on your PATH (CPython 3.10 to 3.14) and, for the site, Node.js 22.23.4 or
+newer (CI uses the version in `website/.nvmrc`). `make` is optional: without it, on Windows for
+example, run the plain command beside each target.
+
+| Target | What it does | Plain command |
+|---|---|---|
+| `make` | Lists the targets, one line each. | |
+| `make setup` | Downloads CPython 3.10 to 3.14 with [uv](https://docs.astral.sh/uv/) (no sudo, no change to your shell profile), then reports which `python3.X` commands your PATH finds and whether `python3` is recent enough. Without uv it prints how to install it and stops. | `uv python install 3.10 3.11 3.12 3.13 3.14`, then put the directory that `uv python dir --bin` prints on your PATH; or `bash tools/setup_python.sh`, which needs bash and not make |
+| `make test` | The substrate's suites. | `python3 run_tests.py` |
+| `make check` | The commit gate, the plan and diagram checks and the tool suites. | The commands under "What a pull request must pass" |
+| `make capture` | For maintainers: sweeps every interpreter, writes `docs/TEST_OUTPUT.txt` and syncs the ledger. | `python3 tools/capture_run.py` |
+| `make site` | The docs site on your machine: `npm ci`, then `npm run dev` in `website/`. Open the address it prints, which ends in `/psyche/`. | `npm ci`, then `npm run dev`, in `website/` |
+
+Run `make setup` before `make test`, unless the interpreters are already on your PATH. Several
+suites run their determinism checks on every `python3.X` they find, and CI installs every minor from
+3.10 to 3.14. With fewer, `make test` reports failures on a correct tree, and one suite stops with
+an error when it finds none of them; `make check` needs only the one `python3` and a full clone.
+Python 3.9, which `/usr/bin/python3` can be on macOS, is too old for the suites and stops them with
+a `SyntaxError`. uv installs only the `python3.X` names, so a `python3` older than 3.10 needs a
+newer interpreter first on your PATH under that name; `make setup` prints an example. Use a full
+clone, not `--depth 1` and not a downloaded archive: some suites read earlier revisions with git,
+and both `make test` and `make check` fail without them. The site stages its pages from the last
+commit, not from your working tree, and refuses to stage while a page source differs from that
+commit: commit your page changes on your branch before `make site` or `npm run build`.
+
+### What a pull request must pass
+
+- `make check` exits 0. It runs the commit gate (`python3 tools/ledger_check.py --only
+  C1,C3,C4,C5,C6`, `python3 tools/publish/ci_c2.py` and `python3 tools/publish/check_copy.py`),
+  then `python3 tools/publish/render_plan.py --check`, `python3 tools/publish/diagrams.py --check`
+  and the tool suites (`python3 tools/test_ledger.py`, `python3 -B tools/publish/test_core.py` and
+  `python3 -B tools/publish/test_checks.py`).
+- `make test` exits 0, with every minor from 3.10 to 3.14 on your PATH (see Set up).
+- For a site change, `npm test` and `npm run build` pass in `website/`, after `npm ci`.
+- The checklist of the [pull request template](.github/PULL_REQUEST_TEMPLATE.md), which GitHub
+  fills in when you open the pull request.
+- The change is in English and has been read against rule 1 and the disclosure policy.
+
+### What runs on a pull request
+
+| Check | Workflow | What it checks |
+|---|---|---|
+| `run_tests (CPython 3.10)` to `run_tests (CPython 3.14)` | `tests.yml` | Every suite of `run_tests.py` on each minor from 3.10 to 3.14, with every one of them installed, then that the run's totals and per-suite counts equal `tools/ledger.json`. |
+| `governance` | `governance.yml` | The repository checks: the commit gate, the plan and diagram checks, the social image, the tool suites, claims on surfaces `ledger_check` does not read, no staged site content tracked, every action pinned by commit SHA. |
+| `disclosure` | `governance.yml` | A leak check over every commit of the pull request (added lines, messages, authors and file names: language, home paths, private tags and ids), and a scan of the published sources against the private denylist. |
+| `build` | `pages.yml` | `npm ci`, `npm test` and `npm run build`, then axe-core at WCAG 2.2 AA over every built page and the states a reader opens. The workflow also calls `governance.yml` and scans the built research pages against the denylist. A pull request builds the site and never deploys it. |
+| `analyze (javascript-typescript)` and `analyze (python)` | `codeql.yml` | CodeQL code scanning. |
+
+The main branch requires every `run_tests` check, `governance` and `build`. The link check
+(`links.yml`) does not run on a pull request: it runs weekly and by hand.
+
+The scans that read the private denylist need a repository secret, which GitHub does not give to
+a pull request from a fork. On a fork they are skipped with a warning, and the leak check runs its
+structural rules without the list. A yellow warning there is expected, and the scan is required
+again before the site deploys from the main branch.
+
+---
+
 ## What this repository is (D-031, D-033)
 
 Psyche is one open research project that builds brain-inspired components in stages, with
@@ -266,8 +386,8 @@ yardsticks*, never a general law about spreading activation or cognition.
 
 - Modules `src/psyche_<name>.py`; builder suites `tests/test_psyche_<name>.py`; tester suites
   `tests/test_tester_<brick>_*.py`.
-- One runner: `run_tests.py`. Its captured output in `docs/TEST_OUTPUT.txt` is the ground
-  truth for all counts. Never estimate; read them from the ledger.
+- One runner: `run_tests.py` (`make test`). Its captured output in `docs/TEST_OUTPUT.txt` is the
+  ground truth for all counts. Never estimate; read them from the ledger.
 - Commits: `feat(<brick>):` · `fix(<brick>):` · `test(<brick>):` · `docs(<area>):` ·
   `chore:`. Branch per brick: `brick/<id>`. Research-line and program work uses
   `docs(research):` · `chore(program):` · `chore(release):` · `chore(publish):`.
@@ -278,10 +398,11 @@ yardsticks*, never a general law about spreading activation or cognition.
   `tools/research_plan.json`.
 - Stage files by explicit path only; never `git add -A` or `commit -a`, so that a commit holds
   exactly the files the change meant to touch.
-- Before any commit, the commit gate: `python3 tools/ledger_check.py --only C1,C3,C4,C5,C6`
-  exits 0, `python3 tools/publish/ci_c2.py` exits 0 and `python3 tools/publish/check_copy.py`
-  exits 0, and the change has been read against rule 1 and the disclosure policy. The paper
-  draft is held (D-012) and kept outside this repository.
+- Before any commit, the commit gate passes (the ledger check, `ci_c2.py` and `check_copy.py`, as
+  listed under [What a pull request must pass](#what-a-pull-request-must-pass); `make check` runs
+  them together with the plan check, the diagram check and the tool suites), and the change has
+  been read against rule 1 and the disclosure policy. The paper draft is held (D-012) and kept
+  outside this repository.
 - **Never `git stash`. Inspect an old revision with `git show <rev>:<path>` or a temporary
   worktree.** A stash is **repo-wide**: it sets aside every uncommitted change in the working
   tree, not only the one being worked on, and one that is never popped loses that work. A stash

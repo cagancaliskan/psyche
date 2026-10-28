@@ -90,6 +90,15 @@ Covered:
             refused with the command to run), the check on a working tree and on a commit
             (missing, left over, renamed, wrong key, renderer changed), and stage_site on a
             fixture repository (drawings read from the commit, never the disk).
+  front door  the Makefile has the six fixed targets, each .PHONY, each recipe the fixed
+            commands, and a bare make lists them; tools/setup_python.sh parses (bash -n), keeps
+            its interpreter list equal to the CI matrix (its install and PATH steps too),
+            tools/capture_run.py and the ledger, and, run with a stub uv first on PATH, calls
+            'uv python install' with that list and exits 0, reports a version that does not
+            resolve with the directory to add to PATH, fails when uv fails, and without uv names
+            the installation documentation and exits 1; the README has the status line above the
+            Quick start, four badges, each make target with its plain command, the interpreter
+            range and links that resolve. Every check is shown to fail on a mutated copy.
   source    this file holds no Turkish letter and no raw invisible character, and every
             character outside ASCII in its test data is built with chr() or an escape.
 """
@@ -3579,6 +3588,682 @@ def test_cited_doi() -> None:
     check("href={`${REPO_URL}/discussions`}" in landing,
           "the landing's cite section links the repository's GitHub Discussions page")
     check("href={withBase('guide/')}" in landing, "and the Reader's guide")
+    readme = (REPO / "README.md").read_text(encoding="utf-8")
+    badge = re.findall(r"https://zenodo\.org/badge/DOI/(10\.\d{4,9}/[^\s)]+?)\.svg", readme)
+    links = re.findall(r"https://doi\.org/([^\s>)\]*]+)", readme)
+    typed_in_readme = {re.sub(r"(\.svg)?\.?$", "", x) for x in re.findall(r"\b10\.\d{4,9}/[^\s\"'`<>)\]*]+", readme)}
+    check(badge == [doi], f"the README's DOI badge is that DOI: {badge}")
+    check(links and all(x == doi for x in links), f"every doi.org link in the README is that DOI: {links}")
+    check(typed_in_readme == {doi}, f"and the README types no other DOI: {sorted(typed_in_readme)}")
+    other = readme.replace(doi, doi[:-1] + ("0" if doi[-1] != "0" else "1"), 1)
+    check(re.findall(r"https://zenodo\.org/badge/DOI/(10\.\d{4,9}/[^\s)]+?)\.svg", other) != [doi]
+          or {re.sub(r"(\.svg)?\.?$", "", x) for x in re.findall(r"\b10\.\d{4,9}/[^\s\"'`<>)\]*]+", other)} != {doi},
+          "(the comparison is able to fail: a README with one digit of the DOI changed is seen)")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# the front door: the Makefile, tools/setup_python.sh and README.md
+# ─────────────────────────────────────────────────────────────────────────────
+
+MAKE_TARGETS = ("help", "setup", "test", "check", "capture", "site")
+MAKE_RECIPES = {
+    "setup": ["bash tools/setup_python.sh"],
+    "test": ["python3 run_tests.py"],
+    "check": [
+        "python3 tools/ledger_check.py --only C1,C3,C4,C5,C6",
+        "python3 tools/publish/ci_c2.py",
+        "python3 tools/publish/check_copy.py",
+        "python3 tools/publish/render_plan.py --check",
+        "python3 tools/publish/diagrams.py --check",
+        "python3 tools/test_ledger.py",
+        "python3 -B tools/publish/test_core.py",
+        "python3 -B tools/publish/test_checks.py",
+    ],
+    "capture": ["python3 tools/capture_run.py"],
+    "site": ["cd website && npm ci", "cd website && npm run dev"],
+}
+UV_DOCS_URL = "https://docs.astral.sh/uv/getting-started/installation/"
+SETUP_SCRIPT = REPO / "tools" / "setup_python.sh"
+UV_STUB = "\n".join([
+    "#!/bin/sh",
+    "printf '%s\\n' \"$*\" >> \"$UV_STUB_LOG\"",
+    "if [ \"$1\" = python ] && [ \"$2\" = install ]; then exit \"${UV_STUB_INSTALL_RC:-0}\"; fi",
+    "if [ \"$1\" = python ] && [ \"$2\" = dir ]; then",
+    "  if [ \"${UV_STUB_NO_BIN_FLAG:-0}\" = 1 ]; then echo \"error: unexpected argument\" >&2; exit 2; fi",
+    "  echo \"$UV_STUB_BIN\"; exit 0",
+    "fi",
+    "exit 0",
+    ""])
+
+
+def join_continuations(text: str) -> list:
+    """The lines of a Makefile with each backslash continuation joined to the line before it."""
+    lines, i = text.replace("\r\n", "\n").split("\n"), 0
+    joined = []
+    while i < len(lines):
+        ln = lines[i]
+        while ln.endswith("\\") and i + 1 < len(lines):
+            i += 1
+            ln = ln[:-1] + " " + lines[i].lstrip()
+        joined.append(ln)
+        i += 1
+    return joined
+
+
+def parse_makefile(text: str) -> tuple:
+    """(rules, prerequisites, phony, default goal) of a Makefile's text. A rule is a name at the
+    start of a line followed by a colon; its recipe is the tab-indented lines after it, each
+    stripped of the prefixes that change nothing about whether a failure stops make (@ and +) and
+    of extra whitespace. A `-` prefix is kept, because it makes make carry on after a failure.
+    Backslash continuations are joined. Enough make for this file, not a make."""
+    rules, prereqs, phony, default, current = {}, {}, set(), None, None
+    for ln in join_continuations(text):
+        if ln.startswith("\t"):
+            if current is not None:
+                rules[current].append(" ".join(ln.strip().lstrip("@+ ").split()))
+            continue
+        if not ln.strip() or ln.lstrip().startswith("#"):
+            continue
+        m = re.match(r"^\.PHONY\s*:\s*(.*)$", ln)
+        if m:
+            phony.update(m.group(1).split())
+            current = None
+            continue
+        m = re.match(r"^\.DEFAULT_GOAL\s*:?=\s*(\S+)\s*$", ln)
+        if m:
+            default, current = m.group(1), None
+            continue
+        m = re.match(r"^([A-Za-z0-9_.-]+)\s*:(?!=)\s*(.*)$", ln)
+        if m:
+            current = m.group(1)
+            rules.setdefault(current, [])
+            prereqs[current] = m.group(2).split()
+        else:
+            current = None
+    return rules, prereqs, phony, default
+
+
+MAKE_TOP_LEVEL = (
+    re.compile(r"^\.PHONY\s*:"),
+    re.compile(r"^\.DEFAULT_GOAL\s*:?=\s*\S+\s*$"),
+    re.compile(r"^[A-Za-z0-9_.-]+\s*:(?!=)"),
+)
+
+
+def makefile_stray_lines(text: str) -> list:
+    """The top-level lines of a Makefile that are none of: blank, a comment, a recipe line, .PHONY,
+    .DEFAULT_GOAL or a rule. A variable (MAKEFLAGS, SHELL, .SHELLFLAGS, an exported PATH), an
+    include or any other text changes how make runs the recipes, and the recipe check cannot see it."""
+    out = []
+    for ln in join_continuations(text):
+        if not ln.strip() or ln.startswith("\t") or ln.lstrip().startswith("#"):
+            continue
+        if not any(p.match(ln) for p in MAKE_TOP_LEVEL):
+            out.append(ln.strip())
+    return out
+
+
+def makefile_problems(text: str) -> list:
+    """Everything wrong with a Makefile against the fixed target list: the set of targets, each
+    one .PHONY, a bare `make` that lists them, exactly the commands each recipe is meant to run
+    (and nothing hidden behind a prerequisite or in a line outside the rules), and a help text
+    with one line per target."""
+    rules, prereqs, phony, default = parse_makefile(text)
+    out = []
+    for ln in makefile_stray_lines(text):
+        out.append(f"a top-level line that is not a rule, .PHONY or .DEFAULT_GOAL: {ln!r}")
+    if sorted(rules) != sorted(MAKE_TARGETS):
+        out.append(f"targets are {sorted(rules)}, not {sorted(MAKE_TARGETS)}")
+    if phony != set(MAKE_TARGETS):
+        out.append(f".PHONY is {sorted(phony)}, not {sorted(MAKE_TARGETS)}")
+    first = next(iter(rules), None)
+    if not (default == "help" or (default is None and first == "help")):
+        out.append(f"a bare make runs {default or first!r}, not help")
+    for name, want in MAKE_RECIPES.items():
+        if rules.get(name) != want:
+            out.append(f"{name}: the recipe is {rules.get(name)}, not {want}")
+    for name, pre in prereqs.items():
+        if pre:
+            out.append(f"{name} has prerequisites {pre}")
+    help_lines = rules.get("help", [])
+    if not help_lines or any(re.match(r"(echo|printf)\b", ln) is None for ln in help_lines):
+        out.append("help does more than print")
+    listed = "\n".join(help_lines)
+    for name in MAKE_TARGETS:
+        n = len(re.findall(rf"\bmake {name}\b", listed))
+        if n != 1:
+            out.append(f"help names 'make {name}' {n} times, not once")
+    return out
+
+
+def version_key(v: str) -> tuple:
+    return tuple(int(x) for x in v.split("."))
+
+
+def interpreter_lists(script: str, workflow: str, capture: str, ledger: str) -> dict:
+    """Every list of CPython minors the project keeps, each read from its own file as a list of
+    '3.X' strings (None when the list cannot be found, which is itself a finding)."""
+    out = {}
+    m = re.search(r"^VERSIONS=\(([^)\n]*)\)[ \t]*$", script, re.M)
+    out["setup_python.sh VERSIONS"] = m.group(1).split() if m else None
+    m = re.search(r"^[ \t]*matrix:[ \t]*\n[ \t]*python-version:[ \t]*\[([^\]\n]*)\]", workflow, re.M)
+    out["tests.yml matrix"] = [x.strip().strip("\"'") for x in m.group(1).split(",")] if m else None
+    m = re.search(r"python-version:[ \t]*\|[ \t]*\n((?:[ \t]+\d+\.\d+[ \t]*\n)+)", workflow)
+    out["tests.yml install step"] = m.group(1).split() if m else None
+    m = re.search(r"for v in ((?:\d+\.\d+ )+\d+\.\d+); do", workflow)
+    out["tests.yml PATH check"] = m.group(1).split() if m else None
+    names = None
+    for node in ast.walk(ast.parse(capture)):
+        if (isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "CANDIDATES"
+                                                 for t in node.targets)):
+            names = [n[len("python"):] for n in ast.literal_eval(node.value)]
+    out["capture_run.py CANDIDATES"] = names
+    try:
+        out["ledger determinism.interpreters_required"] = json.loads(ledger)["determinism"]["interpreters_required"]
+    except (ValueError, KeyError, TypeError):
+        out["ledger determinism.interpreters_required"] = None
+    return out
+
+
+def version_problems(lists: dict) -> list:
+    """The first list is the script's; every other list must hold the same minors, and the
+    script's must be in ascending numeric order (so 3.9 and 3.10 cannot swap by sorting text)."""
+    script = lists.get("setup_python.sh VERSIONS")
+    if not script:
+        return ["setup_python.sh has no VERSIONS list"]
+    out = []
+    if script != sorted(script, key=version_key):
+        out.append(f"setup_python.sh VERSIONS is not in ascending order: {script}")
+    for name, got in lists.items():
+        if got is None:
+            out.append(f"{name}: not found")
+        elif sorted(got, key=version_key) != script:
+            out.append(f"{name} is {got}, setup_python.sh has {script}")
+    return out
+
+
+def github_slugs(md: str) -> set:
+    """The anchors GitHub gives the headings of a Markdown text (outside code fences)."""
+    slugs, seen, fenced = set(), {}, False
+    for ln in md.split("\n"):
+        if ln.startswith("```"):
+            fenced = not fenced
+            continue
+        m = None if fenced else re.match(r"^#{1,6}[ \t]+(.*?)[ \t#]*$", ln)
+        if not m:
+            continue
+        head = re.sub(r"\[([^\]]*)\]\([^)]*\)", r"\1", m.group(1).replace("`", ""))
+        slug = re.sub(r"[^\w\- ]", "", head.lower()).replace(" ", "-")
+        n = seen.get(slug, 0)
+        seen[slug] = n + 1
+        slugs.add(slug if n == 0 else f"{slug}-{n}")
+    return slugs
+
+
+def strip_fences(md: str) -> str:
+    out, fenced = [], False
+    for ln in md.split("\n"):
+        if ln.startswith("```"):
+            fenced = not fenced
+            continue
+        if not fenced:
+            out.append(ln)
+    return "\n".join(out)
+
+
+def readme_link_problems(text: str, root: Path) -> list:
+    """Every relative link of the README (Markdown, src, srcset, href) names a file or directory
+    of the repository, and an anchor names a heading of the file it points into. Absolute links
+    to GitHub must name this repository."""
+    body = strip_fences(text)
+    targets = re.findall(r"\]\(([^)\s]+)(?:\s+\"[^\"]*\")?\)", body)
+    targets += re.findall(r"""(?:src|srcset|href)=["']([^"']+)["']""", body)
+    out = []
+    for target in targets:
+        if re.match(r"^[A-Za-z][A-Za-z0-9+.-]*:", target):
+            continue
+        path, _, frag = target.partition("#")
+        dest = (root / path) if path else (root / "README.md")
+        if not dest.exists():
+            out.append(f"{target}: {path} does not exist")
+        elif frag and dest.is_file() and dest.suffix == ".md":
+            md = text if not path else dest.read_text(encoding="utf-8")
+            if frag not in github_slugs(md):
+                out.append(f"{target}: no heading with that anchor in {path or 'README.md'}")
+    return out
+
+
+def readme_problems(text: str, versions: list, repo: str, doi: str, root: Path) -> list:
+    """What the README's front door must hold: the on-ramp order, the badge row, the make
+    targets with their plain commands, the interpreter range, the plain statement that no
+    stage 2 results exist yet, the three generated blocks, and links that resolve."""
+    out = []
+    ramp, _, rest = text.partition("## Quick start")
+    if not rest:
+        return ["there is no Quick start section"]
+    for block in ("status-line", "plan-gantt", "gates-table"):
+        if text.count(f"<!-- generated:{block}:start -->") != 1 or text.count(f"<!-- generated:{block}:end -->") != 1:
+            out.append(f"the generated block {block} is not placed exactly once")
+    if "<!-- generated:status-line:start -->" not in ramp:
+        out.append("the status line is not above the Quick start")
+    if "No stage 2 results are reported yet" not in ramp:
+        out.append("the on-ramp does not say that no stage 2 results are reported yet")
+    if "](#quick-start)" not in ramp:
+        out.append("the on-ramp does not point to the Quick start")
+    if "](#citation)" not in ramp or "](CITATION.cff)" not in ramp:
+        out.append("the on-ramp does not point to the Citation section and CITATION.cff")
+    if "/discussions)" not in ramp or "](SECURITY.md)" not in ramp:
+        out.append("the on-ramp does not say how to get in touch (Discussions, SECURITY.md)")
+    intro = ramp.split("Psyche is an open research project", 1)[0]
+    badges = re.findall(r"\[!\[([^\]]*)\]\(([^)]+)\)\]\(([^)]+)\)", intro)
+    images = len(re.findall(r"!\[", intro))
+    if images != 4 or len(badges) != 4:
+        out.append(f"the badge row holds {len(badges)} linked badges and {images} images, not 4")
+    want = {
+        "Tests": (f"https://github.com/{repo}/actions/workflows/tests.yml/badge.svg",
+                  f"https://github.com/{repo}/actions/workflows/tests.yml"),
+        "Pages": (f"https://github.com/{repo}/actions/workflows/pages.yml/badge.svg",
+                  f"https://github.com/{repo}/actions/workflows/pages.yml"),
+        "DOI": (f"https://zenodo.org/badge/DOI/{doi}.svg", f"https://doi.org/{doi}"),
+        "License: MIT": ("https://img.shields.io/badge/license-MIT-blue.svg", "LICENSE"),
+    }
+    got = {alt: (img, link) for alt, img, link in badges}
+    if got != want:
+        out.append(f"the badge row is {got}, not {want}")
+    for alt in got:
+        if not re.fullmatch(r"[A-Za-z0-9: ]+", alt):
+            out.append(f"badge alt text {alt!r} is not plain")
+    for wf in ("tests.yml", "pages.yml"):
+        if not (root / ".github" / "workflows" / wf).is_file():
+            out.append(f"the badge for {wf} has no such workflow")
+    for name in ("setup", "test", "check", "capture", "site"):
+        if f"`make {name}`" not in text:
+            out.append(f"the README does not document make {name}")
+    lines = set(text.split("\n"))
+    for name in ("test", "check", "capture"):
+        for cmd in MAKE_RECIPES[name]:
+            if cmd not in lines and f"`{cmd}`" not in text:
+                out.append(f"the plain command for make {name} is missing: {cmd}")
+    if f"`uv python install {' '.join(versions)}`" not in text:
+        out.append("the plain command for make setup (uv python install ...) is missing or differs")
+    if "npm ci" not in text or "npm run dev" not in text:
+        out.append("the plain commands for make site (npm ci, npm run dev) are missing")
+    if f"{versions[0]} to {versions[-1]}" not in text:
+        out.append(f"the README does not state the interpreter range {versions[0]} to {versions[-1]}")
+    out += readme_link_problems(text, root)
+    for slug in re.findall(r"https://github\.com/([^/\s)>]+/[^/\s)>]+)", text):
+        if re.sub(r"\.git$", "", slug) != repo:
+            out.append(f"a GitHub link names {slug}, not {repo}")
+    typed = {re.sub(r"(\.svg)?\.?$", "", d) for d in re.findall(r"\b10\.\d{4,9}/[^\s\"'`<>)\]*]+", text)}
+    if typed != {doi}:
+        out.append(f"the README types the DOIs {sorted(typed)}, CITATION.cff has {doi}")
+    return out
+
+
+PREREQUISITE_TERMS = ("full clone", "3.9", "SyntaxError", "make setup", "failures on a correct tree")
+COUNT_WORD = re.compile(r"\b(?:two|three|four|five|six|seven|eight|nine|ten|\d+)\s+"
+                        r"(?:commands|items|interpreters|minors|checks|targets|suites|python3)\b", re.I)
+
+
+def node_minimum(root: Path) -> str:
+    """The lowest Node.js that website/package.json allows ('' when it names none)."""
+    engines = json.loads((root / "website/package.json").read_text(encoding="utf-8")).get("engines", {}).get("node", "")
+    found = re.fullmatch(r">=\s*(\d+(?:\.\d+)*)", engines.strip())
+    return found.group(1) if found else ""
+
+
+def contributor_problems(contributing: str, template: str, readme: str, rules: dict, versions: list, node_min: str) -> list:
+    """What the contributor pages must keep in step with the Makefile and each other: every plain
+    command of the make targets, the interpreter range, the Node minimum, the prerequisites the
+    README states (a full clone, CPython 3.10 or newer, every interpreter for `make test`), and no
+    typed count of commands, items or interpreters (which go stale when one is added)."""
+    out = []
+    c, t, r = " ".join(contributing.split()), " ".join(template.split()), " ".join(readme.split())
+    install = f"uv python install {' '.join(versions)}"
+    for cmd in rules.get("check", []) + rules.get("test", []) + rules.get("capture", []) + [install]:
+        if f"`{cmd}`" not in c:
+            out.append(f"CONTRIBUTING.md does not give the plain command {cmd}")
+    for cmd in rules.get("check", []) + rules.get("test", []):
+        if f"`{cmd}`" not in t:
+            out.append(f"the pull request template does not list {cmd}")
+    for name in ("setup", "test", "check", "capture", "site"):
+        if f"`make {name}`" not in c:
+            out.append(f"CONTRIBUTING.md does not document make {name}")
+    for name in ("test", "check", "setup"):
+        if f"`make {name}`" not in t:
+            out.append(f"the pull request template does not name make {name}")
+    span = f"{versions[0]} to {versions[-1]}"
+    for label, doc in (("CONTRIBUTING.md", c), ("README.md", r), ("the pull request template", t)):
+        if span not in doc:
+            out.append(f"{label} does not state the interpreter range {span}")
+        for found in COUNT_WORD.findall(doc):
+            out.append(f"{label} types a count that nothing checks: {found!r}")
+    for label, doc in (("CONTRIBUTING.md", c), ("README.md", r)):
+        for term in PREREQUISITE_TERMS:
+            if term not in doc:
+                out.append(f"{label} does not state a prerequisite: {term!r}")
+        if "website/.nvmrc" not in doc:
+            out.append(f"{label} does not point to website/.nvmrc for the CI Node version")
+        if not node_min or node_min not in doc:
+            out.append(f"{label} does not state the Node minimum {node_min!r} of website/package.json")
+    return out
+
+
+def bash_candidates() -> list:
+    """Every distinct bash on this machine that the script should run under: the one on PATH
+    and /bin/bash (on macOS the 3.2 that Apple ships, where an empty array under set -u fails)."""
+    found, seen = [], set()
+    for cand in (shutil.which("bash"), "/bin/bash"):
+        if cand and os.access(cand, os.X_OK) and os.path.realpath(cand) not in seen:
+            seen.add(os.path.realpath(cand))
+            found.append(cand)
+    return found
+
+
+def setup_world(base: Path, versions: list, *, uv: bool = True, shims: list = None, py3: str = "default",
+                reports: dict = None, broken: tuple = ()) -> dict:
+    """A directory of stubs: a `uv` that records its arguments in a log, a shim for each python3.X
+    named that prints the version it is (or the one `reports` says it is), a shim in `broken` that
+    fails the way a version manager's does, and a `python3` that prints `py3` (the newest version by
+    default; None for no python3 at all). Returns the pieces a run needs."""
+    stubs, home = base / "stubs", base / "home"
+    for d in (stubs, home):
+        d.mkdir(parents=True, exist_ok=True)
+    if uv:
+        (stubs / "uv").write_text(UV_STUB, encoding="utf-8")
+        (stubs / "uv").chmod(0o755)
+    for v in (versions if shims is None else shims):
+        if v in broken:
+            body = f"#!/bin/sh\necho 'pyenv: python{v}: command not found' >&2\nexit 127\n"
+        else:
+            body = f"#!/bin/sh\necho {(reports or {}).get(v, v)}\n"
+        (stubs / f"python{v}").write_text(body, encoding="utf-8")
+        (stubs / f"python{v}").chmod(0o755)
+    if py3 == "default":
+        py3 = versions[-1]
+    if py3 is not None:
+        (stubs / "python3").write_text(f"#!/bin/sh\necho {py3}\n", encoding="utf-8")
+        (stubs / "python3").chmod(0o755)
+    return {"stubs": stubs, "home": home, "log": base / "uv.log", "bin": base / "uvbin"}
+
+
+def run_setup(bash: str, world: dict, *, path: str = None, extra: dict = None, args: tuple = (),
+              script: Path = None) -> tuple:
+    env = {"PATH": path if path is not None else str(world["stubs"]), "HOME": str(world["home"]),
+           "UV_STUB_LOG": str(world["log"]), "UV_STUB_BIN": str(world["bin"])}
+    env.update(extra or {})
+    r = subprocess.run([bash, str(script or SETUP_SCRIPT), *args], env=env, capture_output=True, text=True,
+                       cwd=str(world["home"]), timeout=120)
+    calls = world["log"].read_text(encoding="utf-8").splitlines() if world["log"].exists() else []
+    return r.returncode, r.stdout, r.stderr, calls
+
+
+def moved_status(readme: str) -> str:
+    """The README with its generated status-line block moved from the on-ramp to just under the
+    Quick start heading."""
+    m = re.search(r"<!-- generated:status-line:start -->.*?<!-- generated:status-line:end -->\n", readme, re.S)
+    if m is None:
+        return readme
+    return readme.replace(m.group(0), "", 1).replace("## Quick start\n", "## Quick start\n" + m.group(0), 1)
+
+
+def test_front_door(tmp: Path) -> None:
+    section("front door: the Makefile, tools/setup_python.sh and the README's quick start")
+    makefile = (REPO / "Makefile").read_text(encoding="utf-8")
+    problems = makefile_problems(makefile)
+    check(problems == [], f"the Makefile has the six fixed targets, each .PHONY, each recipe the fixed commands: {problems}")
+    rules, _, _, _ = parse_makefile(makefile)
+    check(list(rules) == list(MAKE_TARGETS), f"and `make` alone runs help, the first target: {list(rules)}")
+    attributes = (REPO / ".gitattributes").read_text(encoding="utf-8").split("\n") if (REPO / ".gitattributes").exists() else []
+    check("*.sh text eol=lf" in attributes and "Makefile text eol=lf" in attributes,
+          ".gitattributes pins *.sh and the Makefile to LF line endings")
+    mutants = {
+        "a command left out of make check": makefile.replace("\tpython3 tools/publish/check_copy.py\n", ""),
+        "a command reordered in make check": makefile.replace(
+            "\tpython3 tools/publish/ci_c2.py\n\tpython3 tools/publish/check_copy.py\n",
+            "\tpython3 tools/publish/check_copy.py\n\tpython3 tools/publish/ci_c2.py\n"),
+        "a target missing from .PHONY": makefile.replace(".PHONY: help setup test check capture site",
+                                                         ".PHONY: help setup test check capture"),
+        "a seventh target": makefile + "\nlint:\n\tpython3 tools/lint.py\n",
+        "python instead of python3": makefile.replace("\tpython3 run_tests.py", "\tpython run_tests.py"),
+        "a recipe behind a prerequisite": makefile.replace("test:\n", "test: check\n"),
+        "help in second place": makefile.replace(".DEFAULT_GOAL := help\n\n", "").replace(
+            "setup:\n\tbash tools/setup_python.sh\n\n", "").replace(
+            "help:\n", "setup:\n\tbash tools/setup_python.sh\n\nhelp:\n", 1),
+        "another default goal": makefile.replace(".DEFAULT_GOAL := help", ".DEFAULT_GOAL := test"),
+        "help that runs a command": makefile.replace("\t@echo \"\"\n", "\tpython3 run_tests.py\n"),
+        "a target left out of help": makefile.replace("\t@echo \"  make setup", "\t@echo \"  (setup", 1),
+        "a site that skips npm ci": makefile.replace("\tcd website && npm ci\n", ""),
+        "a minus before a command (make carries on after a failure)": makefile.replace(
+            "\tpython3 tools/publish/ci_c2.py\n", "\t-python3 tools/publish/ci_c2.py\n"),
+        "MAKEFLAGS set to keep going": makefile.replace(".DEFAULT_GOAL := help\n", ".DEFAULT_GOAL := help\nMAKEFLAGS += -k\n"),
+        "another SHELL": makefile.replace(".DEFAULT_GOAL := help\n", ".DEFAULT_GOAL := help\nSHELL := /bin/false\n"),
+        "another .SHELLFLAGS": makefile.replace(".DEFAULT_GOAL := help\n", ".DEFAULT_GOAL := help\n.SHELLFLAGS := -c\n"),
+        "an exported PATH": makefile.replace(".DEFAULT_GOAL := help\n", ".DEFAULT_GOAL := help\nexport PATH := /nowhere:$(PATH)\n"),
+        "an include of a missing file": makefile.replace(".DEFAULT_GOAL := help\n", ".DEFAULT_GOAL := help\n-include missing.mk\n"),
+        "a line that is no make at all": makefile.replace("\ncheck:\n", "\noops this is not make\ncheck:\n"),
+    }
+    for label, text in mutants.items():
+        check(text != makefile, f"(the mutation '{label}' changes the file)")
+        check(makefile_problems(text) != [], f"the check refuses a Makefile with {label}")
+    check(parse_makefile("a:\n\t@echo x \\\n\t  y\n")[0] == {"a": ["echo x y"]},
+          "the recipe reader joins a continuation and drops the @ prefix")
+    check(parse_makefile("a:\n\t-echo x\n")[0] == {"a": ["-echo x"]},
+          "and keeps a - prefix in the recipe text, so the guard sees it")
+    check(makefile_stray_lines(makefile) == [] and makefile_stray_lines("a:\n\t@echo x\nCC = cc\n") == ["CC = cc"],
+          "the real Makefile holds nothing but comments, .PHONY, .DEFAULT_GOAL, rules and recipe lines, and a variable is seen")
+
+    script = SETUP_SCRIPT.read_text(encoding="utf-8")
+    code = "\n".join(ln for ln in script.split("\n") if not ln.lstrip().startswith("#"))
+    check(script.startswith("#!/usr/bin/env bash\n") and "\nset -euo pipefail\n" in script,
+          "the script is bash and stops on the first error (set -euo pipefail)")
+    check(os.access(SETUP_SCRIPT, os.X_OK), "the script is executable")
+    check(re.search(r"\b(sudo|curl|wget|eval)\b|\|\s*(ba)?sh\b", code) is None,
+          "the script uses no sudo, downloads nothing and pipes nothing into a shell")
+    check(f'UV_DOCS_URL="{UV_DOCS_URL}"' in script, "the script names the uv installation documentation")
+
+    lists = interpreter_lists(script, (REPO / ".github/workflows/tests.yml").read_text(encoding="utf-8"),
+                              (REPO / "tools/capture_run.py").read_text(encoding="utf-8"),
+                              (REPO / "tools/ledger.json").read_text(encoding="utf-8"))
+    problems = version_problems(lists)
+    check(problems == [], f"setup_python.sh, the CI matrix (and its install and PATH steps), capture_run.py and the "
+                          f"ledger keep one list of interpreters: {problems}")
+    versions = lists["setup_python.sh VERSIONS"] or []
+    check(len(versions) >= 2 and all(re.fullmatch(r"3\.\d+", v) for v in versions), f"and it is a list of 3.X minors: {versions}")
+    workflow_text = (REPO / ".github/workflows/tests.yml").read_text(encoding="utf-8")
+    capture_text = (REPO / "tools/capture_run.py").read_text(encoding="utf-8")
+    ledger_text = (REPO / "tools/ledger.json").read_text(encoding="utf-8")
+    drift = [
+        ("a version only in the script", "script", "3.14)", "3.14 3.15)"),
+        ("a version missing from the script", "script", "3.11 ", ""),
+        ("a script list out of order", "script", "(3.10 3.11", "(3.11 3.10"),
+        ("a version only in the CI matrix", "workflow", '"3.14"]', '"3.14", "3.15"]'),
+        ("a version missing from the CI install step", "workflow", "            3.12\n", ""),
+        ("a version missing from the CI PATH check", "workflow",
+         "for v in 3.10 3.11 3.12 3.13 3.14; do", "for v in 3.10 3.11 3.13 3.14; do"),
+        ("a version missing from capture_run.py", "capture", '"python3.12", ', ""),
+    ]
+    for label, which, old, new in drift:
+        texts = {"script": script, "workflow": workflow_text, "capture": capture_text}
+        mutated = texts[which].replace(old, new)
+        check(mutated != texts[which], f"(the mutation '{label}' changes {which})")
+        texts[which] = mutated
+        check(version_problems(interpreter_lists(texts["script"], texts["workflow"], texts["capture"], ledger_text)) != [],
+              f"the check refuses {label}")
+    plan_ledger = json.loads(ledger_text)
+    plan_ledger["determinism"]["interpreters_required"].append("3.15")
+    check(version_problems(interpreter_lists(script, workflow_text, capture_text, json.dumps(plan_ledger))) != [],
+          "the check refuses a ledger that requires another interpreter")
+    check(version_problems(interpreter_lists(script, workflow_text, capture_text, '{"determinism": {}}')) != [],
+          "and a ledger without interpreters_required")
+
+    bashes = [] if os.name == "nt" else bash_candidates()
+    if not bashes:
+        note("no bash on this machine (or Windows): the script itself is not run")
+    for n, b in enumerate(bashes):
+        tag = str(n)
+        r = subprocess.run([b, "-n", str(SETUP_SCRIPT)], capture_output=True, text=True)
+        check(r.returncode == 0, f"bash -n tools/setup_python.sh passes under {b}: {r.stderr.strip()}")
+        install = "python install " + " ".join(versions)
+        base = tmp / f"setup-ok-{tag}"
+        world = setup_world(base, versions)
+        rc, out, err, calls = run_setup(b, world)
+        check(rc == 0 and err == "", f"{b}: with uv and every python3.X present the script exits 0 quietly ({rc}) {err}")
+        check(calls == [install], f"{b}: it calls exactly 'uv {install}': {calls}")
+        shown = out.strip().split("\n")
+        check(all(f"python{v}  {world['stubs']}/python{v}" in shown for v in versions)
+              and f"python3  {world['stubs']}/python3  reports {versions[-1]}" in shown and len(shown) == len(versions) + 2,
+              f"{b}: it prints one line per version with where it resolves, the line for python3, and a closing line: {shown}")
+        rc2, out2, err2, calls2 = run_setup(b, world)
+        check((rc2, out2, err2) == (rc, out, err) and calls2 == [install, install],
+              f"{b}: a second run does the same (it is safe to repeat): {calls2}")
+
+        base = tmp / f"setup-missing-{tag}"
+        world = setup_world(base, versions, shims=[v for v in versions if v != "3.12"])
+        rc, out, err, calls = run_setup(b, world)
+        check(rc != 0 and "python3.12  not found on PATH" in out and "python3.11  " + str(world["stubs"]) in out,
+              f"{b}: a version that does not resolve is reported as missing and the others as found: {rc} {out!r}")
+        check("not found on PATH: python3.12" in err and str(world["bin"]) in err and "export PATH=" in err,
+              f"{b}: it prints the directory to add to PATH, from 'uv python dir --bin': {err!r}")
+        check(calls == [install, "python dir --bin"], f"{b}: it asks uv for the executable directory: {calls}")
+        rc, out, err, calls = run_setup(b, world, path=f"{world['stubs']}:{world['bin']}")
+        check(rc != 0 and "export PATH=" not in err and str(world["bin"]) in err,
+              f"{b}: with that directory already on PATH it does not tell the reader to add it again: {err!r}")
+        rc, out, err, calls = run_setup(b, world, extra={"UV_STUB_NO_BIN_FLAG": "1"})
+        check(rc != 0 and f"{world['home']}/.local/bin" in err,
+              f"{b}: a uv without 'python dir --bin' falls back to ~/.local/bin: {err!r}")
+
+        floor, top = versions[0], versions[-1]
+        for k, (label, kwargs, needs) in enumerate((
+            ("a python3.X on PATH that does not run (a version manager's shim)", {"broken": ("3.12",)},
+             ("python3.12  ", "does not run as 3.12", "found on PATH but not running as the right version: python3.12")),
+            ("a python3.X on PATH that is another version", {"reports": {"3.12": "3.11"}},
+             ("does not run as 3.12 (it reports: 3.11)",)),
+        )):
+            world = setup_world(tmp / f"setup-shim-{k}-{tag}", versions, **kwargs)
+            rc, out, err, calls = run_setup(b, world)
+            check(rc == 1 and all(x in out + err for x in needs) and "setup_python: every interpreter" not in out,
+                  f"{b}: {label} is reported, not counted as found, and the script exits 1: {rc} {out!r} {err!r}")
+        for k, (label, py3, ok) in enumerate((("at the lowest version", floor, True), ("at the newest version", top, True),
+                                              ("below the lowest version (3.9 against 3.10 is numeric, not text)", "3.9", False),
+                                              ("far below it", "2.7", False), ("that prints nothing", "", False),
+                                              ("that is absent", None, False))):
+            world = setup_world(tmp / f"setup-py3-{k}-{tag}", versions, py3=py3)
+            rc, out, err, calls = run_setup(b, world)
+            if ok:
+                check(rc == 0 and err == "" and f"reports {py3}." in out and calls == [install],
+                      f"{b}: a python3 {label} passes: {rc} {out!r} {err!r}")
+            else:
+                check(rc == 1 and "make runs python3" in err and f"{floor} or newer" in err and "ln -s" in err
+                      and "setup_python: every interpreter" not in out and "export PATH=" not in err,
+                      f"{b}: a python3 {label} fails, says make runs python3, and says what to do: {rc} {out!r} {err!r}")
+        world = setup_world(tmp / f"setup-py3-and-missing-{tag}", versions, shims=[v for v in versions if v != "3.12"], py3="3.9")
+        rc, out, err, calls = run_setup(b, world)
+        check(rc == 1 and "not found on PATH: python3.12" in err and "make runs python3" in err,
+              f"{b}: a missing version and an old python3 are both reported in one run: {rc} {err!r}")
+
+        for k, (label, old, new, kwargs, wrong) in enumerate((
+            ("python3 is never checked", 'if [ "${new_enough}" -eq 1 ]; then', "if true; then", {"py3": "3.9"},
+             lambda rc, out, err: rc == 0),
+            ("a shim is trusted by its name", 'if [ "${got}" = "${v}" ]; then', "if true; then", {"broken": ("3.12",)},
+             lambda rc, out, err: rc == 0),
+            ("the versions are compared as text", '[ "${got#*.}" -ge "${floor#*.}" ]', '[[ "${got#*.}" > "${floor#*.}" || "${got#*.}" == "${floor#*.}" ]]',
+             {"py3": "3.9"}, lambda rc, out, err: rc == 0),
+        )):
+            check(old in script, f"(the mutation '{label}' finds its text in the script)")
+            mutant = tmp / f"setup-mutant-{k}-{tag}.sh"
+            mutant.write_text(script.replace(old, new), encoding="utf-8")
+            world = setup_world(tmp / f"setup-mutant-world-{k}-{tag}", versions, **kwargs)
+            rc, out, err, calls = run_setup(b, world, script=mutant)
+            check(wrong(rc, out, err), f"{b}: (the run is able to fail: a script where {label} is seen: {rc} {err!r})")
+
+        base = tmp / f"setup-fail-{tag}"
+        world = setup_world(base, versions)
+        rc, out, err, calls = run_setup(b, world, extra={"UV_STUB_INSTALL_RC": "3"})
+        check(rc != 0 and out == "" and calls == [install] and "failed" in err,
+              f"{b}: when uv python install fails the script fails, reports no interpreter and says why: {rc} {out!r} {err!r}")
+
+        base = tmp / f"setup-nouv-{tag}"
+        world = setup_world(base, versions, uv=False)
+        empty = base / "empty"
+        empty.mkdir()
+        rc, out, err, calls = run_setup(b, world, path=str(empty))
+        check(rc == 1 and UV_DOCS_URL in err and calls == [] and out == "",
+              f"{b}: without uv on PATH it exits 1, names the documentation link and runs nothing: {rc} {err!r}")
+        rc, out, err, calls = run_setup(b, world, path=str(world["stubs"]))
+        check(rc == 1 and UV_DOCS_URL in err and calls == [],
+              f"{b}: with python3.X shims but no uv it still stops at the missing uv: {rc}")
+        base = tmp / f"setup-args-{tag}"
+        world = setup_world(base, versions)
+        rc, out, err, calls = run_setup(b, world, args=("--dry-run",))
+        check(rc == 2 and calls == [], f"{b}: an argument is refused before anything runs, not ignored: {rc} {calls}")
+        mutated = tmp / f"setup-mutated-{tag}.sh"
+        mutated.write_text(script.replace("uv python install \"${VERSIONS[@]}\"", "uv python install"), encoding="utf-8")
+        world = setup_world(tmp / f"setup-mut-{tag}", versions)
+        env = {"PATH": str(world["stubs"]), "HOME": str(world["home"]), "UV_STUB_LOG": str(world["log"]),
+               "UV_STUB_BIN": str(world["bin"])}
+        subprocess.run([b, str(mutated)], env=env, capture_output=True, text=True, cwd=str(world["home"]))
+        got = world["log"].read_text(encoding="utf-8").splitlines() if world["log"].exists() else []
+        check(got != ["python install " + " ".join(versions)],
+              f"{b}: (the run is able to fail: a script that installs no versions is seen as one: {got})")
+
+    readme = (REPO / "README.md").read_text(encoding="utf-8")
+    manifest = core.load_manifest(REPO)
+    doi = cited_doi()
+    problems = readme_problems(readme, versions, manifest["repo"], doi, REPO)
+    check(problems == [], f"the README has the on-ramp, the badge row, the make targets with their plain commands, "
+                          f"the interpreter range and links that resolve: {problems}")
+    rmut = {
+        "a missing badge": readme.replace("[![Pages]", "[!["),
+        "a badge pointing at another workflow": readme.replace("workflows/pages.yml", "workflows/other.yml"),
+        "the status line below the Quick start": moved_status(readme),
+        "no statement that stage 2 has no results yet": readme.replace("No stage 2 results are reported yet", "Results follow"),
+        "no make check": readme.replace("`make check`", "`make verify`"),
+        "a missing plain command": readme.replace("python3 tools/publish/check_copy.py\n", ""),
+        "a different uv command": readme.replace("uv python install 3.10 ", "uv python install 3.11 "),
+        "a different interpreter range": readme.replace("3.10 to 3.14", "3.9 to 3.14"),
+        "a dead relative link": readme.replace("docs/guide.md", "docs/no-such-page.md", 1),
+        "a dead anchor": readme.replace("](#citation)", "](#nowhere)", 1),
+        "a missing image": readme.replace("brand/psyche-wordmark-dark.svg", "brand/missing.svg"),
+        "another repository": readme.replace("cagancaliskan/psyche/discussions", "someone/else/discussions"),
+        "another DOI": readme.replace("zenodo.20474613>", "zenodo.20474614>", 1),
+        "a deleted generated block": readme.replace("<!-- generated:gates-table:end -->", ""),
+        "no pointer to the Quick start in the on-ramp": readme.replace("[Quick start](#quick-start)", "Quick start", 1),
+    }
+    for label, text in rmut.items():
+        check(text != readme, f"(the mutation '{label}' changes the README)")
+        check(readme_problems(text, versions, manifest["repo"], doi, REPO) != [], f"the README check refuses {label}")
+    contributing = (REPO / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    template = (REPO / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(encoding="utf-8")
+    node_min = node_minimum(REPO)
+    check(re.fullmatch(r"\d+(\.\d+)+", node_min) is not None, f"website/package.json names a Node minimum: {node_min!r}")
+    problems = contributor_problems(contributing, template, readme, rules, versions, node_min)
+    check(problems == [], f"CONTRIBUTING.md, the pull request template and the README agree with the Makefile "
+                          f"(commands, range, Node minimum, prerequisites, no typed counts): {problems}")
+    cmut = {
+        "a make check command missing from CONTRIBUTING.md": (
+            contributing.replace("`python3 tools/publish/diagrams.py --check`", "`python3 tools/publish/diagrams.py`"), template, readme),
+        "a make check command missing from the template": (
+            contributing, template.replace("`python3 tools/publish/diagrams.py --check`", "`python3 tools/publish/diagrams.py`"), readme),
+        "no run_tests in the template": (contributing, template.replace("python3 run_tests.py", "pytest"), readme),
+        "fewer interpreters described as a smaller run": (
+            contributing.replace("failures on a correct tree", "fewer interpreters than CI"), template, readme),
+        "no mention of a full clone": (re.sub(r"full\s+clone", "clone", contributing), template, readme),
+        "no mention of Python 3.9": (contributing.replace("Python 3.9", "Python 3.8"), template, readme),
+        "another Node minimum": (contributing.replace(node_min, "20.0.0"), template, readme),
+        "another Node minimum in the README": (contributing, template, readme.replace(node_min, "20.0.0")),
+        "a typed count of interpreters": (contributing + "\nAll five interpreters.\n", template, readme),
+        "a typed count of commands": (contributing, template, readme.replace("the commands below", "the eight commands below")),
+        "a typed count of items": (contributing, template.replace("down to the tool suites", "the first six items"), readme),
+        "another range in the template": (contributing, template.replace("3.10 to 3.14", "3.9 to 3.14"), readme),
+        "make capture undocumented": (contributing.replace("`make capture`", "`make snapshot`"), template, readme),
+    }
+    for label, (c_text, t_text, r_text) in cmut.items():
+        check((c_text, t_text, r_text) != (contributing, template, readme), f"(the mutation '{label}' changes a page)")
+        check(contributor_problems(c_text, t_text, r_text, rules, versions, node_min) != [],
+              f"the contributor pages check refuses {label}")
+    check(github_slugs("# A b\n## C: d `e`\n## C: d `e`\n```\n# not a heading\n```\n") == {"a-b", "c-d-e", "c-d-e-1"},
+          "the anchor reader follows GitHub: lower case, punctuation dropped, a repeat numbered, code skipped")
 
 
 def sidebar_titles(manifest: dict) -> dict:
@@ -3780,6 +4465,7 @@ def main() -> int:
         test_progress_log()
         test_citation_author()
         test_cited_doi()
+        test_front_door(tmp)
         test_stage_sidebar()
         test_stage_progress(tmp)
         test_source_hygiene()

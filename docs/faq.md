@@ -121,7 +121,9 @@ paradigm for the battery should say which published paradigm or source it comes 
 routes, for a wrong claim, a stale number or a security problem, are in the
 [Reader's guide](guide.md#get-in-touch).
 
-If a claim or a goal is unclear, ask in a Discussion before writing it into the repository. The
+If a claim or a goal is unclear, ask in a Discussion before writing it into the repository. To send
+a change, [Taking part from outside the project](../CONTRIBUTING.md#taking-part-from-outside-the-project)
+says where each thing goes, how to set up and what a pull request must pass. The
 [project rules](../CONTRIBUTING.md) are the shared ground truth, and the
 [Code of Conduct](../CODE_OF_CONDUCT.md) covers the issues, pull requests and Discussions.
 
