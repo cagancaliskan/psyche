@@ -50,7 +50,7 @@ Surfaces and the rules applied to each:
       site's staged copy of a page (website/src/content/docs/) is not read, so the page is
       read at its source. RESEARCH applies to the public research surfaces (the list
       above, which is the research term list's own scope, and the pages of the section
-      whose title begins "Cognitive map", now "Cognitive maps (active)"), not to a page in
+      whose title begins "Cognitive map", today "Cognitive maps"), not to a page in
       another section: the substrate's own pages (docs/PSYCHE.md, docs/ARCHITECTURE.md,
       docs/METHODOLOGY.md) are the substrate's record, ledger_check C4 governs their
       claims, and the research term list is about the cognitive-map line's claims. A
@@ -284,7 +284,7 @@ PROSE_RULES = ("RESEARCH", "ENERGY", "LANGUAGE")
 # ledger_check C4 governs their claims
 PAGE_RULES = ("ENERGY", "LANGUAGE")
 # The manifest section of the cognitive-map line: its title begins with this, compared
-# case-folded, whatever state the title names ("Cognitive maps (active)" today).
+# case-folded ("Cognitive maps" today; a title never carries a program state).
 RESEARCH_SECTION = "Cognitive map"
 # on prose, ledger_check C2 and C4 apply these to the raw lines already
 LEDGER_RULES = ("COUNT", "CLAIM")

@@ -73,10 +73,11 @@ export const SITE_PAGES = {
   status: [
     `${SRC}/pages/status.astro`,
     `${SRC}/components/BrickBoard.astro`,
-    `${SRC}/components/ui`,
-    `${SRC}/components/docs`,
+    `${SRC}/components/BrickTable.astro`,
+    `${SRC}/components/landing/SubstrateReadout.astro`,
     `${SRC}/lib/ledger.ts`,
     `${SRC}/lib/plan.ts`,
+    `${SRC}/lib/status.ts`,
     `${SRC}/lib/today.ts`,
     `${SRC}/lib/url.ts`,
     LEDGER,

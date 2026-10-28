@@ -2,10 +2,12 @@
 // A static instrument readout for the substrate's maintained record: one hairline-ruled row of
 // cells, each a figure in Unbounded 200 with tabular digits and its mono label under it, a muted
 // detail below that. Nothing counts up; the server writes the final figures and they never change
-// on the page. On a phone the cells stack into ruled rows. Takes the same items as ui/StatsBand,
-// which stays for the pages that still use it. The ruled rhythm follows "Spec Sheet" by
-// isaiahbjork (21st.dev); the styles are in styles/landing/rows.css.
-import '@/styles/landing/rows.css';
+// on the page. The landing page shows it plain; the status page and the substrate overview show it
+// as a sheet (`framed`: a hairline frame with registration corners), and the status page slots its
+// captured-run facts under the figures, inside the frame. The ruled rhythm follows "Spec Sheet" by
+// isaiahbjork (21st.dev) and the label-over-figure cell "Stats Band" by kuratlielia (21st.dev); the
+// styles are in styles/readout.css, which a docs page loads without the landing's.
+import '@/styles/readout.css';
 
 interface Item {
   label: string;
@@ -14,20 +16,25 @@ interface Item {
 }
 interface Props {
   items: Item[];
+  /** Draw the readout as a sheet: a hairline frame with registration corners. */
+  framed?: boolean;
 }
-const { items } = Astro.props;
+const { items, framed = false } = Astro.props;
 const fmt = new Intl.NumberFormat('en-US');
 const cells = Math.min(Math.max(items.length, 1), 6);
 ---
 
-<dl class="sx-readout not-content" style={`--cells: ${cells}`}>
-  {
-    items.map((item) => (
-      <div class="sx-readout__cell">
-        <dt class="sx-readout__label">{item.label}</dt>
-        <dd class="sx-readout__value">{fmt.format(item.value)}</dd>
-        {item.detail && <dd class="sx-readout__detail">{item.detail}</dd>}
-      </div>
-    ))
-  }
-</dl>
+<div class:list={['sx-readout-wrap not-content', framed && 'sx-readout-wrap--sheet sx-reg']}>
+  <dl class="sx-readout" style={`--cells: ${cells}`}>
+    {
+      items.map((item) => (
+        <div class="sx-readout__cell">
+          <dt class="sx-readout__label">{item.label}</dt>
+          <dd class="sx-readout__value">{fmt.format(item.value)}</dd>
+          {item.detail && <dd class="sx-readout__detail">{item.detail}</dd>}
+        </div>
+      ))
+    }
+  </dl>
+  <slot />
+</div>

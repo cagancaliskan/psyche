@@ -1,86 +1,110 @@
 ---
-// The substrate's bricks (stage 1) as one card per build status, read from the staged public
-// projection of tools/ledger.json. Nothing here is typed by hand: names, statuses and counts come
-// from the ledger.
+// The substrate's bricks (stage 1) as a ruled sheet: a key to the two axes, then one row per brick
+// with its id, its name, its build status and its meaning verdict, the last two in columns of their
+// own because they are separate axes (CONTRIBUTING rule 3). Read from the staged public projection
+// of tools/ledger.json through lib/status.ts; nothing here is typed by hand: names, statuses and
+// counts come from the ledger. Public text says "verified" for the ledger's PROVEN (D-035).
+//
+// Catalog sources (21st.dev), rewritten in plain markup and CSS with none of their code or
+// dependencies: the row that leads with a state mark, then a name, and ends with its state word, in
+// a list ruled by hairlines, and the idea that two signals of one item are kept apart, after
+// "Health Checks" by astralyxdev; the mono identifier column and the state cell that is a marker and
+// a word, after "Audit Log Table" by arihantcodes; the label column and ruled rows that stack on a
+// narrow screen, after "Spec Sheet" by isaiahbjork. The styles are in styles/status.css.
 import ledger from '../data/ledger.public.json';
-import '../styles/docs-visuals.css';
+import BrickTable from './BrickTable.astro';
+import { brickRows, keyOf } from '../lib/status.ts';
+import type { PublicLedger } from '../lib/ledger.ts';
 import '../styles/plan.css';
+import '../styles/status.css';
 
-interface Brick {
-  id: string;
-  name: string;
-  status: string;
-}
+const led = ledger as unknown as PublicLedger;
+const rows = brickRows(led.bricks);
+const shown = rows.filter((r) => r.build?.state !== 'designed');
+const designed = rows.filter((r) => r.build?.state === 'designed');
+const buildKey = keyOf(rows.map((r) => r.build));
+const meaningKey = keyOf(rows.map((r) => r.meaning));
+// The ledger's own name for the state, as the first brick in it carries it.
+const ledgerName = (state: string) => rows.find((r) => r.build?.state === state)?.status;
+const bar = String(led.meaning_bar.status).toLowerCase();
 
-// `status` is the ledger's own name for the group and stays as it is there. `heading` is the word a
-// reader sees, and `meaning` is what the status name means in plain words where the card names it.
-const groups: { status: string; tone: string; heading: string; note: string; meaning?: string; collapsed?: boolean }[] = [
-  {
-    status: 'PROVEN',
-    tone: 'proven',
-    heading: 'Verified',
-    note: 'Deterministic, integrity-preserving and pure, verified in a separate tester pass.',
-    meaning: 'verified by the full adversarial suite on every interpreter; not a formal proof',
-  },
-  { status: 'BUILT-UNVALIDATED', tone: 'built', heading: 'Built; meaning not validated', note: 'The mechanism is tester-verified; no cognitive claim is made.' },
-  { status: 'NO-GO', tone: 'stopped', heading: 'Stopped before a graded run', note: 'Attempts at a cognitive claim stopped before any graded number existed, each at its own wall: a circular yardstick, or a mechanism the effect needs that the engine lacks.' },
-  { status: 'DESIGNED', tone: 'designed', heading: 'Designed, not built', note: 'Specified only. Paused with the rest of the substrate.', collapsed: true },
-];
-const bricks = (ledger.bricks as Brick[]).slice();
-const shown = new Set(groups.map((g) => g.status));
-const other = bricks.filter((b) => !shown.has(b.status));
-const cards = [
-  ...groups.map((g) => ({ ...g, items: bricks.filter((b) => b.status === g.status) })),
-  ...(other.length > 0 ? [{ status: 'OTHER', tone: 'other', heading: 'Other states', note: 'States outside the four above, as the ledger records them.', items: other }] : []),
-].filter((c) => c.items.length > 0);
-const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+// What each state means, in plain words. The counts and the ledger names are not typed here.
+const buildNote: Record<string, string> = {
+  verified: 'Deterministic, integrity-preserving and pure, verified in a separate tester pass.',
+  built: 'Meaning not validated. The mechanism is tester-verified; no cognitive claim is made.',
+  designed: 'Specified only, not built.',
+  horizon: 'Open research, with no agreed definition of done.',
+  other: 'A state outside the ones above, as the ledger records it.',
+};
+const meaningNote: Record<string, string> = {
+  earned: 'Reproduced on external data the project did not author, against a baseline.',
+  'not-yet': 'Attempted; the effect has not yet been shown against external data.',
+  'no-go': 'Stopped before a graded run. Attempts at a cognitive claim stopped before any graded number existed, each at its own wall: a circular yardstick, or a mechanism the effect needs that the engine lacks.',
+};
+const plural = (n: number) => (n === 1 ? 'brick' : 'bricks');
 ---
 
 <div class="sx-bricks not-content">
-  <div class="sx-bricks__grid">
-    {
-      cards.map((c) => {
-        const list = (
-          <ul class="sx-bricks__list">
-            {c.items.map((b) => (
-              <li>
-                <code class="sx-bricks__id">{b.id}</code> <span>{c.tone === 'other' ? `${b.name} (${b.status.toLowerCase()})` : b.name}</span>
+  <div class="sx-bricks__sheet sx-reg">
+    <div class="sx-key">
+      <section class="sx-key__col" aria-labelledby="sx-key-build">
+        <h3 class="sx-key__head" id="sx-key-build">Build status</h3>
+        <p class="sx-key__ask">Is the mechanism built, and verified?</p>
+        <ul class="sx-key__list">
+          {
+            buildKey.map((e) => (
+              <li class="sx-key__row">
+                <span class="sx-st" data-state={e.state}>
+                  <span class="sx-st__mark" aria-hidden="true" />
+                  {e.label}
+                </span>
+                <span class="sx-key__count">
+                  {e.count} <span class="sr-only">{plural(e.count)}</span>
+                </span>
+                <p class="sx-key__note">{buildNote[e.state]}</p>
+                {e.state === 'verified' && (
+                  <p class="sx-key__note">
+                    Ledger status <code>{ledgerName(e.state)}</code>: verified by the full adversarial suite on every interpreter; not a formal proof.
+                  </p>
+                )}
               </li>
-            ))}
-          </ul>
-        );
-        return (
-          <section class="sx-bricks__card sx-spot" data-spot data-tone={c.tone} aria-labelledby={`sx-bricks-${slug(c.status)}`}>
-            <div class="sx-bricks__head">
-              <h3 class="sx-bricks__title" id={`sx-bricks-${slug(c.status)}`}>
-                <span class="sx-bricks__dot" aria-hidden="true" />
-                <span>{c.heading}</span>
-              </h3>
-              <p class="sx-bricks__count">
-                {c.items.length} <span class="sr-only">{c.items.length === 1 ? 'brick' : 'bricks'}</span>
-              </p>
-            </div>
-            <p class="sx-bricks__note">{c.note}</p>
-            {'meaning' in c && c.meaning && (
-              <p class="sx-bricks__note">
-                Ledger status <code>{c.status}</code>: {c.meaning}.
-              </p>
-            )}
-            {'collapsed' in c && c.collapsed ? (
-              <details class="sx-disclosure">
-                <summary>Show the list</summary>
-                {list}
-              </details>
-            ) : (
-              list
-            )}
-          </section>
-        );
-      })
+            ))
+          }
+        </ul>
+      </section>
+      <section class="sx-key__col" aria-labelledby="sx-key-meaning">
+        <h3 class="sx-key__head" id="sx-key-meaning">Meaning verdict</h3>
+        <p class="sx-key__ask">Does it reproduce a cognitive effect, judged against external data?</p>
+        <ul class="sx-key__list">
+          {
+            meaningKey.map((e) => (
+              <li class="sx-key__row">
+                <span class="sx-st" data-state={e.state}>
+                  <span class="sx-st__mark" aria-hidden="true" />
+                  {e.label}
+                </span>
+                <span class="sx-key__count">
+                  {e.count} <span class="sr-only">{plural(e.count)}</span>
+                </span>
+                <p class="sx-key__note">
+                  {e.state === 'not-earned' ? `No meaning verdict has been earned. The meaning bar is ${bar}.` : meaningNote[e.state]}
+                </p>
+              </li>
+            ))
+          }
+        </ul>
+      </section>
+    </div>
+
+    <BrickTable rows={shown} name="Bricks, each with its build status and its meaning verdict" />
+
+    {
+      designed.length > 0 && (
+        <details class="sx-disclosure sx-bricks__more">
+          <summary>Show the {designed.length} designed {plural(designed.length)}</summary>
+          <BrickTable rows={designed} name="Designed bricks, each with its build status and its meaning verdict" />
+        </details>
+      )
     }
   </div>
 </div>
-
-<script>
-  import './docs/motion.ts';
-</script>

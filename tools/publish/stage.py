@@ -51,11 +51,14 @@ SITE_DIR = Path("website")
 DOCS_OUT = SITE_DIR / "src" / "content" / "docs"
 DATA_OUT = SITE_DIR / "src" / "data"
 
-# Hand-written pages of the site (website/src/pages/*.astro), listed first in the sidebar.
+# Hand-written pages of the site (website/src/pages/*.astro), listed first in the sidebar. Each page's
+# own title is its label here (the title in its .astro front matter), and no label may be, or contain,
+# the title of a staged document: "Roadmap", "Decision gates" and "Test battery" are the documents, so
+# the two interactive pages say what a reader does with them instead (test_core.py checks this).
 CUSTOM_PAGES: List[Tuple[str, str]] = [
     ("Home", ""),
-    ("Roadmap and gates", "roadmap/"),
-    ("Test battery explorer", "battery/"),
+    ("Explore the timeline", "roadmap/"),
+    ("Step through the paradigms", "battery/"),
     ("Substrate status", "status/"),
 ]
 

@@ -106,12 +106,14 @@
     display: block;
     min-width: 0;
   }
+  /* The stage's own colour is the tick on the head's rule and its bowl in the mark; the words are
+     muted, as in the hero's stage list, so the signal colour is not worn by a paused stage. */
   .sx-lg__k {
     display: block;
     font: 400 var(--sx-lab-size)/1.2 var(--font-mono);
     letter-spacing: var(--sx-lab-track);
     text-transform: uppercase;
-    color: var(--c);
+    color: var(--sx-muted);
   }
   .sx-lg__nm {
     display: block;

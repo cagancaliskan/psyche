@@ -9,7 +9,9 @@
 // fine pointer once the intro is over. Catalog sources are credited in hero.css.
 //
 // The stages grow outward (brand/README.md): the inner bowl is stage 1, the middle bowl stage 2,
-// and the outer bowl, open at the stem, is what later stages will wrap around.
+// and the outer bowl, open at the stem, is what later stages will wrap around. The key to the bowls
+// (the intro's legend and the stage list) is a short stroke in each bowl's own colour, which is the
+// mark's and not a state, followed by words in muted type: signal green is kept for what is active.
 import PMark from './brand/PMark.astro';
 import ledger from '@/data/ledger.public.json';
 import { stateLabel, type PublicLedger } from '@/lib/ledger.ts';
@@ -56,16 +58,10 @@ const corners = ['tl', 'tr', 'bl', 'br'];
       <div class="sx-layers__act">
         <a class="sx-layers__btn" href={withBase('research/')}>
           <span class="sx-layers__btn-label">Read the research overview</span>
-          <span class="sx-layers__tile" aria-hidden="true" data-pagefind-ignore>
-            <span class="sx-layers__tile-label">Read the research overview</span>
-            <span class="sx-layers__trail">
-              {[0, 1, 2].map(() => <i><svg viewBox="0 0 8 12"><path d="M1.5 1.5 6 6l-4.5 4.5" /></svg></i>)}
-            </span>
-            <svg class="sx-layers__arrow" viewBox="0 0 20 20"><path d="M4 10h11M10.5 5.5 15 10l-4.5 4.5" /></svg>
-          </span>
+          <svg class="sx-layers__arrow" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M10.5 5.5 15 10l-4.5 4.5" /></svg>
         </a>
       </div>
-      <div class="sx-layers__act"><a class="sx-layers__ulink" href={withBase('battery/')}>Explore the test battery</a></div>
+      <div class="sx-layers__act"><a class="sx-layers__ulink" href={withBase('battery/')}>Step through the paradigms</a></div>
     </div>
   </div>
 

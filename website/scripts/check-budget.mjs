@@ -40,26 +40,33 @@ const BASE = '/psyche/';
 // by about 1.2 KB (they are in global.css and docs.css), and the script that takes the tab stop off a
 // table that does not scroll (components/chrome/TableRegions.astro) and, on stage 2 pages, the one that
 // reads the next gate against the reader's day (components/chrome/NextGateClock.astro) grew the
-// JavaScript of the docs pages by up to about 400 bytes.
-const DEFAULT_BUDGET = { js: 37700, css: 38900 };
+// JavaScript of the docs pages by up to about 400 bytes. Every line was reset again when the roadmap
+// and the status page were drawn as ruled sheets: the one roadmap skin (styles/plan.css, now holding the
+// timeline, the gate list and the phase list that the landing page drew from a stylesheet of its own) and
+// the readout (styles/readout.css) are in the CSS bundle every docs page loads, which grew it by about
+// 450 bytes. /status/ grew by about 1.6 KB of CSS more, for the captured-run facts and the brick board
+// with its key (styles/status.css, which no other page loads), while the count-up and the spotlight
+// script that the old stats band and brick cards loaded took about 1.1 KB of JavaScript off it; the
+// landing page's CSS fell by about 2 KB with its second roadmap stylesheet gone.
+const DEFAULT_BUDGET = { js: 37700, css: 39400 };
 const PAGE_BUDGETS = {
-  '/':                          { js: 114100, css:  45000 }, // 110690,  43636
-  '/roadmap/':                  { js: 112000, css:  34900 }, // 108654,  33869
-  '/battery/':                  { js: 112700, css:  35000 }, // 109410,  33914
-  '/status/':                   { js:  34300, css:  34900 }, //  33244,  33803
-  '/research/':                 { js:  35600, css:  34900 }, //  34481,  33803
-  '/research/origins/':         { js:  35600, css:  34900 }, //  34481,  33803
-  '/research/roadmap/':         { js: 113500, css:  34900 }, // 110127,  33869
-  '/research/gates/':           { js:  37700, css:  34900 }, //  36598,  33803
-  '/research/test-battery/':    { js:  35900, css:  34900 }, //  34804,  33803
-  '/research/claims-and-scope/':{ js:  34900, css:  34900 }, //  33852,  33803
-  '/research/engineering/':     { js:  35600, css:  34900 }, //  34481,  33803
-  '/research/glossary/':        { js:  34900, css:  34900 }, //  33852,  33803
-  '/research/reading-list/':    { js:  34900, css:  34900 }, //  33852,  33803
-  '/research/disclosure-policy/':{ js:  35600, css:  34900 }, //  34481,  33803
-  '/substrate/overview/':       { js:  36900, css:  38900 }, //  35771,  37725
-  '/substrate/architecture/':   { js:  36400, css:  38900 }, //  35245,  37725
-  '/substrate/methodology/':    { js:  35100, css:  34900 }, //  34077,  33803
+  '/':                          { js: 114200, css:  42800 }, // 110807,  41534
+  '/roadmap/':                  { js: 111500, css:  35400 }, // 108173,  34325
+  '/battery/':                  { js: 112700, css:  35500 }, // 109410,  34370
+  '/status/':                   { js:  33100, css:  37000 }, //  32089,  35885
+  '/research/':                 { js:  35500, css:  35300 }, //  34432,  34259
+  '/research/origins/':         { js:  35500, css:  35300 }, //  34432,  34259
+  '/research/roadmap/':         { js: 113600, css:  35400 }, // 110195,  34325
+  '/research/gates/':           { js:  37700, css:  35300 }, //  36531,  34259
+  '/research/test-battery/':    { js:  35800, css:  35300 }, //  34755,  34259
+  '/research/claims-and-scope/':{ js:  34900, css:  35300 }, //  33852,  34259
+  '/research/engineering/':     { js:  35500, css:  35300 }, //  34432,  34259
+  '/research/glossary/':        { js:  34900, css:  35300 }, //  33852,  34259
+  '/research/reading-list/':    { js:  34900, css:  35300 }, //  33852,  34259
+  '/research/disclosure-policy/':{ js:  35500, css:  35300 }, //  34432,  34259
+  '/substrate/overview/':       { js:  36300, css:  39400 }, //  35196,  38181
+  '/substrate/architecture/':   { js:  36300, css:  39400 }, //  35196,  38181
+  '/substrate/methodology/':    { js:  35100, css:  35300 }, //  34028,  34259
 };
 
 const gz = (buf) => gzipSync(buf, { level: 9 }).length;
