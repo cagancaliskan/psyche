@@ -208,6 +208,11 @@ GUARD_LEDGER = {
 }
 FIXTURE_DESCRIPTION = ("A page of a fixture repository, written to give the stager the one sentence of "
                        "description it requires, in plain words and within the bounds.")
+SECOND_DESCRIPTION = ("The first page of a fixture repository, written to give a second section its one "
+                      "sentence of description, in plain words and within the bounds.")
+FIXTURE_CITATION = ("cff-version: 1.2.0\nmessage: \"Cite the fixture.\"\ntitle: \"Fixture\"\nauthors:\n"
+                    "  - family-names: Example\n    given-names: Ada\n"
+                    "  - family-names: Second\n    given-names: Bea\nlicense: MIT\n")
 GUARD_MANIFEST = {
     "site_base": "/psyche/",
     "repo": "owner/name",
@@ -983,9 +988,12 @@ def test_plan() -> None:
              "not a field a gate has"),
             ("a phase's 'date'", {"item": "P0", "field": "date", "to": "2026-11-01"},
              "not a field a phase has"),
-            ("a status outside the vocabulary", {"item": "A", "field": "status",
-                                                 "from": "upcoming", "to": "passed"},
-             "is not in vocabulary.gate"),
+            ("a status outside the vocabulary", {"item": "P0", "field": "status",
+                                                 "from": "planned", "to": "passed"},
+             "is not in vocabulary.phase"),
+            ("a gate's status (a decision is recorded by decided_on and next_step, D-034)",
+             {"item": "A", "field": "status", "from": "upcoming", "to": "decided"},
+             "not a field a gate has"),
             ("a date field with a non-date value", {"item": "P1", "field": "end",
                                                    "from": "2026-12-31", "to": "soon"},
              "is not an ISO date"),
@@ -1626,7 +1634,8 @@ def _doc_fixture(root: Path, p: dict) -> None:
           "<!-- generated:gate-flow:start -->\n<!-- generated:gate-flow:end -->\n\n"
           "<!-- generated:deadlines-table:start -->\n<!-- generated:deadlines-table:end -->\n\n"
           "<!-- generated:commitments-table:start -->\n"
-          "<!-- generated:commitments-table:end -->\n")
+          "<!-- generated:commitments-table:end -->\n\n"
+          "<!-- generated:progress-log:start -->\n<!-- generated:progress-log:end -->\n")
 
 
 def _outside_blocks(text: str) -> str:
@@ -2005,8 +2014,8 @@ def test_render_documents(tmp: Path) -> None:
     (r9 / "docs/research/flow.md").unlink()
     capture(RP.main, ["--root", str(r9), "--write"])
     rc, out, _ = capture(RP.main, ["--root", str(r9), "--check"])
-    check(rc == 1 and "commitments-table" in out and "gate-flow" in out,
-          f"blocks fresh but three ids unplaced: --check exits 1 and names them ({rc})")
+    check(rc == 1 and "commitments-table" in out and "gate-flow" in out and "progress-log" in out,
+          f"blocks fresh but four ids unplaced: --check exits 1 and names them ({rc})")
 
     section("documents: every Markdown file is either rendered or marker-free")
     r10 = new_root(tmp)
@@ -3021,20 +3030,28 @@ def test_diagrams(tmp: Path) -> None:
           "CRLF line endings are kept around the figure")
 
 
-def diagram_fixture(tmp: Path, *, script: bytes = b"// renderer one\n", body: str = None, draw: bool = True):
+def diagram_fixture(tmp: Path, *, script: bytes = b"// renderer one\n", body: str = None, draw: bool = True,
+                    manifest: dict = None, extra: dict = None, research_plan: dict = None):
     """A committed repository with one published page holding a Mermaid fence, the render
-    script, and (when `draw`) the drawing of the fence. Returns (root, key, renderer)."""
+    script, a citation file and (when `draw`) the drawing of the fence. `manifest` replaces the
+    default one, `extra` adds tracked files (path -> text) and `research_plan` replaces the plan.
+    Returns (root, key, renderer)."""
     root = new_root(tmp)
     page = body if body is not None else "# Title\n\nBefore.\n\n```mermaid\n" + FLOW + "\n```\n\nAfter.\n"
     write(root, "docs/ok.md", page)
-    write(root, "docs/publish.json", json.dumps(GUARD_MANIFEST))
+    write(root, "docs/publish.json", json.dumps(manifest if manifest is not None else GUARD_MANIFEST))
     write(root, "tools/ledger.json", (REPO / "tools" / "ledger.json").read_text(encoding="utf-8"))
-    write(root, "tools/research_plan.json", json.dumps(plan(), indent=1))
+    write(root, "tools/research_plan.json",
+          json.dumps(research_plan if research_plan is not None else plan(), indent=1))
+    write(root, core.CITATION_REL.as_posix(), FIXTURE_CITATION)
     write(root, DG.SCRIPT_REL, script, binary=True)
     renderer = DG.renderer_id(script)
     key = DG.diagram_key(renderer, FLOW)
     tracked = ["docs/ok.md", "docs/publish.json", "tools/ledger.json", "tools/research_plan.json",
-               DG.SCRIPT_REL]
+               core.CITATION_REL.as_posix(), DG.SCRIPT_REL]
+    for rel, text in (extra or {}).items():
+        write(root, rel, text)
+        tracked.append(rel)
     if draw:
         write(root, DG.svg_rel(key), svg_for(key))
         tracked.append(DG.svg_rel(key))
@@ -3217,6 +3234,476 @@ def test_stage_sidebar_labels() -> None:
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+# the plan's public events, the progress page's block and the feed's data
+# ─────────────────────────────────────────────────────────────────────────────
+
+def events_plan() -> dict:
+    """The fixture plan as of the commitment's day with one event of every kind: gate A decided on
+    2026-11-14 (so P0, which it closes, is done that day, and P1 started on 2026-11-16),
+    two changes recorded in the changelog and one hash commitment."""
+    p = decided_plan("continues", 0, "2026-11-14")
+    p["as_of"] = COMMITMENT["date"]
+    p["phases"][1]["status"] = "active"
+    p["gates"][1]["date"] = "2027-01-07"
+    p["changelog"] = [
+        {"date": "2026-11-03", "item": "B", "field": "date", "from": "2026-12-31",
+         "to": "2027-01-07", "reason": "a fixture move", "ref": "fixture"},
+        {"date": "2026-11-02", "item": "L1", "field": "title", "from": "Safe base",
+         "to": "Safe base layer", "reason": "a clearer name", "ref": "fixture"},
+    ]
+    p["commitments"] = [dict(COMMITMENT)]
+    return p
+
+
+def event_triples(events: list) -> list:
+    return [(e["kind"], e["id"], e["date"]) for e in events]
+
+
+def test_progress_events() -> None:
+    section("events: the plan's public events, derived from the plan and nothing else")
+    p = events_plan()
+    check(problems_of(p) == [], f"the fixture plan with every kind of event is valid: {problems_of(p)[:2]}")
+    events = RP.progress_events(p)
+    check(event_triples(events) == [
+        ("commitment", "commitment/PC-001", "2026-12-01"),
+        ("phase-started", "phase-started/P1", "2026-11-16"),
+        ("phase-done", "phase-done/P0", "2026-11-14"),
+        ("gate-decided", "gate-decided/A", "2026-11-14"),
+        ("change", "change/2026-11-03/B/date/1", "2026-11-03"),
+        ("change", "change/2026-11-02/L1/title/1", "2026-11-02"),
+        ("phase-started", "phase-started/P0", "2026-10-23")],
+        f"one event of every kind, newest first: {event_triples(events)}")
+    by_kind = {e["kind"]: e for e in events}
+    check(all(tuple(e) == RP.EVENT_KEYS for e in events) and len({e["id"] for e in events}) == len(events),
+          "every event has exactly the same keys, and its own id")
+    check(by_kind["phase-done"]["subject"] == "Phase P0, Novelty review and setup"
+          and by_kind["phase-done"]["headline"] == "Phase P0 done" and by_kind["phase-done"]["change"] == "done",
+          "a phase done says so with its code and title")
+    check(by_kind["gate-decided"] == {
+        "id": "gate-decided/A", "kind": "gate-decided", "date": "2026-11-14", "item": "A",
+        "subject": "Gate A, Novelty", "headline": "Gate A decided",
+        "change": "decided; the line continues to the next phase"},
+        "a decided gate's event is its date and its next step in the project's words")
+    changes = [e for e in events if e["kind"] == "change"]
+    check(changes[0]["change"] == "date changed from 2026-12-31 to 2027-01-07 (reason: a fixture move)"
+          and changes[0]["subject"] == "Gate B, Comparisons" and changes[0]["headline"] == "Gate B date changed"
+          and changes[1]["subject"] == "Layer L1, Safe base" and changes[1]["headline"] == "Layer L1 title changed",
+          "a changelog entry gives the field, the old and new value and the reason, in words")
+    check(by_kind["commitment"]["subject"] == "Commitment PC-001, frozen criteria"
+          and by_kind["commitment"]["change"] == "hash committed; reveal: at submission"
+          and GOOD_SHA256 not in json.dumps(events),
+          "a commitment gives its date, id, subject and reveal, and not its hash")
+    check("fixture" not in json.dumps([e for e in events if e["kind"] == "change"]).replace("a fixture move", ""),
+          "a changelog entry's ref is not carried")
+    for step in core.NEXT_STEPS:
+        ev = [e for e in RP.progress_events(decided_plan(step)) if e["kind"] == "gate-decided"]
+        check(len(ev) == 1 and ev[0]["change"] == "decided; " + RP.NEXT_STEP_TEXT[step],
+              f"a gate decided with the next step {step!r} reads in the project's words")
+
+    section("events: a decided gate's event carries nothing but the gate, the date and the next step (D-034)")
+    g = decided_plan("stops")
+    g["gates"][0].update(verdict="VERDICT-SENTINEL", evidence="EVIDENCE-SENTINEL", criterion="CRITERION-SENTINEL")
+    dumped = json.dumps(RP.progress_events(g))
+    gate = g["gates"][0]
+    for needle in ("VERDICT-SENTINEL", "EVIDENCE-SENTINEL", "CRITERION-SENTINEL", gate["question"],
+                   gate["if_missed"]):
+        check(needle not in dumped, f"{needle!r} is not in any event")
+    check("the line stops" in dumped, "(the next step is)")
+    fn = next(n for n in ast.walk(ast.parse((HERE / "render_plan.py").read_text(encoding="utf-8")))
+              if isinstance(n, ast.FunctionDef) and n.name == "progress_events")
+    read = set()
+    for node in ast.walk(fn):
+        if (isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name) and node.value.id == "g"
+                and isinstance(node.slice, ast.Constant)):
+            read.add(node.slice.value)
+        if (isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute) and node.func.attr == "get"
+                and isinstance(node.func.value, ast.Name) and node.func.value.id == "g" and node.args
+                and isinstance(node.args[0], ast.Constant)):
+            read.add(node.args[0].value)
+    check(read == {"id", "status", "next_step", "decided_on"},
+          f"the event reader opens only these fields of a gate: {sorted(read)}")
+    undated = decided_plan("continues")
+    del undated["gates"][0]["decided_on"]
+    check("gate-decided" not in {e["kind"] for e in RP.progress_events(undated)},
+          "a decided gate with no decision date has no event: an event needs a day")
+
+    section("events: what makes a phase an event")
+    q = plan(as_of="2026-11-20")
+    q["phases"][0].update(status="done")                      # started 2026-10-23, ended 2026-11-15
+    q["phases"][1].update(status="active", start="2026-11-21")  # active, but starts after as_of
+    check(event_triples(RP.progress_events(q)) == [
+        ("phase-done", "phase-done/P0", "2026-11-15"), ("phase-started", "phase-started/P0", "2026-10-23")],
+        "a phase done has a start and an end; an active one that starts after the plan's day has none yet")
+    q["phases"][1]["start"] = "2026-11-20"
+    check(("phase-started", "phase-started/P1", "2026-11-20") in event_triples(RP.progress_events(q)),
+          "a phase that starts on the plan's own day has started")
+    q["phases"][1].update(status="planned")
+    check(all(e["id"] != "phase-started/P1" for e in RP.progress_events(q)), "a planned phase has no event")
+    r = plan(as_of="2027-05-01")
+    r["phases"][3].update(status="done")                      # a fixed start, an end that is a rule
+    r["phases"][4].update(status="done")                      # no fixed start or end at all
+    ids = {e["id"] for e in RP.progress_events(r)}
+    check("phase-started/P3" in ids and "phase-done/P3" not in ids,
+          "a done phase with a fixed start but an end that is a rule has a start and no end")
+    check("phase-started/P4" not in ids and "phase-done/P4" not in ids,
+          "a phase with no fixed day for either step has no event")
+
+    section("events: order, ties, stability, an empty plan")
+    t = events_plan()
+    t["gates"][0]["decided_on"] = "2026-11-16"
+    t["phases"][0]["end"] = "2026-11-16"
+    t["commitments"][0]["date"] = "2026-11-16"
+    t["changelog"][0]["date"] = "2026-11-16"
+    t["changelog"][1]["date"] = "2026-11-16"
+    check(problems_of(t) == [], f"the plan with five kinds on one day is valid: {problems_of(t)[:2]}")
+    same_day = [e["id"] for e in RP.progress_events(t) if e["date"] == "2026-11-16"]
+    check(same_day == ["commitment/PC-001", "change/2026-11-16/B/date/1", "change/2026-11-16/L1/title/1",
+                       "phase-started/P1", "phase-done/P0", "gate-decided/A"],
+          f"a tie breaks by kind (the later step of a story first), then by item: {same_day}")
+    reversed_plan = json.loads(json.dumps(t))
+    for key in ("phases", "gates", "changelog", "layers"):
+        reversed_plan[key].reverse()
+    check(RP.progress_events(reversed_plan) == RP.progress_events(t),
+          "the order does not depend on the order of the plan's lists")
+    twice = t["changelog"] + [dict(t["changelog"][1], **{"from": "Safe base layer", "to": "Safe base",
+                                                         "reason": "undone"})]
+    t["changelog"] = twice
+    again = [e for e in RP.progress_events(t) if e["id"].startswith("change/2026-11-16/L1")]
+    check([e["id"] for e in again] == ["change/2026-11-16/L1/title/2", "change/2026-11-16/L1/title/1"]
+          and "undone" in again[0]["change"],
+          "two entries for one item and field on one day keep separate ids, the later entry first")
+    before = {e["id"]: e for e in RP.progress_events(events_plan())}
+    later = events_plan()
+    later["phases"][2].update(status="active", start="2026-11-18")
+    later["phases"][1].update(status="done")
+    after = {e["id"]: e for e in RP.progress_events(later)}
+    check(all(after[i] == e for i, e in before.items() if i in after)
+          and {"phase-started/P2"} <= set(after) - set(before),
+          "a new event leaves the others as they were, ids included")
+    empty = plan()
+    empty["phases"][0]["status"] = "planned"
+    check(problems_of(empty) == [] and RP.progress_events(empty) == [], "a plan with nothing yet has no event")
+    check(RP.render_progress_log(empty) == "\n".join([
+        "| Date | What changed |", "|---|---|", f"| none yet | {EMDASH} |"]),
+        "and its log is one 'none yet' row")
+    odd = plan(as_of="2026-11-10")
+    odd["changelog"] = [{"date": "2026-11-05", "item": "P4", "field": "end_rule", "from": None,
+                         "to": "the release calendar", "reason": "a rule was added", "ref": "fixture"}]
+    check(problems_of(odd) == []
+          and RP.progress_events(odd)[0]["change"]
+          == "end rule changed from not set to the release calendar (reason: a rule was added)",
+          "a value that was not set reads 'not set'")
+    check(set(RP.FIELD_WORDS) == set(core.ALL_CHANGE_FIELDS) and set(RP.EVENT_KINDS) == {
+        "commitment", "change", "phase-started", "phase-done", "gate-decided"},
+        "every field the changelog may record has a word, and the kinds are the five")
+
+    section("events: the changelog cannot carry the reasoning behind a decision (D-034)")
+    sentinel = "REASON-SENTINEL verdict and reasoning"
+    d = events_plan()
+    d["changelog"].append({"date": "2026-11-13", "item": "A", "field": "status", "from": "upcoming",
+                           "to": "decided", "reason": sentinel, "ref": "fixture"})
+    check(has(problems_of(d), "not a field a gate has"),
+          "the plan refuses a changelog entry for a gate's status: a decision has decided_on and next_step")
+    forced = RP.progress_events(d)                   # a plan that got past the validator all the same
+    check(sentinel not in json.dumps(forced) and sentinel not in RP.render_progress_log(d)
+          and not any(e["id"].startswith("change/2026-11-13/A/") for e in forced),
+          "and such an entry makes no event, so its reason reaches neither the log nor the feed's data")
+    d = events_plan()
+    d["changelog"].append({"date": "2026-11-17", "item": "P1", "field": "status", "from": "planned",
+                           "to": "active", "reason": sentinel, "ref": "fixture"})
+    status_events = [e for e in RP.progress_events(d) if e["id"].startswith("change/2026-11-17/P1/status/")]
+    check(problems_of(d) == [] and len(status_events) == 1
+          and status_events[0]["change"] == "status changed from planned to active"
+          and sentinel not in json.dumps(RP.progress_events(d)) and sentinel not in RP.render_progress_log(d),
+          "a change of status says what changed and gives no reason, whatever the item")
+
+    section("events: nothing is dated after the plan's day")
+    f = decided_plan("continues", 0, "2026-11-12")     # decided early: P0 is done, but its planned end is 2026-11-15
+    f["as_of"] = "2026-11-12"
+    check(problems_of(f) == [], f"the early decision is a valid plan: {problems_of(f)[:2]}")
+    early = {e["id"]: e["date"] for e in RP.progress_events(f)}
+    check(early.get("phase-done/P0") == "2026-11-12" and early.get("gate-decided/A") == "2026-11-12"
+          and max(early.values()) == "2026-11-12",
+          f"a phase done before its planned end is done on the plan's day, not on a day that has not come: {early}")
+    f["phases"][0]["end"] = "2026-11-10"
+    f["phases"][0]["start"] = "2026-10-23"
+    check({e["id"]: e["date"] for e in RP.progress_events(f)}.get("phase-done/P0") == "2026-11-12",
+          "a phase its gate closes is done on the day of the decision, whatever its planned end")
+    moved = {}
+    for day in ("2026-11-12", "2026-11-14", "2026-11-20", "2027-03-01"):
+        f["as_of"] = day
+        moved[day] = {e["id"]: e["date"] for e in RP.progress_events(f)}.get("phase-done/P0")
+    check(set(moved.values()) == {"2026-11-12"},
+          f"and that date does not move when only the plan's as_of moves: {moved}")
+    ext = decided_plan("extends", 0, "2026-11-12")
+    ext["phases"][0]["status"] = "done"              # not what the recording edit does, but readable
+    ext["as_of"] = "2026-11-13"
+    check({e["id"]: e["date"] for e in RP.progress_events(ext)}.get("phase-done/P0") == "2026-11-13",
+          "a gate that extends its phase does not close it, so the phase is dated by its end or the plan's day")
+    loose = plan(as_of="2027-04-20")
+    loose["phases"][3].update(status="done", end="2027-04-15")   # P3 has no gate
+    check({e["id"]: e["date"] for e in RP.progress_events(loose)}.get("phase-done/P3") == "2027-04-15",
+          "a done phase with no gate that closes it is done on its end")
+    loose["as_of"] = "2027-04-10"
+    check({e["id"]: e["date"] for e in RP.progress_events(loose)}.get("phase-done/P3") == "2027-04-10",
+          "or on the plan's day when its end has not come")
+    g2 = events_plan()
+    g2["as_of"] = "2026-11-20"
+    g2["commitments"][0]["date"] = "2026-11-21"
+    g2["changelog"].append(dict(g2["changelog"][0], date="2026-11-25"))
+    ids = {e["id"] for e in RP.progress_events(g2)}
+    check("commitment/PC-001" not in ids and not any(i.startswith("change/2026-11-25") for i in ids),
+          "a commitment or a change dated after the plan's day is not an event yet")
+    check(max(e["date"] for e in RP.progress_events(g2)) <= "2026-11-20",
+          "so the feed's newest day is never later than the plan's own")
+
+    section("events: the real plan")
+    real = core.load_plan(REPO)
+    real_events = RP.progress_events(real)
+    check(len(real_events) >= 1 and all(tuple(e) == RP.EVENT_KEYS for e in real_events)
+          and len({e["id"] for e in real_events}) == len(real_events)
+          and [e["date"] for e in real_events] == sorted((e["date"] for e in real_events), reverse=True),
+          "the real plan's events are keyed alike, have their own ids and run newest first")
+    outs = []
+    for seed in ("0", "1"):
+        proc = subprocess.run(
+            [sys.executable, "-B", "-c",
+             "import json,sys; sys.path.insert(0, sys.argv[1]); import core, render_plan; "
+             "print(json.dumps(render_plan.progress_events(core.load_plan(core.REPO))))", str(HERE)],
+            capture_output=True, text=True, env=dict(os.environ, PYTHONHASHSEED=seed))
+        outs.append(proc.stdout)
+        check(proc.returncode == 0, f"the events derive in a fresh process (seed {seed}): {proc.stderr[:200]}")
+    check(outs[0] == outs[1] and json.loads(outs[0]) == real_events,
+          "two processes with different hash seeds derive the same events")
+
+
+def test_progress_log() -> None:
+    section("progress-log: the block, as a table of the events")
+    check("progress-log" in RP.RENDERERS and "progress-log" in ALL_IDS, "the block is registered")
+    p = events_plan()
+    table = RP.render_progress_log(p).split("\n")
+    check(table[0] == "| Date | What changed |" and table[1] == "|---|---|" and len(table) == 2 + 7,
+          "a header and one row for each event, in two columns so that the table fits a phone")
+    check(table[2] == "| 2026-12-01 | Commitment PC-001, frozen criteria: hash committed; reveal: at submission |"
+          and table[5] == "| 2026-11-14 | Gate A, Novelty: decided; the line continues to the next phase |",
+          "a row is the day, then the item and what changed in one cell")
+    p["changelog"][0]["reason"] = "a | b *c* [d]"
+    check("(reason: a \\| b \\*c\\* \\[d\\])" in RP.render_progress_log(p),
+          "plan text cannot break a table row or add emphasis")
+    rendered = RP.render_checked(events_plan())
+    check(rendered["progress-log"] == RP.render_progress_log(events_plan())
+          and not any(lab in "\n".join(rendered.values()) for lab in STATUS_LABELS),
+          "it is rendered with the other blocks and passes the status-label check")
+    sneaky = events_plan()
+    sneaky["changelog"][1]["reason"] = "PROV" + "EN by hand"
+    check(has(problems_of(sneaky), "status label"), "a status label in a reason is refused by the plan check")
+    page = (REPO / "docs/progress.md").read_text(encoding="utf-8")
+    check(all(f"<!-- generated:{b}:start -->" in page for b in ("progress-log", "commitments-table")),
+          "docs/progress.md carries the log and the commitments")
+    rc, out, err = capture(RP.main, ["--check"])
+    check(rc == 0, f"render_plan --check is clean on the repository ({rc}): {out[-200:]}{err[-200:]}")
+    # a block placed on two pages is rendered on both, and the same bytes
+    root = new_root(Path(tempfile.mkdtemp(prefix="publish-test-twice-")))
+    try:
+        _doc_fixture(root, plan())
+        write(root, "docs/research/again.md", "<!-- generated:progress-log:start -->\n"
+              "<!-- generated:progress-log:end -->\n")
+        rc, _, err = capture(RP.main, ["--root", str(root), "--write"])
+        a = (root / "docs/research/again.md").read_text(encoding="utf-8")
+        b = (root / "docs/research/flow.md").read_text(encoding="utf-8")
+        check(rc == 0 and RP.render_progress_log(plan()) in a and RP.render_progress_log(plan()) in b,
+              f"the same block on two pages is written on both ({rc}) {err}")
+    finally:
+        shutil.rmtree(root.parent, ignore_errors=True)
+
+
+def test_citation_author() -> None:
+    section("citation: the feed's author is the first author of CITATION.cff, as the file gives the name")
+    real = (REPO / core.CITATION_REL).read_text(encoding="utf-8")
+    check(core.citation_author(real) == "Cagan Caliskan", "the repository's file names its project lead")
+    check(core.citation_author(FIXTURE_CITATION) == "Ada Example", "only the first author is read")
+    cases = {
+        "given names after the family names": "authors:\n  - given-names: Ada\n    family-names: Example\n",
+        "quoted values": "authors:\n  - family-names: \"Example\"\n    given-names: 'Ada'  # a comment\n",
+        "a name particle and a suffix": ("authors:\n  - family-names: Lovelace\n    given-names: Ada\n"
+                                         "    name-particle: King\n    name-suffix: Jr.\n"),
+        "a blank line and a comment": "authors:\n\n  # the lead\n  - family-names: Example\n    given-names: Ada\n",
+    }
+    want = {"given names after the family names": "Ada Example", "quoted values": "Ada Example",
+            "a name particle and a suffix": "Ada King Lovelace Jr.", "a blank line and a comment": "Ada Example"}
+    for label, text in cases.items():
+        check(core.citation_author("cff-version: 1.2.0\n" + text + "title: x\n") == want[label], label)
+    check(core.citation_author("authors:\n  - name: \"The Fixture Group\"\n") == "The Fixture Group",
+          "an entity is named by its name")
+    for label, text in {
+            "no authors list": "cff-version: 1.2.0\ntitle: x\n",
+            "an empty list": "authors:\ntitle: x\n",
+            "an author with no name": "authors:\n  - orcid: https://orcid.org/0000-0000-0000-0000\n",
+            "a scalar list": "authors:\n  - Ada Example\n",
+            "a control character": "authors:\n  - family-names: \"Ex\\u0007ample\"\n    given-names: Ada\n".replace(
+                "\\u0007", chr(7)),
+            "a flow mapping": "authors: [{family-names: Example, given-names: Ada}]\n"}.items():
+        try:
+            core.citation_author(text)
+            check(False, f"{label} is refused")
+        except core.PublishError:
+            check(True, f"{label} is refused")
+
+
+def cited_doi() -> str:
+    """The doi of preferred-citation in CITATION.cff: the one place the project's citation is kept."""
+    text = (REPO / core.CITATION_REL).read_text(encoding="utf-8")
+    block = re.search(r"^preferred-citation:[ \t]*\n((?:[ \t]+\S.*\n|[ \t]*\n)+)", text, re.M)
+    found = re.search(r"^[ \t]+doi:[ \t]*[\"']?(10\.\d{4,9}/[^\s\"']+)[\"']?[ \t]*$", block.group(1), re.M) if block else None
+    return found.group(1) if found else ""
+
+
+def test_cited_doi() -> None:
+    section("citation: the DOI the site prints is the DOI of CITATION.cff's preferred citation")
+    doi = cited_doi()
+    check(re.fullmatch(r"10\.\d{4,9}/\S+", doi) is not None, f"preferred-citation in CITATION.cff has a DOI: {doi!r}")
+    landing = (REPO / "website/src/components/landing/CiteContact.astro").read_text(encoding="utf-8")
+    typed = re.findall(r"\b10\.\d{4,9}/[^\s\"'`<>)]+", landing)
+    check(typed == [doi] and f"doi: '{doi}'" in landing,
+          f"the landing's cite section holds that DOI, and only that one, as its constant: {typed}")
+    check("https://doi.org/${cite.doi}" in landing and "href={doiUrl}" in landing,
+          "and the DOI is the link in the reference, through that constant")
+    guide = (REPO / "docs/guide.md").read_text(encoding="utf-8")
+    links = re.findall(r"https://doi\.org/(\S+?)(?=[>)\s])", guide)
+    check(links and all(x == doi for x in links),
+          f"every doi.org link in docs/guide.md is that DOI: {links}")
+    manifest = core.load_manifest(REPO)
+    seo = (REPO / "website/src/lib/seo.ts").read_text(encoding="utf-8")
+    check(f"export const REPO_URL = 'https://github.com/{manifest['repo']}';" in seo,
+          "the site's repository address is the manifest's repository")
+    check("href={`${REPO_URL}/discussions`}" in landing,
+          "the landing's cite section links the repository's GitHub Discussions page")
+    check("href={withBase('guide/')}" in landing, "and the Reader's guide")
+
+
+def sidebar_titles(manifest: dict) -> dict:
+    """slug -> title as the stager takes it: the manifest's override or the first heading."""
+    titles = {}
+    for page in core.manifest_pages(manifest):
+        text = (REPO / page["src"]).read_text(encoding="utf-8")
+        titles[page["slug"]] = page.get("title") or stage.split_title(text, page["src"])[0]
+    return titles
+
+
+def test_stage_sidebar() -> None:
+    section("sidebar: one first group, Start here, with the manifest's section of that title after Home")
+    manifest = core.load_manifest(REPO)
+    titles = sidebar_titles(manifest)
+    sidebar = stage.build_sidebar(manifest, titles)
+    labels = [g["label"] for g in sidebar]
+    start = next(s for s in manifest["sections"] if s["title"] == stage.START_GROUP)
+    others = [s["title"] for s in manifest["sections"] if s is not start]
+    check(labels == [stage.START_GROUP] + others and sum(x.casefold() == "start here" for x in labels) == 1,
+          f"the first group is Start here, the others follow in manifest order, and none repeats it: {labels}")
+    items = sidebar[0]["items"]
+    custom = [{"label": label, "link": "/" + path} for label, path in stage.CUSTOM_PAGES]
+    docs = [{"label": titles[pg["slug"]], "slug": pg["slug"]} for pg in start["pages"]]
+    check(items == custom[:1] + docs + custom[1:] and items[0] == {"label": "Home", "link": "/"},
+          "Home first, then the manifest's Start here pages in manifest order, then the other hand-written pages")
+    check(len(docs) >= 4 and len({i["label"].casefold() for i in items}) == len(items),
+          "no two entries of the first group share a label")
+    in_groups = [i["slug"] for g in sidebar for i in g["items"] if "slug" in i]
+    check(in_groups == [pg["slug"] for pg in core.manifest_pages(manifest)],
+          "every published page is in the sidebar once, in manifest order")
+    check([i["link"] for g in sidebar for i in g["items"] if "link" in i] == ["/" + path for _, path in stage.CUSTOM_PAGES],
+          "the hand-written pages are in the sidebar once")
+    check(manifest["sections"][0]["title"] == stage.START_GROUP and stage.START_GROUP == "Start here",
+          "the manifest's first section is the Start here section")
+
+    pg = lambda n: {"src": f"docs/{n}.md", "slug": n, "wiki": n.capitalize()}  # noqa: E731
+    fx = {"sections": [{"title": "Alpha", "pages": [pg("a1"), pg("a2")]},
+                       {"title": "Start here", "pages": [pg("s1"), pg("s2")]},
+                       {"title": "Beta", "pages": [pg("b1")]}]}
+    fx_titles = {n: n.upper() for n in ("a1", "a2", "s1", "s2", "b1")}
+    got = stage.build_sidebar(fx, fx_titles)
+    check([g["label"] for g in got] == ["Start here", "Alpha", "Beta"]
+          and [i["label"] for i in got[0]["items"]][:3] == ["Home", "S1", "S2"]
+          and [i["label"] for i in got[1]["items"]] == ["A1", "A2"],
+          "the section is moved to the front wherever the manifest lists it, its pages in their order")
+    none = stage.build_sidebar({"sections": [{"title": "Alpha", "pages": [pg("a1")]}]}, {"a1": "A1"})
+    check([g["label"] for g in none] == ["Start here", "Alpha"] and none[0]["items"] == custom,
+          "without such a section the first group is the hand-written pages alone")
+    for odd in ("start here", "START HERE", "Start Here"):
+        try:
+            stage.build_sidebar({"sections": [{"title": odd, "pages": [pg("s1")]}]}, {"s1": "S1"})
+            check(False, f"a section titled {odd!r} is refused")
+        except core.PublishError as e:
+            check("differs from" in str(e), f"a section titled {odd!r} is refused: it would be a second group of that name")
+    m = copy.deepcopy(GUARD_MANIFEST)
+    m["sections"].append({"title": "FIXTURE", "pages": [dict(m["sections"][0]["pages"][0], src="docs/o2.md",
+                                                           slug="o2", wiki="O2", description=SECOND_DESCRIPTION)]})
+    check(has(core.manifest_problems(m), "is the title of another section too"),
+          "two sections with one title (in any case) are a manifest problem")
+
+
+def test_stage_progress(tmp: Path) -> None:
+    section("stage: the progress data, the author and the sidebar are staged from the commit")
+    if not GIT:
+        check(False, "git is required for the stage tests and was not found")
+        return
+    manifest = copy.deepcopy(GUARD_MANIFEST)
+    manifest["sections"].insert(0, {"title": stage.START_GROUP, "pages": [
+        {"src": "docs/start.md", "slug": "start", "wiki": "Start", "description": SECOND_DESCRIPTION}]})
+    p = events_plan()
+    root, _, _ = diagram_fixture(tmp, manifest=manifest, research_plan=p,
+                                 extra={"docs/start.md": "# The start\n\nA page.\n"})
+    res = stage.stage_site(root, "HEAD")
+    data = root / "website/src/data"
+    progress = json.loads((data / "progress.json").read_text(encoding="utf-8"))
+    check(progress == {"as_of": p["as_of"], "timezone": p["timezone"], "author": "Ada Example",
+                       "events": RP.progress_events(p)} and res["events"] == 7,
+          "progress.json holds the events of the committed plan, its day and zone, and the citation file's author")
+    side = json.loads((data / "sidebar.json").read_text(encoding="utf-8"))
+    check([g["label"] for g in side] == ["Start here", "Fixture"]
+          and [i["label"] for i in side[0]["items"]][:2] == ["Home", "The start"]
+          and side[0]["items"][1] == {"label": "The start", "slug": "start"},
+          "the staged sidebar has one Start here group, with the manifest's page after Home")
+    first = (data / "progress.json").read_bytes()
+    stage.stage_site(root, "HEAD")
+    check((data / "progress.json").read_bytes() == first, "staging twice writes the same bytes")
+    rc, out, err = capture(stage.main, ["--target", "site", "--root", str(root)])
+    check(rc == 0 and "7 progress event(s)" in out, f"the command line says how many events: {out.strip()}")
+    kinds = {e["kind"] for e in progress["events"]}
+    check(kinds == set(RP.EVENT_KINDS), "(every kind of event reached the file)")
+    check(not any(k in json.dumps(progress) for k in ("Is it new?", "Reposition.", GOOD_SHA256)),
+          "no gate question, fallback or hash reached the file")
+    reasoned = events_plan()
+    reasoned["changelog"].append({"date": "2026-11-17", "item": "P1", "field": "status", "from": "planned",
+                                  "to": "active", "reason": "REASON-SENTINEL", "ref": "fixture"})
+    root3, _, _ = diagram_fixture(tmp, manifest=manifest, research_plan=reasoned,
+                                  extra={"docs/start.md": "# The start\n\nA page.\n"})
+    stage.stage_site(root3, "HEAD")
+    check("REASON-SENTINEL" not in (root3 / "website/src/data/progress.json").read_text(encoding="utf-8"),
+          "the reason of a change of status does not reach the staged file either")
+
+    # the commit is what is staged: the citation file, like the plan, must not differ from it
+    write(root, "CITATION.cff", FIXTURE_CITATION.replace("Ada", "Eve"))
+    try:
+        stage.stage_site(root, "HEAD")
+        check(False, "a citation file that differs from the commit stops staging")
+    except core.PublishError as e:
+        check("citation file" in str(e), "a citation file that differs from the commit stops staging")
+    git_ok(root, "checkout", "-q", "--", "CITATION.cff")
+    write(root, "CITATION.cff", "cff-version: 1.2.0\ntitle: x\n")
+    git_ok(root, "add", "--", "CITATION.cff")
+    git_ok(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-q",
+           "--no-verify", "-m", "fixture citation without authors")
+    rc, out, err = capture(stage.main, ["--target", "site", "--root", str(root)])
+    check(rc == 1 and "authors" in err, "a citation file with no authors stops staging, saying so")
+    # a plan with no event stages an empty list, dated by the plan
+    root2, _, _ = diagram_fixture(tmp, research_plan=dict(plan(), phases=[dict(ph, status="planned")
+                                                                       for ph in plan()["phases"]]))
+    stage.stage_site(root2, "HEAD")
+    quiet = json.loads((root2 / "website/src/data/progress.json").read_text(encoding="utf-8"))
+    check(quiet["events"] == [] and quiet["as_of"] == "2026-10-23", "a plan with nothing yet stages no event")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
 # this file's own source
 # ─────────────────────────────────────────────────────────────────────────────
 
@@ -3289,6 +3776,12 @@ def main() -> int:
         test_diagrams_repo(tmp)
         test_stage_diagrams(tmp)
         test_stage_sidebar_labels()
+        test_progress_events()
+        test_progress_log()
+        test_citation_author()
+        test_cited_doi()
+        test_stage_sidebar()
+        test_stage_progress(tmp)
         test_source_hygiene()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

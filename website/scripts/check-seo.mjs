@@ -15,11 +15,23 @@
 //   404 page  its own title ("Page not found", a name and not a status code), the description in
 //             lib/seo.ts NOT_FOUND, and its own canonical address; every other page keeps the rules above
 //   JSON-LD   on the landing page only: parses, and holds a WebSite and a ResearchProject
+//   own links every link in a page's body that is written with the site's whole address (a docs page
+//             reaches the hand-written pages, which have no Markdown source to link, that way) leads to a
+//             built page or file, and to an id that is on that page when it names one. The link validator
+//             treats such an address as external and checks nothing
 // The site:
 //   robots.txt             allows everything and names the sitemap
 //   site.webmanifest       parses; start_url inside scope; its icons exist at their sizes, one maskable
-//   sitemap                every page but the 404 page is in it and nothing else is; each entry has a
-//                          lastmod (the date of the last commit) when git history is available here
+//   sitemap                every page but the 404 page is in it and nothing else is (the feed is not); each
+//                          entry has a lastmod (the date of the last commit) when git history is available here
+//   progress feed          every page's head names it (one <link rel="alternate" type="application/atom+xml">
+//                          that reaches dist/progress.xml); the file parses as XML (Python's expat, since Node
+//                          has no parser), is Atom 1.0, has an id, a title, an updated that is the newest
+//                          event's day (never the build's), a self link at its own address, an alternate link
+//                          to the progress page, the author CITATION.cff names, and one entry for each event of
+//                          the plan (tools/publish/render_plan.py progress_events: the same ids, newest first),
+//                          each with an id, a title, an updated, a summary and an alternate link to a built page
+import { execFileSync } from 'node:child_process';
 import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join, relative, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -29,6 +41,7 @@ import { historyAvailable } from './sitemap-lastmod.mjs';
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const REPO = fileURLToPath(new URL('../../', import.meta.url));
 const DESCRIPTION = { min: 120, max: 160 };
+const FEED = { file: 'progress.xml', page: 'progress/', type: 'application/atom+xml' };
 // Starlight writes `<title>` as the page's title, a bar and the site's title.
 const TITLE_SUFFIX = ' | Psyche';
 
@@ -101,12 +114,15 @@ function checkImage(where, address, label, size) {
 
 const seen = new Map(); // description -> route
 const routes = [];
+const bodies = []; // [where, the page's body]: the own-address links are checked once every page is known
 for (const file of pages().sort()) {
   const route = routeOfFile(file);
   const where = route === '' ? '/' : `/${route}`;
   const is404 = route === '404';
-  const h = head(readFileSync(file, 'utf8'));
+  const html = readFileSync(file, 'utf8');
+  const h = head(html);
   routes.push(route);
+  bodies.push([where, html.slice(html.search(/<\/head\b/i) + 1)]);
 
   const meta = (key, value) => h.metas.filter((m) => m[key] === value);
   const one = (key, value) => {
@@ -181,6 +197,12 @@ for (const file of pages().sort()) {
   if (!manifest) bad(where, 'no <link rel="manifest">');
   else if (!existsSync(fileOf(manifest.href) ?? '')) bad(where, `manifest ${manifest.href} is not a file of the site`);
   if (!h.links.some((l) => /(^|\s)(shortcut )?icon(\s|$)/.test(l.rel ?? '') && l.type === 'image/svg+xml')) bad(where, 'the SVG icon link is missing');
+  const feeds = h.links.filter((l) => l.rel === 'alternate' && l.type === FEED.type);
+  if (feeds.length !== 1) bad(where, `${feeds.length} <link rel="alternate" type="${FEED.type}"> tags, expected one (the progress feed)`);
+  else {
+    if (fileOf(feeds[0].href ?? '') !== join(DIST, FEED.file)) bad(where, `the feed link ${feeds[0].href} does not lead to /${FEED.file}`);
+    if (!feeds[0].title) bad(where, 'the feed link has no title for a feed reader to show');
+  }
 
   const robots = meta('name', 'robots');
   if (is404 && !(robots.length === 1 && /\bnoindex\b/.test(robots[0].content))) bad(where, 'the 404 page must be noindex');
@@ -205,6 +227,41 @@ for (const file of pages().sort()) {
   }
 }
 if (!routes.includes('') || !routes.includes('404')) bad('dist', 'no landing page or no 404 page was built');
+
+// ---- the links written with the site's whole address
+// A page may link another page of the site by its absolute address, and the link validator then calls the
+// link external. Every one must lead to a built page or file, and to an id that is there when it names one.
+const targetHtml = new Map(); // file -> its text
+function ownLinkProblem(address) {
+  let url;
+  try {
+    url = new URL(address);
+  } catch {
+    return 'is not an address';
+  }
+  const base = fileOf(`${url.origin}${url.pathname}`);
+  if (!base || !existsSync(base)) return 'leads to nothing in the build';
+  const file = statSync(base).isDirectory() ? join(base, 'index.html') : base;
+  if (!existsSync(file)) return 'leads to a folder with no page';
+  if (url.hash.length > 1) {
+    const id = decodeURIComponent(url.hash.slice(1));
+    if (!file.endsWith('.html')) return `names the id ${id} in a file that is not a page`;
+    if (!targetHtml.has(file)) targetHtml.set(file, readFileSync(file, 'utf8'));
+    const escaped = id.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    if (!new RegExp(`\\sid=(?:"${escaped}"|'${escaped}'|${escaped}[\\s>])`).test(targetHtml.get(file))) return `names the id ${id}, which is not on that page`;
+  }
+  return null;
+}
+let ownLinks = 0;
+for (const [where, body] of bodies) {
+  for (const m of body.matchAll(/<a\b[^>]*>/gi)) {
+    const href = attributes(m[0]).href;
+    if (!href?.startsWith(SITE_URL)) continue;
+    ownLinks += 1;
+    const problem = ownLinkProblem(href);
+    if (problem) bad(where, `the link ${href} ${problem}`);
+  }
+}
 
 // ---- the site's own files
 const robotsFile = join(DIST, 'robots.txt');
@@ -268,6 +325,7 @@ else {
   const wanted = routes.filter((r) => r !== '404').map((r) => (r === '' ? SITE_URL : `${SITE_URL}${r}/`));
   for (const w of wanted) if (!locs.includes(w)) bad('/sitemap', `${w} is not in the sitemap`);
   for (const l of locs) if (!wanted.includes(l)) bad('/sitemap', `${l} is in the sitemap and is no page of the site`);
+  for (const l of locs) if (l.endsWith('.xml')) bad('/sitemap', `${l} is a feed or a data file, and the sitemap lists pages only`);
   if (new Set(locs).size !== locs.length) bad('/sitemap', 'an address is listed twice');
   const dated = historyAvailable(REPO);
   for (const e of entries) {
@@ -282,9 +340,96 @@ else {
   console.log(`check-seo: ${entries.length} sitemap entries, ${dated ? 'each with a lastmod from git' : 'no git history here, so no dates'}`);
 }
 
+// ---- the progress feed
+// Node has no XML parser, so the file is read by Python's (expat), which the build already needs to stage the
+// site. The plan's events are derived by the same function that staged the feed's data, from the plan on disk.
+const FEED_PROBE = `
+import json, sys
+import xml.etree.ElementTree as ET
+repo = sys.argv[2]
+sys.path.insert(0, repo + '/tools/publish')
+import core, render_plan
+A = '{http://www.w3.org/2005/Atom}'
+def text(el, name):
+    child = el.find(A + name)
+    return None if child is None or child.text is None else child.text.strip()
+def links(el):
+    return [{'rel': l.get('rel'), 'type': l.get('type'), 'href': l.get('href')} for l in el.findall(A + 'link')]
+root = ET.parse(sys.argv[1]).getroot()
+plan = core.load_plan(repo)
+events = render_plan.progress_events(plan)
+author = root.find(A + 'author')
+print(json.dumps({
+    'root': root.tag,
+    'lang': root.get('{http://www.w3.org/XML/1998/namespace}lang'),
+    'id': text(root, 'id'), 'title': text(root, 'title'), 'updated': text(root, 'updated'),
+    'author': None if author is None else text(author, 'name'),
+    'links': links(root),
+    'entries': [{'id': text(e, 'id'), 'title': text(e, 'title'), 'updated': text(e, 'updated'),
+                 'summary': text(e, 'summary'), 'links': links(e)} for e in root.findall(A + 'entry')],
+    'events': [e['id'] for e in events],
+    'newest': events[0]['date'] if events else plan['as_of'],
+    'citation': core.citation_author(open(repo + '/CITATION.cff', encoding='utf-8').read()),
+}))
+`;
+
+const feedFile = join(DIST, FEED.file);
+const problemsBeforeFeed = problems.length;
+if (!existsSync(feedFile)) bad(`/${FEED.file}`, 'missing');
+else {
+  let f;
+  try {
+    f = JSON.parse(execFileSync('python3', ['-B', '-I', '-c', FEED_PROBE, feedFile, REPO.replace(/\/$/, '')], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }));
+  } catch (e) {
+    bad(`/${FEED.file}`, `cannot be read as XML, or the plan's events cannot be derived: ${String(e.stderr || e.message).trim().split('\n').pop()}`);
+  }
+  if (f) {
+    const w = `/${FEED.file}`;
+    const rfc3339 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
+    const stampOk = (t) => typeof t === 'string' && rfc3339.test(t) && !Number.isNaN(Date.parse(t));
+    const iri = /^[A-Za-z][A-Za-z0-9+.-]*:\S+$/;
+    if (f.root !== '{http://www.w3.org/2005/Atom}feed') bad(w, `the root is ${f.root}, not an Atom 1.0 feed`);
+    if (f.lang !== 'en') bad(w, 'the feed has no xml:lang="en"');
+    if (!iri.test(f.id ?? '')) bad(w, `the feed id ${JSON.stringify(f.id)} is not an IRI`);
+    if (!f.title) bad(w, 'the feed has no title');
+    if (!stampOk(f.updated)) bad(w, `updated ${JSON.stringify(f.updated)} is not an RFC 3339 date and time`);
+    else if (f.updated.slice(0, 10) !== f.newest) bad(w, `updated is ${f.updated}, not the day of the newest event (${f.newest}); a feed is dated by its events, never by the build`);
+    if (!f.author) bad(w, 'the feed has no author');
+    else if (f.author !== f.citation) bad(w, `the author is ${JSON.stringify(f.author)}, but CITATION.cff names ${JSON.stringify(f.citation)}`);
+    const only = (list, rel, label) => {
+      const found = list.filter((l) => l.rel === rel);
+      if (found.length !== 1) bad(w, `${label}: ${found.length} <link rel="${rel}"> elements, expected one`);
+      return found[0];
+    };
+    const self = only(f.links, 'self', 'the feed');
+    if (self && (self.href !== `${SITE_URL}${FEED.file}` || self.type !== FEED.type)) bad(w, `the self link is ${self.href} (${self.type}), expected ${SITE_URL}${FEED.file} (${FEED.type})`);
+    const alternate = only(f.links, 'alternate', 'the feed');
+    if (alternate && alternate.href !== `${SITE_URL}${FEED.page}`) bad(w, `the alternate link is ${alternate.href}, expected ${SITE_URL}${FEED.page}`);
+    if (alternate && !existsSync(join(fileOf(alternate.href) ?? DIST, 'index.html'))) bad(w, `the alternate link ${alternate.href} is not a built page`);
+
+    if (f.entries.length !== f.events.length) bad(w, `${f.entries.length} entries for ${f.events.length} events in tools/research_plan.json`);
+    const ids = new Set();
+    f.entries.forEach((entry, n) => {
+      const here = `${w} entry ${n + 1}`;
+      if (!iri.test(entry.id ?? '')) bad(here, `the id ${JSON.stringify(entry.id)} is not an IRI`);
+      else if (ids.has(entry.id)) bad(here, `the id ${entry.id} is also another entry's`);
+      ids.add(entry.id);
+      if (f.events[n] !== undefined && !(entry.id ?? '').endsWith(`/${f.events[n]}`)) bad(here, `its id ${entry.id} does not end in the plan's ${f.events[n]}: the entries must follow the plan's events, newest first`);
+      if (!entry.title) bad(here, 'no title');
+      if (!entry.summary) bad(here, 'no summary');
+      if (!stampOk(entry.updated)) bad(here, `updated ${JSON.stringify(entry.updated)} is not an RFC 3339 date and time`);
+      else if (n > 0 && stampOk(f.entries[n - 1].updated) && Date.parse(entry.updated) > Date.parse(f.entries[n - 1].updated)) bad(here, 'is newer than the entry before it; the feed is newest first');
+      const link = only(entry.links, 'alternate', here);
+      if (link && !link.href?.startsWith(SITE_URL)) bad(here, `its link ${link.href} is not an address under ${SITE_URL}`);
+      else if (link && !existsSync(join(fileOf(link.href) ?? DIST, 'index.html'))) bad(here, `its link ${link.href} is not a built page`);
+    });
+    if (problems.length === problemsBeforeFeed) console.log(`check-seo: the progress feed is Atom with ${f.entries.length} entr${f.entries.length === 1 ? 'y' : 'ies'}, one for each event of the plan, dated ${f.updated}`);
+  }
+}
+
 if (problems.length) {
   console.error(`check-seo: ${problems.length} problem(s)`);
   for (const p of problems) console.error(`  ${p}`);
   process.exit(1);
 }
-console.log(`check-seo: ${routes.length} pages, the manifest, robots.txt and the sitemap are in order (${ORIGIN})`);
+console.log(`check-seo: ${routes.length} pages, ${ownLinks} links by the site's own address, the manifest, robots.txt and the sitemap are in order (${ORIGIN})`);

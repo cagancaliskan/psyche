@@ -40,6 +40,8 @@ What lives here, used by render_plan.py, ci_c2.py and stage.py:
                              unless told not to.
   ledger_public(root)        the public projection of tools/ledger.json. Never a fact the
                              ledger does not hold, never a field it was not asked for.
+  citation_author(text)      the first author of CITATION.cff, as the file gives the name:
+                             the one place the site's feed gets it from.
   rewrite_links(...)         relative links to manifest pages become their published
                              targets; links to files in the pinned commit become GitHub
                              links to that commit; a dead relative link, or a link shape
@@ -89,6 +91,7 @@ REPO = TOOLS.parent                             # the repository this checkout b
 MANIFEST_REL = Path("docs/publish.json")
 PLAN_REL = Path("tools/research_plan.json")
 LEDGER_REL = Path("tools/ledger.json")
+CITATION_REL = Path("CITATION.cff")
 LEDGER_CHECK_PATH = TOOLS / "ledger_check.py"
 
 
@@ -587,6 +590,7 @@ def manifest_problems(m: object) -> List[str]:
         out.append("sections must be a non-empty list")
         return out
     seen: Dict[str, Set[str]] = {"src": set(), "slug": set(), "wiki": set(), "description": set()}
+    titles: Set[str] = set()
     for si, sec in enumerate(sections):
         where = f"sections[{si}]"
         if not isinstance(sec, dict):
@@ -595,6 +599,12 @@ def manifest_problems(m: object) -> List[str]:
         _keyset(sec, where, SECTION_KEYS, set(), out)
         if not (isinstance(sec.get("title"), str) and sec["title"].strip()):
             out.append(f"{where}.title must be a non-empty string")
+        elif sec["title"].casefold() in titles:
+            # a section title is a group label in the sidebar: two alike are two groups a reader
+            # cannot tell apart
+            out.append(f"{where}.title {sec['title']!r} is the title of another section too")
+        else:
+            titles.add(sec["title"].casefold())
         pages = sec.get("pages")
         if not (isinstance(pages, list) and pages):
             out.append(f"{where}.pages must be a non-empty list")
@@ -821,12 +831,13 @@ VOCAB_REQUIRED = {"phase": (PHASE_ACTIVE,), "gate": (GATE_UPCOMING, GATE_DECIDED
 
 # What a changelog entry may record about each kind of item, and the type of its
 # from/to values. A field that is not here cannot be logged, so no criterion can be
-# published through a changelog value either.
+# published through a changelog value either. A gate's status is not here on purpose: a
+# decision is recorded by decided_on and next_step (D-034), and a changelog entry for it
+# would carry a free-text reason, which is where a verdict's reasoning could get out.
 CHANGE_FIELDS: Dict[str, Dict[str, str]] = {
     "phase": {"start": "date", "end": "date", "start_rule": "text", "end_rule": "text",
               "status": "status", "title": "text", "gate": "gate"},
-    "gate": {"date": "date", "baseline_date": "date", "date_rule": "text",
-             "status": "status", "title": "text"},
+    "gate": {"date": "date", "baseline_date": "date", "date_rule": "text", "title": "text"},
     "deadline": {"due": "date", "estimate": "text", "status": "status", "title": "text"},
     "layer": {"title": "text", "summary": "text"},
     "commitment": {"reveal": "text"},
@@ -1358,6 +1369,73 @@ def ledger_public(root) -> dict:
                 raise PublishError(f"program.{who}.state {p['state']!r} is not in "
                                    f"program_states {states}")
     return out
+
+
+_CFF_PAIR = re.compile(r"^([A-Za-z][A-Za-z-]*):[ \t]*(.*?)[ \t]*$")
+
+
+def _cff_value(raw: str) -> str:
+    """A scalar of the citation file without its quotes. After a closing quote only a comment may
+    follow; an unquoted scalar ends at a ' #'. Anything else the format allows (a block scalar, a
+    flow mapping) is not read, and citation_author refuses the file rather than guess."""
+    raw = raw.strip()
+    if raw[:1] in ("\"", "'"):
+        end = raw.find(raw[0], 1)
+        rest = raw[end + 1:].strip() if end > 0 else "?"
+        if end > 0 and (not rest or rest.startswith("#")):
+            return raw[1:end].strip()
+        raise PublishError(f"{CITATION_REL.as_posix()}: cannot read the quoted value {raw!r}")
+    return re.sub(r"[ \t]+#.*$", "", raw).strip()
+
+
+def citation_author(text: str) -> str:
+    """The first author of a CITATION.cff (Citation File Format 1.2), as the file gives the
+    name: the given names, a name particle, the family names and a suffix in that order, or the
+    `name` of an entity. The site's Atom feed names this person as its author, so the name is
+    typed once, in the citation file.
+
+    Not a YAML parser: it reads a top-level `authors:` list of mappings, which is the shape this
+    repository's file has, and a file in any other shape is a PublishError, never a guess."""
+    lines = text.splitlines()
+    start = next((i for i, ln in enumerate(lines) if re.match(r"^authors:[ \t]*(#.*)?$", ln)), None)
+    if start is None:
+        raise PublishError(f"{CITATION_REL.as_posix()} has no top-level `authors:` list")
+    item: List[str] = []
+    indent: Optional[int] = None
+    for ln in lines[start + 1:]:
+        if not ln.strip() or ln.lstrip().startswith("#"):
+            continue
+        if not ln[0].isspace() and not ln.startswith("-"):
+            break                                  # the next top-level key
+        bullet = re.match(r"^(\s*)-[ \t]+(.*)$", ln)
+        if bullet:
+            if indent is None:
+                indent = len(bullet.group(1))
+            elif len(bullet.group(1)) <= indent:
+                break                              # the second author
+            item.append(bullet.group(2))
+        elif indent is None:
+            raise PublishError(f"{CITATION_REL.as_posix()}: `authors:` is not a list of mappings")
+        else:
+            item.append(ln.strip())
+    fields: Dict[str, str] = {}
+    for ln in item:
+        m = _CFF_PAIR.match(ln)
+        if not m:
+            raise PublishError(f"{CITATION_REL.as_posix()}: cannot read the first author's line "
+                               f"{ln!r}")
+        fields[m.group(1)] = _cff_value(m.group(2))
+    if fields.get("name"):
+        name = fields["name"]
+    else:
+        name = " ".join(fields[k] for k in ("given-names", "name-particle", "family-names")
+                        if fields.get(k))
+        if name and fields.get("name-suffix"):
+            name += " " + fields["name-suffix"]
+    if not name or any(unicodedata.category(c).startswith("C") for c in name):
+        raise PublishError(f"{CITATION_REL.as_posix()}: the first author has no readable name "
+                           f"(given-names and family-names, or name)")
+    return name
 
 
 # ─────────────────────────────────────────────────────────────────────────────

@@ -20,6 +20,7 @@ on:
       - "tools/**"
       - "README.md"
       - "MOC.md"
+      - "CITATION.cff"
       - ".github/workflows/pages.yml"
       - ".github/workflows/governance.yml"
   # No paths filter on pull requests: the job named `build` is a required status check of the
@@ -77,7 +78,7 @@ jobs:
         working-directory: website
         run: npm ci
 
-      - name: Unit tests (plan, maze, battery, search-engine head, sitemap dates, page chrome, search override, table regions, a11y tool lock)
+      - name: Unit tests (plan, maze, battery, search-engine head, progress feed, sitemap dates, page chrome, search override, table regions, a11y tool lock)
         working-directory: website
         run: npm test
 
@@ -95,8 +96,9 @@ jobs:
             exit 1
           fi
 
-      # What the disclosure job scans: the HTML of the research and custom pages, the 404 page
-      # included. Not included on purpose: dist/substrate/ (the substrate's own pre-existing
+      # What the disclosure job scans: the HTML of the research, custom and Start here pages, the 404
+      # page included, the three walls page and the progress feed, which carries the plan's text to
+      # feed readers. Not included on purpose: the rest of dist/substrate/ (the substrate's own pre-existing
       # record, which uses some denylisted words in the substrate's sense), dist/pagefind/
       # (the search index of every page) and dist/_astro/ (library bundles, whose code
       # legitimately contains common words). The research sources and docs/PSYCHE.md are
@@ -114,6 +116,12 @@ jobs:
             website/dist/battery/
             website/dist/status/
             website/dist/research/
+            website/dist/guide/
+            website/dist/faq/
+            website/dist/progress/
+            website/dist/governance/
+            website/dist/substrate/three-walls/
+            website/dist/progress.xml
           if-no-files-found: error
           retention-days: 1
 

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   STAGE_OF_SECTION,
+  START_SECTION,
   flattenLinks,
   footerDate,
   footerLinks,
@@ -23,13 +24,19 @@ import { REPO_URL } from './seo.ts';
 const REPO = new URL('../../../', import.meta.url);
 const read = (rel: string) => JSON.parse(readFileSync(new URL(rel, REPO), 'utf8'));
 
-const link = (label: string, isCurrent = false): SidebarItem => ({ type: 'link', label, href: `/psyche/${label.toLowerCase()}/`, isCurrent });
+const link = (label: string, isCurrent = false, slug = label.toLowerCase()): SidebarItem => ({ type: 'link', label, href: `/psyche/${slug}/`, isCurrent });
 const group = (label: string, entries: SidebarItem[]): SidebarItem => ({ type: 'group', label, entries });
 
-// The shape tools/publish/stage.py writes: "Start here" with the hand-written pages, then one group
-// for each section of docs/publish.json.
+// The shape tools/publish/stage.py writes (build_sidebar): one first group, "Start here", holding Home,
+// then the pages of the manifest's section of that title, then the other hand-written pages; then one
+// group for each other section of docs/publish.json.
 const sidebar = (current: string): SidebarItem[] => [
-  group('Start here', [link('Home', current === 'Home'), link('Step through the paradigms', current === 'Battery')]),
+  group('Start here', [
+    link('Home', current === 'Home', ''),
+    link("Reader's guide", current === 'Guide', 'guide'),
+    link('Progress', current === 'Progress'),
+    link('Step through the paradigms', current === 'Battery', 'battery'),
+  ]),
   group('Cognitive maps', [link('Overview', current === 'Overview'), link('Decision gates', current === 'Gates')]),
   group('Substrate', [link('The substrate', current === 'Substrate')]),
 ];
@@ -64,10 +71,10 @@ test('a page in no group has no section, and a nested group is found', () => {
 test('the sheet number is the place among every link of the sidebar, counted from the sidebar', () => {
   assert.deepEqual(
     flattenLinks(sidebar('Gates')).map((l) => l.label),
-    ['Home', 'Step through the paradigms', 'Overview', 'Decision gates', 'The substrate'],
+    ['Home', "Reader's guide", 'Progress', 'Step through the paradigms', 'Overview', 'Decision gates', 'The substrate'],
   );
-  assert.deepEqual(sheetOf(sidebar('Home')), { position: '1', total: '5', text: '1 / 5' });
-  assert.deepEqual(sheetOf(sidebar('Gates')), { position: '4', total: '5', text: '4 / 5' });
+  assert.deepEqual(sheetOf(sidebar('Home')), { position: '1', total: '7', text: '1 / 7' });
+  assert.deepEqual(sheetOf(sidebar('Gates')), { position: '6', total: '7', text: '6 / 7' });
   assert.equal(sheetOf(sidebar('Nowhere')), null);
   assert.equal(sheetOf([]), null);
   // padded to the width of the total, so the column of numbers does not jump from page to page
@@ -128,11 +135,17 @@ test('only the pages of the two stage sections carry a stage line', () => {
   assert.equal(sectionOfRoute(''), '');
 });
 
-test('every section of the manifest has a stage, and every stage names a line of the ledger', () => {
+test('every section of the manifest has a stage, the Start here section apart, and every stage names a line of the ledger', () => {
   const manifest = read('docs/publish.json');
   for (const section of manifest.sections) {
     for (const page of section.pages) {
       const key = sectionOfRoute(page.slug);
+      if (section.title === START_SECTION) {
+        // a page of the first group is in no stage: no segment of its route is a stage's, so it never reads one
+        assert.ok(!Object.hasOwn(STAGE_OF_SECTION, key), `page "${page.slug}" is in the "${START_SECTION}" section but its route is a stage's`);
+        assert.equal(stageLine(page.slug, LEDGER), null, `page "${page.slug}" would borrow a stage's state line`);
+        continue;
+      }
       assert.ok(Object.hasOwn(STAGE_OF_SECTION, key), `page "${page.slug}" is in section "${key}", which has no stage: decide its stage in STAGE_OF_SECTION`);
     }
   }
@@ -143,6 +156,12 @@ test('every section of the manifest has a stage, and every stage names a line of
     assert.ok(!numbers.has(stage), `stage ${stage} is named twice`);
     numbers.add(stage);
   }
+});
+
+test('the manifest\'s first section is the Start here section, once, as the sidebar\'s first group is', () => {
+  const sections = read('docs/publish.json').sections as { title: string }[];
+  assert.equal(sections[0].title, START_SECTION);
+  assert.equal(sections.filter((x) => x.title.toLowerCase() === START_SECTION.toLowerCase()).length, 1);
 });
 
 test('no section title of the manifest carries a program state in brackets', () => {
@@ -196,6 +215,41 @@ test('the 404 page says what it is', () => {
   });
 });
 
+const START_PAGES = [
+  ['guide', 'Guide'],
+  ['progress', 'Progress'],
+] as const;
+
+test('a docs page of the Start here group opens with the group\'s number and name, as the hand-written pages do, and has no end', () => {
+  for (const [id, current] of START_PAGES) {
+    assert.deepEqual(titleStrip(id, sidebar(current), LEDGER), { start: { tag: '01', name: START_SECTION, decorative: true }, end: null }, id);
+  }
+  // the same strip as the hand-written page beside it
+  assert.deepEqual(titleStrip('guide', sidebar('Guide'), LEDGER), titleStrip('battery', sidebar('Battery'), LEDGER));
+  // the number is the sidebar's, so it follows the group's place: first
+  assert.equal(sectionOf(sidebar('Guide'))?.index, '01');
+  assert.equal(START_SECTION, sidebar('Home')[0].label);
+});
+
+test('a docs page of the Start here group borrows no stage: no stage line and no stage cell in the title block', () => {
+  for (const id of ['guide', 'faq', 'progress', 'governance']) assert.equal(stageLine(id, LEDGER), null, id);
+  for (const [id, current] of START_PAGES) {
+    const cells = titleBlock({ id, title: 'A page', sidebar: sidebar(current), ledger: LEDGER, plan: PLAN });
+    assert.deepEqual(cells.map((c) => c.label), ['Sheet'], id);
+  }
+  // a stage's state is never read from the group's name either: it comes from the route alone
+  assert.equal(stageLine('start-here', LEDGER), null);
+});
+
+test('a docs page of a stage that sits in a group of its own keeps its stage: the substrate\'s third wall is a stage 1 sheet', () => {
+  const walls: SidebarItem[] = [...sidebar('Nowhere').slice(0, 2), group('Substrate', [link('The substrate'), link('The three walls', true, 'substrate/three-walls')])];
+  assert.deepEqual(titleStrip('substrate/three-walls', walls, LEDGER), {
+    start: { tag: 'Stage 1', name: 'Substrate', decorative: false },
+    end: { state: 'paused', since: { iso: '2026-10-23', label: '23 October 2026' }, text: 'paused since 23 October 2026' },
+  });
+  assert.equal(stageLine('substrate/three-walls', LEDGER)?.text, 'Stage 1 · paused since 23 October 2026');
+});
+
 // A plan with three gates, the first decided.
 const PLAN = {
   as_of: '2026-10-27',
@@ -230,17 +284,17 @@ test('the title block holds the sheet, the stage and, on a stage 2 page, the nex
   const block = (id: string, title: string, current: string) => titleBlock({ id, title, sidebar: sidebar(current), ledger: LEDGER, plan: PLAN });
   // a day is kept on one line (no-break spaces), and the gate cell carries what the browser's clock reads
   assert.deepEqual(block('research/gates', 'Decision gates', 'Gates'), [
-    { label: 'Sheet', text: 'Decision gates', note: '4 / 5' },
+    { label: 'Sheet', text: 'Decision gates', note: '6 / 7' },
     { label: 'Stage', text: '2 · active' },
     { label: 'Next gate', text: 'Gate A, 15\u00a0November\u00a02026', clock: { gate: 'A', date: '2026-11-15', tz: PLAN.timezone } },
   ]);
   // the substrate is another line: its state and since when, and no gate
   assert.deepEqual(block('substrate/overview', 'The substrate', 'Substrate'), [
-    { label: 'Sheet', text: 'The substrate', note: '5 / 5' },
+    { label: 'Sheet', text: 'The substrate', note: '7 / 7' },
     { label: 'Stage', text: '1 · paused since 23\u00a0October\u00a02026' },
   ]);
   // a page outside the stages is a sheet and nothing more
-  assert.deepEqual(block('battery', 'Step through the paradigms', 'Battery'), [{ label: 'Sheet', text: 'Step through the paradigms', note: '2 / 5' }]);
+  assert.deepEqual(block('battery', 'Step through the paradigms', 'Battery'), [{ label: 'Sheet', text: 'Step through the paradigms', note: '4 / 7' }]);
 });
 
 test('a day in words is kept on one line, and nothing else is touched', () => {

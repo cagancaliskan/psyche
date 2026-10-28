@@ -52,10 +52,17 @@ const BASE = '/psyche/';
 // with a caption line, diagrams framed with registration corners, and the figures under the page titles
 // redrawn as hairline drawings grew the CSS bundle every page loads by about 750 bytes, while the soft
 // light that followed the pointer over the figures, and its script (components/docs/motion.ts), came
-// off, which took about 580 bytes of JavaScript off every page whose figure loaded it.
+// off, which took about 580 bytes of JavaScript off every page whose figure loaded it. The landing
+// page's CSS line was reset when its cite and contact section was added (about 110 bytes, styles/landing/
+// cite.css), and the four Start here pages and the three walls page were given lines of their own at the
+// size measured for them, a docs page with no figure, instead of the default's room.
 const DEFAULT_BUDGET = { js: 37100, css: 40200 };
 const PAGE_BUDGETS = {
-  '/':                          { js: 114200, css:  43600 }, // 110807,  42284
+  '/':                          { js: 114200, css:  43700 }, // 110807,  42396
+  '/guide/':                    { js:  34500, css:  36100 }, //  33448,  35024
+  '/faq/':                      { js:  34500, css:  36100 }, //  33448,  35024
+  '/progress/':                 { js:  34500, css:  36100 }, //  33448,  35024
+  '/governance/':               { js:  34500, css:  36100 }, //  33448,  35024
   '/roadmap/':                  { js: 111500, css:  36200 }, // 108173,  35075
   '/battery/':                  { js: 112700, css:  36200 }, // 109410,  35120
   '/status/':                   { js:  33100, css:  37800 }, //  32089,  36635
@@ -72,6 +79,7 @@ const PAGE_BUDGETS = {
   '/substrate/overview/':       { js:  35700, css:  40200 }, //  34616,  38933
   '/substrate/architecture/':   { js:  35700, css:  40200 }, //  34616,  38933
   '/substrate/methodology/':    { js:  34500, css:  36100 }, //  33448,  35009
+  '/substrate/three-walls/':    { js:  34500, css:  36100 }, //  33448,  35024
 };
 
 const gz = (buf) => gzipSync(buf, { level: 9 }).length;

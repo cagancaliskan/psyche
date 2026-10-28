@@ -11,6 +11,7 @@ import starlight from '@astrojs/starlight';
 import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import starlightLinksValidator from 'starlight-links-validator';
+import { FEED_FILE, FEED_MEDIA_TYPE, FEED_TITLE } from './src/lib/feed.ts';
 import { ORIGIN, PROJECT_DESCRIPTION, THEME_COLOR } from './src/lib/seo.ts';
 import { makeSerialize } from './scripts/sitemap-lastmod.mjs';
 import { tableRegionIntegration } from './scripts/table-region.mjs';
@@ -132,6 +133,8 @@ export default defineConfig({
         { tag: 'link', attrs: { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${BASE}/favicon-32.png` } },
         { tag: 'link', attrs: { rel: 'apple-touch-icon', sizes: '180x180', href: `${BASE}/apple-touch-icon.png` } },
         { tag: 'link', attrs: { rel: 'manifest', href: `${BASE}/site.webmanifest` } },
+        // The progress feed (src/pages/progress.xml.ts), so a feed reader finds it from any page.
+        { tag: 'link', attrs: { rel: 'alternate', type: FEED_MEDIA_TYPE, title: FEED_TITLE, href: `${BASE}/${FEED_FILE}` } },
         { tag: 'meta', attrs: { property: 'og:image', content: `${SITE}og.png` } },
         { tag: 'meta', attrs: { property: 'og:image:type', content: 'image/png' } },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },

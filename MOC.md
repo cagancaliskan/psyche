@@ -10,6 +10,12 @@ stage 2, spiking cognitive maps, is the active line. Both are recorded under D-0
 ## Start here
 
 - [README.md](README.md): the repository landing page, with the stages and the current status.
+- [Reader's guide](docs/guide.md): where to begin, what the project is and why, and where to go
+  next.
+- [Questions and answers](docs/faq.md): short answers to what newcomers ask first.
+- [Progress](docs/progress.md): the public record of the research plan as it moves.
+- [How Psyche is run](docs/governance.md): who leads the project, the four roles, and how the work
+  is kept honest.
 - [Research overview](docs/research/README.md): what the cognitive-map line asks, what it plans
   to contribute, and what it does not claim.
 - [Origins](docs/research/origins.md): how the substrate led to the cognitive-map line.
@@ -63,6 +69,7 @@ changes; its suites, ledger and checks stay maintained.
 | [Substrate roadmap](docs/psyche_roadmap.md) | The substrate's paused roadmap. It narrates history, superseded states included, and is not a status source |
 | [Specs](docs/specs/) | Brick specifications and feasibility pre-checks |
 | [Pre-registrations](docs/experiments/) | Frozen pre-registrations, written before any graded result. Any change made before data existed is recorded in the file with its lineage. After a result the protocol is never changed; later notes are labelled additions, not rewrites |
+| [The three walls](docs/three-walls.md) | The substrate's three negative results, each stopped before a graded run, and the pattern they show |
 | [Design and vision](docs/design/README.md) | The original vision documents, written before the code and largely unbuilt: only the layer plans for the topology and the substrate store correspond to built code. Their language is vision framing, not a claim about the prototype. Start with the disclaimer |
 
 ## Obsidian

@@ -6,6 +6,7 @@ import Timeline from '@/components/Timeline.tsx';
 import TimelineList from '@/components/TimelineList.astro';
 import BatteryTeaser from '@/components/battery/BatteryTeaser.astro';
 import CaliperRail from '@/components/landing/CaliperRail.astro';
+import CiteContact from '@/components/landing/CiteContact.astro';
 import HowBuilt from '@/components/landing/HowBuilt.astro';
 import MazeFigure from '@/components/landing/MazeFigure.astro';
 import PublicWithheld from '@/components/landing/PublicWithheld.astro';
@@ -95,6 +96,8 @@ const stats = [
         <a class="sx-lp-link" href={withBase('substrate/overview/')}>Read what the substrate is</a>
       </p>
     </section>
+
+    <CiteContact />
   </div>
 
   <CaliperRail />
