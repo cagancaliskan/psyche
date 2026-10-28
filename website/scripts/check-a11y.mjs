@@ -11,8 +11,8 @@
 // working on some; the interface states run only when research/gates/ is among them. CI runs it whole.
 //
 // This is a development tool and nothing the site ships. Its two packages are not in package.json:
-// the script installs them, at the exact versions below and with their own dependencies as
-// scripts/a11y-tools/package-lock.json locks them (`npm ci`), into website/node_modules/.cache/
+// the script installs them, at the exact versions scripts/a11y-tools/package.json names and with their
+// own dependencies as its package-lock.json locks them (`npm ci`), into website/node_modules/.cache/
 // psyche-a11y-tools the first time it runs (A11Y_TOOLS_DIR changes where). Code is loaded from there, so
 // the directory is created private and refused when someone else owns it or others can write to it, as
 // render-diagrams.mjs does with its own. The install is tried three times. It needs Google Chrome or
@@ -40,7 +40,11 @@ import { appendFileSync, copyFileSync, existsSync, mkdirSync, readFileSync, read
 import { delimiter, extname, join, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const TOOLS = { 'puppeteer-core': '25.12.0', 'axe-core': '4.14.0' };
+// The two packages and their versions are read from the manifest `npm ci` installs from, so a version
+// bump there (Dependabot's included) needs no edit here. scripts/a11y-tools.test.mjs checks that it pins
+// exact versions and that its lockfile holds the same ones.
+const LOCKED = fileURLToPath(new URL('./a11y-tools/', import.meta.url));
+const TOOLS = JSON.parse(readFileSync(join(LOCKED, 'package.json'), 'utf8')).dependencies ?? {};
 const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 // Anything that is not named lesser fails, so a violation that carries no impact cannot slip through.
 const LESSER = new Set(['moderate', 'minor']);
@@ -140,6 +144,12 @@ class SetupError extends Error {}
 const sleepSync = (ms) => Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 
 function ensureTools() {
+  // The two packages, each at an exact version: a range would install whatever the lockfile says and
+  // never match the version checked below.
+  if (Object.keys(TOOLS).sort().join() !== 'axe-core,puppeteer-core' || !Object.values(TOOLS).every((v) => /^\d+\.\d+\.\d+$/.test(v))) {
+    const named = Object.entries(TOOLS).map(([n, v]) => `${n}@${v}`).join(', ') || 'nothing';
+    throw new SetupError(`scripts/a11y-tools/package.json must name axe-core and puppeteer-core, each at an exact version (it names ${named})`);
+  }
   const dir = process.env.A11Y_TOOLS_DIR || fileURLToPath(new URL('../node_modules/.cache/psyche-a11y-tools/', import.meta.url));
   // Code is loaded from this directory, so it must be ours alone: created private, and refused if it
   // already exists owned by someone else or writable by group or others.
@@ -159,8 +169,7 @@ function ensureTools() {
   };
   if (!Object.entries(TOOLS).every(([n, v]) => installed(n, v))) {
     // The two packages and everything they depend on, as the repository locks them.
-    const locked = fileURLToPath(new URL('./a11y-tools/', import.meta.url));
-    for (const file of ['package.json', 'package-lock.json']) copyFileSync(join(locked, file), join(dir, file));
+    for (const file of ['package.json', 'package-lock.json']) copyFileSync(join(LOCKED, file), join(dir, file));
     console.log(`check-a11y: installing ${Object.entries(TOOLS).map(([n, v]) => `${n}@${v}`).join(', ')} into ${dir}`);
     for (let attempt = 1; ; attempt++) {
       try {
@@ -173,7 +182,7 @@ function ensureTools() {
       }
     }
     if (!Object.entries(TOOLS).every(([n, v]) => installed(n, v))) {
-      throw new SetupError('the installed packages are not the versions pinned in TOOLS: scripts/a11y-tools/package.json must say the same');
+      throw new SetupError('the installed packages are not the versions scripts/a11y-tools/package.json names: its package-lock.json must say the same');
     }
   }
   const req = createRequire(join(dir, 'noop.js'));

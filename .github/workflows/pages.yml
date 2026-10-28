@@ -131,7 +131,7 @@ jobs:
       # over gradients, pseudo-elements and images) is listed for a human look and never fails it. It
       # closes everything it starts.
       # Its two dev packages (puppeteer-core, axe-core) are installed by the script itself, at the exact
-      # versions pinned at its top and with their own dependencies as website/scripts/a11y-tools/
+      # versions website/scripts/a11y-tools/package.json names and with their own dependencies as its
       # package-lock.json locks them (`npm ci`, tried three times); they are not site dependencies. That
       # is why this is the LAST step of the job, after the site has been uploaded: nothing the step
       # installs or runs can change what is published. A failure here fails the build job, so a pull
