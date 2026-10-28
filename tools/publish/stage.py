@@ -16,8 +16,15 @@ Output (both directories are gitignored, and CI fails if a staged copy is ever t
     website/src/content/docs/<slug>.md   or  <slug>/index.md when other pages nest under it
     website/src/data/plan.json           tools/research_plan.json, validated
     website/src/data/ledger.public.json  core.ledger_public
-    website/src/data/sidebar.json        Starlight sidebar: the custom pages, then the manifest
+    website/src/data/sidebar.json        Starlight sidebar: one first group, "Start here", then the manifest
+    website/src/data/progress.json       the plan's public events and the author, for the Atom feed
     website/src/data/stage.json          which commit was staged
+
+The sidebar's first group is "Start here": Home, then the pages of the manifest section of that
+title, then the other hand-written pages (build_sidebar). The events in progress.json come from
+render_plan.progress_events, the one place that derives them, and the author from CITATION.cff;
+website/src/pages/progress.xml.ts writes the feed from that file with a serialiser of its own
+(website/src/lib/feed.ts), and the feed's dates are the events' days, never the build time.
 
 Each staged page starts with `<!-- ledger:ignore-file -->`, so a local ledger_check does not
 report the copy a second time (the governed source is still checked), and a GENERATED line
@@ -46,6 +53,7 @@ from typing import Dict, List, Optional, Set, Tuple
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import core  # noqa: E402
 import diagrams  # noqa: E402
+import render_plan  # noqa: E402
 
 SITE_DIR = Path("website")
 DOCS_OUT = SITE_DIR / "src" / "content" / "docs"
@@ -61,6 +69,12 @@ CUSTOM_PAGES: List[Tuple[str, str]] = [
     ("Step through the paradigms", "battery/"),
     ("Substrate status", "status/"),
 ]
+
+# The sidebar's first group. The pages of the manifest section with exactly this title stand in it
+# right after Home, before the other hand-written pages, so the sidebar has one group of this name.
+# website/src/lib/pageChrome.ts reads the group as it stands: a page in it opens with the group's
+# number and name and has no stage.
+START_GROUP = "Start here"
 
 
 def split_title(text: str, src: str) -> Tuple[str, str]:
@@ -96,6 +110,44 @@ def out_path(slug: str, all_slugs: List[str]) -> Path:
     return Path(slug) / "index.md" if nested else Path(slug + ".md")
 
 
+def start_section(manifest: dict) -> Optional[dict]:
+    """The manifest section titled exactly START_GROUP, or None. A section whose title differs
+    from it only in case would make a second group of the same name, so it is refused."""
+    found = None
+    for section in manifest["sections"]:
+        if section["title"] == START_GROUP:
+            found = section
+        elif section["title"].casefold() == START_GROUP.casefold():
+            raise core.PublishError(
+                f"docs/publish.json: the section {section['title']!r} differs from {START_GROUP!r} "
+                f"only in case; the sidebar would show two groups of that name")
+    return found
+
+
+def build_sidebar(manifest: dict, titles: Dict[str, str]) -> List[dict]:
+    """The Starlight sidebar. Its first group is START_GROUP: Home, the pages of the manifest
+    section of that title (in manifest order, each labelled with its title) and then the other
+    hand-written pages. Every other manifest section follows as a group of its own, in manifest
+    order. Starlight prefixes the site base onto every link that has no protocol
+    (utils/navigation.js makeSidebarLink -> formatPath -> pathWithBase), so these links are
+    site-relative and carry no base; adding it here would produce /psyche/psyche/..."""
+    if not CUSTOM_PAGES or CUSTOM_PAGES[0] != ("Home", ""):
+        raise core.PublishError("stage.py: CUSTOM_PAGES must start with Home")
+    start = start_section(manifest)
+    custom = [{"label": label, "link": "/" + path} for label, path in CUSTOM_PAGES]
+    docs = ([{"label": titles[p["slug"]], "slug": p["slug"]} for p in start["pages"]]
+            if start is not None else [])
+    sidebar: List[dict] = [{"label": START_GROUP, "items": custom[:1] + docs + custom[1:]}]
+    for section in manifest["sections"]:
+        if section is start:
+            continue
+        sidebar.append({
+            "label": section["title"],
+            "items": [{"label": titles[p["slug"]], "slug": p["slug"]} for p in section["pages"]],
+        })
+    return sidebar
+
+
 def committed_json(root: Path, sha: str, rel: str) -> object:
     try:
         return json.loads(core.committed_text(root, sha, rel))
@@ -107,16 +159,21 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
     root = root.resolve()
     core.git_check_toplevel(root)
     sha = core.resolve_commit(root, rev)
-    data_sources = [core.PLAN_REL.as_posix(), core.LEDGER_REL.as_posix(), core.MANIFEST_REL.as_posix()]
+    data_sources = [core.PLAN_REL.as_posix(), core.LEDGER_REL.as_posix(), core.MANIFEST_REL.as_posix(),
+                    core.CITATION_REL.as_posix()]
     if core.git_differs(root, sha, data_sources):
         raise core.PublishError(
-            "the plan, the ledger or the manifest on disk differs from commit "
+            "the plan, the ledger, the manifest or the citation file on disk differs from commit "
             f"{sha[:12]}; commit them first so the site shows one commit's facts")
 
     manifest = core.load_manifest(root)
     ledger = core.load_ledger(root)
     plan = core.validate_plan(committed_json(root, sha, core.PLAN_REL.as_posix()))
     public = core.ledger_public(root)
+    # what the feed needs, read before anything is emptied: a plan or a citation file it cannot read
+    # stops staging with the staged site as it was
+    events = render_plan.progress_events(plan)
+    author = core.citation_author(core.committed_text(root, sha, core.CITATION_REL.as_posix()))
     mapping = core.link_mapping(manifest, "site")
     tracked = core.git_tracked(root, rev=sha)
     repo = manifest["repo"]
@@ -175,18 +232,7 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
             f"{', '.join(unused[:3])}{', ...' if len(unused) > 3 else ''}); run `npm run diagrams` in "
             f"website/ to drop them")
 
-    # Starlight prefixes the site base onto every sidebar link that has no protocol
-    # (utils/navigation.js makeSidebarLink -> formatPath -> pathWithBase), so these links are
-    # site-relative and carry no base; adding it here would produce /psyche/psyche/...
-    sidebar: List[dict] = [{
-        "label": "Start here",
-        "items": [{"label": label, "link": "/" + path} for label, path in CUSTOM_PAGES],
-    }]
-    for section in manifest["sections"]:
-        sidebar.append({
-            "label": section["title"],
-            "items": [{"label": titles[p["slug"]], "slug": p["slug"]} for p in section["pages"]],
-        })
+    sidebar = build_sidebar(manifest, titles)
 
     def dump(name: str, obj: object) -> None:
         (data_dir / name).write_text(json.dumps(obj, indent=2, ensure_ascii=False, sort_keys=False) + "\n",
@@ -195,8 +241,10 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
     dump("plan.json", plan)
     dump("ledger.public.json", public)
     dump("sidebar.json", sidebar)
+    dump("progress.json", {"as_of": plan["as_of"], "timezone": plan["timezone"], "author": author,
+                           "events": events})
     dump("stage.json", {"commit": sha, "repo": repo, "pages": len(pages)})
-    return {"commit": sha, "pages": len(pages), "diagrams": len(used_keys)}
+    return {"commit": sha, "pages": len(pages), "diagrams": len(used_keys), "events": len(events)}
 
 
 def main(argv=None) -> int:
@@ -210,8 +258,8 @@ def main(argv=None) -> int:
     except core.PublishError as e:
         print(f"stage: {e}", file=sys.stderr)
         return 1
-    print(f"stage: {res['pages']} page(s), {res['diagrams']} diagram(s) and the site data staged "
-          f"from {res['commit'][:12]}")
+    print(f"stage: {res['pages']} page(s), {res['diagrams']} diagram(s), {res['events']} progress "
+          f"event(s) and the site data staged from {res['commit'][:12]}")
     return 0
 
 

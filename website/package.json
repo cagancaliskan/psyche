@@ -10,7 +10,7 @@
     "dev": "npm run stage && astro dev",
     "build": "npm run check:og && npm run stage && astro check && astro build && npm run check:spacing && npm run check:refs && npm run check:budget && npm run check:seo",
     "preview": "astro preview",
-    "test": "node --test src/lib/plan.test.ts src/lib/maze.test.ts src/lib/battery.test.ts src/lib/sheet.test.ts src/lib/seo.test.ts src/lib/pageChrome.test.ts src/lib/status.test.ts src/lib/searchOverride.test.ts scripts/sitemap-lastmod.test.mjs scripts/table-region.test.mjs scripts/a11y-tools.test.mjs",
+    "test": "node --test src/lib/plan.test.ts src/lib/maze.test.ts src/lib/battery.test.ts src/lib/sheet.test.ts src/lib/seo.test.ts src/lib/feed.test.ts src/lib/pageChrome.test.ts src/lib/status.test.ts src/lib/searchOverride.test.ts scripts/sitemap-lastmod.test.mjs scripts/table-region.test.mjs scripts/a11y-tools.test.mjs",
     "diagrams": "node scripts/render-diagrams.mjs",
     "icons": "node scripts/make-icons.mjs",
     "og": "node scripts/make-og.mjs",

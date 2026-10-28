@@ -519,6 +519,13 @@
     text-transform: uppercase;
     vertical-align: bottom;
   }
+  /* A date stays on one line: a browser would otherwise break "2026-10-23" after a hyphen in a narrow
+     column or on a phone. scripts/table-region.mjs marks a cell that is a date and wraps any other date in
+     running text in a span; it is an attribute and not a class because the rules above leave out a cell
+     that has a class. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content [data-nowrap]:not(.not-content *)) {
+    white-space: nowrap;
+  }
   /* Pointing at a row sets its text in ink; nothing is filled. */
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content td:not([class], .not-content *)) {
     transition: color var(--sx-dur) var(--sx-ease);

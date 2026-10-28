@@ -13,10 +13,18 @@ Nothing in `src/content/docs/` or `src/data/` is written by hand. `npm run stage
   Mermaid fence with its committed drawing from `src/diagrams/` (see Diagrams below);
 - writes `src/data/plan.json` (from `tools/research_plan.json`), `src/data/ledger.public.json` (a
   public projection of `tools/ledger.json`, including the project's aim and the program state of
-  each stage) and `src/data/sidebar.json`.
+  each stage), `src/data/progress.json` (the plan's public events and the first author of
+  `CITATION.cff`, for the feed) and `src/data/sidebar.json`.
 
 Both directories are gitignored, and CI fails if a staged copy is ever tracked. To change what the
 site says, edit the governed source and re-stage.
+
+The sidebar's first group is "Start here": Home, then the pages of the manifest section of that
+title (`docs/publish.json`: the reader's guide, the questions and answers, the progress record, how
+the project is run), then the other hand-written pages (`build_sidebar` in
+`tools/publish/stage.py`). A section of the manifest with that title is moved into this group,
+never shown as a second one of the same name; a section whose title differs from it only in case,
+or any two sections with one title, is refused.
 
 Hand-written copy lives only in `src/pages/*.astro`, `src/components/*`, `src/lib/battery.ts`, `src/lib/seo.ts` and
 `src/lib/pageChrome.ts` (the footer's labels and links).
@@ -25,6 +33,14 @@ Hand-written copy lives only in `src/pages/*.astro`, `src/components/*`, `src/li
 The landing page presents Psyche as one research project in stages: stage 1, the substrate
 (the foundation); stage 2, spiking cognitive maps; later stages toward the
 long-term aim. Stage states and dates are read from the ledger projection, never typed.
+The landing page's closing section, Cite and contact (`components/landing/CiteContact.astro`),
+carries the project's preferred citation, the archived report of stage 1 with its DOI, and the
+contact route, GitHub Discussions; the hero's third action links the Reader's guide
+(`components/LayersHero.astro`). The citation is copied from `preferred-citation` in
+`CITATION.cff` and typed in the component, because that file is not part of the site's build;
+`test_cited_doi` in `tools/publish/test_core.py` keeps the DOI equal to the one in `CITATION.cff`
+and checks that the section links the repository's Discussions. The section has the anchor
+`#cite`.
 
 ## Commands
 
@@ -40,11 +56,11 @@ long-term aim. Stage states and dates are read from the ledger projection, never
 | `npm run diagrams` | Draw the Mermaid diagrams of the published pages into `src/diagrams/` (see Diagrams below) |
 | `npm run check:diagrams` | Fail if a diagram has no current drawing, or a drawing no diagram uses |
 | `npm run check:a11y` | After a build: axe-core at WCAG 2.2 AA over every page of `dist/` and the interface states a reader opens; fails on any serious or critical violation, and exits 2 when it could not set itself up (see below) |
-| `npm run check:seo` | After a build: the head of every built page, the manifest, `robots.txt` and the sitemap (see Search engines and link previews) |
+| `npm run check:seo` | After a build: the head of every built page, the manifest, `robots.txt`, the sitemap, the progress feed, and every link written with the site's own address (see Search engines and link previews) |
 | `npm run check:og` | Fail if the social image was not drawn for the stage the ledger says is active |
 | `npm run og` | Draw the social image again from the ledger's program state |
 | `npm run icons` | Draw the PNG icons in `public/` from `brand/psyche-icon.svg` |
-| `npm test` | Unit tests for the plan, maze, battery, head, sitemap-date, page-chrome (title strip, sheet number, stage line, next gate, footer date and links) and status-page (the readout's figures and each brick's two axes, `lib/status.ts`) logic, for the table regions, for the search override (it must stay Starlight's component with its three edits) and for the lock of the accessibility check's two packages |
+| `npm test` | Unit tests for the plan, maze, battery, head, sitemap-date, page-chrome (title strip, sheet number, stage line, next gate, footer date and links) and status-page (the readout's figures and each brick's two axes, `lib/status.ts`) logic, for the progress feed (`lib/feed.ts`), for the table regions (and the dates they keep on one line), for the search override (it must stay Starlight's component with its three edits) and for the lock of the accessibility check's two packages |
 
 ### Diagrams
 
@@ -150,8 +166,40 @@ What a page says about itself outside its own text:
   description (the 404 page's included, which must also carry the `NOT_FOUND` title, description and its
   own canonical address), an `og:` or `twitter:` value that is not the page's own, an image that is absent
   or the wrong size, a missing theme colour, icon or manifest, a `noindex` anywhere but the 404 page,
-  structured data that does not parse or sits on another page, a manifest whose icons are missing, and
-  a sitemap that lists the wrong pages or lacks a date where git history is available.
+  structured data that does not parse or sits on another page, a manifest whose icons are missing, a
+  sitemap that lists the wrong pages or lacks a date where git history is available, the progress feed (see
+  below), and any link in a page's body that is written with the site's whole address and leads to no built
+  page, file or id. A docs page reaches the hand-written pages (Home, the timeline, the paradigms, the status
+  page), which have no Markdown source to link, that way, and the link validator treats such an address as
+  external, so this check is the only one that sees a dead one.
+
+### The progress page and its feed
+
+`docs/progress.md` is the public record of the research plan: a table of the plan's events, the
+commitments, and the feed. Its tables are generated blocks (`python3 tools/publish/render_plan.py
+--write`), so nothing on it is typed. The events are derived in one place, `progress_events` in
+`tools/publish/render_plan.py`, from `tools/research_plan.json` and nothing else: a phase started (status
+active or done, start date fixed), a phase done (dated by the decision day of the gate that closes it,
+since the edit that records a decision marks the phase done, so the date does not move with `as_of`; a
+done phase that no gate closes needs a fixed end and is dated by the earlier of that end and the plan's
+`as_of`), a gate decided (its decision date and next step only, never a verdict or a
+criterion: D-034), a change recorded in the changelog (date, item, field, old and new value and reason; a
+change of status carries no reason, and the plan refuses a changelog entry for a gate's status) and a hash
+commitment (date, id, subject, reveal). Nothing dated after `as_of` is an event. Newest first; the same day
+is ordered by kind, then item. The log is two columns, the day and then the item with what changed, so that
+it fits a phone. `tools/publish/stage.py` stages the list as `src/data/progress.json` with the author named
+in `CITATION.cff` (staging refuses a `CITATION.cff` that differs from the commit, and the Pages workflow
+runs when that file changes); `src/pages/progress.xml.ts` serves it at `/psyche/progress.xml` as Atom 1.0
+through `src/lib/feed.ts`, a serialiser that adds no event, no wording and no clock. Feed ids are tag URIs
+(host, year, path below the base): the same on every build, and new if the host or the base path ever
+changes. Every entry links to the progress page; every date is a day of the plan stamped noon UTC, and the
+feed's `updated` is the newest event's day, never the build time, so the same plan always gives the same
+bytes. Every page's head carries `<link rel="alternate" type="application/atom+xml">` for it
+(`astro.config.mjs`); it is an endpoint, so it is not in the sitemap. `npm run check:seo` parses the built
+file (with Python's XML parser, since Node has none) and checks that it is Atom with the right self and
+alternate links, the author `CITATION.cff` names, an `updated` equal to the newest event's day and one
+entry for each event of the plan, in the plan's order, each linking to a built page; and that every page's
+head names the feed.
 
 ### Accessibility check
 
@@ -336,7 +384,11 @@ sections sit inside `class="not-content"`, which keeps Starlight's Markdown styl
   numbers; the section-link icon is a mono `#`. Tables are ruled, with no card: a hairline above the
   header, the header as a mono label over a stronger rule, a hairline under each row and tabular figures;
   each is in a named scroll region that takes the focus ring and, where it scrolls, a 2px structure bar on
-  the side where there is more (see Accessibility check). Below 50rem, where Starlight drops its sidebar,
+  the side where there is more (see Accessibility check). A date stays on one line: a browser would
+  break `2026-10-23` after a hyphen in a narrow column or on a phone, so `scripts/table-region.mjs` sets
+  `data-nowrap` on a cell that holds a date (an attribute, because the table rules skip a cell with a
+  class), puts any other date in running text, such as the generated status line, in a
+  `<span data-nowrap>` (code is left as it is) and `docs.css` keeps both from wrapping. Below 50rem, where Starlight drops its sidebar,
   a table of three or more columns also has a floor on its width, so that a phone scrolls it instead of
   squeezing a column to a word a line; beside the sidebars the column is narrower than that floor but wide
   enough to wrap the table as it is, so no floor is set there. Code blocks are square, in a hairline frame
@@ -352,13 +404,15 @@ sections sit inside `class="not-content"`, which keeps Starlight's Markdown styl
   drawing sheet. A page of stage 1 (`substrate/*`) or stage 2 (`research/*`) opens it with the stage and
   its section ("Stage 1 Substrate") and ends it with that stage's state, read from the public ledger
   projection ("Active", "Paused since" and the day, the day never split; the square marker is the signal
-  colour when active, an outline otherwise). A page outside the stages opens with the sidebar's number for
-  its group ("01 Start here"); the 404 page says "Error 404 ... Not filed". The stage number and the
+  colour when active, an outline otherwise). A page outside the stages, which includes every page of the Start here group, opens with the
+  sidebar's number for its group ("01 Start here") and ends with no state: a page of that group belongs to no
+  stage (`START_SECTION` in `src/lib/pageChrome.ts`; `pageChrome.test.ts` fails when a page of the manifest's
+  Start here section has a route that is a stage's); the 404 page says "Error 404 ... Not filed". The stage number and the
   sidebar's group number are never printed on one strip: they are different numbers. Below 30rem the two
   ends stack, and a state too long for the line (large text on a narrow screen) wraps between its words
   and the day, never inside the day. Nothing is typed per page: the logic is `src/lib/pageChrome.ts` (tested in
-  `pageChrome.test.ts`, which also fails when the publication manifest gains a section that has no stage,
-  or when a section title carries a program state in brackets: a state is read from the ledger, never written
+  `pageChrome.test.ts`, which also fails when the publication manifest gains a section, other than Start here,
+  that has no stage, or when a section title carries a program state in brackets: a state is read from the ledger, never written
   in a title). The stage numbers are
   fixed there, as in `tools/publish/og.py`. The file lives with the other chrome, outside the folders that
   date `/roadmap/` and `/status/` (`scripts/sitemap-lastmod.mjs`), so a change to the strip moves no
@@ -443,6 +497,16 @@ or state is typed in a component.
   build axis. `lib/status.test.ts` fails if the meaning bar is no longer open or a brick is earned, so
   that wording cannot go stale unseen. If a per-brick verdict is wanted, the ledger needs a structured
   field and `ledger_public` in `tools/publish/core.py` has to pass it on.
+- **Cite and contact** (`components/landing/CiteContact.astro`, `styles/landing/cite.css`) is the
+  landing's last section, section 07 of the caliper rail. It is a definition list of two ruled rows
+  that reuse the landing's `.sx-ruled` rules (`styles/landing/rows.css`): a mono label in the label
+  tokens, then its value, one over the other on a phone and side by side from 48rem on the method
+  rows' columns, so a value starts where a method row's title does. The reference is set as the
+  README and `docs/PSYCHE.md` set it, and its DOI is an inline link in the landing's link style,
+  wrapped anywhere so that a narrow screen at 200 percent text does not scroll sideways; the contact
+  link is the landing's section-end link. It draws no card, pill, glow, colour of its own or
+  registration corner: the footer's title block directly below is the page's one frame. The row
+  structure follows "Key Value List" by corr (21st.dev) and is credited in `THIRD_PARTY_NOTICES.md`.
 
 ### Figures on the documentation pages
 

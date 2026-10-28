@@ -1,0 +1,56 @@
+/*
+ * The cite and contact rows at the foot of the landing page (components/landing/CiteContact.astro).
+ * The rules, their draw-in and the row padding are styles/landing/rows.css; this file only lays a
+ * row out: a mono label (the site's label tokens) and its value, one over the other on a phone and
+ * side by side from 48rem, on the columns of the method rows, so that a value starts where a method
+ * row's title does. The definition-list structure follows "Key Value List" by corr (21st.dev).
+ *
+ * Site tokens only, so light and dark switch through the variables. Nothing here moves.
+ */
+
+/* Repeats global.css's order, so this file keeps that order even if it loads before it. */
+@layer base, starlight, theme, components, utilities;
+
+@layer components {
+  .sx-ruled--cite .sx-ruled__row {
+    display: grid;
+    row-gap: 0.6rem;
+  }
+  .sx-cite__k {
+    font: 500 var(--sx-lab-size)/1 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+  .sx-cite__v {
+    min-width: 0;
+    margin: 0;
+  }
+  .sx-cite__v p {
+    max-width: 62ch;
+    margin: 0;
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    color: var(--sl-color-gray-1);
+    overflow-wrap: anywhere;
+    text-wrap: pretty;
+  }
+  .sx-cite__v p + p {
+    margin-top: 0.65rem;
+  }
+  .sx-cite__v .sx-cite__note {
+    font-size: 0.875rem;
+    color: var(--sx-muted);
+  }
+  .sx-cite__v .sx-lp-link {
+    margin-top: 0.35rem;
+  }
+  @media (min-width: 48rem) {
+    .sx-ruled--cite .sx-ruled__row {
+      grid-template-columns: 4rem minmax(0, 1fr);
+      column-gap: clamp(1.25rem, 3vw, 2.75rem);
+      align-items: baseline;
+      row-gap: 0;
+    }
+  }
+}

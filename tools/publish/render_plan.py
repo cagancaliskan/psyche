@@ -48,6 +48,15 @@ IDs:
                      then a sentence and a list: what follows if each gate is missed
   deadlines-table    deadline, due (or estimate), status
   commitments-table  hash commitments; a "none yet" row while there are none
+  progress-log       the plan's public events, newest first: date, item, what changed (see
+                     PUBLIC EVENTS below); a "none yet" row while there are none
+
+PUBLIC EVENTS. progress_events(plan) derives the plan's public events and nothing else: a
+phase started, a phase done, a gate decided, a change recorded in the changelog and a hash
+commitment. The progress-log block renders them as a table, and tools/publish/stage.py hands the
+same list to the site, which writes the Atom feed from it; the wording of an event is written
+here, once, so the table and the feed cannot disagree. A decided gate's event holds the gate, the
+date and the next step, and no other field of the gate (D-034).
 
 --check is not satisfied by silence: it fails (exit 1) unless README.md and MOC.md exist
 and every id above is placed in some rendered file, so deleting the markers and typing
@@ -290,6 +299,9 @@ def next_gate(plan: dict) -> Optional[dict]:
 NEXT_STEP_TEXT = {"continues": "the line continues to the next phase",
                   "extends": "the line extends",
                   "stops": "the line stops"}
+# The next steps whose decision closes the phase the gate ends (docs/research/roadmap.md, Recording a
+# decision); after `extends` the phase stays active.
+CLOSING_STEPS = ("continues", "stops")
 
 
 def gate_status_text(g: dict) -> str:
@@ -331,6 +343,147 @@ def _gate_when(g: dict) -> str:
     if g["date"] != g["baseline_date"] and g["baseline_date"] is not None:
         return f"{g['date']} (baseline {g['baseline_date']})"
     return g["date"]
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# the plan's public events (the progress page, the feed)
+# ─────────────────────────────────────────────────────────────────────────────
+
+# The kinds, in the order that breaks a tie between two events of the same day. The list is newest
+# first, so the later step of a story comes first: a commitment, a recorded change, a phase
+# started, a phase done, a gate decided.
+EVENT_KINDS = ("commitment", "change", "phase-started", "phase-done", "gate-decided")
+# The only fields an event has, for every kind. A decided gate's event is held to these too: it
+# names the gate and carries the date and the next step in its words, and nothing else of the gate.
+EVENT_KEYS = ("id", "kind", "date", "item", "subject", "headline", "change")
+
+# A changelog field in a reader's words. Every field core.CHANGE_FIELDS allows has an entry
+# (test_core.py checks), so no changelog line is written with a key name.
+FIELD_WORDS = {"start": "start date", "end": "end date", "start_rule": "start rule",
+               "end_rule": "end rule", "status": "status", "title": "title", "gate": "gate",
+               "date": "date", "baseline_date": "baseline date", "date_rule": "date rule",
+               "due": "due date", "estimate": "estimate", "summary": "summary",
+               "reveal": "reveal"}
+
+
+def _line(s: object) -> str:
+    return " ".join(str(s).split())
+
+
+def _item_names(plan: dict) -> Dict[str, Tuple[str, str]]:
+    """id -> (short name, subject) for everything the changelog may name: "Gate A" and
+    "Gate A, Novelty". A deadline has no short code, so its subject is its title."""
+    names: Dict[str, Tuple[str, str]] = {}
+    for key, word in (("phases", "Phase"), ("gates", "Gate"), ("layers", "Layer"),
+                      ("deadlines", "Deadline"), ("commitments", "Commitment")):
+        for x in plan.get(key, []):
+            ident = x.get("id")
+            if not isinstance(ident, str):
+                continue
+            title = _line(x.get("title") or x.get("subject") or "")
+            short = f"{word} {ident}"
+            subject = f"{word}: {title}" if key == "deadlines" else f"{short}, {title}"
+            names.setdefault(ident, (short, subject))
+    return names
+
+
+def _change_text(c: dict) -> str:
+    """A changelog entry in words. A change of status carries no reason: the reason for one would be
+    the reasoning behind a decision, which is not public (D-034), whichever item it is about."""
+    word = FIELD_WORDS.get(c["field"], _line(c["field"]).replace("_", " "))
+    before = _line(c["from"]) if c.get("from") else "not set"
+    after = _line(c["to"]) if c.get("to") else "not set"
+    if c["field"] == "status":
+        return f"{word} changed from {before} to {after}"
+    return f"{word} changed from {before} to {after} (reason: {_line(c['reason'])})"
+
+
+def progress_events(plan: dict) -> List[dict]:
+    """The plan's public events, newest first, and nothing from outside the plan. `plan` is a
+    validated plan (core.load_plan); the readers of an event are not written for any other.
+
+      phase-started   a phase whose status is active or done and whose start date is fixed; dated
+                      by its start
+      phase-done      a phase whose status is done. A phase that its gate closes (the gate decided,
+                      the line continuing or stopping) is dated by the gate's decided_on: the edit that
+                      records the decision marks the phase done, so that is the day it was done, and
+                      the date does not move when the plan's as_of moves later. Any other done phase
+                      needs a fixed end and is dated by it, or by the plan's as_of when the end is
+                      later, because it is done on the day the plan says so and not on a planned day
+                      that has not come
+      gate-decided    a gate whose status is decided; dated by decided_on. Only the gate, that date
+                      and next_step are used (D-034): no question, fallback, verdict or criterion
+                      is read, so none can reach the event
+      change          a changelog entry: its date, item, field, from, to and reason (not ref). A
+                      change of status carries no reason, and a gate's status has no entry of its
+                      own: the gate-decided event is its record (D-034)
+      commitment      a hash commitment: its date, id, subject and reveal (not the hash)
+
+    Nothing dated after the plan's as_of is an event: the plan is the record up to that day. A
+    phase with no fixed start or end has no event for it: an event needs a day. Ties on the day
+    break by EVENT_KINDS, then by the item, then by the field, then by the position in the plan
+    (a later changelog entry first), so the order never depends on the machine. Each event has
+    exactly EVENT_KEYS: `id` is stable (it names the kind and the item, and for a change the day and
+    field, so a typo fixed in a reason keeps it), `subject` names the item, `headline` is a title
+    for a feed entry and `change` says what happened in lower case, to follow a subject."""
+    as_of = core.parse_iso_date(plan.get("as_of"))
+    names = _item_names(plan)
+    decided = {g["id"]: g for g in plan.get("gates", []) if g.get("status") == core.GATE_DECIDED}
+    found: List[Tuple[Tuple[int, int, str, str, int], dict]] = []
+    seq = 0
+
+    def add(kind: str, when: Optional[date], ident: str, item: str, subject: str,
+            headline: str, change: str, field: str = "") -> None:
+        nonlocal seq
+        if when is None or (as_of is not None and when > as_of):
+            return
+        seq += 1
+        event = {"id": ident, "kind": kind, "date": when.isoformat(), "item": item,
+                 "subject": _line(subject), "headline": _line(headline), "change": _line(change)}
+        found.append(((-when.toordinal(), EVENT_KINDS.index(kind), item, field, -seq), event))
+
+    for p in plan.get("phases", []):
+        short, subject = names.get(p["id"], (p["id"], p["id"]))
+        start = core.parse_iso_date(p.get("start"))
+        end = core.parse_iso_date(p.get("end"))
+        if p.get("status") in (core.PHASE_ACTIVE, core.PHASE_DONE):
+            add("phase-started", start, f"phase-started/{p['id']}", p["id"], subject,
+                f"{short} started", "started")
+        if p.get("status") == core.PHASE_DONE:
+            g = decided.get(p.get("gate"))
+            if g is not None and g.get("next_step") in CLOSING_STEPS:
+                done_on = core.parse_iso_date(g.get("decided_on"))
+            elif end is not None:
+                done_on = min(end, as_of) if as_of is not None else end
+            else:
+                done_on = None
+            add("phase-done", done_on, f"phase-done/{p['id']}", p["id"], subject,
+                f"{short} done", "done")
+    for g in plan.get("gates", []):
+        if g.get("status") != core.GATE_DECIDED:
+            continue
+        short, subject = names.get(g["id"], (g["id"], g["id"]))
+        step = NEXT_STEP_TEXT.get(g.get("next_step"))
+        add("gate-decided", core.parse_iso_date(g.get("decided_on")), f"gate-decided/{g['id']}",
+            g["id"], subject, f"{short} decided", f"decided; {step}" if step else "decided")
+    seen: Dict[Tuple[str, str, str], int] = {}
+    gate_ids = {g.get("id") for g in plan.get("gates", [])}
+    for c in plan.get("changelog", []):
+        if c.get("item") in gate_ids and c.get("field") == "status":
+            continue                   # the gate-decided event is a gate's status record (D-034)
+        when = core.parse_iso_date(c.get("date"))
+        key = (c.get("date"), c.get("item"), c.get("field"))
+        seen[key] = seen.get(key, 0) + 1
+        short, subject = names.get(c["item"], (c["item"], c["item"]))
+        word = FIELD_WORDS.get(c["field"], _line(c["field"]).replace("_", " "))
+        add("change", when, f"change/{c['date']}/{c['item']}/{c['field']}/{seen[key]}",
+            c["item"], subject, f"{short} {word} changed", _change_text(c), field=c["field"])
+    for c in plan.get("commitments", []):
+        short, subject = names.get(c["id"], (c["id"], c["id"]))
+        add("commitment", core.parse_iso_date(c.get("date")), f"commitment/{c['id']}", c["id"],
+            subject, f"{short} recorded", f"hash committed; reveal: {_line(c['reveal'])}")
+    found.sort(key=lambda pair: pair[0])
+    return [event for _, event in found]
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -513,6 +666,15 @@ def render_commitments_table(plan: dict) -> str:
     return _table(["ID", "Date", "Subject", "SHA-256", "Reveal"], rows)
 
 
+def render_progress_log(plan: dict) -> str:
+    """One row per public event (progress_events), newest first: the day, then the item and what
+    changed in one cell, so that a table of two columns fits a phone."""
+    rows = [[md(e["date"]), md(f'{e["subject"]}: {e["change"]}')] for e in progress_events(plan)]
+    if not rows:
+        rows = [["none yet", DASH]]
+    return _table(["Date", "What changed"], rows)
+
+
 RENDERERS: Dict[str, Callable[[dict], str]] = {
     "status-line": render_status_line,
     "phases-table": render_phases_table,
@@ -522,6 +684,7 @@ RENDERERS: Dict[str, Callable[[dict], str]] = {
     "gate-flow": render_gate_flow,
     "deadlines-table": render_deadlines_table,
     "commitments-table": render_commitments_table,
+    "progress-log": render_progress_log,
 }
 
 

@@ -15,6 +15,15 @@
   "repo": "cagancaliskan/psyche",
   "sections": [
     {
+      "title": "Start here",
+      "pages": [
+        {"src": "docs/guide.md", "slug": "guide", "wiki": "Reader-Guide", "description": "A guide to Psyche, an open research project that builds brain-inspired components in stages, with AGI as its long-term aim, and to where each reader goes next."},
+        {"src": "docs/faq.md", "slug": "faq", "wiki": "Questions-and-Answers", "description": "Answers to common questions about Psyche: why AGI is named as its long-term aim, why some work stays private, whether it uses a language model, and who runs it."},
+        {"src": "docs/progress.md", "slug": "progress", "wiki": "Progress", "description": "The public record of Psyche's research plan: phases started and finished, gates decided, dates changed and commitments made, with an Atom feed to follow it."},
+        {"src": "docs/governance.md", "slug": "governance", "wiki": "Governance", "description": "How Psyche is run: who leads it, the four roles that keep its evidence honest, what happens if the work stops, its funding, and a note on ethics and safety."}
+      ]
+    },
+    {
       "title": "Cognitive maps",
       "pages": [
         {"src": "docs/research/README.md", "slug": "research", "wiki": "Research-Overview", "description": "Overview of stage 2 of Psyche: a test of whether a spiking network with local plasticity shows, on classic tests, behaviour that an internal map would explain."},
@@ -34,7 +43,8 @@
       "pages": [
         {"src": "docs/PSYCHE.md", "slug": "substrate/overview", "wiki": "Substrate-Overview", "title": "The substrate", "description": "The substrate, stage 1 of Psyche: a dependency-free Python memory-and-activation prototype, what is verified, what is not claimed, and where it stands."},
         {"src": "docs/ARCHITECTURE.md", "slug": "substrate/architecture", "wiki": "Substrate-Architecture", "title": "Architecture", "description": "The as-built reference for the substrate's code: its modules, data model, public surfaces and invariants, and the reasons behind the key design decisions."},
-        {"src": "docs/METHODOLOGY.md", "slug": "substrate/methodology", "wiki": "Substrate-Methodology", "title": "Methodology", "description": "How test-first, adversarial development of the substrate caught structural bugs, each traceable to the code and tests, and where it drew the line on claims."}
+        {"src": "docs/METHODOLOGY.md", "slug": "substrate/methodology", "wiki": "Substrate-Methodology", "title": "Methodology", "description": "How test-first, adversarial development of the substrate caught structural bugs, each traceable to the code and tests, and where it drew the line on claims."},
+        {"src": "docs/three-walls.md", "slug": "substrate/three-walls", "wiki": "Three-Walls", "description": "The substrate's three negative results: why priming, the fan effect and interoception each stopped before a graded run, and what that pattern shows."}
       ]
     }
   ],

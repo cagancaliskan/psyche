@@ -391,8 +391,9 @@ jobs:
         if: ${{ steps.denylist.outputs.available == 'true' || github.event_name == 'pull_request' }}
         run: python3 -B tools/publish/test_checks.py
 
-      # Scanned: the sources the site publishes from (the research pages, the
-      # substrate overview page, the cogmap package, the site's own sources) plus the manifest
+      # Scanned: the sources the site publishes from (the research pages, the Start here pages,
+      # the substrate overview and three walls pages, the cogmap package, the site's own sources),
+      # CITATION.cff, whose author and DOI reach the feed and the landing, plus the manifest
       # and the plan file, whose strings reach the site. The list is named path by path, not
       # as whole top-level directories: a walk of website/ would also read
       # website/package-lock.json, which is not published content, so it does not belong in
@@ -414,7 +415,8 @@ jobs:
         run: |
           scan=(
             README.md MOC.md docs/research docs/PSYCHE.md cogmap
-            website/src website/README.md docs/publish.json tools/research_plan.json
+            docs/guide.md docs/faq.md docs/progress.md docs/governance.md docs/three-walls.md
+            CITATION.cff website/src website/README.md docs/publish.json tools/research_plan.json
           )
           python3 -B tools/publish/check_disclosure.py \
             --denylist "${RUNNER_TEMP}/disclosure-denylist.txt" "${scan[@]}"

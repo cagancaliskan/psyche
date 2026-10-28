@@ -28,6 +28,14 @@ function holdsCurrent(item: SidebarItem): boolean {
 }
 
 /**
+ * The title of the sidebar's first group, and of the manifest section (docs/publish.json) whose pages stand
+ * in it after Home (tools/publish/stage.py START_GROUP). A page of this group belongs to no stage: it opens
+ * with the group's number and name ("01 Start here") like the hand-written pages beside it, and neither the
+ * strip nor the title block gives it a stage or a stage's state. pageChrome.test.ts holds the manifest to it.
+ */
+export const START_SECTION = 'Start here';
+
+/**
  * A sidebar group's label as a section name: the label itself. The labels in docs/publish.json carry no
  * state ("Cognitive maps", "Substrate"), because a state is typed once, in the ledger, and read from
  * there by the stage line; pageChrome.test.ts fails when a section title names one.
@@ -89,7 +97,8 @@ export function sheetOf(sidebar: readonly SidebarItem[]): { position: string; to
  * Which stage a docs section belongs to: the first segment of the page's route id, as
  * docs/publish.json sets it, against the public ledger's program line. The stage numbers are
  * CONTRIBUTING.md's (stage 1 is the substrate, stage 2 the cognitive-map line) and are fixed here,
- * as in tools/publish/og.py. pageChrome.test.ts fails when the manifest gains a section with no stage.
+ * as in tools/publish/og.py. pageChrome.test.ts fails when the manifest gains a section with no stage,
+ * the START_SECTION apart: its pages are in no stage and no segment of its routes may be a stage's.
  */
 export const STAGE_OF_SECTION = {
   substrate: { stage: 1, line: 'substrate' },

@@ -23,6 +23,16 @@ publicly yet. How the first stage led to the second is told in [Origins](origins
 [DECISIONS.md](../../DECISIONS.md)). On these pages it is named only as an aim. No component is
 described as having reached it, and no result is presented as a measured step toward it.
 
+**Line.** A research line: one body of work within Psyche, with its own question, record and state.
+There are two so far, the substrate (stage 1) and the cognitive-map line (stage 2). On these pages
+"the line" means the cognitive-map line unless the text says otherwise. Which line is active and
+which is paused is the [program state](#process-and-record), read from the ledger; it says what is
+being worked on and never what is true of a result.
+
+**SCM.** The short name of stage 2, which [CONTRIBUTING.md](../../CONTRIBUTING.md) gives for the
+plan titled *Cognitive Map Formation and Energy Efficiency in Spiking Neural Networks with Local
+Plasticity*. These pages mostly say "the cognitive-map line" or "stage 2" instead.
+
 ## Spiking cognitive maps
 
 ### Behaviour and the battery
@@ -74,6 +84,13 @@ discrete events in time. A model neuron integrates its input over time and emits
 that input is strong enough; between spikes it sends nothing. The model of this line is a
 spiking network. Its cost is expressed as a [synaptic-operation estimate](#measures-and-reference-agents).
 
+**Neuromorphic hardware.** Hardware built around spikes and event-driven operation, as opposed to
+a conventional processor or a GPU simulating them. The line does not measure on it: measurement on
+neuromorphic hardware is out of scope, the cost of the spiking model is an analytic estimate of
+synaptic operations, and that estimate is never set against energy figures reported for
+neuromorphic chips, nor used for a general claim of efficiency ([claims and
+scope](claims-and-scope.md#energy-claims)).
+
 **Local plasticity.** A learning rule that computes the change to a synapse from information
 available at that synapse, not from an error propagated backwards through the network as in
 backpropagation, the standard way of training artificial neural networks. The spiking model
@@ -104,6 +121,12 @@ conventional networks. The measurement framework reports it for every agent, bes
 and internal structure. The rules are in [claims and scope](claims-and-scope.md#energy-claims); the counting
 method is withheld until release.
 
+**Sensitivity analysis.** Repeating a calculation across a range of its assumptions to see which
+results depend on them. Every energy figure of the line rests on assumptions about the cost of each
+operation and about what is counted, so it is reported across a sensitivity analysis of those
+assumptions, and a ranking is stated only if it holds in every setting. Otherwise the text says the
+comparison depends on assumptions ([claims and scope](claims-and-scope.md#energy-claims)).
+
 **Random agent.** A reference agent that chooses at random among the actions available to it. It
 gives the lower bound beside which every result is reported.
 
@@ -123,6 +146,36 @@ obtained by resampling the observed values with replacement many times, recomput
 statistic each time and taking the central range of the results. It makes no assumption about
 the shape of the underlying distribution. The line reports uncertainty over seeds this way
 ([engineering](engineering.md)).
+
+### Reproducibility and statistics
+
+**Bit-exact.** Identical bit for bit, not merely equal after rounding. The line compares outputs
+exactly, because a comparison after rounding cannot see a difference in the last bit of a
+floating-point number, and that is where an order-dependent sum shows up. The substrate's record
+has the case: a one-ULP difference in a float sum, the smallest step between two neighbouring
+floats, was invisible on one interpreter and changed a result on another ([Origins](origins.md#the-determinism-discipline)).
+
+**Tier.** One of three levels at which a result's reproducibility is stated. Tier A is bit-exact
+across CPython versions and hash seeds, and covers the environments, the battery, the metrics and
+the counters. Tier B is bit-exact on CPU for one pinned version, with deterministic algorithms
+enabled. Tier C is statistical reproducibility for GPU runs: fixed seeds, with results reported
+with confidence intervals over seeds. Each reported result states its tier, and a result built from
+parts at different tiers states the weakest of them ([engineering](engineering.md#determinism-tiers)).
+
+**Permutation test.** A significance test that builds its reference distribution by reshuffling
+labels. The observed difference between two groups, for example the scores of two models, is
+compared with the differences found when the group labels are shuffled at random many times; the
+share of shuffled differences at least as large as the observed one is the p-value. It assumes
+nothing about the shape of the data's distribution. The line tests differences between models this
+way ([engineering](engineering.md#statistics)).
+
+**Holm correction.** A way to keep the overall chance of a false positive in check when several
+comparisons are made together. The p-values are ordered from smallest to largest. The smallest is
+compared with the single-test threshold divided by the number of comparisons, the next with that
+threshold divided by one fewer, and so on, so the strictest threshold applies to the smallest
+p-value and the last is compared with the single-test threshold. Testing stops at the first
+p-value that fails. The line applies it across multiple comparisons between models
+([engineering](engineering.md#statistics)).
 
 ### Plan and governance
 
@@ -146,6 +199,12 @@ riskiest part. The authoritative wording is generated from the plan file on the
   as a result in its own right.
 
 These layers are unrelated to the layers of the substrate's architecture.
+
+**Ablation.** An experiment that removes, disables or holds fixed one part of a system and
+measures what changes, to find out what that part contributes. In the plan, ablations belong to
+the scaling phase and are part of what the last gate asks for ([roadmap](roadmap.md),
+[gates](gates.md)). Which ablations are run is part of the experiment plan, which is withheld
+([disclosure policy](disclosure-policy.md)).
 
 **Pre-registration.** Writing down what will be measured and the criterion that will judge the
 result before the work that tests it, then freezing that record, so that a result cannot reshape
@@ -229,7 +288,8 @@ It is off by default; with it off, the whole cycle is a pure read.
 claim. Under the project's process, a brick is specified, tested and verified by an independent
 tester before anything builds on it. Each brick has a short id, such as 0a for the substrate
 store, and the ledger records its status. Build and meaning are tracked as two separate axes and
-are never collapsed into one.
+are never collapsed into one. The substrate's three attempts to earn a first cognitive claim
+were bricks of this kind ([the three walls](../three-walls.md)).
 
 **Build axis.** Whether a brick is built and verified, as a mechanism. Its status names:
 
@@ -246,9 +306,25 @@ status.
 **Meaning axis.** Whether a brick reproduces a cognitive effect, judged against external data the
 project did not author, with the prediction and its direction fixed in advance and a baseline.
 Its verdicts are `EARNED`, `NOT-YET` and `NO-GO`; a stop caught by pre-registration before a
-graded run is a result in its own right. A brick is routinely built and tester-verified on the
-build axis while its meaning verdict is `NOT-YET`.
+graded run is a result in its own right ([the three walls](../three-walls.md)). A brick is
+routinely built and tester-verified on the build axis while its meaning verdict is `NOT-YET`.
 No substrate brick holds an `EARNED` verdict; the meaning bar is open.
+
+**Yardstick.** A reference from outside the project against which a result is graded, so that a
+test cannot quietly encode its own answer (rule 5 of the project's rules). For the substrate it was
+external data the project did not author, such as human association norms or the machine's own
+clock readings. For the cognitive-map line the behavioural paradigms are published, and the
+published behaviour of each baseline is the reference. The agent-side operationalisation of each
+paradigm and its pass criteria are the project's own and are pre-registered privately, so they are
+not an external protocol for artificial agents. A yardstick the mechanism can both produce and be
+graded against is what the substrate's attempts lacked ([the three walls](../three-walls.md)).
+
+**Wall.** The project's name for each of the substrate's three negative results: three attempts to
+earn a first cognitive claim, each stopped before any graded result existed, each for a
+structurally different reason (circular, mechanism absent, signal flat). The walls are a finding
+about the substrate and these three yardsticks, not a general law, and a wall never means that the
+phenomenon is absent, only that it could not be measured under those controls. They are set out in
+[the three walls](../three-walls.md) and carried forward as a checklist in [Origins](origins.md).
 
 **Program state.** A third axis, separate from the build and meaning axes, that records what is
 being worked on: the substrate paused, the cognitive-map line active. It never says what is true of a brick, so the
@@ -269,5 +345,19 @@ The cognitive-map line keeps its public dates the same way, in one plan file.
 the hash seeds swept. The ledger's test counts are
 generated from the capture by a tool, never typed by hand. The cognitive-map line applies the
 same idea to its results: a number it reports must come from a captured results file.
+
+**Loop-closed.** Describes a test or a check that feeds each stage with what the stage before it
+produced, not with friendly, hand-chosen input. A component that passes only on input chosen to
+suit it has not passed. Loop-closure is rule 4 of the project's rules, and the substrate's tester
+suites are adversarial and loop-closed ([Origins](origins.md#an-independent-adversarial-tester-lane)).
+It is a property of a test and is not the substrate's closed cycle, in which a broadcast biases the
+next cycle.
+
+**Lane.** The part of the work that one role owns. Psyche has four roles: the architect-pm writes
+the specification and keeps the roadmap and ledger, the builder implements it test-first, the
+tester attacks it separately and never edits the code, and the validator runs the pre-registered
+experiment when a cognitive claim is involved. The lanes do not cross, and the separation is the
+evidence: a check written by the author of the code shares the author's blind spots
+([how Psyche is run](../governance.md)).
 
 Back to the [overview](README.md).
