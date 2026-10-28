@@ -127,38 +127,51 @@ name and author so that anyone can find the original and read the terms its auth
 
 | Component | Author | Adapted for | Credited in |
 |---|---|---|---|
+| 404 Did You Mean | ziegfiroyt | The address that was asked for, and the nearest page to it, on the 404 page | `pages/404.astro`, `components/chrome/NearestPage.astro`, `styles/notfound.css` |
+| 404 Search And Popular Links | olewandowski1 | A list whose rows share their rules: the 404 page's places to go and the cells of the footer's title block | `styles/notfound.css`, `pages/404.astro`, `styles/global.css`, `components/chrome/Footer.astro` |
 | Admonition | deltacomponents | Asides (notes, tips, cautions) | `styles/global.css` |
 | Animated Beam | dillionverma | Light pulse on the evaluation pipeline figure | `components/docs/EvaluationPipeline.astro` |
 | Animated Sidebar | unlumen | Active marker in the sidebar | `styles/global.css` |
 | Animated Signature | dqnamo | Stroke draw of the hero mark and the maze figure | `styles/hero.css`, `styles/landing/maze-figure.css` |
-| Corner Frame | kevingirelli | Registration corner marks on figures and battery sheets | `styles/battery.css`, `styles/landing/maze-figure.css`, `components/landing/MazeFigure.astro`, `components/BatteryExplorer.tsx` |
+| Command Menu | victor-teles | Search dialog: grouped results, the match in ink | `styles/global.css` |
+| Corner Frame | kevingirelli | Registration corner marks on figures, battery sheets, the search dialog, the footer's title block and the 404 page (one shared recipe, `.sx-reg`) | `styles/global.css`, `styles/battery.css`, `styles/notfound.css`, `styles/landing/maze-figure.css`, `components/landing/MazeFigure.astro`, `components/chrome/Footer.astro`, `components/BatteryExplorer.tsx` |
 | Expanding Arrow Button | starc007 | Primary action in the hero | `styles/hero.css` |
+| Footer with Navigation Grid | shadcnui-blocks | A row of links under a divider, in the footer's title block | `styles/global.css`, `components/chrome/Footer.astro` |
 | Gantt Chart | klyv-ui | Month gridlines and today marker of the roadmap timeline | `styles/plan.css` |
 | How It Works Steps | ln-dev7 | Sequence figures in the documentation | `styles/docs-visuals.css` |
+| Input Group with Keyboard Shortcut | sean0205 | Search button | `styles/global.css` |
 | Interactive List Preview | hyperiux | Battery rows | `styles/landing/battery-rows.css`, `components/battery/BatteryTeaser.astro` |
-| Kbd | shadcn | Shortcut chip on the search button | `styles/global.css` |
+| Kbd | shadcn | Shortcut key cap on the search button | `styles/global.css` |
+| Kbd Input Group | uiable | Search button | `styles/global.css` |
 | Klyv Animated Beam | klyv-ui | Light pulse along the connectors of documentation figures | `styles/docs-visuals.css` |
 | Kokonut UI Scroll Index | kokonutd | Passed, current and ahead states of the battery index | `styles/battery.css`, `components/BatteryExplorer.tsx` |
 | Line Draw SVG | pulkitxm | Route draw in the battery pictures | `styles/battery.css` |
 | Link Button | hyperiux | Section-end links | `styles/landing/links.css` |
+| Note | shugar | Asides | `styles/global.css` |
+| Not Found 404 Page | mohammadshehadeh | The 404 page: a mono label, one sentence and a ruled list of places to go | `pages/404.astro`, `styles/notfound.css` |
 | Number Ticker | dillionverma | Count-up of headline numbers | `components/ui/StatsBand.astro` |
+| Numberless Pagination | shadcnui-blocks | Previous and next links | `styles/global.css` |
+| Page Header with Breadcrumbs | olewandowski1 | The ruled strip of stage, section and state above a page title | `styles/docs.css`, `components/chrome/PageTitle.astro` |
 | Quarterly Roadmap Columns | olewandowski1 | Status columns on the status page | `styles/plan.css` |
+| Reshaped Table | reshaped | The shared outer and column rules of the footer's title block (the idea only; the package is not used) | `styles/global.css`, `components/chrome/Footer.astro` |
 | Reveal | asanshay | Scroll reveals on the landing page | `styles/landing.css`, `pages/index.astro` |
 | Scroll animated timeline | ibrandify | Scroll-drawn bands and rail on the landing roadmap | `styles/landing/roadmap.css` |
 | Scroll Caliper | nikolas-sapa | Measuring rail in the page gutter | `styles/landing/caliper.css`, `components/landing/CaliperRail.astro` |
 | Search Input with Keyboard Shortcut | shadcnspace | Search button | `styles/global.css` |
-| Spec Sheet | isaiahbjork | Ruled tables and rows on the landing and battery pages | `styles/battery.css`, `styles/landing/ledger.css`, `styles/landing/rows.css`, `components/landing/StageLedger.astro`, `components/landing/HowBuilt.astro`, `components/landing/PublicWithheld.astro`, `components/landing/SubstrateReadout.astro`, `pages/battery.astro` |
-| Spotlight | kevingirelli | Pointer-following light on cards and on previous and next links | `styles/global.css`, `styles/docs-visuals.css` |
+| Sidebar Light | inference-sh | Sidebar rail and rows | `styles/global.css` |
+| Spec Sheet | isaiahbjork | Ruled tables and rows on the landing and battery pages, the bar on a previous or next rule, on a footer or title rule and on the 404 rows | `styles/global.css`, `styles/docs.css`, `styles/notfound.css`, `styles/battery.css`, `styles/landing/ledger.css`, `styles/landing/rows.css`, `components/landing/StageLedger.astro`, `components/landing/HowBuilt.astro`, `components/landing/PublicWithheld.astro`, `components/landing/SubstrateReadout.astro`, `pages/battery.astro` |
+| Spotlight | kevingirelli | Pointer-following light on cards | `styles/docs-visuals.css` |
 | Stack | abhishek-mallick | Layer stack figure | `styles/docs-visuals.css` |
 | Stats Band | kuratlielia | Band of headline numbers | `styles/plan.css`, `components/ui/StatsBand.astro` |
 | Status | diceui | Status chip | `styles/plan.css` |
 | Status Badge | serafimcloud | Two-part chips of the "now" strip | `styles/plan.css` |
 | Stepper | kevingirelli | Step rows of the battery and the gate stepper | `styles/battery.css`, `styles/plan.css`, `components/BatteryExplorer.tsx` |
 | Table | originui | Tables in the documentation | `styles/docs.css` |
+| Table of Contents | appica-dev | Current-heading bar of the contents list | `styles/global.css` |
 | Table of Contents | mohammadshehadeh | Sidebar rail and the battery index | `styles/global.css`, `styles/battery.css`, `components/BatteryExplorer.tsx` |
 | Tagline | shadcncraft | Index and kicker of the landing section openings | `components/landing/SectionHeader.astro` |
 | Text Reveal (Mask) | soralabs | Headings that rise out of a clip | `styles/hero.css`, `styles/landing/section-header.css`, `components/landing/SectionHeader.astro` |
-| Underline Link | balick | Underline links | `styles/hero.css`, `styles/landing/links.css`, `styles/landing/battery-rows.css`, `styles/landing/ledger.css` |
+| Underline Link | balick | Underline links, the title of a previous or next link | `styles/global.css`, `styles/hero.css`, `styles/landing/links.css`, `styles/landing/battery-rows.css`, `styles/landing/ledger.css` |
 | Vertical Titled Stepper | sean0205 | Numbered titles of the battery steps | `styles/battery.css`, `components/BatteryExplorer.tsx` |
 
 If you are an author listed here and want a credit corrected or an adaptation removed, tell the
@@ -171,3 +184,36 @@ Everything else the site uses comes from npm packages pinned in `website/package
 `website/package-lock.json`. They are installed when the site is built and are not copied into
 this repository. The built site bundles parts of these packages, and each package remains under
 the licence it ships with; those terms apply to it. This file does not reproduce them.
+
+Two files are copies rather than installs, both of `@astrojs/starlight` 0.42.6.
+`website/src/components/chrome/Search.astro` is Starlight's Search component with three small edits
+(the key cap beside the search button is drawn rather than written, so the button's accessible name
+holds its visible text; the script for Apple devices sets the key's attribute; the icon is imported
+from the package). `website/src/components/chrome/Footer.astro` reproduces the markup and the first
+style rules of Starlight's Footer component (the footer element, the edit-link row, previous and next,
+and the layout rules for the footer and that row), with the project's title block added below them.
+Both are used under the package's MIT licence, whose notice follows and covers both.
+
+```text
+MIT License
+
+Copyright (c) 2023 Astro contributors (https://github.com/withastro/starlight/graphs/contributors)
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```

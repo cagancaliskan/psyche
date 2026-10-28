@@ -761,64 +761,9 @@
     .sx-bs__steps > li::before,
     .sx-bs__steps .nm,
     .sx-bs__toggle,
-    .sx-bnotes a,
-    body:has(.sx-bat) .pagination-links a::before,
-    body:has(.sx-bat) .pagination-links .link-title {
+    .sx-bnotes a {
       transition: none;
     }
-  }
-
-  /* ---------- The previous and next links at the foot: ruled rows, like the rest of the page ---------- */
-  /* The docs pages set these as lit cards. Here they are the page's own rows: a rule on top, a short
-     bar on the rule that runs the row's width on hover or focus, and the title with the hero's
-     Underline Link. */
-  body:has(.sx-bat) .pagination-links a {
-    padding-inline: 0;
-    border: 0;
-    border-top: 1px solid var(--sx-hairline);
-    border-radius: 0;
-    background: none;
-    box-shadow: none;
-  }
-  body:has(.sx-bat) .pagination-links a:is(:hover, :focus-visible) {
-    border-color: var(--sx-hairline);
-  }
-  body:has(.sx-bat) .pagination-links a::after {
-    display: none;
-  }
-  body:has(.sx-bat) .pagination-links a::before {
-    inset: auto;
-    top: -1px;
-    left: 0;
-    z-index: 1;
-    width: 28px;
-    height: 2px;
-    border-radius: 0;
-    background: var(--sx-structure);
-    opacity: 1;
-    transition:
-      width 550ms var(--sx-ease),
-      background-color 550ms var(--sx-ease);
-  }
-  body:has(.sx-bat) .pagination-links a:is(:hover, :focus-visible)::before {
-    width: 100%;
-    background: var(--sx-agent);
-  }
-  body:has(.sx-bat) .pagination-links .link-title {
-    --open: 0;
-    padding-block: 3px;
-    background-image: linear-gradient(currentColor, currentColor), linear-gradient(color-mix(in oklab, currentColor 22%, transparent), color-mix(in oklab, currentColor 22%, transparent));
-    background-repeat: no-repeat;
-    background-size:
-      calc(var(--open) * 100%) 1px,
-      100% 1px;
-    background-position:
-      calc((1 - var(--open)) * 100%) 100%,
-      0 100%;
-    transition: background-size 450ms var(--sx-ease);
-  }
-  body:has(.sx-bat) .pagination-links a:is(:hover, :focus-visible) .link-title {
-    --open: 1;
   }
 
   /* Windows High Contrast repaints background-only marks as the canvas; the current marks keep a

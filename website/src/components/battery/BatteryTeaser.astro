@@ -5,13 +5,19 @@
 // battery page. Rendered on the server; a small script draws each route once when its row is
 // seen. Used on the landing and on the Test battery docs page; the layout follows the width it
 // is given. The id shares the first line of the name; the link's name is the whole visible label
-// (id, name and line). The pictures are illustrations of classic paradigms, not results.
+// (id, name and line). The pictures are aria-hidden, and the letters on their nodes are drawn through
+// <use> from glyphs defined once, below, outside every link, so that no text but the label is inside a
+// link and the label is the whole of its name (WCAG 2.5.3). The pictures are illustrations of classic
+// paradigms, not results.
 // Catalog (21st.dev): the row anatomy and the highlight bar that travels along the row follow
 // "Interactive List Preview" by hyperiux, without its preview image, GSAP or pointer follow.
 import '@/styles/landing/battery-rows.css';
-import { TestPicture } from '@/components/battery/Pictures.tsx';
+import { TestPicture, glyphId } from '@/components/battery/Pictures.tsx';
 import { TESTS } from '@/lib/battery.ts';
 import { withBase } from '@/lib/url.ts';
+
+// Every letter a thumbnail puts on a node: the chain's nodes and the symbols of the transfer layouts.
+const letters = [...new Set(TESTS.flatMap((t) => (t.kind === 'chain' ? t.nodes : t.kind === 'transfer' ? t.symbols.flat() : [])))];
 
 const rows = TESTS.map((test, i) => {
   const index = test.steps.length - 1;
@@ -21,6 +27,15 @@ const rows = TESTS.map((test, i) => {
 ---
 
 <div class="sx-brows-wrap not-content">
+  <svg class="sx-glyphs" width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false" data-pagefind-ignore>
+    <defs>
+      {
+        letters.map((letter) => (
+          <text id={glyphId(letter)} text-anchor="middle" dominant-baseline="central">{letter}</text>
+        ))
+      }
+    </defs>
+  </svg>
   <ol class="sx-brows" role="list" data-sx-brows>
     {
       rows.map(({ test, i, index, slug, caption, href }) => (
@@ -34,7 +49,7 @@ const rows = TESTS.map((test, i) => {
               <span class="sx-brow__line" id={`sx-brow-${slug}-line`}>{caption}</span>
             </span>
             <span class="sx-brow__pic" aria-hidden="true" data-pagefind-ignore>
-              <TestPicture test={test} index={index} decorative idPrefix={`sx-brow-${slug}`} />
+              <TestPicture test={test} index={index} decorative sharedGlyphs idPrefix={`sx-brow-${slug}`} />
             </span>
             <svg class="sx-brow__go" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
               <path d="M4 10h11M10.5 5.5 15 10l-4.5 4.5" />

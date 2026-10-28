@@ -16,7 +16,7 @@ const { kicker, lead, bare = false, beams = false, class: extra } = Astro.props;
 
 <figure class:list={['sx-dv', { 'sx-dv--bare': bare }, extra]} data-sx-beams={beams ? '' : undefined}>
   <figcaption class="sx-dv__cap">
-    <span class="sx-kicker"><span class="sx-kicker__index" aria-hidden="true">Fig.</span> {kicker}</span>
+    <span class="sx-kicker" data-pagefind-ignore><span class="sx-kicker__index" aria-hidden="true">Fig.</span> {kicker}</span>{' '}
     {lead && <span class="sx-dv__lead">{lead}</span>}
   </figcaption>
   <slot />

@@ -1,0 +1,23 @@
+---
+// The footer's "Next gate" cell read against the reader's day. The page is built without a clock, so
+// the cell says what the plan said on the day it was written (its `as_of`); once the gate's date has
+// passed in the plan's time zone with no decision recorded, this says "decision pending", as the
+// roadmap's own gates do (lib/gateClock.ts). Only the state can change with the day: the earliest
+// undecided gate stays the next one until a decision is recorded, and a recorded decision is a new
+// plan and a new build. Rendered by Footer.astro only on a page that has the cell; without script the
+// built text stays.
+---
+
+<script>
+  import { todayIn } from '../../lib/today.ts';
+
+  for (const cell of document.querySelectorAll<HTMLElement>('[data-next-gate]')) {
+    const { gateId, date, tz } = cell.dataset;
+    if (!gateId || !date) continue;
+    try {
+      if (date < todayIn(tz || 'UTC', new Date())) cell.textContent = `Gate ${gateId}, decision pending`;
+    } catch {
+      // A time zone the browser does not know: the built text stays.
+    }
+  }
+</script>

@@ -1,5 +1,6 @@
 // The <lastmod> of each sitemap entry, from git: the date of the last commit that touched the files a
-// page is made from. Used by astro.config.mjs as the `serialize` option of @astrojs/sitemap.
+// page is made from. Used by astro.config.mjs as the `serialize` option of @astrojs/sitemap, and by the
+// footer of every page (src/lib/lastUpdated.ts) for its "Last updated", so the two always agree.
 //
 //   a docs page            its governed source, as docs/publish.json lists it (docs/research/gates.md)
 //   a page of the site     its page file, every component and module it imports whose change can
@@ -40,6 +41,7 @@ export const SITE_PAGES = {
     `${SRC}/lib/ledger.ts`,
     `${SRC}/lib/maze.ts`,
     `${SRC}/lib/plan.ts`,
+    `${SRC}/lib/today.ts`,
     `${SRC}/lib/seo.ts`,
     `${SRC}/lib/sheet.ts`,
     `${SRC}/lib/url.ts`,
@@ -55,6 +57,7 @@ export const SITE_PAGES = {
     `${SRC}/components/docs`,
     `${SRC}/lib/gateClock.ts`,
     `${SRC}/lib/plan.ts`,
+    `${SRC}/lib/today.ts`,
     `${SRC}/lib/url.ts`,
     PLAN,
   ],
@@ -74,6 +77,7 @@ export const SITE_PAGES = {
     `${SRC}/components/docs`,
     `${SRC}/lib/ledger.ts`,
     `${SRC}/lib/plan.ts`,
+    `${SRC}/lib/today.ts`,
     `${SRC}/lib/url.ts`,
     LEDGER,
   ],
@@ -119,17 +123,30 @@ export function lastCommit(repoRoot, files) {
   }
 }
 
-/** The `serialize` function for @astrojs/sitemap. */
-export function makeSerialize({ repoRoot, base }) {
+/**
+ * The date of the last commit that touched the files a route is made from, as an ISO 8601 string, or
+ * undefined: the same sources and the same rule as the sitemap's <lastmod>, so the footer of a page and
+ * its sitemap entry always give one date. `route` is the route below the base ('' for the landing page).
+ * With no usable git history it answers undefined for every route, never the build date.
+ */
+export function makeLastmod({ repoRoot }) {
   let sources;
   let usable;
-  return (item) => {
+  return (route) => {
     usable ??= historyAvailable(repoRoot);
-    if (!usable) return item;
+    if (!usable) return undefined;
     sources ??= sourcesByRoute(repoRoot);
+    const files = Object.hasOwn(sources, route) ? sources[route] : undefined;
+    return files ? lastCommit(repoRoot, files) : undefined;
+  };
+}
+
+/** The `serialize` function for @astrojs/sitemap. */
+export function makeSerialize({ repoRoot, base }) {
+  const lastmodOf = makeLastmod({ repoRoot });
+  return (item) => {
     const route = routeOfUrl(item.url, base);
-    const files = route === null ? undefined : sources[route];
-    const lastmod = files && lastCommit(repoRoot, files);
+    const lastmod = route === null ? undefined : lastmodOf(route);
     return lastmod ? { ...item, lastmod } : item;
   };
 }

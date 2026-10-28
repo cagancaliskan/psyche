@@ -5,7 +5,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, 
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SITE_PAGES, historyAvailable, lastCommit, makeSerialize, routeOfUrl, sourcesByRoute } from './sitemap-lastmod.mjs';
+import { SITE_PAGES, historyAvailable, lastCommit, makeLastmod, makeSerialize, routeOfUrl, sourcesByRoute } from './sitemap-lastmod.mjs';
 
 const MANIFEST = {
   sections: [{ title: 'S', pages: [{ src: 'docs/research/gates.md', slug: 'research/gates' }, { src: 'docs/PSYCHE.md', slug: 'substrate/overview' }] }],
@@ -92,6 +92,24 @@ test('each page gets the date of the last commit that touched its own files', ()
   }
 });
 
+test('makeLastmod gives a route the date its sitemap entry carries, and nothing for a route with no sources', () => {
+  const dir = fixture();
+  try {
+    const lastmodOf = makeLastmod({ repoRoot: dir });
+    const serialize = makeSerialize({ repoRoot: dir, base: BASE });
+    for (const route of ['', 'roadmap', 'battery', 'status', 'research/gates', 'substrate/overview']) {
+      assert.equal(lastmodOf(route), serialize({ url: url(route) }).lastmod, `route "${route}"`);
+    }
+    assert.equal(lastmodOf('research/gates'), '2026-03-05T08:30:00.000Z');
+    // the 404 page, an unknown route and a name from Object.prototype are made from nothing: no date
+    assert.equal(lastmodOf('404'), undefined);
+    assert.equal(lastmodOf('nowhere'), undefined);
+    assert.equal(lastmodOf('constructor'), undefined);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
 test('a page with no source, or a file with no history, keeps its entry without a date', () => {
   const dir = fixture();
   try {
@@ -112,12 +130,15 @@ test('without git history no date is written: a shallow clone, and a folder that
     execFileSync('git', ['clone', '-q', '--depth', '1', `file://${dir}`, shallow], { env: ENV, stdio: 'ignore' });
     assert.equal(historyAvailable(shallow), false);
     assert.deepEqual(makeSerialize({ repoRoot: shallow, base: BASE })({ url: url('research/gates') }), { url: url('research/gates') });
+    // the footer asks the same helper: with no honest history it writes nothing, and never the build date
+    assert.equal(makeLastmod({ repoRoot: shallow })('research/gates'), undefined);
 
     const bare = join(parent, 'plain');
     mkdirSync(join(bare, 'docs'), { recursive: true });
     writeFileSync(join(bare, 'docs/publish.json'), JSON.stringify(MANIFEST));
     assert.equal(historyAvailable(bare), false);
     assert.deepEqual(makeSerialize({ repoRoot: bare, base: BASE })({ url: url('') }), { url: url('') });
+    assert.equal(makeLastmod({ repoRoot: bare })(''), undefined);
   } finally {
     rmSync(dir, { recursive: true, force: true });
     rmSync(parent, { recursive: true, force: true });

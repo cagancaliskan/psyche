@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import {
   BASE,
+  NOT_FOUND,
   PROJECT_DESCRIPTION,
   SITE_URL,
   jsonLdScript,
@@ -125,4 +126,23 @@ test('the manifest, the social card and its alt text say the project sentence of
   assert.equal(manifest.description, sentence);
   assert.equal(sidecar.tagline, sentence);
   assert.ok(sidecar.alt.endsWith(` ${sentence}`), 'the card alt text ends with the sentence');
+});
+
+test('the 404 page has its own name and description, and is the one page that is noindex', () => {
+  assert.equal(NOT_FOUND.route, '404');
+  // a name, not a status code, and not the site name or the project sentence
+  assert.equal(NOT_FOUND.title, 'Page not found');
+  assert.doesNotMatch(NOT_FOUND.title, /\d/);
+  assert.notEqual(NOT_FOUND.description, PROJECT_DESCRIPTION);
+  // the same length rule as every other page (scripts/check-seo.mjs)
+  assert.ok(NOT_FOUND.description.length >= 120 && NOT_FOUND.description.length <= 160, `${NOT_FOUND.description.length} characters`);
+  assert.doesNotMatch(NOT_FOUND.description, /\b(proven|original|first|conscious|sentient)\b/i);
+  const head = seoHead(starlightHead(NOT_FOUND.title, NOT_FOUND.description), NOT_FOUND.route);
+  assert.equal(attrOf(head, 'name', 'robots'), 'noindex');
+  assert.equal(attrOf(head, 'name', 'twitter:title'), NOT_FOUND.title);
+  assert.equal(attrOf(head, 'name', 'twitter:description'), NOT_FOUND.description);
+  assert.equal(attrOf(head, 'property', 'og:type'), 'article');
+  // the route is what routeOf names the page's address
+  assert.equal(routeOf(`${BASE}404/`), NOT_FOUND.route);
+  assert.equal(routeOf(`${BASE}404`), NOT_FOUND.route);
 });
