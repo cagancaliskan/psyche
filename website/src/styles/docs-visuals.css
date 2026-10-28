@@ -1,24 +1,48 @@
 /*
- * Figures and shared pieces in the neural-cartography identity: the mono kicker, the spotlight
- * card, the one-pass beam on connectors, the figure frame and the visual headers of the docs
- * pages. Structure (connectors, rails, plates) is drawn in the structure colour; the signal colour
- * marks only the agent, "now" and the active line. The layer statement repeats global.css, so the
- * order holds whichever stylesheet the browser reads first.
+ * Figures and shared pieces of the documentation pages, drawn as a drafting sheet like the rest of
+ * the site: hairline rules, mono labels (--sx-lab-size, --sx-lab-track), the shared registration
+ * corners (.sx-reg in global.css), square marks, ruled columns and rows in place of cards, and no
+ * fill, no glow, no shadow and no motion. Structure (connectors, rails, leaders) is drawn in the
+ * structure colour; the signal colour marks only what is current. Every colour is a token. The
+ * layer statement repeats global.css, so the order holds whichever stylesheet the browser reads
+ * first.
+ *
+ * Catalog sources (21st.dev), rewritten in plain CSS with none of their code or dependencies (each
+ * credit is on one line, so that it can be searched for):
+ *   - "Stepper" by corr: columns sized by a step count, each step a marker with its rule to the next
+ *     marker (the stage arc and the release flow);
+ *   - "8bit Timeline Horizontal" by theorcdev: square numbered checkpoints on a track that runs across
+ *     and turns down when the figure is narrow;
+ *   - "Changelog Timeline" by shadcnui-blocks: the label column beside a rule that carries its marker
+ *     (the role lanes);
+ *   - "Deployment Pipeline" by rmahammad: a state told by a word beside its mark, and a layout that
+ *     follows the figure's own width, not the window's;
+ *   - "How It Works Steps" by ln-dev7: the sequences' first form, markers on a rail with text under each;
+ *   - "Corner Frame" by kevingirelli: the corners of the figure's frame (global.css holds the recipe);
+ *   - "Circuit Board" by componentry: the evaluation pipeline's traces, which leave a box level, turn in
+ *     the gap and enter the next one level;
+ *   - "Blueprint Tiers" by arihantcodes_1f7b8c4d: the determinism tiers' ruled rows of hairlines and
+ *     mono labels;
+ *   - "Marks Slider" by ai2 and "Leaderboard Bars" by eugeneshilow: the tiers' three-cell gauge, a scale
+ *     with its marks labelled in mono.
+ * The layer stack's elevation (bands, leaders, the loop bracket) is drawn from the brief: the catalog's
+ * layer diagrams are isometric, which this sheet does not use.
  */
 @layer base, starlight, theme, components, utilities;
 
 @layer components {
-  /* ---------- Kicker: mono label above a heading or a figure ---------- */
+  /* ---------- Kicker: the site's mono label above a heading or a figure ---------- */
   .sx-kicker {
     display: inline-flex;
+    flex-wrap: wrap;
     align-items: center;
-    gap: 0.6rem;
+    gap: 0.2rem 0.6rem;
     margin: 0;
     font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.6875rem;
+    font-size: var(--sx-lab-size);
     font-weight: 500;
     line-height: 1.4;
-    letter-spacing: 0.14em;
+    letter-spacing: var(--sx-lab-track);
     text-transform: uppercase;
     color: var(--sx-muted);
   }
@@ -27,194 +51,38 @@
     font-variant-numeric: tabular-nums;
   }
 
-  /* ---------- Spotlight card ---------- */
-  /* Pointer-following light and a lit edge, after "Spotlight" by kevingirelli (21st.dev); the
-     pointer position is written by motion.ts on any element with data-spot. */
-  .sx-spot {
-    position: relative;
-    isolation: isolate;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 14px;
-    background: var(--sx-surface);
-    box-shadow: inset 0 1px 0 color-mix(in oklab, white 4%, transparent);
-    transition: border-color 180ms var(--sx-ease);
-  }
-  .sx-spot::before,
-  .sx-spot::after {
-    content: '';
-    position: absolute;
-    pointer-events: none;
-    border-radius: inherit;
-    opacity: 0;
-    transition: opacity 180ms var(--sx-ease);
-  }
-  .sx-spot::before {
-    inset: 0;
-    z-index: -1;
-    background: radial-gradient(
-      22rem circle at var(--sx-spot-x, 50%) var(--sx-spot-y, 50%),
-      color-mix(in oklab, var(--sx-agent) 7%, transparent),
-      transparent 70%
-    );
-  }
-  .sx-spot::after {
-    inset: -1px;
-    padding: 1px;
-    background: radial-gradient(
-      14rem circle at var(--sx-spot-x, 50%) var(--sx-spot-y, 50%),
-      color-mix(in oklab, var(--sx-agent) 55%, transparent),
-      transparent 65%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-image: linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-    mask-clip: content-box, border-box;
-    mask-composite: exclude;
-  }
-  .sx-spot:is(:hover, :focus-within) {
-    border-color: color-mix(in oklab, var(--sx-agent) 30%, var(--sx-hairline));
-  }
-  .sx-spot:is(:hover, :focus-within)::before,
-  .sx-spot:is(:hover, :focus-within)::after {
-    opacity: 1;
-  }
-
-  /* ---------- Beams: one light pulse along fixed connectors ---------- */
-  /* After "Klyv Animated Beam" by klyv-ui (21st.dev): a short dash walked along each fixed path by
-     stroke-dashoffset. It runs once when the figure is seen and again on hover; nothing else moves,
-     and with reduced motion the pulse never shows. */
-  .sx-beam {
-    overflow: visible;
-  }
-  .sx-beam path {
-    fill: none;
-  }
-  .sx-beam__track {
-    stroke: color-mix(in oklab, var(--sx-structure) 50%, transparent);
-    stroke-width: 1.25;
-  }
-  .sx-beam__end {
-    fill: var(--sx-structure);
-  }
-  .sx-beam__pulse {
-    stroke: color-mix(in oklab, var(--sx-structure) 55%, var(--sl-color-white));
-    stroke-width: 2.5;
-    stroke-linecap: round;
-    stroke-dasharray: 0.18 1.4;
-    stroke-dashoffset: 0.24;
-    opacity: 0;
-  }
-
-  /* Straight rails between the markers of a sequence: horizontal in a wide figure, vertical in a
-     narrow one. The pulse is a short bright segment that crosses the rail once. */
-  .sx-rail {
-    --sx-rail-line: color-mix(in oklab, var(--sx-structure) 50%, transparent);
-    position: relative;
-    display: block;
-    flex: 1 1 auto;
-    overflow: hidden;
-    width: 9px;
-    min-height: 1rem;
-    background: linear-gradient(var(--sx-rail-line), var(--sx-rail-line)) center / 1px 100% no-repeat;
-  }
-  .sx-rail[data-style='dashed'] {
-    background: repeating-linear-gradient(180deg, var(--sx-rail-line) 0 4px, transparent 4px 8px) center / 1px 100% no-repeat;
-  }
-  .sx-rail__pulse {
-    position: absolute;
-    top: 0;
-    left: 3px;
-    width: 3px;
-    height: 40%;
-    border-radius: 3px;
-    background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--sx-structure) 55%, var(--sl-color-white)), transparent);
-    box-shadow: 0 0 6px color-mix(in oklab, var(--sx-structure) 60%, transparent);
-    opacity: 0;
-    --sx-rail-anim: sx-rail-y;
-  }
-  @keyframes sx-beam {
-    from {
-      stroke-dashoffset: 0.24;
-      opacity: 1;
-    }
-    to {
-      stroke-dashoffset: -1.05;
-      opacity: 1;
-    }
-  }
-  @keyframes sx-rail-x {
-    from {
-      transform: translateX(-100%);
-      opacity: 1;
-    }
-    to {
-      transform: translateX(250%);
-      opacity: 1;
-    }
-  }
-  @keyframes sx-rail-y {
-    from {
-      transform: translateY(-100%);
-      opacity: 1;
-    }
-    to {
-      transform: translateY(250%);
-      opacity: 1;
-    }
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    :is([data-sx-beams][data-run], [data-sx-beams]:hover) .sx-beam__pulse {
-      animation: sx-beam 1s var(--sx-ease) calc(var(--i, 0) * 0.55s) both;
-    }
-    :is([data-sx-beams][data-run], [data-sx-beams]:hover) .sx-rail__pulse {
-      animation: var(--sx-rail-anim) 0.9s var(--sx-ease) calc(var(--i, 0) * 0.55s) both;
-    }
-  }
-
-  /* ---------- Figure frame ---------- */
-  /* A hairline panel over a faint coordinate grid that fades out from the centre. */
+  /* ---------- Figure frame: a drafting figure ---------- */
+  /* A hairline frame with the registration corners (.sx-reg, added by Figure.astro), no fill, no
+     grid, no radius and no shadow. The caption is the figure's label and one line of lead, ruled
+     off from the drawing across the whole width of the frame. --dv-pad is the frame's padding, so
+     the caption and a closing note can run edge to edge with a negative margin of the same size.
+     The frame is a container named sx-dv, which the figures' layouts read: the figure's own
+     width decides, not the window's. A bare figure holds a sheet that has a frame and rules of
+     its own, so it draws none and keeps only the caption above it. */
   .sx-dv {
+    --dv-pad: 1.25rem;
     container: sx-dv / inline-size;
-    position: relative;
     isolation: isolate;
     margin: 0;
-    padding: 1.25rem;
+    padding: var(--dv-pad);
     border: 1px solid var(--sx-hairline);
-    border-radius: 14px;
-    background: color-mix(in oklab, var(--sx-surface) 72%, var(--sl-color-black));
-    box-shadow: inset 0 1px 0 color-mix(in oklab, white 4%, transparent);
-  }
-  .sx-dv::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    pointer-events: none;
-    background-image:
-      linear-gradient(var(--sx-grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--sx-grid) 1px, transparent 1px);
-    background-size: 24px 24px;
-    background-position: -1px -1px;
-    -webkit-mask-image: radial-gradient(ellipse at 50% 45%, #000 25%, transparent 78%);
-    mask-image: radial-gradient(ellipse at 50% 45%, #000 25%, transparent 78%);
   }
   .sx-dv--bare {
-    padding: 0;
+    --dv-pad: 0px;
     border: 0;
-    background: none;
-    box-shadow: none;
-  }
-  .sx-dv--bare::before {
-    display: none;
   }
   .sx-dv__cap {
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
+    margin: calc(-1 * var(--dv-pad)) calc(-1 * var(--dv-pad)) var(--dv-pad);
+    padding: 0.9rem var(--dv-pad) 1rem;
+    border-block-end: 1px solid var(--sx-hairline);
+  }
+  .sx-dv--bare > .sx-dv__cap {
     margin: 0 0 1.25rem;
+    padding: 0;
+    border-block-end: 0;
   }
   .sx-dv__lead {
     margin: 0;
@@ -224,27 +92,26 @@
     color: var(--sl-color-gray-2);
     text-wrap: pretty;
   }
-  .sx-dv__foot {
-    margin: 1.1rem 0 0;
-    max-width: 66ch;
-    font-size: 0.875rem;
-    line-height: 1.55;
-    color: var(--sx-muted);
-  }
   .sx-dv-slot > * + * {
     margin-top: 1.25rem;
   }
 
-  /* A small node: title in the sans, a muted line under it. */
+  /* ---------- A node of a drawing: a hairline box ---------- */
+  /* Square, no fill beyond the sheet, a line in the strong rule so that the box reads as an object.
+     What is private is drawn with a dashed outline and said in words. Words wrap anywhere, so a
+     long word cannot push a box past a narrow screen at a large text size. */
   .sx-node {
     display: flex;
     flex-direction: column;
     gap: 0.2rem;
-    padding: 0.55rem 0.65rem 0.6rem;
-    border-radius: 10px;
+    margin: 0;
+    padding: 0.5rem 0.6rem 0.55rem;
+    border: 1px solid var(--sx-rule-strong);
+    background: var(--sl-color-black);
     font-size: 0.8125rem;
     line-height: 1.3;
     color: var(--sl-color-white);
+    overflow-wrap: anywhere;
   }
   .sx-node__title {
     font-weight: 600;
@@ -257,25 +124,17 @@
   .sx-node[data-private] {
     border-style: dashed;
   }
-  /* A static signal dot for the agents; only the roadmap's "now" dot ever pulses. */
-  .sx-node__agent {
-    display: inline-block;
-    width: 0.45rem;
-    height: 0.45rem;
-    margin-inline-end: 0.4rem;
-    border-radius: 50%;
-    background: var(--sx-agent);
-    box-shadow: var(--sx-glow);
-    vertical-align: 0.08em;
-  }
 
   /* ---------- Evaluation pipeline (research overview) ---------- */
-  /* Columns of nodes joined by fixed connectors. Below 40rem of width the same nodes stack. */
+  /* Narrow: the boxes stack, a connector with an arrowhead drops from each to the next, and a zone
+     (the agents, the metrics) is a box in the strong rule with its label set into its top edge. From 40rem of
+     the figure's width the same boxes are laid out in five columns on the sheet, joined by traces
+     drawn in the SVG, under a ruler whose ticks number the columns. */
   .sx-pipe__steps {
-    position: relative;
+    --link: 1.5rem;
     display: flex;
     flex-direction: column;
-    gap: 1.75rem;
+    gap: var(--link);
     margin: 0;
     padding: 0;
     list-style: none;
@@ -284,37 +143,61 @@
     position: relative;
     margin: 0;
   }
-  .sx-pipe__col:not(:last-child)::after {
+  .sx-pipe__col:where(:not(:last-child))::after {
     content: '';
     position: absolute;
     left: 50%;
-    top: calc(100% + 0.3rem);
-    height: 1.15rem;
-    border-inline-start: 1px solid color-mix(in oklab, var(--sx-structure) 50%, transparent);
+    top: 100%;
+    block-size: var(--link);
+    border-inline-start: 1px solid var(--sx-structure);
+  }
+  .sx-pipe__col:where(:not(:last-child))::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: calc(100% + var(--link) - 0.283rem);
+    box-sizing: border-box;
+    inline-size: 0.4rem;
+    block-size: 0.4rem;
+    border: solid var(--sx-structure);
+    border-width: 0 1px 1px 0;
+    transform: translate(-50%, -50%) rotate(45deg);
   }
   .sx-pipe__group {
-    padding: 0.6rem;
-    border: 1px dashed color-mix(in oklab, var(--sx-structure) 40%, transparent);
-    border-radius: 14px;
+    padding: 1.1rem 0.75rem 0.75rem;
+    border: 1px solid var(--sx-rule-strong);
   }
   .sx-pipe__glabel {
-    display: flex;
-    justify-content: center;
-    margin: 0 0 0.5rem;
+    position: absolute;
+    top: 0;
+    left: 0.6rem;
+    padding-inline: 0.4rem;
+    background: var(--sl-color-black);
+    transform: translateY(-50%);
   }
   .sx-pipe__group > ul {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(7.5rem, 100%), 1fr));
     gap: 0.5rem;
     margin: 0;
     padding: 0;
     list-style: none;
   }
-  .sx-pipe__group li {
+  .sx-pipe__group > ul > li {
     margin: 0;
   }
   .sx-pipe__svg {
     display: none;
+  }
+  .sx-pipe__line,
+  .sx-pipe__head {
+    fill: none;
+    stroke: var(--sx-structure);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+  }
+  .sx-pipe__dot {
+    fill: var(--sx-structure);
   }
   @container sx-dv (min-width: 40rem) {
     .sx-pipe__stage {
@@ -325,371 +208,481 @@
       display: block;
       position: absolute;
       inset: 0;
-      width: 100%;
-      height: 100%;
+      inline-size: 100%;
+      block-size: 100%;
     }
     .sx-pipe__steps {
       position: absolute;
       inset: 0;
       display: block;
+      counter-reset: sx-col;
+    }
+    /* The ruler: a hairline along the head of the sheet, a tick at the start of each column and its
+       number. The numbers are drawn here, not written, so the list keeps its own order. */
+    .sx-pipe__steps::before {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      top: 0;
+      border-block-start: 1px solid var(--sx-hairline);
     }
     .sx-pipe__col {
       position: absolute;
       top: 0;
       bottom: 0;
       left: var(--x);
-      width: 16%;
+      width: 17%;
+      counter-increment: sx-col;
     }
     .sx-pipe__col::after {
       display: none;
     }
-    /* Every node is placed against its column, which spans the full height of the figure. */
+    .sx-pipe__col::before {
+      content: counter(sx-col, decimal-leading-zero);
+      content: counter(sx-col, decimal-leading-zero) / '';
+      position: absolute;
+      box-sizing: border-box;
+      top: 0;
+      left: 0;
+      inline-size: auto;
+      block-size: 0.9rem;
+      padding: 0.1rem 0 0 0.35rem;
+      border: 0;
+      border-inline-start: 1px solid var(--sx-rule-strong);
+      transform: none;
+      font: 400 var(--sx-lab-size) / 1 var(--font-mono, ui-monospace, monospace);
+      letter-spacing: var(--sx-lab-track);
+      color: var(--sx-muted);
+    }
+    /* Every box is placed against its column, which spans the full height of the sheet. */
     .sx-pipe__col > .sx-node,
-    .sx-pipe__group li {
+    .sx-pipe__group > ul > li {
       position: absolute;
       left: 0;
       right: 0;
       top: var(--y);
       transform: translateY(-50%);
-      padding-inline: 0.5rem;
-      hyphens: auto;
     }
     .sx-pipe__group {
       padding: 0;
       border: 0;
-      border-radius: 0;
     }
-    .sx-pipe__group::before {
+    /* The zone is drawn a little wider than its column, so that the traces cross its edge and end on
+       the boxes. */
+    .sx-pipe__group > ul::before {
       content: '';
       position: absolute;
       top: var(--top);
       bottom: var(--bottom);
-      left: -0.45rem;
-      right: -0.45rem;
-      border: 1px dashed color-mix(in oklab, var(--sx-structure) 40%, transparent);
-      border-radius: 14px;
+      left: -0.5rem;
+      right: -0.5rem;
+      border: 1px solid var(--sx-rule-strong);
       pointer-events: none;
     }
     .sx-pipe__glabel {
-      position: absolute;
-      top: calc(var(--top) + 0.5rem);
-      left: 0;
-      right: 0;
-      margin: 0;
-      justify-content: center;
-      font-size: 0.625rem;
+      top: var(--top);
+      left: 0.1rem;
+      z-index: 1;
     }
     .sx-pipe__group > ul {
       display: block;
     }
   }
+  @media (forced-colors: active) {
+    .sx-pipe__line,
+    .sx-pipe__head {
+      stroke: CanvasText;
+    }
+    .sx-pipe__dot {
+      fill: CanvasText;
+    }
+  }
 
   /* ---------- Sequences: stage arc, release flow, role lanes ---------- */
-  /* Markers on a rail with a card or text under each, after "How It Works Steps" by ln-dev7
-     (21st.dev). Vertical by default; side by side from 40rem of figure width. */
+  /* A numbered square for each step on a hairline rail, its words beside or under it, the steps
+     ruled off from one another: no cards, no fills, no glow. Narrow, the steps stack and the rail
+     runs down from marker to marker. From 40rem of figure width the stage arc and the release flow
+     become ruled columns, one per step, the rail running across and each column's rule dropping
+     from its marker; the role lanes become ruled rows, the rail still running down. A marker is a
+     bordered square, so it survives forced colours, and its state is told by its shape as well as
+     its colour: dashed (not here: private, or later), a second heavier line (the current stage), a
+     square in a square (where the flow ends). Words wrap anywhere, so a long word cannot push the
+     figure wider than a narrow screen at a large text size. */
   .sx-seq {
+    --mk: 2rem;
+    --gap: 1rem;
+    --rail: color-mix(in oklab, var(--sx-structure) 45%, transparent);
     display: grid;
     margin: 0;
     padding: 0;
     list-style: none;
   }
   .sx-seq__item {
-    position: relative;
     display: grid;
-    grid-template-columns: 2.25rem minmax(0, 1fr);
-    column-gap: 0.9rem;
+    grid-template-columns: var(--mk) minmax(0, 1fr);
+    grid-template-areas:
+      'track body'
+      'track via';
+    column-gap: var(--gap);
     margin: 0;
   }
+
+  /* The track holds the marker. Its rail runs down to the next marker, behind it; the last step
+     has none. A rail that leads into a step that is not specified yet is dashed. */
   .sx-seq__track {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+    position: relative;
+    grid-area: track;
+  }
+  .sx-seq__track::before {
+    content: '';
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: calc(var(--mk) / 2);
+    border: 0 solid var(--rail);
+    border-inline-start-width: 1px;
+  }
+  .sx-seq__item:last-child > .sx-seq__track::before {
+    display: none;
+  }
+  .sx-seq__item[data-rail='dashed'] > .sx-seq__track::before {
+    border-style: dashed;
   }
   .sx-seq__mark {
-    flex: none;
+    position: relative;
+    z-index: 1;
     display: grid;
     place-items: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border: 1px solid color-mix(in oklab, var(--sx-structure) 60%, transparent);
-    border-radius: 999px;
+    box-sizing: border-box;
+    inline-size: var(--mk);
+    block-size: var(--mk);
+    border: 1px solid var(--sx-rule-strong);
     background: var(--sl-color-black);
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.6875rem;
-    font-weight: 500;
+    font: 500 var(--sx-lab-size) / 1 var(--font-mono, ui-monospace, monospace);
     letter-spacing: 0.04em;
-    color: var(--sl-color-white);
     font-variant-numeric: tabular-nums;
+    color: var(--sl-color-white);
   }
-  .sx-seq__item:last-child .sx-rail {
-    visibility: hidden;
+  /* The current stage: the signal colour and a heavier line. */
+  .sx-seq__item[data-state='active'] .sx-seq__mark {
+    border-width: 2px;
+    border-color: var(--sx-agent);
+    color: var(--sx-agent);
   }
+  /* Not here: a private step, a stage not specified yet, a step that only some changes take. */
+  .sx-seq__item:is([data-state='later'], [data-state='private'], [data-when]) .sx-seq__mark {
+    border-style: dashed;
+    color: var(--sx-muted);
+  }
+  /* Where the flow ends: a square in a square. */
+  .sx-seq__item[data-state='open'] .sx-seq__mark::after {
+    content: '';
+    position: absolute;
+    inset: 3px;
+    border: 1px solid var(--sx-rule-strong);
+  }
+
+  /* The words of a step: a mono label, a title and a line in the reading face. */
   .sx-seq__body {
+    grid-area: body;
     min-width: 0;
-    padding-bottom: 1.25rem;
+    padding: 0.4rem 0 1.5rem;
+    overflow-wrap: anywhere;
   }
-  .sx-seq__item:last-child .sx-seq__body {
+  .sx-seq__item:last-child > .sx-seq__body {
     padding-bottom: 0;
   }
-  .sx-seq__via {
-    grid-column: 2;
-    margin: -0.6rem 0 1.1rem;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.625rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--sx-structure);
+  .sx-seq__body > .sx-kicker {
+    display: block;
   }
   .sx-seq__title {
-    margin: 0.35rem 0 0;
+    margin: 0.3rem 0 0;
     font-size: 0.9375rem;
     font-weight: 600;
     line-height: 1.3;
     color: var(--sl-color-white);
   }
   .sx-seq__text {
-    margin: 0.3rem 0 0;
+    margin: 0.35rem 0 0;
     font-size: 0.875rem;
     line-height: 1.5;
     color: var(--sl-color-gray-2);
+    text-wrap: pretty;
   }
-  .sx-seq__item[data-state='active'] .sx-seq__mark {
-    border-color: var(--sx-agent);
-    color: var(--sx-agent);
-    box-shadow: var(--sx-glow);
+  /* What is handed to the next step, on its rail: narrow, a leader runs from the rail to the label;
+     wide, the label stands over the rail between the two markers. */
+  .sx-seq__via {
+    position: relative;
+    grid-area: via;
+    min-width: 0;
+    margin: -0.5rem 0 0;
+    padding-block-end: 1.5rem;
+    font: 400 var(--sx-lab-size) / 1.4 var(--font-mono, ui-monospace, monospace);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
+    color: var(--sx-structure);
+    overflow-wrap: anywhere;
   }
-  .sx-seq__item:is([data-state='later'], [data-state='private']) .sx-seq__mark {
+  .sx-seq__via::before {
+    content: '';
+    position: absolute;
+    inset-block-start: 0.7em;
+    inset-inline-start: calc(-1 * (var(--mk) / 2 + var(--gap)));
+    inline-size: calc(var(--mk) / 2 + var(--gap) - 0.3rem);
+    border-block-start: 1px solid var(--rail);
+  }
+  .sx-seq__item[data-rail='dashed'] > .sx-seq__via::before {
     border-style: dashed;
+  }
+  /* A stage's state: a mono label and a small square, filled when the stage is active, an outline
+     when it is paused, dashed when it is not specified yet, as the title strip draws a stage's
+     state. The word says it too. */
+  .sx-seq__state {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin: 0.85rem 0 0;
+    font: 400 var(--sx-lab-size) / 1.4 var(--font-mono, ui-monospace, monospace);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
     color: var(--sx-muted);
   }
-  .sx-seq__item[data-state='open'] .sx-seq__mark {
-    border-color: var(--sx-structure);
-    background: color-mix(in oklab, var(--sx-structure) 18%, var(--sl-color-black));
+  .sx-seq__state > span {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
-  @container sx-dv (min-width: 40rem) {
-    .sx-seq {
-      grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr));
-      column-gap: var(--gap, 1rem);
-    }
-    .sx-seq[data-via] {
-      padding-top: 1.35rem;
-    }
-    .sx-seq__item {
-      display: block;
-    }
-    .sx-seq__track {
-      flex-direction: row;
-      margin-inline-end: calc(-1 * var(--gap, 1rem));
-    }
-    .sx-seq__track .sx-rail {
-      width: auto;
-      height: 9px;
-      min-height: 0;
-      background-size: 100% 1px;
-    }
-    .sx-seq__track .sx-rail[data-style='dashed'] {
-      background-image: repeating-linear-gradient(90deg, var(--sx-rail-line) 0 4px, transparent 4px 8px);
-    }
-    .sx-seq__track .sx-rail__pulse {
-      top: 3px;
-      left: 0;
-      width: 40%;
-      height: 3px;
-      background: linear-gradient(90deg, transparent, color-mix(in oklab, var(--sx-structure) 55%, var(--sl-color-white)), transparent);
-      --sx-rail-anim: sx-rail-x;
-    }
-    .sx-seq__body {
-      padding: 0.85rem 0.75rem 0 0;
-    }
-    .sx-seq__via {
-      position: absolute;
-      top: -1.35rem;
-      left: 2.75rem;
-      right: calc(-1 * var(--gap, 1rem) + 0.5rem);
-      margin: 0;
-      text-align: center;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-  }
-
-  /* Stage arc (origins): each stage as a card under its marker, the cards of a row equally tall. */
-  .sx-arc .sx-seq__body > .sx-spot {
-    flex: 1;
-    padding: 0.9rem 1rem 1rem;
-  }
-  .sx-arc .sx-seq__body {
-    display: flex;
-    flex-direction: column;
-  }
-  @container sx-dv (min-width: 40rem) {
-    .sx-arc .sx-seq__item {
-      display: flex;
-      flex-direction: column;
-    }
-    .sx-arc .sx-seq__body {
-      flex: 1;
-    }
-  }
-  .sx-arc__state {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.45rem;
-    margin: 0.75rem 0 0;
-    padding: 0.15rem 0.6rem;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 999px;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.625rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--sl-color-gray-2);
-    width: fit-content;
-  }
-  .sx-arc__state::before {
+  .sx-seq__state::before {
     content: '';
-    width: 0.4rem;
-    height: 0.4rem;
-    border-radius: 50%;
-    border: 1px solid var(--sx-structure);
+    flex: none;
+    box-sizing: border-box;
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    margin-block-start: 0.32em;
+    border: 1px solid currentColor;
   }
-  [data-state='active'] .sx-arc__state {
-    border-color: color-mix(in oklab, var(--sx-agent) 45%, transparent);
+  /* A day is never split, unless the figure is narrower than the day (a phone at a large text size). */
+  @container sx-dv (min-width: 16rem) {
+    .sx-seq__state time {
+      white-space: nowrap;
+    }
+  }
+  .sx-seq__item[data-state='active'] .sx-seq__state {
     color: var(--sx-agent);
   }
-  [data-state='active'] .sx-arc__state::before {
-    border-color: var(--sx-agent);
+  .sx-seq__item[data-state='active'] .sx-seq__state::before {
     background: var(--sx-agent);
-    box-shadow: var(--sx-glow);
   }
-  [data-state='later'] .sx-arc__state::before {
+  .sx-seq__item[data-state='later'] .sx-seq__state::before {
     border-style: dashed;
-  }
-  [data-state='later'] .sx-spot {
-    border-style: dashed;
-    background: transparent;
-  }
-  [data-state='active'] .sx-spot {
-    border-color: color-mix(in oklab, var(--sx-agent) 30%, var(--sx-hairline));
   }
 
-  /* Release flow (disclosure policy). */
-  .sx-flow__tag {
-    display: block;
-    margin-top: 0.15rem;
+  /* Wide: ruled columns. Each step is a column of three rows (what it hands on, its marker and
+     rail, its words), and the rows are shared by every column, so the rails line up whatever the
+     length of a hand-off label. The marker sits on the column's rule, which runs on down the
+     column. */
+  @container sx-dv (min-width: 40rem) {
+    .sx-seq:not(.sx-lanes) {
+      grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr));
+      grid-template-rows: auto var(--mk) 1fr;
+    }
+    .sx-seq:not(.sx-lanes) > .sx-seq__item {
+      grid-row: 1 / span 3;
+      grid-template-columns: minmax(0, 1fr);
+      grid-template-rows: subgrid;
+      grid-template-areas: none;
+      column-gap: 0;
+    }
+    .sx-seq:not(.sx-lanes) .sx-seq__via {
+      grid-area: auto;
+      grid-row: 1;
+      grid-column: 1;
+      align-self: end;
+      margin: 0;
+      padding: 0 0.5rem 0.5rem calc(var(--mk) + 0.6rem);
+    }
+    .sx-seq:not(.sx-lanes) .sx-seq__via::before {
+      display: none;
+    }
+    .sx-seq:not(.sx-lanes) .sx-seq__track {
+      grid-area: auto;
+      grid-row: 2;
+      grid-column: 1;
+    }
+    .sx-seq:not(.sx-lanes) .sx-seq__track::before {
+      inset-block: 50% auto;
+      inset-inline: calc(var(--mk) / 2) calc(var(--mk) / -2);
+      border-inline-start-width: 0;
+      border-block-start-width: 1px;
+    }
+    .sx-seq:not(.sx-lanes) .sx-seq__body {
+      grid-area: auto;
+      grid-row: 3;
+      grid-column: 1;
+      padding: 0.9rem 0.75rem 0.25rem 0.75rem;
+      border-inline-start: 1px solid var(--sx-hairline);
+    }
   }
+
+  /* The stop under the release flow: a ruled band across the foot of the frame, its label with the
+     struck square the status page uses for a stop. */
   .sx-flow__stop {
     display: flex;
-    gap: 0.65rem;
+    flex-wrap: wrap;
     align-items: baseline;
-    margin: 1.25rem 0 0;
-    padding: 0.7rem 0.9rem;
-    border: 1px dashed var(--sx-hairline);
-    border-radius: 10px;
+    gap: 0.4rem 0.9rem;
+    margin: 1.5rem calc(-1 * var(--dv-pad)) calc(-1 * var(--dv-pad));
+    padding: 0.9rem var(--dv-pad) 1rem;
+    border-block-start: 1px solid var(--sx-hairline);
     font-size: 0.875rem;
     line-height: 1.5;
     color: var(--sl-color-gray-2);
   }
   .sx-flow__stop .sx-kicker {
     flex: none;
+    gap: 0.5rem;
+    color: var(--sl-color-white);
+  }
+  .sx-flow__stop > span:last-child {
+    flex: 1 1 14rem;
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+  .sx-flow__mark {
+    position: relative;
+    flex: none;
+    box-sizing: border-box;
+    inline-size: 0.5625rem;
+    block-size: 0.5625rem;
+    border: 1.5px solid currentColor;
+  }
+  .sx-flow__mark::after {
+    content: '';
+    position: absolute;
+    inset-inline: -2px;
+    top: calc(50% - 0.75px);
+    border-top: 1.5px solid currentColor;
+    transform: rotate(-45deg);
   }
 
-  /* Role lanes (methodology): one lane per role, joined by the rail in the order a brick moves. */
-  .sx-lanes .sx-seq__item {
-    grid-template-columns: 2.25rem minmax(0, 1fr);
-  }
-  .sx-lanes .sx-seq__body {
-    padding-bottom: 0.75rem;
-  }
-  .sx-lane {
-    display: grid;
-    gap: 0.35rem 1.25rem;
-    padding: 0.75rem 1rem 0.8rem;
-  }
+  /* Role lanes: one step per role, in the order a brick moves through them. Narrow, a stack like the
+     others; wide, ruled rows: the marker on the rail, the role as a mono label in a column of its
+     own, then what the role does and the line under it. */
   .sx-lane__role {
-    color: var(--sx-structure);
+    display: block;
   }
   .sx-lane__act {
-    margin: 0;
+    margin: 0.3rem 0 0;
     font-size: 0.9375rem;
     font-weight: 600;
     line-height: 1.35;
     color: var(--sl-color-white);
   }
   .sx-lane__detail {
-    margin: 0;
-    font-size: 0.8125rem;
+    margin: 0.35rem 0 0;
+    font-size: 0.875rem;
     line-height: 1.5;
-    color: var(--sx-muted);
-  }
-  .sx-lane[data-when] {
-    border-style: dashed;
+    color: var(--sl-color-gray-2);
+    text-wrap: pretty;
   }
   @container sx-dv (min-width: 40rem) {
     .sx-lanes {
-      grid-template-columns: minmax(0, 1fr);
+      --row: 0.9rem;
     }
-    .sx-lanes .sx-seq__item {
-      display: grid;
+    .sx-lanes > .sx-seq__item {
+      column-gap: 1.25rem;
     }
-    .sx-lanes .sx-seq__track {
-      flex-direction: column;
-      margin-inline-end: 0;
+    .sx-lanes > .sx-seq__item:first-child {
+      --row: 0px;
     }
-    .sx-lanes .sx-seq__track .sx-rail {
-      width: 9px;
-      height: auto;
-      min-height: 1rem;
-      background-size: 1px 100%;
-    }
-    .sx-lanes .sx-seq__track .sx-rail__pulse {
-      top: 0;
-      left: 3px;
-      width: 3px;
-      height: 40%;
-      background: linear-gradient(180deg, transparent, color-mix(in oklab, var(--sx-structure) 55%, var(--sl-color-white)), transparent);
-      --sx-rail-anim: sx-rail-y;
+    .sx-lanes .sx-seq__mark {
+      margin-block-start: var(--row);
     }
     .sx-lanes .sx-seq__body {
-      padding: 0 0 0.75rem;
-    }
-    .sx-lane {
-      grid-template-columns: 8.5rem minmax(0, 1fr);
+      display: grid;
+      grid-template-columns: 8rem minmax(0, 1fr);
+      column-gap: 1.25rem;
       align-items: baseline;
+      padding: calc(var(--row) + 0.3rem) 0 0.9rem;
+      border-block-start: 1px solid var(--sx-hairline);
     }
+    .sx-lanes > .sx-seq__item:first-child > .sx-seq__body {
+      border-block-start: 0;
+      padding-block-start: 0.3rem;
+    }
+    .sx-lanes > .sx-seq__item:last-child > .sx-seq__body {
+      padding-block-end: 0;
+    }
+    .sx-lane__role {
+      grid-row: 1 / span 2;
+    }
+    .sx-lane__act,
     .sx-lane__detail {
       grid-column: 2;
+      margin: 0;
+    }
+    .sx-lane__detail {
+      margin-block-start: 0.3rem;
+    }
+  }
+
+  /* A small screen, or text enlarged until the screen is small: the frame's padding, the markers and
+     the gap beside them give up some of their room to the words. */
+  @media (max-width: 24rem) {
+    .sx-dv:not(.sx-dv--bare) {
+      --dv-pad: 0.75rem;
+    }
+    .sx-seq {
+      --mk: 1.75rem;
+      --gap: 0.75rem;
+    }
+    .sx-pipe__group {
+      padding-inline: 0.4rem;
+    }
+    .sx-node {
+      padding-inline: 0.45rem;
+    }
+  }
+
+  /* Forced colours repaint a background that is only a mark, so the active stage's square keeps a
+     system colour. Rails and markers are borders and survive. */
+  @media (forced-colors: active) {
+    .sx-seq__item[data-state='active'] .sx-seq__state::before {
+      background: Highlight;
+      forced-color-adjust: none;
     }
   }
 
   /* ---------- Determinism tiers (engineering) ---------- */
+  /* A ruled sheet, one row for each tier, the strongest first, the rows running from edge to edge of
+     the frame. A row is the tier's letter over its gauge, then the guarantee and, under a hairline,
+     what the tier applies to and how it is checked. The gauge is a scale of three cells, the weakest
+     tier on the left; the cells filled count the row's place on the scale. The cells of the first row
+     are named by their tier's letter in the mono label, once, as a ruler is marked once; the rows
+     under it share that scale. A filled cell is a border as thick as the cell, so that it survives
+     forced colours. Narrow, a row stacks. */
   .sx-tiers {
-    display: grid;
-    gap: 0.85rem;
-    margin: 0;
+    margin: calc(-1 * var(--dv-pad));
     padding: 0;
     list-style: none;
   }
-  @container sx-dv (min-width: 40rem) {
-    .sx-tiers {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
   .sx-tier {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.85rem;
     margin: 0;
-    padding: 1rem 1rem 1.05rem;
+    padding: 1.1rem var(--dv-pad) 1.2rem;
   }
-  .sx-tier__head {
+  .sx-tier + .sx-tier {
+    border-block-start: 1px solid var(--sx-hairline);
+  }
+  .sx-tier__id {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-end;
     justify-content: space-between;
-    gap: 0.75rem;
+    gap: 0.75rem 1rem;
   }
   .sx-tier__letter {
+    margin: 0;
     font-family: var(--sx-font-display);
     font-size: 2.75rem;
     font-weight: 300;
@@ -697,29 +690,35 @@
     letter-spacing: -0.03em;
     color: var(--sl-color-white);
   }
-  /* Three bars, filled by the strength of the guarantee: A is the strongest tier. */
-  .sx-tier__meter {
-    display: flex;
-    gap: 3px;
-    align-items: flex-end;
+  .sx-gauge {
+    display: inline-flex;
+    gap: 0.3rem;
+    flex: none;
   }
-  .sx-tier__meter span {
-    width: 5px;
-    border-radius: 2px;
-    border: 1px solid color-mix(in oklab, var(--sx-structure) 55%, transparent);
+  .sx-gauge > span {
+    display: grid;
+    justify-items: center;
+    inline-size: 1.75rem;
+    font: 400 var(--sx-lab-size) / 1 var(--font-mono, ui-monospace, monospace);
+    letter-spacing: var(--sx-lab-track);
+    color: var(--sx-muted);
   }
-  .sx-tier__meter span:nth-child(1) {
-    height: 0.6rem;
+  .sx-gauge > span::before {
+    content: '';
+    box-sizing: border-box;
+    inline-size: 100%;
+    block-size: 0.5625rem;
+    border: 1px solid var(--sx-rule-strong);
   }
-  .sx-tier__meter span:nth-child(2) {
-    height: 0.9rem;
+  .sx-gauge > span[data-l]::after {
+    content: attr(data-l);
+    content: attr(data-l) / '';
+    margin-block-start: 0.4rem;
   }
-  .sx-tier__meter span:nth-child(3) {
-    height: 1.2rem;
-  }
-  .sx-tier__meter span[data-on] {
-    background: var(--sx-structure);
+  .sx-gauge > span[data-on]::before {
+    border-width: 0.28125rem;
     border-color: var(--sx-structure);
+    background: var(--sx-structure);
   }
   .sx-tier__guarantee {
     margin: 0;
@@ -727,29 +726,73 @@
     font-weight: 600;
     line-height: 1.4;
     color: var(--sl-color-white);
+    text-wrap: pretty;
   }
   .sx-tier dl {
     display: grid;
-    gap: 0.5rem;
-    margin: auto 0 0;
-    padding-top: 0.65rem;
-    border-top: 1px solid var(--sx-hairline);
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.8rem;
+    margin: 0.8rem 0 0;
+    padding-block-start: 0.75rem;
+    border-block-start: 1px solid var(--sx-hairline);
+  }
+  .sx-tier dl > div {
+    min-width: 0;
   }
   .sx-tier dt {
-    font-size: 0.625rem;
+    display: block;
   }
   .sx-tier dd {
-    margin: 0.1rem 0 0;
+    margin: 0.35rem 0 0;
     font-size: 0.8125rem;
-    line-height: 1.45;
+    line-height: 1.5;
     color: var(--sl-color-gray-2);
+    overflow-wrap: anywhere;
+  }
+  @container sx-dv (min-width: 40rem) {
+    .sx-tier {
+      grid-template-columns: 7.5rem minmax(0, 1fr);
+      column-gap: 1.75rem;
+    }
+    .sx-tier__id {
+      flex-direction: column;
+      align-items: flex-start;
+      justify-content: flex-start;
+      gap: 0.9rem;
+    }
+    .sx-tier dl {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      column-gap: 1.25rem;
+    }
+    .sx-tier dl > div + div {
+      padding-inline-start: 1.25rem;
+      border-inline-start: 1px solid var(--sx-hairline);
+    }
+  }
+  @media (forced-colors: active) {
+    .sx-gauge > span[data-on]::before {
+      border-color: Highlight;
+      forced-color-adjust: none;
+    }
   }
 
   /* ---------- Layer stack (substrate) ---------- */
-  /* Exploded isometric plates, one per layer, with dashed construction lines through their
-     corners, after "Stack" by abhishek-mallick (21st.dev), drawn once on the server. The store
-     sits at the bottom; the list keeps reading order from the bottom up. */
+  /* An elevation: the layers are ruled bands one on top of the other, the store at the bottom,
+     each band labelled with its module in mono; a leader runs from each band to its name, its line
+     and its state; a bracket on the left leaves the top band and enters the bottom one (the loop
+     the last line describes). The bands share their edges. The list keeps reading order from the
+     bottom up. Narrow, the bands and the bracket are left out and a layer is a ruled row: its name,
+     its module under it, its line and its state. A state is a mono label with the square the
+     status page draws for it: filled for what is verified, a square in a square for a mechanism the
+     tester verified. */
+  .sx-elev {
+    --loop: 1.5rem;
+    --band: 12.5rem;
+    --lead: 2.25rem;
+    --band-h: 5.5rem;
+  }
   .sx-stack {
+    position: relative;
     display: flex;
     flex-direction: column-reverse;
     margin: 0;
@@ -757,66 +800,77 @@
     list-style: none;
   }
   .sx-stack__layer {
-    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    gap: 0.5rem;
+    row-gap: 0.35rem;
     margin: 0;
-    padding: 0.65rem 0;
-    border-top: 1px solid var(--sx-hairline);
+    padding: 0.8rem 0 0.85rem;
+    border-block-start: 1px solid var(--sx-hairline);
   }
   .sx-stack__layer:last-child {
-    border-top: 0;
-  }
-  .sx-stack__plate {
-    display: none;
+    border-block-start: 0;
+    padding-block-start: 0;
   }
   .sx-stack__name {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: baseline;
-    gap: 0.25rem 0.65rem;
     margin: 0;
     font-size: 0.9375rem;
     font-weight: 600;
     line-height: 1.3;
     color: var(--sl-color-white);
+    overflow-wrap: anywhere;
   }
   .sx-stack__module {
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.6875rem;
-    font-weight: 400;
+    inline-size: fit-content;
+    max-inline-size: 100%;
+    padding: 0.15rem 0.45rem;
+    border: 1px solid var(--sx-hairline);
+    background: none;
+    font: 400 0.6875rem / 1.4 var(--font-mono, ui-monospace, monospace);
     color: var(--sx-muted);
+    overflow-wrap: anywhere;
   }
   .sx-stack__text {
     margin: 0;
     font-size: 0.8125rem;
     line-height: 1.5;
     color: var(--sl-color-gray-2);
+    overflow-wrap: anywhere;
   }
   .sx-stack__tier {
     display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    width: fit-content;
-    padding: 0.1rem 0.55rem;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 999px;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.625rem;
-    letter-spacing: 0.12em;
+    align-items: flex-start;
+    gap: 0.5rem;
+    inline-size: fit-content;
+    max-inline-size: 100%;
+    margin-block-start: 0.15rem;
+    font: 400 var(--sx-lab-size) / 1.4 var(--font-mono, ui-monospace, monospace);
+    letter-spacing: var(--sx-lab-track);
     text-transform: uppercase;
-    color: var(--sl-color-gray-2);
+    color: var(--sx-muted);
+    overflow-wrap: anywhere;
   }
-  .sx-stack__tier::before {
+  .sx-stack__mark {
+    position: relative;
+    flex: none;
+    box-sizing: border-box;
+    inline-size: 0.5625rem;
+    block-size: 0.5625rem;
+    margin-block-start: 0.28em;
+    border: 1.5px solid var(--sx-structure);
+  }
+  [data-tier='proven'] > .sx-stack__tier {
+    color: var(--sl-color-gray-1);
+  }
+  [data-tier='proven'] .sx-stack__mark {
+    border-width: 0.3125rem;
+  }
+  /* A square in a square: the mechanism is built and the tester has verified it. */
+  [data-tier='mechanism'] .sx-stack__mark::after {
     content: '';
-    width: 0.4rem;
-    height: 0.4rem;
-    border-radius: 50%;
-    border: 1px solid var(--sx-structure);
-  }
-  [data-tier='proven'] .sx-stack__tier::before {
-    background: var(--sx-structure);
+    position: absolute;
+    inset: 1px;
+    box-sizing: border-box;
+    border: 1.5px solid var(--sx-structure);
   }
   .sx-stack__loop {
     display: flex;
@@ -831,70 +885,108 @@
     flex: none;
     color: var(--sx-structure);
   }
-  @container sx-dv (min-width: 36rem) {
+  @container sx-dv (min-width: 34rem) {
+    .sx-stack {
+      padding-inline-start: var(--loop);
+    }
     .sx-stack__layer {
-      grid-template-columns: 11rem minmax(0, 1fr);
-      column-gap: 1.25rem;
-      align-items: center;
+      grid-template-columns: var(--band) var(--lead) minmax(0, 1fr);
+      grid-template-rows: auto auto 1fr;
+      min-height: var(--band-h);
+      row-gap: 0;
       padding: 0;
-      border-top: 0;
-      min-height: 4.4rem;
+      border-block-start: 0;
+      border-block-end: 1px solid var(--sx-hairline);
     }
-    .sx-stack__plate {
-      display: block;
-      position: relative;
-      align-self: stretch;
+    .sx-stack__layer:last-child {
+      border-block-start: 1px solid var(--sx-hairline);
     }
-    .sx-stack__plate svg {
-      position: absolute;
-      left: 0;
-      top: 50%;
-      width: 11rem;
-      height: auto;
-      transform: translateY(-50%);
-      overflow: visible;
-    }
-    .sx-stack__body {
+    /* The band: the module's name in a box that is as tall as the row, sharing its edges with the
+       bands above and below it. */
+    .sx-stack__module {
+      grid-column: 1;
+      grid-row: 1 / -1;
       display: grid;
-      gap: 0.3rem;
-      padding: 0.6rem 0 0.6rem 1rem;
-      border-inline-start: 1px solid var(--sx-hairline);
+      place-items: center;
+      inline-size: auto;
+      max-inline-size: none;
+      padding: 0.5rem 0.25rem;
+      border: 1px solid var(--sx-rule-strong);
+      border-block-start-width: 0;
+      background: var(--sl-color-black);
+      font-size: 0.6875rem;
+      line-height: 1.4;
+      text-align: center;
+      color: var(--sl-color-gray-1);
     }
-  }
-  .sx-plate__top {
-    fill: color-mix(in oklab, var(--sx-structure) 10%, var(--sx-surface));
-    stroke: color-mix(in oklab, var(--sx-structure) 70%, transparent);
-    stroke-width: 1;
-  }
-  .sx-plate__side {
-    fill: color-mix(in oklab, var(--sx-structure) 22%, var(--sl-color-black));
-    stroke: color-mix(in oklab, var(--sx-structure) 45%, transparent);
-    stroke-width: 1;
-  }
-  .sx-plate__grid {
-    fill: none;
-    stroke: color-mix(in oklab, var(--sx-structure) 22%, transparent);
-    stroke-width: 0.75;
-  }
-  .sx-plate__guide {
-    fill: none;
-    stroke: color-mix(in oklab, var(--sx-structure) 35%, transparent);
-    stroke-width: 1;
-    stroke-dasharray: 2 3;
-  }
-  [data-tier='proven'] .sx-plate__top {
-    fill: color-mix(in oklab, var(--sx-structure) 24%, var(--sx-surface));
-    stroke: var(--sx-structure);
-  }
-  .sx-stack__layer:hover .sx-plate__top {
-    stroke: color-mix(in oklab, var(--sx-structure) 55%, var(--sl-color-white));
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .sx-spot,
-    .sx-spot::before,
-    .sx-spot::after {
-      transition: none;
+    .sx-stack__layer:last-child > .sx-stack__module {
+      border-block-start-width: 1px;
+    }
+    .sx-stack__name,
+    .sx-stack__text,
+    .sx-stack__tier {
+      grid-column: 3;
+    }
+    .sx-stack__name {
+      position: relative;
+      grid-row: 1;
+      margin-block-start: 0.8rem;
+    }
+    .sx-stack__text {
+      grid-row: 2;
+      margin-block-start: 0.3rem;
+    }
+    .sx-stack__tier {
+      grid-row: 3;
+      align-self: start;
+      margin-block: 0.45rem 0.8rem;
+    }
+    /* The leader: a hairline from the band's edge to the name, with a small square where it meets the
+       band. */
+    .sx-stack__name::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: calc(-1 * var(--lead));
+      inset-block-start: 0.65em;
+      inline-size: calc(var(--lead) - 0.5rem);
+      border-block-start: 1px solid var(--sx-structure);
+    }
+    .sx-stack__name::after {
+      content: '';
+      position: absolute;
+      inset-inline-start: calc(-1 * var(--lead) - 0.1875rem);
+      inset-block-start: calc(0.65em - 0.1875rem);
+      inline-size: 0.375rem;
+      block-size: 0.375rem;
+      background: var(--sx-structure);
+    }
+    /* The loop: a bracket that leaves the top band and enters the bottom one, with an arrowhead where
+       it ends. */
+    .sx-stack::before {
+      content: '';
+      position: absolute;
+      inset-inline-start: 0.1875rem;
+      inline-size: calc(var(--loop) - 0.1875rem);
+      inset-block: calc(var(--band-h) / 2) calc(var(--band-h) / 2);
+      border: 1px solid var(--sx-structure);
+      border-inline-end: 0;
+    }
+    .sx-stack::after {
+      content: '';
+      position: absolute;
+      inset-inline-start: calc(var(--loop) - 0.3rem);
+      inset-block-end: calc(var(--band-h) / 2 - 0.1875rem);
+      box-sizing: border-box;
+      inline-size: 0.375rem;
+      block-size: 0.375rem;
+      border: solid var(--sx-structure);
+      border-width: 1px 1px 0 0;
+      transform: rotate(45deg);
+    }
+    .sx-stack__loop {
+      display: grid;
+      grid-template-columns: calc(var(--loop) + var(--band) + var(--lead)) minmax(0, 1fr);
+      gap: 0;
     }
   }
 }

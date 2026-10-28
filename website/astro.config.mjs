@@ -42,6 +42,32 @@ function stagedSidebar() {
   }
 }
 
+// The syntax colours of the code blocks are three of the site's inks and no more: comments in the muted ink,
+// commands, keywords and functions in the structure colour, everything else in ink, so a block of plain text is
+// one colour and no hue is used that the site keeps for a meaning (the signal colour, the spike colour).
+// Expressive Code writes a theme's colours into the markup and checks their contrast against the code
+// background (5.5:1), so they are hex values here rather than variables: they are --sl-color-white,
+// --sx-muted and --sx-structure of src/styles/global.css, dark first, and change with them. The rest of the
+// theme (frames, buttons, markers) is Starlight's, set to the tokens in src/styles/docs.css.
+const CODE_INKS = {
+  dark: { ink: '#f4f6fb', muted: '#9aa4b8', structure: '#8aa2ff' },
+  light: { ink: '#0a0d14', muted: '#4a5468', structure: '#2f4fd6' },
+};
+function codeTheme(theme) {
+  const { ink, muted, structure } = CODE_INKS[theme.type];
+  theme.fg = ink;
+  theme.colors['editor.foreground'] = ink;
+  theme.settings = [
+    { scope: ['comment', 'punctuation.definition.comment'], settings: { foreground: muted } },
+    {
+      scope: ['keyword', 'storage', 'support.function', 'entity.name.function', 'entity.name.command', 'variable.function', 'meta.function-call'],
+      settings: { foreground: structure },
+    },
+    { scope: ['keyword.operator', 'punctuation'], settings: { foreground: ink } },
+  ];
+  return theme;
+}
+
 export default defineConfig({
   site: ORIGIN,
   base: BASE,
@@ -93,6 +119,7 @@ export default defineConfig({
       sidebar: stagedSidebar(),
       lastUpdated: false,
       pagination: true,
+      expressiveCode: { customizeTheme: codeTheme },
       plugins: [starlightLinksValidator({ errorOnRelativeLinks: false })],
       // The same on every page. What differs by page (og:type, twitter:title and twitter:description,
       // noindex on the 404 page, the landing page's structured data) is added by src/routeData.ts.

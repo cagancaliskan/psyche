@@ -47,26 +47,31 @@ const BASE = '/psyche/';
 // 450 bytes. /status/ grew by about 1.6 KB of CSS more, for the captured-run facts and the brick board
 // with its key (styles/status.css, which no other page loads), while the count-up and the spotlight
 // script that the old stats band and brick cards loaded took about 1.1 KB of JavaScript off it; the
-// landing page's CSS fell by about 2 KB with its second roadmap stylesheet gone.
-const DEFAULT_BUDGET = { js: 37700, css: 39400 };
+// landing page's CSS fell by about 2 KB with its second roadmap stylesheet gone. Every line was reset
+// again when the documentation pages were drawn on the same sheet: ruled tables, square code frames
+// with a caption line, diagrams framed with registration corners, and the figures under the page titles
+// redrawn as hairline drawings grew the CSS bundle every page loads by about 750 bytes, while the soft
+// light that followed the pointer over the figures, and its script (components/docs/motion.ts), came
+// off, which took about 580 bytes of JavaScript off every page whose figure loaded it.
+const DEFAULT_BUDGET = { js: 37100, css: 40200 };
 const PAGE_BUDGETS = {
-  '/':                          { js: 114200, css:  42800 }, // 110807,  41534
-  '/roadmap/':                  { js: 111500, css:  35400 }, // 108173,  34325
-  '/battery/':                  { js: 112700, css:  35500 }, // 109410,  34370
-  '/status/':                   { js:  33100, css:  37000 }, //  32089,  35885
-  '/research/':                 { js:  35500, css:  35300 }, //  34432,  34259
-  '/research/origins/':         { js:  35500, css:  35300 }, //  34432,  34259
-  '/research/roadmap/':         { js: 113600, css:  35400 }, // 110195,  34325
-  '/research/gates/':           { js:  37700, css:  35300 }, //  36531,  34259
-  '/research/test-battery/':    { js:  35800, css:  35300 }, //  34755,  34259
-  '/research/claims-and-scope/':{ js:  34900, css:  35300 }, //  33852,  34259
-  '/research/engineering/':     { js:  35500, css:  35300 }, //  34432,  34259
-  '/research/glossary/':        { js:  34900, css:  35300 }, //  33852,  34259
-  '/research/reading-list/':    { js:  34900, css:  35300 }, //  33852,  34259
-  '/research/disclosure-policy/':{ js:  35500, css:  35300 }, //  34432,  34259
-  '/substrate/overview/':       { js:  36300, css:  39400 }, //  35196,  38181
-  '/substrate/architecture/':   { js:  36300, css:  39400 }, //  35196,  38181
-  '/substrate/methodology/':    { js:  35100, css:  35300 }, //  34028,  34259
+  '/':                          { js: 114200, css:  43600 }, // 110807,  42284
+  '/roadmap/':                  { js: 111500, css:  36200 }, // 108173,  35075
+  '/battery/':                  { js: 112700, css:  36200 }, // 109410,  35120
+  '/status/':                   { js:  33100, css:  37800 }, //  32089,  36635
+  '/research/':                 { js:  34900, css:  36100 }, //  33852,  35009
+  '/research/origins/':         { js:  34900, css:  36100 }, //  33852,  35009
+  '/research/roadmap/':         { js: 113000, css:  36200 }, // 109615,  35075
+  '/research/gates/':           { js:  37100, css:  36100 }, //  35951,  35009
+  '/research/test-battery/':    { js:  35300, css:  36100 }, //  34175,  35009
+  '/research/claims-and-scope/':{ js:  34900, css:  36100 }, //  33852,  35009
+  '/research/engineering/':     { js:  34900, css:  36100 }, //  33852,  35009
+  '/research/glossary/':        { js:  34900, css:  36100 }, //  33852,  35009
+  '/research/reading-list/':    { js:  34900, css:  36100 }, //  33852,  35009
+  '/research/disclosure-policy/':{ js:  34900, css:  36100 }, //  33852,  35009
+  '/substrate/overview/':       { js:  35700, css:  40200 }, //  34616,  38933
+  '/substrate/architecture/':   { js:  35700, css:  40200 }, //  34616,  38933
+  '/substrate/methodology/':    { js:  34500, css:  36100 }, //  33448,  35009
 };
 
 const gz = (buf) => gzipSync(buf, { level: 9 }).length;

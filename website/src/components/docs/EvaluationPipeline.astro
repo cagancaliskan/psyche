@@ -1,63 +1,71 @@
 ---
 // The evaluation pipeline of the research overview, as the page's own diagram states it:
 // environments, one shared exploration, the agents (baseline agents and the spiking model, which
-// stays private until its release), the test battery and the three metrics. Connectors are
-// fixed; a single light pulse runs along them once (after "Animated Beam" by dillionverma,
-// 21st.dev); only that pulse moves.
+// stays private until its release), the test battery and the three metrics. Drawn as a drafting
+// diagram: hairline boxes, a dashed box for what is private, zones with a label set into their
+// edge, and fixed orthogonal connectors with small arrowheads (traces that leave a box level, turn
+// in the gap and enter the next one level, after "Circuit Board" by componentry on 21st.dev; the
+// idea only, none of its code, light or motion). Nothing here moves.
 import Figure from './Figure.astro';
 
-// The wide layout is drawn on a 720 by 420 grid; columns are 16% wide with 5% between them.
+// The wide layout is drawn on a 720 by 420 grid; each of the five columns is 17% wide with 3.75%
+// between them.
 const W = 720;
 const H = 420;
-const COL = 16;
-const X = [0, 21, 42, 63, 84];
+const COL = 17;
+const GAP = 3.75;
+const X = [0, 1, 2, 3, 4].map((i) => i * (COL + GAP));
 const MAIN = 53;
 const AGENTS = [36, 70];
 const METRICS = [27, 53, 79];
+const ARROW = 5;
 
 const px = (pct: number, of: number) => Math.round(pct * of) / 100;
 const right = (i: number) => px(X[i] + COL, W);
 const left = (i: number) => px(X[i], W);
-const curve = (x1: number, y1: number, x2: number, y2: number) => {
-  const mid = (x1 + x2) / 2;
-  return y1 === y2 ? `M${x1} ${y1} H${x2}` : `M${x1} ${y1} C${mid} ${y1} ${mid} ${y2} ${x2} ${y2}`;
-};
 const y = (pct: number) => px(pct, H);
+const mid = (a: number, b: number) => Math.round(((a + b) / 2) * 100) / 100;
+// A trace runs level out of its box, turns in the middle of the gap and runs level into the next.
+const trace = (x1: number, y1: number, x2: number, y2: number) =>
+  y1 === y2 ? `M${x1} ${y1}H${x2}` : `M${x1} ${y1}H${mid(x1, x2)}V${y2}H${x2}`;
+const head = (x: number, yy: number) => `M${x - ARROW} ${yy - 3}L${x} ${yy}L${x - ARROW} ${yy + 3}`;
 
-const edges = [
-  { d: curve(right(0), y(MAIN), left(1), y(MAIN)), i: 0 },
-  ...AGENTS.map((a) => ({ d: curve(right(1), y(MAIN), left(2), y(a)), i: 1 })),
-  ...AGENTS.map((a) => ({ d: curve(right(2), y(a), left(3), y(MAIN)), i: 2 })),
-  ...METRICS.map((m) => ({ d: curve(right(3), y(MAIN), left(4), y(m)), i: 3 })),
+const traces = [
+  trace(right(0), y(MAIN), left(1), y(MAIN)),
+  ...AGENTS.map((a) => trace(right(1), y(MAIN), left(2), y(a))),
+  ...AGENTS.map((a) => trace(right(2), y(a), left(3), y(MAIN))),
+  ...METRICS.map((m) => trace(right(3), y(MAIN), left(4), y(m))),
 ];
-const ends = [
-  [left(1), y(MAIN)],
-  ...AGENTS.map((a) => [left(2), y(a)]),
-  [left(3), y(MAIN)],
-  ...METRICS.map((m) => [left(4), y(m)]),
+// One arrowhead for every box a trace enters.
+const heads = [
+  head(left(1), y(MAIN)),
+  ...AGENTS.map((a) => head(left(2), y(a))),
+  head(left(3), y(MAIN)),
+  ...METRICS.map((m) => head(left(4), y(m))),
 ];
+// A dot where traces split or join.
+const junctions = [2, 3, 4].map((i) => [mid(right(i - 1), left(i)), y(MAIN)]);
 ---
 
 <Figure
   kicker="Evaluation pipeline"
   lead="Every agent receives the same pre-generated exploration of the same environments and is scored by the same battery and the same metrics."
-  beams
 >
   <div class="sx-pipe__stage">
-    <svg class="sx-pipe__svg sx-beam" viewBox={`0 0 ${W} ${H}`} aria-hidden="true" focusable="false">
-      {edges.map((e) => <path class="sx-beam__track" d={e.d} />)}
-      {ends.map(([cx, cy]) => <circle class="sx-beam__end" cx={cx} cy={cy} r="2.5" />)}
-      {edges.map((e) => <path class="sx-beam__pulse" d={e.d} pathLength="1" style={`--i: ${e.i}`} />)}
+    <svg class="sx-pipe__svg" viewBox={`0 0 ${W} ${H}`} aria-hidden="true" focusable="false">
+      {traces.map((d) => <path class="sx-pipe__line" d={d} />)}
+      {heads.map((d) => <path class="sx-pipe__head" d={d} />)}
+      {junctions.map(([cx, cy]) => <circle class="sx-pipe__dot" cx={cx} cy={cy} r="2" />)}
     </svg>
     <ol class="sx-pipe__steps" aria-label="Evaluation pipeline, in order">
       <li class="sx-pipe__col" style={`--x: ${X[0]}%`}>
-        <p class="sx-node sx-spot" data-spot style={`--y: ${MAIN}%`}>
+        <p class="sx-node" style={`--y: ${MAIN}%`}>
           <span class="sx-node__title">Environments</span>
           <span class="sx-node__sub">Seeded, deterministic</span>
         </p>
       </li>
       <li class="sx-pipe__col" style={`--x: ${X[1]}%`}>
-        <p class="sx-node sx-spot" data-spot style={`--y: ${MAIN}%`}>
+        <p class="sx-node" style={`--y: ${MAIN}%`}>
           <span class="sx-node__title">Shared exploration</span>
           <span class="sx-node__sub">Pre-generated, the same for every agent</span>
         </p>
@@ -65,31 +73,31 @@ const ends = [
       <li class="sx-pipe__col sx-pipe__group" style={`--x: ${X[2]}%; --top: 20%; --bottom: 14%`}>
         <p class="sx-kicker sx-pipe__glabel">Agents</p>
         <ul>
-          <li class="sx-node sx-spot" data-spot style={`--y: ${AGENTS[0]}%`}>
-            <span class="sx-node__title"><span class="sx-node__agent" aria-hidden="true"></span>Baseline agents</span>
+          <li class="sx-node" style={`--y: ${AGENTS[0]}%`}>
+            <span class="sx-node__title">Baseline agents</span>
           </li>
-          <li class="sx-node sx-spot" data-spot data-private style={`--y: ${AGENTS[1]}%`}>
-            <span class="sx-node__title"><span class="sx-node__agent" aria-hidden="true"></span>Spiking model</span>
+          <li class="sx-node" data-private style={`--y: ${AGENTS[1]}%`}>
+            <span class="sx-node__title">Spiking model</span>
             <span class="sx-node__sub">Private until its release</span>
           </li>
         </ul>
       </li>
       <li class="sx-pipe__col" style={`--x: ${X[3]}%`}>
-        <p class="sx-node sx-spot" data-spot style={`--y: ${MAIN}%`}>
+        <p class="sx-node" style={`--y: ${MAIN}%`}>
           <span class="sx-node__title">Test battery</span>
           <span class="sx-node__sub">Classic animal paradigms</span>
         </p>
       </li>
-      <li class="sx-pipe__col sx-pipe__group" style={`--x: ${X[4]}%; --top: 7%; --bottom: 5%`}>
+      <li class="sx-pipe__col sx-pipe__group" style={`--x: ${X[4]}%; --top: 9%; --bottom: 5%`}>
         <p class="sx-kicker sx-pipe__glabel">Metrics</p>
         <ul>
-          <li class="sx-node sx-spot" data-spot style={`--y: ${METRICS[0]}%`}>
+          <li class="sx-node" style={`--y: ${METRICS[0]}%`}>
             <span class="sx-node__title">Behaviour</span>
           </li>
-          <li class="sx-node sx-spot" data-spot style={`--y: ${METRICS[1]}%`}>
+          <li class="sx-node" style={`--y: ${METRICS[1]}%`}>
             <span class="sx-node__title">Internal structure</span>
           </li>
-          <li class="sx-node sx-spot" data-spot style={`--y: ${METRICS[2]}%`}>
+          <li class="sx-node" style={`--y: ${METRICS[2]}%`}>
             <span class="sx-node__title">Synaptic-operation estimate</span>
             <span class="sx-node__sub">Analytic</span>
           </li>
