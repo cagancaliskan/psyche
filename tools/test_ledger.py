@@ -1433,7 +1433,8 @@ def run(tmp: Path) -> None:
     # above is not evidence of anything.
     old = c6_on(add_comment, use_rev="62f2382")
     if old is None:
-        note("pre-fix tool unavailable from git; the two-sided proof was skipped")
+        check(False, "could not recover the pre-fix ledger_check.py (62f2382) from git for "
+                     "the two-sided proof; it needs a full clone")
     else:
         check(old.returncode == 1 and "RESTS ON THE ABSENCE" in old.stdout,
               "LIVE: the SAME one-comment edit fires a false [C6] on the pre-fix tool "
