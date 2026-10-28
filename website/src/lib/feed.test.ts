@@ -174,7 +174,8 @@ test('the feed is valid Atom 1.0 in shape: id, title, updated, self and alternat
 
 test('the same data gives the same bytes, an entry keeps its id when another event is added, and the order given is kept', () => {
   assert.equal(atomFeed(DATA, SITE), atomFeed(structuredClone(DATA), SITE));
-  const idOf = (xml: string, event: string) => new RegExp(`<id>([^<]*/${event.replace(/\//g, '\\/')})</id>`).exec(xml)?.[1];
+  const idOf = (xml: string, event: string) =>
+    [...xml.matchAll(/<id>([^<]*)<\/id>/g)].map((m) => m[1]).find((id) => id.endsWith(`/${event}`));
   const before = atomFeed(DATA, SITE);
   const later = event({ id: 'phase-started/P1', date: '2026-11-16', item: 'P1', headline: 'Phase P1 started' });
   const after = atomFeed({ ...DATA, events: [later, ...EVENTS] }, SITE);
