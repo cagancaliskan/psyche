@@ -80,7 +80,6 @@
      against the canvas and both surfaces (WCAG 1.4.11). Decorative rules stay --sx-hairline. */
   --sx-rule-strong: #646e84;
   --sx-muted: #9aa4b8;
-  --sx-glow: 0 0 0.9rem color-mix(in oklab, var(--sx-agent) 45%, transparent);
   --sx-grid: color-mix(in oklab, var(--sx-structure) 9%, transparent);
   --sx-ease: cubic-bezier(0.2, 0.7, 0.1, 1);
   /* The one mono label of the site, on the landing page, the battery, the chrome, the roadmap and the
@@ -131,7 +130,6 @@
   --sx-hairline: #dde2ec;
   --sx-rule-strong: #76809a;
   --sx-muted: #4a5468;
-  --sx-glow: 0 0 0.75rem color-mix(in oklab, var(--sx-agent) 25%, transparent);
   --sx-grid: color-mix(in oklab, var(--sx-structure) 7%, transparent);
 }
 
@@ -180,7 +178,6 @@
     --sl-color-text-accent: var(--sl-color-white);
     --sl-shadow-md: none;
     --sl-shadow-lg: none;
-    --sx-card-edge: inset 0 1px 0 color-mix(in oklab, white 4%, transparent);
   }
 
   ::selection {
@@ -706,6 +703,13 @@
     border-top-color: var(--sx-hairline);
   }
   mobile-starlight-toc .toggle {
+    /* Starlight keeps the toggle from shrinking, and with large text on a narrow screen (200 percent
+       on 320px) its label and caret are wider than the bar, so the page scrolls sideways. It may shrink
+       now, and its label then wraps ("On this / page"); the heading named beside it is the first thing
+       to give way (its shrink factor is large, so it truncates before the toggle changes at all). At
+       normal sizes nothing changes. */
+    flex-shrink: 1;
+    min-inline-size: 0;
     border-color: var(--sx-rule-strong);
     border-radius: 0;
     background-color: transparent;
@@ -717,6 +721,9 @@
     transition:
       color var(--sx-dur) var(--sx-ease),
       border-color var(--sx-dur) var(--sx-ease);
+  }
+  mobile-starlight-toc .display-current {
+    flex-shrink: 100;
   }
   mobile-starlight-toc details[open] .toggle,
   mobile-starlight-toc details .toggle:hover {

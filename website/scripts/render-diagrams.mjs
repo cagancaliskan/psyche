@@ -29,7 +29,19 @@
 //
 // Three choices for the width of the page's text column, all made here and never in the governed
 // Markdown: a flowchart written left to right is drawn top to bottom, a gantt is laid out at 690px
-// and labelled every second month, and the stadium shape is a plain rectangle with round ends.
+// and labelled every second month, and the stadium shape is a square with a second square inside it.
+//
+// And some of the drawing's notation, so that docs.css can paint a drafting figure (hairlines, square
+// corners, no fill) and the timeline can read as the roadmap's does (styles/plan.css). The geometry
+// CSS cannot reach is changed here: a rect's rounded corners (rx) are taken off, a connection is a
+// right-angled trace and not a slanting line (down, across between two rows, down), an arrowhead is an
+// open chevron and not a filled triangle, a gantt phase is a thin bar centred on its row (6px, 8px when
+// it is in progress) with its label beside it (a label that Mermaid set inside a bar is moved out of
+// it), a gate is a small square with four ticks beyond its sides in place of a rotated, rounded square,
+// the bands behind the phases are one rule across the figure at the top of each phase and one for the
+// axis, and whatever the plan leaves undated (marked * in its name by render_plan.py) is told by the
+// class `open` on its bar or gate, so that docs.css can draw it differently. Nothing it draws adds,
+// removes or changes a word.
 //
 // This is a development tool and nothing the site ships. Its two packages are not in
 // package.json: the script installs them at the exact versions below into a private cache in
@@ -236,28 +248,203 @@ async function drawInPage({ key, source: given, font, ganttWidth }) {
   root.querySelectorAll('style, defs, script, foreignObject, linearGradient, radialGradient, filter').forEach((el) => el.remove());
 
   // Mermaid draws a stadium (a node written ([...])) as two hand-drawn paths of some 12 kB of
-  // numbers each; the shape is a rectangle with round ends.
+  // numbers each; here it is a square with a second square inside it (the class `terminal-inner`),
+  // so the terminal of a flow is still told from a step by its shape.
   for (const outer of root.querySelectorAll('g.outer-path')) {
     const b = outer.getBBox();
-    const rect = document.createElementNS(NS, 'rect');
     const num = (n) => String(Number(n.toFixed(2)));
+    const rect = document.createElementNS(NS, 'rect');
     rect.setAttribute('class', 'basic label-container');
     rect.setAttribute('x', num(b.x));
     rect.setAttribute('y', num(b.y));
     rect.setAttribute('width', num(b.width));
     rect.setAttribute('height', num(b.height));
-    rect.setAttribute('rx', num(b.height / 2));
-    rect.setAttribute('ry', num(b.height / 2));
-    outer.replaceWith(rect);
+    const inner = document.createElementNS(NS, 'rect');
+    inner.setAttribute('class', 'terminal-inner');
+    inner.setAttribute('x', num(b.x + 3));
+    inner.setAttribute('y', num(b.y + 3));
+    inner.setAttribute('width', num(b.width - 6));
+    inner.setAttribute('height', num(b.height - 6));
+    outer.replaceWith(rect, inner);
+  }
+  // Flowchart nodes are square: a rounded rect (rx) has its corners taken off.
+  root.querySelectorAll('.node rect[rx], .node rect[ry]').forEach((el) => {
+    el.removeAttribute('rx');
+    el.removeAttribute('ry');
+  });
+  // Connections are right-angled traces, as in the figure under the title of the research overview: a
+  // trace leaves a node level, turns in the gap between two rows and enters the next node level, in place
+  // of Mermaid's slanting segments. Mermaid's own route is kept as the skeleton: the points it laid out
+  // between two nodes (where the connection passes the rows in between, and where its label sits) stay
+  // on the trace, so a connection never crosses a node and a label is still on its line. What changes is
+  // how the points are joined (down, across at half the height between two points, down again), and
+  // where a trace meets a node: a box is left and entered at the point above or below the trace, a
+  // decision (a rhombus) at its vertices, and the end stops 4px short of the node, because the
+  // arrowhead's tip stands that far past the end of the path (refX 5 of 10, drawn 8px wide), as Mermaid
+  // ends every connection. A connection that does not run downward, or whose ends are not a box or a
+  // rhombus, is left as Mermaid drew it.
+  const TIP = 4;
+  const shapes = [...root.querySelectorAll('g.node')]
+    .map((node) => [...node.children].find((c) => /^(rect|polygon)$/.test(c.localName) && !c.classList.contains('terminal-inner')))
+    .filter(Boolean);
+  const num3 = (n) => String(Number(n.toFixed(3)));
+  for (const path of root.querySelectorAll('path.flowchart-link')) {
+    const d = path.getAttribute('d') || '';
+    if (!/^[ML\d.,\s-]+$/.test(d) || !path.getAttribute('marker-end')) continue;
+    const nums = (d.match(/-?\d*\.?\d+/g) || []).map(Number);
+    if (nums.length < 4 || nums.length % 2) continue;
+    const P = Array.from({ length: nums.length / 2 }, (_, i) => ({ x: nums[2 * i], y: nums[2 * i + 1] }));
+    const last = P[P.length - 1];
+    // Every point lower than the one before it.
+    if (!(last.y > P[0].y + 2) || P.some((q, i) => i > 0 && q.y < P[i - 1].y - 0.01)) continue;
+    // The nodes, in the path's own coordinates.
+    const inv = path.getCTM().inverse();
+    const boxes = shapes.map((shape) => {
+      const bb = shape.getBBox();
+      const m = inv.multiply(shape.getCTM());
+      const a = new DOMPoint(bb.x, bb.y).matrixTransform(m);
+      const b = new DOMPoint(bb.x + bb.width, bb.y + bb.height).matrixTransform(m);
+      return { x0: Math.min(a.x, b.x), x1: Math.max(a.x, b.x), y0: Math.min(a.y, b.y), y1: Math.max(a.y, b.y), diamond: shape.localName === 'polygon' };
+    });
+    const nearest = (pt, slack) => {
+      const hit = boxes.filter((b) => pt.x >= b.x0 - slack && pt.x <= b.x1 + slack && pt.y >= b.y0 - slack && pt.y <= b.y1 + slack);
+      const dist = (b) => Math.hypot(pt.x - (b.x0 + b.x1) / 2, pt.y - (b.y0 + b.y1) / 2);
+      return hit.sort((a, b) => dist(a) - dist(b))[0];
+    };
+    const from = nearest(P[0], 3);
+    const to = nearest(last, TIP + 3);
+    if (!from || !to || from === to) continue;
+    // A point between the ends stays where it lies in a run that goes straight down (it has the x of a
+    // neighbour) or where the connection's label is centred; any other is only Mermaid's slanting bend,
+    // which the trace's own turn replaces.
+    const labels = [...root.querySelectorAll('g.edgeLabel')].map((el) => {
+      const m = inv.multiply(el.getCTM());
+      return { x: m.e, y: m.f };
+    });
+    const mids = P.slice(1, -1).filter((q, i) => {
+      const [before, after] = [P[i], P[i + 2]];
+      return Math.abs(q.x - before.x) < 0.01 || Math.abs(q.x - after.x) < 0.01 || labels.some((l) => Math.hypot(l.x - q.x, l.y - q.y) < 1);
+    });
+    const first = mids[0] ?? last;
+    const within = (x, b) => x >= b.x0 + 3 && x <= b.x1 - 3;
+    const clamp = (x, b) => Math.min(Math.max(x, b.x0 + 3), b.x1 - 3);
+    const mid = (b) => ({ x: (b.x0 + b.x1) / 2, y: (b.y0 + b.y1) / 2 });
+    // Where the trace leaves: the bottom of a box at the point its first turn is above (or the nearest
+    // point of the box); a rhombus at its bottom vertex, or at a side vertex when the trace is bound
+    // for a point beyond that side.
+    let start;
+    let aside = false;
+    if (from.diamond) {
+      const c = mid(from);
+      const half = (from.x1 - from.x0) / 2;
+      if (first.x > c.x + half + 2) [start, aside] = [{ x: from.x1, y: c.y }, true];
+      else if (first.x < c.x - half - 2) [start, aside] = [{ x: from.x0, y: c.y }, true];
+      else start = { x: c.x, y: from.y1 };
+    } else {
+      start = { x: within(first.x, from) ? first.x : clamp(P[0].x, from), y: from.y1 };
+    }
+    // Where it enters: the top of a box, straight below its last turn when that is under the box; a
+    // rhombus at its top vertex.
+    const lastTurn = (mids.at(-1) ?? first).x;
+    const endX = to.diamond ? mid(to).x : within(lastTurn, to) ? lastTurn : clamp(last.x, to);
+    const stops = [...mids, { x: endX, y: to.y0 - TIP }];
+    const out = [`M${num3(start.x)} ${num3(start.y)}`];
+    let [cx, cy] = [start.x, start.y];
+    const down = (y) => {
+      if (out.length > 1 && out.at(-1).startsWith('V')) out.pop();
+      out.push(`V${num3(y)}`);
+    };
+    if (aside) {
+      cx = stops[0].x;
+      out.push(`H${num3(cx)}`);
+    }
+    for (const q of stops) {
+      if (Math.abs(q.x - cx) > 0.01) {
+        down((cy + q.y) / 2);
+        out.push(`H${num3(q.x)}`);
+      }
+      down(q.y);
+      [cx, cy] = [q.x, q.y];
+    }
+    path.setAttribute('d', out.join(''));
   }
 
-  // -- the gantt's today marker; milestones turned the way Mermaid's style sheet turned them --
+  // -- the gantt, in the roadmap's notation (styles/plan.css) --
+  // The today marker is dropped: a drawing made once cannot know the date.
   root.querySelectorAll('g.today').forEach((el) => el.remove());
-  for (const el of root.querySelectorAll('rect.milestone')) {
-    const [x, y, w, h] = ['x', 'y', 'width', 'height'].map((n) => Number(el.getAttribute(n)));
+  const num2 = (n) => String(Number(n.toFixed(2)));
+  const BAR = 6;
+  const BAR_ACTIVE = 8;
+  const GATE = 8;
+  const STUB = 4;
+  for (const rect of root.querySelectorAll('rect.task')) {
+    const [x, y, w, h] = ['x', 'y', 'width', 'height'].map((n) => Number(rect.getAttribute(n)));
     const cx = x + w / 2;
     const cy = y + h / 2;
-    el.setAttribute('transform', `translate(${cx} ${cy}) rotate(45) scale(0.8) translate(${-cx} ${-cy})`);
+    const text = root.querySelector(`#${CSS.escape(`${rect.id}-text`)}`);
+    if (!text) throw new Error(`gantt: no label for the item ${rect.id}`);
+    for (const a of ['rx', 'ry', 'transform']) rect.removeAttribute(a);
+    // The plan leaves an item undated when render_plan.py marks its name with *.
+    const open = / \*\s*$/.test(text.textContent);
+    if (open) rect.setAttribute('class', `${rect.getAttribute('class')} open`);
+    if (rect.classList.contains('milestone')) {
+      const half = GATE / 2;
+      rect.setAttribute('x', num2(cx - half));
+      rect.setAttribute('y', num2(cy - half));
+      rect.setAttribute('width', String(GATE));
+      rect.setAttribute('height', String(GATE));
+      const ticks = document.createElementNS(NS, 'path');
+      ticks.setAttribute('class', open ? 'gate-ticks open' : 'gate-ticks');
+      ticks.setAttribute(
+        'd',
+        `M${num2(cx - half - STUB)} ${num2(cy)}H${num2(cx - half)}M${num2(cx + half)} ${num2(cy)}H${num2(cx + half + STUB)}` +
+          `M${num2(cx)} ${num2(cy - half - STUB)}V${num2(cy - half)}M${num2(cx)} ${num2(cy + half)}V${num2(cy + half + STUB)}`,
+      );
+      rect.after(ticks);
+      continue;
+    }
+    const bar = /\bactive\d\b/.test(rect.getAttribute('class')) ? BAR_ACTIVE : BAR;
+    rect.setAttribute('y', num2(cy - bar / 2));
+    rect.setAttribute('height', String(bar));
+    // A label Mermaid set inside the bar does not fit a bar this thin: it goes beside it, to the right
+    // if it fits in the figure and to the left if not, as Mermaid does for a label that is too wide.
+    if (text.classList.contains('taskText')) {
+      const tw = text.getBBox().width;
+      const level = (text.getAttribute('class').match(/taskText(\d)/) || [, '0'])[1];
+      const right = x + w + 5 + tw <= ganttWidth - 8;
+      text.setAttribute('x', num2(right ? x + w + 5 : x - 5));
+      text.setAttribute('class', right ? `taskTextOutsideRight taskTextOutside${level}` : `taskTextOutsideLeft taskTextOutside${level}`);
+    }
+  }
+  // The bands behind the phases (a fill) become a rule at the top of each phase and one for the axis.
+  const bands = [...root.querySelectorAll('rect.section')];
+  if (bands.length) {
+    const grid = root.querySelector('g.grid');
+    const axisY = Number(/translate\(\s*[-\d.]+[\s,]+([-\d.]+)\s*\)/.exec(grid?.getAttribute('transform') || '')?.[1]);
+    const first = Number(bands[0].getAttribute('y'));
+    const last = bands.at(-1);
+    const rules = [];
+    let seen = '';
+    for (const b of bands) {
+      const kind = /\bsection\d\b/.exec(b.getAttribute('class'))?.[0] ?? '';
+      if (kind !== seen) rules.push(Number(b.getAttribute('y')));
+      seen = kind;
+    }
+    rules.push(Number.isFinite(axisY) ? axisY : Number(last.getAttribute('y')) + Number(last.getAttribute('height')));
+    const width = bands[0].getAttribute('width');
+    const host = bands[0].parentNode;
+    for (const y of rules) {
+      const line = document.createElementNS(NS, 'line');
+      line.setAttribute('class', 'rule');
+      line.setAttribute('x1', '0');
+      line.setAttribute('x2', width);
+      line.setAttribute('y1', num2(y));
+      line.setAttribute('y2', num2(y));
+      host.append(line);
+    }
+    bands.forEach((b) => b.remove());
+    // The gridlines run from the axis up to the first rule, not above it.
+    if (Number.isFinite(axisY)) grid.querySelectorAll('.tick line').forEach((l) => l.setAttribute('y2', num2(first - axisY)));
   }
 
   // -- text placement that Mermaid's style sheet gave by class --
@@ -335,6 +522,11 @@ async function drawInPage({ key, source: given, font, ganttWidth }) {
   root.querySelectorAll('marker *').forEach((el) => {
     el.removeAttribute('stroke-dasharray');
     el.removeAttribute('stroke-width');
+  });
+  // An arrowhead is an open chevron, a hairline like the connection it ends (the tip stays where the
+  // filled triangle's was).
+  root.querySelectorAll('marker path.arrowMarkerPath').forEach((el) => {
+    if (el.getAttribute('d') === 'M 0 0 L 10 5 L 0 10 z') el.setAttribute('d', 'M 1 0.75 L 10 5 L 1 9.25');
   });
 
   // -- the root: size, role, name, description --

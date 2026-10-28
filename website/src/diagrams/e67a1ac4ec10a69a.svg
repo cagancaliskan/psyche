@@ -1,9 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-a9d19242eeb8a8f1-t" aria-describedby="dg-a9d19242eeb8a8f1-d" data-key="a9d19242eeb8a8f1" data-diagram="flowchart" font-size="12" viewBox="0 0 618.03 580.74" width="619" height="581">
- <title id="dg-a9d19242eeb8a8f1-t">Flowchart of 9 steps, starting at Environments seeded, deterministic</title>
- <desc id="dg-a9d19242eeb8a8f1-d">Steps: Environments seeded, deterministic; Shared exploration pre-generated, same for every agent; Baseline agents; Spiking model private for now; Test battery classic animal paradigms; Behaviour; Internal structure; Synaptic-operation estimate, analytic; Results. Agents holds Baseline agents, Spiking model private for now. Metrics holds Behaviour, Internal structure, Synaptic-operation estimate, analytic. Connections: Environments seeded, deterministic to Shared exploration pre-generated, same for every agent; Shared exploration pre-generated, same for every agent to Baseline agents; Shared exploration pre-generated, same for every agent to Spiking model private for now; Baseline agents to Test battery classic animal paradigms; Spiking model private for now to Test battery classic animal paradigms; Test battery classic animal paradigms to Behaviour; Test battery classic animal paradigms to Internal structure; Test battery classic animal paradigms to Synaptic-operation estimate, analytic; Behaviour to Results; Internal structure to Results; Synaptic-operation estimate, analytic to Results.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-e67a1ac4ec10a69a-t" aria-describedby="dg-e67a1ac4ec10a69a-d" data-key="e67a1ac4ec10a69a" data-diagram="flowchart" font-size="12" viewBox="0 0 618.03 580.74" width="619" height="581">
+ <title id="dg-e67a1ac4ec10a69a-t">Flowchart of 9 steps, starting at Environments seeded, deterministic</title>
+ <desc id="dg-e67a1ac4ec10a69a-d">Steps: Environments seeded, deterministic; Shared exploration pre-generated, same for every agent; Baseline agents; Spiking model private for now; Test battery classic animal paradigms; Behaviour; Internal structure; Synaptic-operation estimate, analytic; Results. Agents holds Baseline agents, Spiking model private for now. Metrics holds Behaviour, Internal structure, Synaptic-operation estimate, analytic. Connections: Environments seeded, deterministic to Shared exploration pre-generated, same for every agent; Shared exploration pre-generated, same for every agent to Baseline agents; Shared exploration pre-generated, same for every agent to Spiking model private for now; Baseline agents to Test battery classic animal paradigms; Spiking model private for now to Test battery classic animal paradigms; Test battery classic animal paradigms to Behaviour; Test battery classic animal paradigms to Internal structure; Test battery classic animal paradigms to Synaptic-operation estimate, analytic; Behaviour to Results; Internal structure to Results; Synaptic-operation estimate, analytic to Results.</desc>
  <g>
-  <marker id="dg-a9d19242eeb8a8f1_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
-   <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath"/>
+  <marker id="dg-e67a1ac4ec10a69a_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+   <path d="M 1 0.75 L 10 5 L 1 9.25" class="arrowMarkerPath"/>
   </marker>
   <g class="root">
    <g class="clusters">
@@ -15,17 +15,17 @@
     </g>
    </g>
    <g class="edgePaths">
-    <path d="M271.211,55.36L271.211,74.36L271.211,89.36" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-a9d19242eeb8a8f1_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M223.09,154.352L193.109,173.352L193.109,192.352L193.109,213.856" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-a9d19242eeb8a8f1_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M342.634,154.352L387.133,173.352L387.133,192.352L387.133,207.352" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-a9d19242eeb8a8f1_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M193.109,252.448L193.109,277.952L193.109,296.952L219.712,313.811" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-a9d19242eeb8a8f1_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M387.133,258.952L387.133,277.952L387.133,296.952L346.313,314.381" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-a9d19242eeb8a8f1_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M192.398,367.952L89.805,395.944L89.805,414.944L89.805,436.84" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-a9d19242eeb8a8f1_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M271.211,376.944L271.211,395.944L271.211,414.944L271.211,436.84" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-a9d19242eeb8a8f1_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M350.023,364.243L490.422,395.944L490.422,414.944L490.422,429.944" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-a9d19242eeb8a8f1_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M89.805,474.84L89.805,500.736L89.805,519.736L230.473,545.838" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-a9d19242eeb8a8f1_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M271.211,474.84L271.211,500.736L271.211,519.736L276.54,534.961" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-a9d19242eeb8a8f1_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M490.422,481.736L490.422,500.736L490.422,519.736L337.159,546.441" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-a9d19242eeb8a8f1_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M271.211 55.36V89.36" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-e67a1ac4ec10a69a_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M193.109 154.352V213.856" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-e67a1ac4ec10a69a_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M342.634 154.352V163.852H387.133V207.352" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-e67a1ac4ec10a69a_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M193.109 252.448V304.452H219.712V311.952" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-e67a1ac4ec10a69a_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M387.133 258.952V304.452H346.313V311.952" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-e67a1ac4ec10a69a_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M195.398 376.944V386.444H89.805V436.84" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-e67a1ac4ec10a69a_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M271.211 376.944V436.84" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-e67a1ac4ec10a69a_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M347.023 376.944V386.444H490.422V429.944" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-e67a1ac4ec10a69a_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M89.805 474.84V527.236H237.406V534.736" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-e67a1ac4ec10a69a_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M271.211 474.84V534.736" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-e67a1ac4ec10a69a_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M490.422 481.736V527.236H330.219V534.736" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-e67a1ac4ec10a69a_flowchart-v2-pointEnd)" fill="none"/>
    </g>
    <g class="nodes">
     <g class="node default env" transform="translate(271.2109375, 31.68000030517578)">

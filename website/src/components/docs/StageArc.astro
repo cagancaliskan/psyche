@@ -1,8 +1,11 @@
 ---
 // The stage arc of the Origins page: stage 1, the substrate, hands its method, tooling and one
 // lesson to stage 2, spiking cognitive maps; later stages toward the long-term aim build on the
-// same method and are not specified yet. Each stage's state and date are read from the ledger
-// projection; nothing here is typed by hand.
+// same method and are not specified yet. Drawn as a sequence of ruled columns (styles/docs-visuals.css):
+// a square marker on a rail for each stage (empty: the label under it already says "Stage 1", and
+// the marker's line says whether the stage is current, paused or not specified yet), its words under
+// it, and the hand-off written on the rail between two stages. Each stage's state and date are read from the ledger projection;
+// nothing here is typed by hand.
 import Figure from './Figure.astro';
 import ledger from '@/data/ledger.public.json';
 import { stateLabel, type PublicLedger } from '@/lib/ledger.ts';
@@ -14,21 +17,23 @@ const maps = led.program.cognitive_map;
 
 const stages = [
   {
-    mark: '1',
+    mark: '',
     state: sub.state,
     kicker: 'Stage 1',
     title: 'The substrate',
     text: 'A dependency-free Python memory-and-activation substrate. Its lower layers are verified correct and deterministic; it makes no cognitive claim.',
-    status: `${stateLabel(sub.state)} since ${formatDay(sub.since)}`,
+    status: stateLabel(sub.state),
+    since: sub.since,
     via: 'Method, tooling and one lesson',
   },
   {
-    mark: '2',
+    mark: '',
     state: maps.state,
     kicker: 'Stage 2',
     title: 'Spiking cognitive maps',
     text: "Classic behavioural paradigms, whose designs are published, and baselines checked against their papers. The agent-side operationalisation and the pass criteria are the project's own and are pre-registered privately.",
-    status: `${stateLabel(maps.state)} since ${formatDay(maps.since)}`,
+    status: stateLabel(maps.state),
+    since: maps.since,
     via: 'The same method',
   },
   {
@@ -38,29 +43,32 @@ const stages = [
     title: 'Toward AGI',
     text: "The project's long-term aim, named only as an aim. Later stages will build on the same method and the project's own designs.",
     status: 'Not specified yet',
+    since: null,
     via: null,
   },
 ];
 ---
 
-<Figure kicker="Stage arc" lead="What links the stages is method and the lesson about evidence, not code." beams class="sx-arc">
-  <ol class="sx-seq" style="--n: 3" data-via aria-label="Stages of Psyche, in order">
+<Figure kicker="Stage arc" lead="What links the stages is method and the lesson about evidence, not code.">
+  <ol class="sx-seq" style="--n: 3" aria-label="Stages of Psyche, in order">
     {
       stages.map((s, i) => (
-        <li class="sx-seq__item" data-state={s.state} aria-current={s.state === 'active' ? 'step' : undefined}>
+        <li
+          class="sx-seq__item"
+          data-state={s.state}
+          data-rail={stages[i + 1]?.state === 'later' ? 'dashed' : undefined}
+          aria-current={s.state === 'active' ? 'step' : undefined}
+        >
           <div class="sx-seq__track" aria-hidden="true">
             <span class="sx-seq__mark">{s.mark}</span>
-            <span class="sx-rail" data-style={i === 1 ? 'dashed' : undefined} style={`--i: ${i}`}>
-              <span class="sx-rail__pulse" />
-            </span>
           </div>
           <div class="sx-seq__body">
-            <div class="sx-spot" data-spot>
-              <p class="sx-kicker">{s.kicker}</p>
-              <p class="sx-seq__title">{s.title}</p>
-              <p class="sx-seq__text">{s.text}</p>
-              <p class="sx-arc__state">{s.status}</p>
-            </div>
+            <p class="sx-kicker">{s.kicker}</p>
+            <p class="sx-seq__title">{s.title}</p>
+            <p class="sx-seq__text">{s.text}</p>
+            <p class="sx-seq__state">
+              <span>{s.since ? <>{s.status} since <time datetime={s.since}>{formatDay(s.since)}</time></> : s.status}</span>
+            </p>
           </div>
           {s.via && <p class="sx-seq__via">{s.via}</p>}
         </li>

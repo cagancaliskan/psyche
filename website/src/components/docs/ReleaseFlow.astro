@@ -2,7 +2,9 @@
 // The release flow of the Disclosure policy page, step by step as that page states it: the
 // private head is never released; an older tagged version that the head has moved well past goes
 // through the allowlist and the scans, then the author's review of the full diff, and only then
-// reaches this repository. A failed scan or a review that does not approve stops it.
+// reaches this repository. A failed scan or a review that does not approve stops it. Drawn as a
+// sequence of ruled columns (styles/docs-visuals.css): a numbered square on a rail for each step,
+// with the stop as a ruled band at the foot of the frame.
 import Figure from './Figure.astro';
 
 const steps = [
@@ -16,23 +18,16 @@ const steps = [
 const pad = (n: number) => String(n).padStart(2, '0');
 ---
 
-<Figure
-  kicker="Release flow"
-  lead="Publish complete, working, older versions. Never the current state."
-  beams
->
-  <ol class="sx-seq sx-flow" style="--n: 6; --gap: 0.75rem" aria-label="Release steps, in order">
+<Figure kicker="Release flow" lead="Publish complete, working, older versions. Never the current state.">
+  <ol class="sx-seq" style="--n: 6" aria-label="Release steps, in order">
     {
       steps.map((s, i) => (
         <li class="sx-seq__item" data-state={s.state}>
           <div class="sx-seq__track" aria-hidden="true">
             <span class="sx-seq__mark">{pad(i + 1)}</span>
-            <span class="sx-rail" style={`--i: ${i}`}>
-              <span class="sx-rail__pulse" />
-            </span>
           </div>
           <div class="sx-seq__body">
-            <span class="sx-kicker sx-flow__tag">{s.tag}</span>
+            <p class="sx-kicker">{s.tag}</p>
             <p class="sx-seq__title">{s.title}</p>
             <p class="sx-seq__text">{s.text}</p>
           </div>
@@ -41,7 +36,7 @@ const pad = (n: number) => String(n).padStart(2, '0');
     }
   </ol>
   <p class="sx-flow__stop">
-    <span class="sx-kicker">Stop</span>
+    <span class="sx-kicker"><span class="sx-flow__mark" aria-hidden="true"></span>Stop</span>
     <span>A failed scan, or a review that does not approve, stops the release. Nothing is stripped automatically to make it pass.</span>
   </p>
 </Figure>

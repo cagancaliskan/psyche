@@ -1,19 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-b2becb2eb951e405-t" aria-describedby="dg-b2becb2eb951e405-d" data-key="b2becb2eb951e405" data-diagram="flowchart" font-size="12" viewBox="0 0 389.07 561.15" width="390" height="562">
- <title id="dg-b2becb2eb951e405-t">Flowchart of 7 steps, starting at Private head current work, never released</title>
- <desc id="dg-b2becb2eb951e405-d">Steps: Private head current work, never released; Tagged older version, complete and working; Lag head moved well past; Allowlist and scans withheld terms, secrets, tests; Review the author reads the full diff; Public in this repository; Release stops nothing stripped automatically. Connections: Private head current work, never released to Tagged older version, complete and working; Tagged older version, complete and working to Lag head moved well past; Lag head moved well past to Allowlist and scans withheld terms, secrets, tests; Allowlist and scans withheld terms, secrets, tests to Review the author reads the full diff; Review the author reads the full diff to Public in this repository; Allowlist and scans withheld terms, secrets, tests to Release stops nothing stripped automatically (dotted); Review the author reads the full diff to Release stops nothing stripped automatically (dotted).</desc>
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-4c6fd4286b680041-t" aria-describedby="dg-4c6fd4286b680041-d" data-key="4c6fd4286b680041" data-diagram="flowchart" font-size="12" viewBox="0 0 389.07 561.15" width="390" height="562">
+ <title id="dg-4c6fd4286b680041-t">Flowchart of 7 steps, starting at Private head current work, never released</title>
+ <desc id="dg-4c6fd4286b680041-d">Steps: Private head current work, never released; Tagged older version, complete and working; Lag head moved well past; Allowlist and scans withheld terms, secrets, tests; Review the author reads the full diff; Public in this repository; Release stops nothing stripped automatically. Connections: Private head current work, never released to Tagged older version, complete and working; Tagged older version, complete and working to Lag head moved well past; Lag head moved well past to Allowlist and scans withheld terms, secrets, tests; Allowlist and scans withheld terms, secrets, tests to Review the author reads the full diff; Review the author reads the full diff to Public in this repository; Allowlist and scans withheld terms, secrets, tests to Release stops nothing stripped automatically (dotted); Review the author reads the full diff to Release stops nothing stripped automatically (dotted).</desc>
  <g>
-  <marker id="dg-b2becb2eb951e405_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
-   <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath"/>
+  <marker id="dg-4c6fd4286b680041_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+   <path d="M 1 0.75 L 10 5 L 1 9.25" class="arrowMarkerPath"/>
   </marker>
   <g class="root">
    <g class="edgePaths">
-    <path d="M193.591,68.4L193.591,87.4L193.591,102.4" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-b2becb2eb951e405_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M193.591,167.392L193.591,186.392L193.591,201.392" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-b2becb2eb951e405_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M193.591,252.992L193.591,271.992L193.591,286.992" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-b2becb2eb951e405_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M138.126,351.552L103.324,370.552L103.324,385.552" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-b2becb2eb951e405_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M97.185,449.952L93.324,468.952L93.759,496.053" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-b2becb2eb951e405_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M261.345,351.552L303.858,370.552L303.858,419.752L303.858,468.952L300.812,484.031" class="edge-thickness-normal edge-pattern-dotted edge-pattern-solid flowchart-link" marker-end="url(#dg-b2becb2eb951e405_flowchart-v2-pointEnd)" fill="none" stroke-dasharray="1.5 3"/>
-    <path d="M164.87,449.952L203.591,468.952L234.734,486.029" class="edge-thickness-normal edge-pattern-dotted edge-pattern-solid flowchart-link" marker-end="url(#dg-b2becb2eb951e405_flowchart-v2-pointEnd)" fill="none" stroke-dasharray="1.5 3"/>
+    <path d="M193.591 68.4V102.4" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-4c6fd4286b680041_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M193.591 167.392V201.392" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-4c6fd4286b680041_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M193.591 252.992V286.992" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-4c6fd4286b680041_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M103.324 351.552V385.552" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-4c6fd4286b680041_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M93.759 449.952V495.548" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-4c6fd4286b680041_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M261.345 351.552V361.052H303.858V483.952" class="edge-thickness-normal edge-pattern-dotted edge-pattern-solid flowchart-link" marker-end="url(#dg-4c6fd4286b680041_flowchart-v2-pointEnd)" fill="none" stroke-dasharray="1.5 3"/>
+    <path d="M164.87 449.952V466.952H234.734V483.952" class="edge-thickness-normal edge-pattern-dotted edge-pattern-solid flowchart-link" marker-end="url(#dg-4c6fd4286b680041_flowchart-v2-pointEnd)" fill="none" stroke-dasharray="1.5 3"/>
    </g>
    <g class="nodes">
     <g class="node default priv" transform="translate(193.59097290039062, 38.20000076293945)">
@@ -57,7 +57,8 @@
      </g>
     </g>
     <g class="node default open" transform="translate(93.32366943359375, 518.4480133056641)">
-     <rect class="basic label-container" x="-85.32" y="-18.9" width="170.65" height="37.79" rx="18.9" ry="18.9"/>
+     <rect class="basic label-container" x="-85.32" y="-18.9" width="170.65" height="37.79"/>
+     <rect class="terminal-inner" x="-82.32" y="-15.9" width="164.65" height="31.79"/>
      <g class="label" transform="translate(0, -13.896000862121582)">
       <g>
        <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Public</tspan><tspan x="0" y="1em" dy="1.1em">in this repository</tspan></text>

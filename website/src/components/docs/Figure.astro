@@ -1,27 +1,26 @@
 ---
-// The frame every docs visual sits in: a mono kicker, an optional one-line lead, then the figure.
-// `bare` drops the panel for figures whose parts are cards already; `beams` lets motion.ts play
-// the one-pass light along the figure's connectors.
+// The frame every docs visual sits in, drawn as a drafting figure: a hairline frame with the site's
+// registration corners (.sx-reg, global.css, after "Corner Frame" by kevingirelli on 21st.dev), then
+// a mono label ("Fig." and the figure's name) and one line of lead, ruled off from the drawing. No
+// fill, no grid, no radius, no shadow, no motion.
+// `bare` is for a figure whose content is a sheet of its own, with a frame and rules of its own
+// (the roadmap's phase list, the decision gates, the battery explorer): it draws no frame, no
+// corners and no padding, and only the label and the lead stay above that sheet.
 import '@/styles/docs-visuals.css';
 
 interface Props {
   kicker: string;
   lead?: string;
   bare?: boolean;
-  beams?: boolean;
   class?: string;
 }
-const { kicker, lead, bare = false, beams = false, class: extra } = Astro.props;
+const { kicker, lead, bare = false, class: extra } = Astro.props;
 ---
 
-<figure class:list={['sx-dv', { 'sx-dv--bare': bare }, extra]} data-sx-beams={beams ? '' : undefined}>
+<figure class:list={['sx-dv', bare ? 'sx-dv--bare' : 'sx-reg', extra]}>
   <figcaption class="sx-dv__cap">
     <span class="sx-kicker" data-pagefind-ignore><span class="sx-kicker__index" aria-hidden="true">Fig.</span> {kicker}</span>{' '}
     {lead && <span class="sx-dv__lead">{lead}</span>}
   </figcaption>
   <slot />
 </figure>
-
-<script>
-  import './motion.ts';
-</script>

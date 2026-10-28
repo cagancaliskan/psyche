@@ -1,19 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-1637809e42cccd00-t" aria-describedby="dg-1637809e42cccd00-d" data-key="1637809e42cccd00" data-diagram="flowchart" font-size="12" viewBox="0.5 0 422.47 889.83" width="423" height="890">
- <title id="dg-1637809e42cccd00-t">Flowchart of 6 steps, starting at A new idea</title>
- <desc id="dg-1637809e42cccd00-d">Steps: A new idea; Answers a research question directly?; Finished before Gate C?; Parked: recorded, not started; A reviewer accepts it without asking why it is there?; Joins the line. Connections: A new idea to Answers a research question directly?; Answers a research question directly? to Finished before Gate C? (yes); Answers a research question directly? to Parked: recorded, not started (no); Finished before Gate C? to A reviewer accepts it without asking why it is there? (yes); Finished before Gate C? to Parked: recorded, not started (no); A reviewer accepts it without asking why it is there? to Joins the line (yes); A reviewer accepts it without asking why it is there? to Parked: recorded, not started (no).</desc>
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-62d293fef641ddde-t" aria-describedby="dg-62d293fef641ddde-d" data-key="62d293fef641ddde" data-diagram="flowchart" font-size="12" viewBox="0.5 0 422.47 889.83" width="423" height="890">
+ <title id="dg-62d293fef641ddde-t">Flowchart of 6 steps, starting at A new idea</title>
+ <desc id="dg-62d293fef641ddde-d">Steps: A new idea; Answers a research question directly?; Finished before Gate C?; Parked: recorded, not started; A reviewer accepts it without asking why it is there?; Joins the line. Connections: A new idea to Answers a research question directly?; Answers a research question directly? to Finished before Gate C? (yes); Answers a research question directly? to Parked: recorded, not started (no); Finished before Gate C? to A reviewer accepts it without asking why it is there? (yes); Finished before Gate C? to Parked: recorded, not started (no); A reviewer accepts it without asking why it is there? to Joins the line (yes); A reviewer accepts it without asking why it is there? to Parked: recorded, not started (no).</desc>
  <g>
-  <marker id="dg-1637809e42cccd00_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
-   <path d="M 0 0 L 10 5 L 0 10 z" class="arrowMarkerPath"/>
+  <marker id="dg-62d293fef641ddde_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+   <path d="M 1 0.75 L 10 5 L 1 9.25" class="arrowMarkerPath"/>
   </marker>
   <g class="root">
    <g class="edgePaths">
-    <path d="M239.665,42L239.665,61L239.665,76" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-1637809e42cccd00_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M209.61,248.971L184.361,307.322L184.361,331.618" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-1637809e42cccd00_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M286.647,232.044L353.974,307.322L353.974,422.226L353.974,537.13L353.974,671.531L353.974,805.933L339.417,830.778" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-1637809e42cccd00_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M151.499,475.972L114.105,537.13L114.105,561.426" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-1637809e42cccd00_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M224.468,468.727L283.467,537.13L283.467,671.531L283.467,805.933L302.886,831.064" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-1637809e42cccd00_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M98.887,762.419L91.601,805.933L91.601,836.829" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-1637809e42cccd00_flowchart-v2-pointEnd)" fill="none"/>
-    <path d="M154.886,736.856L198.008,805.933L262.772,832.701" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-1637809e42cccd00_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M239.665 42V68.5H240.165V76" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-62d293fef641ddde_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M240.165 279.026V293.174H184.361V319.47H184.861V331.618" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-62d293fef641ddde_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M339.678 179.513H353.974V830.229" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-62d293fef641ddde_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M184.861 508.834V522.982H114.105V549.278H114.605V561.426" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-62d293fef641ddde_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M271.469 422.226H283.467V830.229" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-62d293fef641ddde_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M114.605 777.637V791.785H91.601V836.829" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-62d293fef641ddde_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M114.605 777.637V791.785H198.008V818.081H262.772V830.229" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-62d293fef641ddde_flowchart-v2-pointEnd)" fill="none"/>
    </g>
    <g class="edgeLabels">
     <g class="edgeLabel" transform="translate(184.36119079589844, 307.32238388061523)">

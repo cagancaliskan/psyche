@@ -1,7 +1,13 @@
 ---
 // The three determinism tiers of the Engineering page, in that page's own words: the guarantee,
-// what each tier applies to and how it is checked. The bars show only the order of strength the
-// page states (a result built from tiers states the weakest of them).
+// what each tier applies to and how it is checked. Drawn as a ruled sheet, one row per tier, the
+// strongest first, with a three-cell gauge on a scale that runs from the weakest tier to the
+// strongest (the idea of a ruled scale with major marks and labels, after "Marks Slider" by ai2
+// and "Leaderboard Bars" by eugeneshilow on 21st.dev; none of their code). The gauge shows only
+// the order of strength the page states (a result built from tiers states the weakest of them):
+// the cells filled count the tier's place on the scale, and the scale is labelled once, under the
+// first row, with the tiers' own letters, as a ruler is marked once, so the order reads without
+// colour. The labels are drawn by the stylesheet.
 import Figure from './Figure.astro';
 
 const tiers = [
@@ -27,6 +33,8 @@ const tiers = [
     checked: 'Fixed seeds; results reported with confidence intervals over seeds',
   },
 ];
+// The scale, weakest to strongest, left to right: one cell for each tier, named by its letter.
+const scale = [...tiers].sort((a, b) => a.strength - b.strength);
 ---
 
 <Figure
@@ -35,30 +43,32 @@ const tiers = [
 >
   <ol class="sx-tiers" aria-label="Determinism tiers, strongest first">
     {
-      tiers.map((t) => (
-        <li class="sx-tier sx-spot" data-spot>
-          <div class="sx-tier__head">
+      tiers.map((t, row) => (
+        <li class="sx-tier">
+          <div class="sx-tier__id">
             <p class="sx-tier__letter">
               <span class="sr-only">Tier </span>
               {t.id}
             </p>
-            <span class="sx-tier__meter" aria-hidden="true">
-              {[1, 2, 3].map((n) => (
-                <span data-on={n <= t.strength ? '' : undefined} />
+            <span class="sx-gauge" aria-hidden="true">
+              {scale.map((cell) => (
+                <span data-l={row === 0 ? cell.id : undefined} data-on={cell.strength <= t.strength ? '' : undefined} />
               ))}
             </span>
           </div>
-          <p class="sx-tier__guarantee">{t.guarantee}</p>
-          <dl>
-            <div>
-              <dt class="sx-kicker">Applies to</dt>
-              <dd>{t.applies}</dd>
-            </div>
-            <div>
-              <dt class="sx-kicker">How it is checked</dt>
-              <dd>{t.checked}</dd>
-            </div>
-          </dl>
+          <div>
+            <p class="sx-tier__guarantee">{t.guarantee}</p>
+            <dl>
+              <div>
+                <dt class="sx-kicker">Applies to</dt>
+                <dd>{t.applies}</dd>
+              </div>
+              <div>
+                <dt class="sx-kicker">How it is checked</dt>
+                <dd>{t.checked}</dd>
+              </div>
+            </dl>
+          </div>
         </li>
       ))
     }

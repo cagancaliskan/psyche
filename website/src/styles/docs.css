@@ -1,14 +1,27 @@
 /*
- * Typography for the staged documentation pages.
+ * Typography and parts of the staged documentation pages, drawn as a drafting sheet.
  *
  * Unbounded for the page title and section headings, Instrument Sans for reading and for h3,
- * Martian Mono for section indices, table headers and code. Most rules target Starlight's Markdown
- * output (`.sl-markdown-content`) only on pages that carry neither `.sx-landing` nor `.sx-wide`,
- * skip elements that have a class or sit inside `.not-content`, and have zero specificity, so the
- * custom pages and the site's components keep their own styles. Three groups reach further on
- * purpose: the page title (every page that shows one), prose links (every page but the landing)
- * and diagrams (wherever they render). Colours come only from the theme tokens, so light
- * and dark switch by themselves.
+ * Martian Mono for section indices, table headers, code and every label. Most rules target Starlight's
+ * Markdown output (`.sl-markdown-content`) only on pages that carry neither `.sx-landing` nor
+ * `.sx-wide`, skip elements that have a class or sit inside `.not-content`, and have zero specificity,
+ * so the custom pages and the site's components keep their own styles. Three groups reach further on
+ * purpose: the page title (every page that shows one), prose links (every page but the landing) and
+ * diagrams (wherever they render). The language is the one of the chrome, the landing, the roadmap and
+ * the status page: hairline rules, mono labels in the label tokens, square corners (0 to 2px), ruled
+ * rows in place of cards, no fill, no shadow, no glow, and the signal colour only for what is current or
+ * focused. Colours come only from the theme tokens, so light and dark switch by themselves.
+ *
+ * Catalog sources (21st.dev), rewritten in plain CSS with none of their code or dependencies (each
+ * credit is on one line, so that it can be searched for):
+ *   - "Table" by originui: the ruled table, rules between rows and none round it;
+ *   - "Spec Sheet" by isaiahbjork: the header's label over a stronger rule, and the bar on the title
+ *     strip's rule;
+ *   - "Code Block" by 0xuser64bit: the code block's caption line (the title or a terminal's label as a
+ *     mono label, a square copy button at its end, over the code);
+ *   - "Corner Frame" by kevingirelli: the diagram figure's registration corners (the shared `.sx-reg`
+ *     recipe of global.css);
+ *   - "Page Header with Breadcrumbs" by olewandowski1: the strip's label and bar.
  */
 
 @layer components {
@@ -30,8 +43,9 @@
      hairline under it with a short structure bar, as on the previous and next rows. The marker before a
      state is a square: the signal colour when the stage is active, an outline when it is paused or
      anything else. The day never splits; below 30rem the two ends stack, so the strip never wraps to
-     three lines. After "Page Header with Breadcrumbs" by olewandowski1 (21st.dev), with the bar after
-     "Spec Sheet" by isaiahbjork. */
+     three lines, and a state too long for the line (large text on a narrow screen) wraps between its
+     words and the day, never inside the day. After "Page Header with Breadcrumbs" by olewandowski1
+     (21st.dev), with the bar after "Spec Sheet" by isaiahbjork. */
   .sx-pt {
     position: relative;
     display: flex;
@@ -74,6 +88,7 @@
   }
   .sx-pt__stage[data-state] {
     display: inline-flex;
+    flex-wrap: wrap;
     align-items: baseline;
     gap: 0 0.625rem;
   }
@@ -179,17 +194,44 @@
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content > .sl-heading-wrapper + :not(.sl-heading-wrapper)) {
     margin-block-start: 0.875rem;
   }
-  /* The section-link icon: muted, ink on hover. */
+
+  /* ---- The section-link icon ----
+     A mono "#" at the end of the heading, muted, ink on hover (Starlight draws a chain, in round
+     strokes). The icon's own box keeps its size, so the room the heading holds for it and the touch area
+     round it do not change. It is drawn as generated content with no text alternative; the link's name
+     is its screen-reader text ("Section titled ..."). */
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .sl-anchor-link) {
     color: var(--sx-muted);
   }
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .sl-anchor-link:hover) {
     color: var(--sl-color-white);
   }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .sl-anchor-icon > svg) {
+    display: none;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .sl-anchor-icon)::before {
+    content: '#';
+    content: '#' / '';
+    display: inline-block;
+    inline-size: var(--sl-anchor-icon-size);
+    font-family: var(--sl-font-mono);
+    font-size: 0.7em;
+    font-weight: 400;
+    line-height: calc(var(--sl-line-height-headings) / 0.7);
+    text-align: center;
+  }
 
-  /* ---- Lists ---- */
+  /* ---- Lists: square markers in the structure colour, mono numbers ---- */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content ul:not([class], .not-content *)) {
+    list-style-type: square;
+  }
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content li:not([class], .not-content *))::marker {
     color: var(--sx-structure);
+    font-size: 0.8125em;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content ol > li:not([class], .not-content *))::marker {
+    font-family: var(--sl-font-mono);
+    font-variant-numeric: tabular-nums;
   }
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content li + li:not([class], .not-content *)) {
     margin-block-start: 0.375rem;
@@ -209,19 +251,18 @@
     text-decoration-color: var(--sx-agent);
     text-decoration-thickness: 2px;
   }
-  @media (prefers-reduced-motion: no-preference) {
-    :where(body:not(:has(.sx-landing)) .sl-markdown-content a:not([class], .not-content *)) {
-      transition: text-decoration-color 180ms var(--sx-ease);
-    }
+  :where(body:not(:has(.sx-landing)) .sl-markdown-content a:not([class], .not-content *)) {
+    transition: text-decoration-color var(--sx-dur) var(--sx-ease);
   }
 
-  /* ---- Inline code: mono on the raised surface ---- */
+  /* ---- Inline code: plain mono in a hairline box ----
+     Square (2px), no fill and no shadow. The box is a border, so it adds nothing to the line's height. */
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :not(pre) > code:not([class], .not-content *)) {
     margin-block: 0;
-    padding: 0.125em 0.45em;
-    border-radius: 10px;
-    background-color: var(--sx-surface-2);
-    box-shadow: inset 0 0 0 1px var(--sx-hairline);
+    padding: 0.0625em 0.35em;
+    border: 1px solid var(--sx-hairline);
+    border-radius: 2px;
+    background: none;
     color: var(--sl-color-white);
     font-family: var(--sl-font-mono);
     font-size: 0.8em;
@@ -232,40 +273,217 @@
     color: inherit;
   }
 
-  /* ---- Code blocks: the same hairline card as tables and figures ---- */
+  /* ---- Code blocks: a hairline frame, square ----
+     Expressive Code's own variables do the work; its rules sit in the `starlight` layer, so these win by
+     layer order. The frame is the hairline (the pre draws it) with no radius, no shadow and no fill: the
+     block is on the canvas, and the buttons and the title bar take the canvas colour as well, so what
+     scrolls under them is covered. A title, or a terminal's label, is a mono label in the label tokens
+     on a rule that runs the width of the frame, with the short structure bar of the title strip under
+     its start. The copy button is a square in the strong rule (3:1 against the canvas and the caption),
+     always visible (Expressive Code shows it only when the frame is pointed at, and at 75 percent, which
+     leaves a keyboard reader and a touch screen without the control's edge), turns ink on hover and takes
+     the global signal focus ring; "Copied!" is a mono label in a hairline box. The pre is a tab stop
+     where it scrolls (Expressive Code adds the role and the stop), takes the same ring and, as a table
+     does, shows a 2px structure bar on the side where there is more. Syntax colours are a restrained
+     theme (astro.config.mjs: ink, the muted ink for comments, the structure colour for commands and
+     keywords), so a block of plain text is one colour. A terminal frame's three dots are not drawn. */
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code) {
-    --ec-brdRad: 13px;
+    --ec-brdRad: 0px;
+    --ec-brdWd: 1px;
     --ec-brdCol: var(--sx-hairline);
-    --ec-codeBg: var(--sx-surface);
+    --ec-codeBg: var(--sl-color-black);
     --ec-codeFontFml: var(--sl-font-mono);
     --ec-uiFontFml: var(--sl-font-mono);
+    --ec-uiFontSize: var(--sx-lab-size);
     --ec-focusBrd: var(--sx-agent);
+    --ec-sbThumbCol: var(--sx-structure);
+    --ec-sbThumbHoverCol: var(--sx-structure);
     --ec-frm-shdCol: transparent;
-    --ec-frm-edBg: var(--sx-surface);
-    --ec-frm-edTabBarBg: var(--sx-surface-2);
+    --ec-frm-frameBoxShdCssVal: none;
+    --ec-frm-edBg: var(--sl-color-black);
+    --ec-frm-edTabBarBg: var(--sl-color-black);
+    --ec-frm-edTabBarBrdCol: var(--sx-hairline);
     --ec-frm-edTabBarBrdBtmCol: var(--sx-hairline);
-    --ec-frm-edActTabBg: var(--sx-surface);
-    --ec-frm-edActTabIndTopCol: var(--sx-agent);
-    --ec-frm-trmBg: var(--sx-surface);
-    --ec-frm-trmTtbBg: var(--sx-surface-2);
+    --ec-frm-edActTabBg: transparent;
+    --ec-frm-edActTabFg: var(--sx-muted);
+    --ec-frm-edActTabBrdCol: transparent;
+    --ec-frm-edActTabIndHt: 0px;
+    --ec-frm-edTabBrdRad: 0px;
+    --ec-frm-trmBg: var(--sl-color-black);
+    --ec-frm-trmTtbBg: var(--sl-color-black);
+    --ec-frm-trmTtbFg: var(--sx-muted);
     --ec-frm-trmTtbBrdBtmCol: var(--sx-hairline);
+    --ec-frm-inlBtnFg: var(--sx-muted);
+    --ec-frm-inlBtnBg: var(--sx-structure);
+    --ec-frm-inlBtnBgIdleOpa: 0;
+    --ec-frm-inlBtnBgHoverOrFocusOpa: 0;
+    --ec-frm-inlBtnBgActOpa: 0.16;
+    --ec-frm-inlBtnBrd: var(--sx-rule-strong);
+    --ec-frm-inlBtnBrdOpa: 1;
+    --ec-frm-tooltipSuccessBg: var(--sl-color-black);
+    --ec-frm-tooltipSuccessFg: var(--sl-color-white);
+  }
+  /* The bar that says the block scrolls: the recipe of the tables below (the bar stays at the box's
+     edge, a cover in the canvas colour scrolls with the code and hides it at the end the block is
+     scrolled to), so a block that fits shows none. A scrollbar alone is not a cue: overlay scrollbars
+     are hidden until the block is scrolled. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code pre) {
+    scrollbar-width: thin;
+    scrollbar-color: var(--sx-structure) transparent;
+    background:
+      linear-gradient(var(--ec-codeBg), var(--ec-codeBg)) 0 0 / 2px 100% no-repeat local,
+      linear-gradient(var(--ec-codeBg), var(--ec-codeBg)) 100% 0 / 2px 100% no-repeat local,
+      linear-gradient(var(--sx-structure), var(--sx-structure)) 0 0 / 2px 100% no-repeat scroll,
+      linear-gradient(var(--sx-structure), var(--sx-structure)) 100% 0 / 2px 100% no-repeat scroll,
+      var(--ec-codeBg);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code pre)::-webkit-scrollbar-thumb {
+    border-radius: 0;
+  }
+  /* The caption line: a title or a terminal's label, drawn on a rule the width of the frame. It holds the
+     copy button at its end, so the button never sits over the code (a long first line would pass under
+     it). A block with a title or a terminal frame has Expressive Code's own header; the others get the
+     same strip from the frame's first pseudo-element, with no word in it: a caption that read "Text" or
+     "Code" over every untitled block would name nothing the reader does not see. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .frame) {
+    --button-spacing: 0.1875rem;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .frame:not(.has-title, .is-terminal))::before {
+    content: '';
+    display: block;
+    box-sizing: border-box;
+    min-block-size: 2.5rem;
+    border: var(--ec-brdWd) solid var(--ec-brdCol);
+    background: linear-gradient(var(--sx-structure), var(--sx-structure)) 0 calc(100% + 1px) / 28px 2px no-repeat;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .frame:not(.has-title, .is-terminal) pre) {
+    border-block-start: 0;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .frame:is(.has-title, .is-terminal)) {
+    --button-spacing: 0.1875rem;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .frame:is(.has-title, .is-terminal) .header) {
+    align-items: stretch;
+    justify-content: flex-start;
+    min-block-size: 2.5rem;
+    padding: 0;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .frame.is-terminal .header)::before {
+    display: none;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .frame .title) {
+    position: relative;
+    display: flex;
+    align-items: center;
+    padding: 0 var(--ec-uiPadInl);
+    border: 0;
+    border-radius: 0;
+    overflow: visible;
+    color: var(--sx-muted);
+    font-family: var(--sl-font-mono);
+    font-size: var(--sx-lab-size);
+    font-weight: 500;
+    letter-spacing: var(--sx-lab-track);
+    line-height: 1.4;
+    text-transform: uppercase;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .frame .title)::after {
+    content: '';
+    position: absolute;
+    inset: auto auto -1px 0;
+    inline-size: 28px;
+    block-size: 2px;
+    border: 0;
+    background: var(--sx-structure);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .frame.is-terminal .title:empty)::before {
+    content: 'Terminal';
+    content: 'Terminal' / '';
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .copy button) {
+    border-radius: 0;
+    opacity: 1;
+  }
+  /* Expressive Code's own transitions take 0.2s; here they take the site's, which are 0s under reduced motion. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .copy :is(button, button div, .feedback)) {
+    transition-duration: var(--sx-dur);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .copy button:is(:hover, :focus-visible))::before {
+    border-color: var(--sl-color-white);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .copy button:is(:hover, :focus-visible))::after {
+    background-color: var(--sl-color-white);
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .copy .feedback) {
+    margin-inline-end: 0.25rem;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid var(--sx-rule-strong);
+    border-radius: 0;
+    font-family: var(--sl-font-mono);
+    font-size: var(--sx-lab-size);
+    font-weight: 500;
+    letter-spacing: var(--sx-lab-track);
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .copy .feedback)::after {
+    display: none;
   }
 
-  /* ---- Tables: hairline cards with a mono header row and tabular figures, after "Table" by
-     originui (21st.dev). The card is the region that scripts/table-region.mjs puts around
-     every table: it hugs the table and grows to the column, and a table wider than the column
-     scrolls inside it. The region is a tab stop and takes the focus ring, because a box that scrolls
-     has to be reachable from the keyboard. ---- */
+  /* Forced colours repaint a background-only mark as the canvas: the copy button's glyph is a mask
+     filled with a background colour, and the caption's bar is one, so each keeps a system colour. */
+  @media (forced-colors: active) {
+    :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .copy button)::after {
+      background-color: CanvasText;
+      forced-color-adjust: none;
+    }
+    :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .expressive-code .frame .title)::after {
+      background: Highlight;
+      forced-color-adjust: none;
+    }
+  }
+
+  /* ---- Tables: ruled, no card ----
+     A hairline above the header, the header as a mono label over a stronger rule, a hairline under every
+     row, and nothing at the sides: no radius, fill or shadow. The first column starts on the column's
+     edge, as the paragraphs do, and numbers are tabular. After "Table" by originui (21st.dev): rules
+     between rows and none round the table; the header label after "Spec Sheet" by isaiahbjork.
+     The region that scripts/table-region.mjs puts round every table is the box that scrolls: it keeps its
+     role, name and tab stop (components/chrome/TableRegions.astro) and takes the signal focus ring, because
+     a box that scrolls has to be reachable from the keyboard. With no card, nothing else says that a table
+     scrolls, so the one edge cue is kept: a 2px structure bar on the side where there is more, drawn with
+     two background layers (the bar stays at the box's edge, a cover in the canvas colour scrolls with the
+     content and hides it at the end the table is scrolled to), so a table that fits shows none and a
+     table that scrolls shows where. It is not decoration: remove it and a cut-off table is
+     just cut off. */
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .sx-table) {
-    inline-size: fit-content;
+    inline-size: 100%;
     max-inline-size: 100%;
     overflow-x: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--sx-structure) transparent;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 14px;
-    background-color: var(--sx-surface);
-    box-shadow: var(--sx-card-edge);
+    border-block-start: 1px solid var(--sx-hairline);
+    background:
+      linear-gradient(var(--sl-color-black), var(--sl-color-black)) 0 0 / 2px 100% no-repeat local,
+      linear-gradient(var(--sl-color-black), var(--sl-color-black)) 100% 0 / 2px 100% no-repeat local,
+      linear-gradient(var(--sx-structure), var(--sx-structure)) 0 0 / 2px 100% no-repeat scroll,
+      linear-gradient(var(--sx-structure), var(--sx-structure)) 100% 0 / 2px 100% no-repeat scroll;
+  }
+  /* A table with many columns keeps a floor on its width where the page is a single column (Starlight
+     drops its sidebar below 50rem), so a phone scrolls it sideways instead of squeezing the longest
+     column into a word a line (a column's minimum is its longest word). Beside the sidebars of a laptop
+     the column is narrower than the floor of a five-column table but wide enough to wrap it as it is,
+     so there the table fits and nothing scrolls. */
+  @media (max-width: 49.99rem) {
+    :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .sx-table > table:has(th:nth-child(3))) {
+      min-inline-size: 28rem;
+    }
+    :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .sx-table > table:has(th:nth-child(4))) {
+      min-inline-size: 36rem;
+    }
+    :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .sx-table > table:has(th:nth-child(5))) {
+      min-inline-size: 44rem;
+    }
   }
   .sl-markdown-content .sx-table:focus-visible {
     outline: 2px solid var(--sx-agent);
@@ -273,6 +491,7 @@
   }
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content .sx-table > table:not([class], .not-content *)) {
     display: table;
+    inline-size: 100%;
     overflow: visible;
     border-collapse: separate;
     border-spacing: 0;
@@ -281,15 +500,16 @@
     font-variant-numeric: tabular-nums;
   }
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :is(th, td):not([class], .not-content *)) {
-    padding: 0.625rem 1rem;
+    padding: 0.7rem 1.5rem 0.7rem 0;
     border-block-end: 1px solid var(--sx-hairline);
     vertical-align: top;
   }
-  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content tbody > tr:last-child > td:not([class], .not-content *)) {
-    border-block-end: 0;
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :is(th, td):last-child:not([class], .not-content *)) {
+    padding-inline-end: 0;
   }
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content th:not([class], .not-content *)) {
-    background-color: var(--sx-surface-2);
+    padding-block: 0.6rem 0.55rem;
+    border-block-end-color: var(--sx-rule-strong);
     color: var(--sx-muted);
     font-family: var(--sl-font-mono);
     font-size: var(--sx-lab-size);
@@ -299,11 +519,15 @@
     text-transform: uppercase;
     vertical-align: bottom;
   }
+  /* Pointing at a row sets its text in ink; nothing is filled. */
+  :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content td:not([class], .not-content *)) {
+    transition: color var(--sx-dur) var(--sx-ease);
+  }
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content tbody > tr:not([class], .not-content *):hover > td) {
-    background-color: color-mix(in oklab, var(--sx-surface-2) 60%, transparent);
+    color: var(--sl-color-white);
   }
 
-  /* ---- Blockquotes: a structure bar at the start edge ---- */
+  /* ---- Blockquotes: a structure bar at the start edge, as an aside's rule ---- */
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content blockquote:not([class], .not-content *)) {
     margin-inline: 0;
     padding-block: 0.125rem;
@@ -323,47 +547,65 @@
     display: none;
   }
 
-  /* ---- Images: hairline cards ---- */
+  /* ---- Images: a hairline frame, square, on the canvas ---- */
   :where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content :is(img, video):not([class], .not-content *)) {
     border: 1px solid var(--sx-hairline);
-    border-radius: 14px;
-    background-color: var(--sx-surface);
+    border-radius: 0;
+    background: none;
   }
 
   /* ---- Diagrams ----
      The diagrams of the governed pages are drawn ahead of the build (website/scripts/render-diagrams.mjs)
      and sit in the page as inline SVG inside a `.sx-diagram` figure; no script draws them. The SVG
      holds geometry, classes and text and no colour, so everything it paints is set here from the
-     tokens and one file reads in both themes. A hairline card on a faint coordinate grid; nodes on the
-     card surface with a hairline in the structure colour, labels in mono ink, edges and arrowheads in
-     the structure colour. In timelines the bars take a structure tint and the phase in progress the
-     signal tint: the signal colour marks only what is current. Strokes do not scale with the figure,
-     so a hairline stays one pixel. The labels were measured in Martian Mono when the diagram was
-     drawn, so the face is set here and nothing else may change its size. A diagram wider than the
-     column scales down to three quarters of its drawn size (nine tenths for a timeline on a narrow
-     screen, whose type is already small) and scrolls sideways beyond that (--dg-w is its drawn
-     width, set by tools/publish/diagrams.py). The box that scrolls fades out at both edges, so a
-     drawing cut off by the column reads as continuing; the fades lie inside its padding, where
-     there is nothing to fade, until the drawing is scrolled.
-     Contrast: what a reader needs to see to read the drawing (a node's outline, a group's box,
-     a bar's outline, a milestone) is at least 3:1 against the card in both themes (WCAG 1.4.11):
-     measured 3.4:1 light and 4.1:1 dark for the lines, the bars and the milestones.
-     A fill that only tints (a bar's, a phase's) carries no meaning on its own and is not held to it. */
+     tokens and one file reads in both themes. The figure is a drafting figure: a hairline frame with the
+     registration corners of the chrome's sheets (the recipe of `.sx-reg` in global.css, repeated here
+     because the figure's markup is written by tools/publish/stage.py), on the canvas, with no radius,
+     grid, fill or shadow. Flowchart nodes are square with a hairline outline in the structure colour and
+     mono labels in ink (a terminal node has a second square inside the first, a decision keeps its
+     rhombus); connections and arrowheads are hairlines (the head an open chevron); a group is a solid
+     hairline frame (a dash means "not yet" or "private", never a group, as in the figure under the title
+     of the research overview). The timeline reads in the notation of the roadmap's (styles/plan.css): one ruled row
+     per phase, a thin bar for the phase (an outline when planned, filled in the structure colour when
+     done, the signal colour when it is in progress, dashed where its end is not fixed) and a gate
+     as a square mark with its crosshair, in place of a filled diamond. The signal colour marks only
+     what is current. Strokes do not scale with the figure, so a hairline stays one pixel. The labels
+     were measured in Martian Mono when the diagram was drawn, so the face and its size are not
+     touched here: only colour, and a label whose width cannot matter (a month, a phase's name
+     at the start of its row) is set as a tracked label. A diagram wider than the column scales down to
+     three quarters of its drawn size (nine tenths for a timeline on a narrow screen, whose type is
+     already small) and scrolls sideways beyond that (--dg-w is its drawn width, set by
+     tools/publish/diagrams.py). The box that scrolls fades out at both edges, so a drawing cut off by the
+     column reads as continuing; the fades lie inside its padding, where there is nothing to fade, until the
+     drawing is scrolled: that fade is the cue that the drawing scrolls, and it stays.
+     Contrast: what a reader needs to see to read the drawing (a node's outline, a group's frame, a bar's
+     outline, a gate's square and its crosshair, a connection) is at least 3:1 against the canvas in both
+     themes (WCAG 1.4.11). */
   .sx-diagram {
     --dg-line: color-mix(in oklab, var(--sx-structure) 65%, var(--sx-hairline));
-    --dg-task: color-mix(in oklab, var(--sx-structure) 70%, var(--sx-surface));
-    --dg-bar: color-mix(in oklab, var(--sx-structure) 18%, var(--sx-surface));
+    position: relative;
     margin-block: 2rem;
     border: 1px solid var(--sx-hairline);
-    border-radius: 14px;
-    background-color: var(--sx-surface);
-    background-image:
-      linear-gradient(var(--sx-grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--sx-grid) 1px, transparent 1px);
-    background-size: 24px 24px;
-    background-position: -1px -1px;
-    box-shadow: var(--sx-card-edge);
     overflow: hidden;
+  }
+  .sx-diagram::before {
+    --sx-reg: var(--sx-structure);
+    --sx-reg-len: 14px;
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 0 / var(--sx-reg-len) 1px,
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 0 / 1px var(--sx-reg-len),
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 0 / var(--sx-reg-len) 1px,
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 0 / 1px var(--sx-reg-len),
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 100% / var(--sx-reg-len) 1px,
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 100% / 1px var(--sx-reg-len),
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 100% / var(--sx-reg-len) 1px,
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 100% / 1px var(--sx-reg-len);
+    background-repeat: no-repeat;
   }
   .sx-diagram__scroll {
     padding: clamp(1rem, 3vw, 1.75rem);
@@ -411,21 +653,26 @@
   }
   /* Flowcharts. A node a class definition dashes keeps its dashes (the drawing carries them). */
   .sx-diagram svg .node :is(rect, polygon, circle, ellipse, path) {
-    fill: var(--sx-surface);
+    fill: var(--sl-color-black);
     stroke: var(--dg-line);
     stroke-width: 1px;
+  }
+  /* The second square of a terminal node. */
+  .sx-diagram svg .node .terminal-inner {
+    fill: none;
   }
   .sx-diagram svg .cluster rect {
-    fill: color-mix(in oklab, var(--sx-surface-2) 55%, transparent);
+    fill: none;
     stroke: var(--dg-line);
     stroke-width: 1px;
+    stroke-dasharray: none;
   }
   /* A group's title is drawn after the connections (render-diagrams.mjs), and a halo in the colour of
-     the box keeps a connection that passes under it from showing through the letters. */
+     the canvas keeps a connection that passes under it from showing through the letters. */
   .sx-diagram svg .cluster-label text {
     fill: var(--sx-muted);
     paint-order: stroke;
-    stroke: color-mix(in oklab, var(--sx-surface-2) 55%, var(--sx-surface));
+    stroke: var(--sl-color-black);
     stroke-width: 5px;
     stroke-linejoin: round;
   }
@@ -435,81 +682,135 @@
     stroke-width: 1px;
   }
   .sx-diagram svg marker :is(path, circle, polygon) {
-    fill: var(--sx-structure);
-    stroke: none;
+    fill: none;
+    stroke: var(--sx-structure);
+    stroke-width: 1px;
+    stroke-linejoin: round;
   }
   .sx-diagram svg .edgeLabel rect {
-    fill: var(--sx-surface);
+    fill: var(--sl-color-black);
     stroke: none;
   }
   .sx-diagram svg .edgeLabel text {
     fill: var(--sx-muted);
   }
-  /* Timelines */
-  .sx-diagram svg .section {
-    stroke: none;
-  }
-  .sx-diagram svg :is(.section0, .section2) {
-    fill: color-mix(in oklab, var(--sx-structure) 6%, transparent);
-  }
-  .sx-diagram svg :is(.section1, .section3) {
-    fill: transparent;
+  /* Timelines. A rule across the figure at the top of every phase and one for the axis; the months are
+     gridlines (hairlines) and labels. */
+  .sx-diagram svg .rule {
+    fill: none;
+    stroke: var(--sx-hairline);
+    stroke-width: 1px;
   }
   .sx-diagram svg .sectionTitle {
-    fill: var(--sx-muted);
+    fill: var(--sx-structure);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
   }
   .sx-diagram svg .grid .tick line {
     stroke: var(--sx-hairline);
   }
   .sx-diagram svg .grid .tick text {
     fill: var(--sx-muted);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
+  }
+  /* A phase's label stands on the rules and the gridlines; a halo in the canvas colour knocks the words
+     out of them, as the roadmap's labels are knocked out. */
+  .sx-diagram svg :is(.taskText, .taskTextOutsideLeft, .taskTextOutsideRight) {
+    paint-order: stroke;
+    stroke: var(--sl-color-black);
+    stroke-width: 4px;
+    stroke-linejoin: round;
   }
   .sx-diagram svg .task {
-    fill: var(--dg-bar);
-    stroke: var(--dg-task);
+    fill: none;
+    stroke: var(--sx-structure);
     stroke-width: 1px;
   }
-  .sx-diagram svg .milestone {
-    fill: var(--dg-task);
-  }
-  .sx-diagram svg :is(.active0, .active1, .active2, .active3) {
-    fill: color-mix(in oklab, var(--sx-agent) 22%, var(--sx-surface));
-    stroke: var(--sx-agent);
+  .sx-diagram svg .task.open {
+    stroke: var(--sx-muted);
+    stroke-dasharray: 4 3;
   }
   .sx-diagram svg :is(.done0, .done1, .done2, .done3) {
-    fill: var(--sx-surface-2);
-    stroke: var(--dg-task);
+    fill: var(--sx-structure);
+    stroke: var(--sx-structure);
+  }
+  .sx-diagram svg :is(.active0, .active1, .active2, .active3) {
+    fill: var(--sx-agent);
+    stroke: var(--sx-agent);
   }
   .sx-diagram svg :is(.crit0, .crit1, .crit2, .crit3) {
-    fill: color-mix(in oklab, var(--sx-spike) 18%, var(--sx-surface));
     stroke: var(--sx-spike);
+  }
+  /* A gate: a square datum with its crosshair, the roadmap's mark. Hollow until it is decided; a gate
+     whose date is not fixed is in the muted ink, as the end of a bar that has none is dashed. */
+  .sx-diagram svg .task.milestone {
+    fill: var(--sl-color-black);
+    stroke: var(--sx-structure);
+  }
+  .sx-diagram svg .task.milestone.open {
+    stroke: var(--sx-muted);
+    stroke-dasharray: none;
+  }
+  .sx-diagram svg .gate-ticks {
+    fill: none;
+    stroke: var(--sx-structure);
+    stroke-width: 1px;
+  }
+  .sx-diagram svg .gate-ticks.open {
+    stroke: var(--sx-muted);
+  }
+  .sx-diagram svg .task.milestone:is(.done0, .done1, .done2, .done3) {
+    fill: var(--sx-structure);
   }
   /* Windows High Contrast and other forced-colour modes force the colours of HTML but not the fill and
      stroke of SVG, so a drawing keeps its token colours on the system canvas: text that sits straight on
      the canvas (a timeline's labels, a group's title) can vanish when the two disagree. Here every
-     mark takes the system colours. */
+     mark takes the system colours, and a drawn state (the bar in progress, a filled bar) stays told by
+     a fill of the system's own text colour. */
   @media (forced-colors: active) {
+    .sx-diagram::before {
+      --sx-reg: CanvasText;
+    }
     .sx-diagram svg text {
       fill: CanvasText !important;
       stroke: none !important;
+    }
+    /* The halo that knocks a label out of the rules and gridlines behind it is kept, in the system's canvas. */
+    .sx-diagram svg :is(.taskText, .taskTextOutsideLeft, .taskTextOutsideRight, .cluster-label text) {
+      stroke: Canvas !important;
+      stroke-width: 4px;
+      paint-order: stroke;
+      stroke-linejoin: round;
     }
     .sx-diagram svg :is(.node, .cluster, .task, .milestone) :is(rect, polygon, circle, ellipse, path),
     .sx-diagram svg :is(rect, polygon).task {
       fill: Canvas !important;
       stroke: CanvasText !important;
     }
+    .sx-diagram svg .node .terminal-inner {
+      fill: none !important;
+    }
+    .sx-diagram svg :is(.done0, .done1, .done2, .done3):is(rect, polygon) {
+      fill: CanvasText !important;
+    }
+    /* A bar in progress is told from a finished one by the system's highlight colour. */
+    .sx-diagram svg :is(.active0, .active1, .active2, .active3):is(rect, polygon) {
+      fill: Highlight !important;
+    }
     .sx-diagram svg .edgeLabel rect {
       fill: Canvas !important;
       stroke: none !important;
     }
-    .sx-diagram svg :is(.flowchart-link, .grid .tick line) {
+    .sx-diagram svg :is(.flowchart-link, .gate-ticks) {
       stroke: CanvasText !important;
     }
-    .sx-diagram svg marker :is(path, circle, polygon) {
-      fill: CanvasText !important;
+    .sx-diagram svg :is(.rule, .grid .tick line) {
+      stroke: GrayText !important;
     }
-    .sx-diagram svg :is(.section0, .section1, .section2, .section3) {
-      fill: transparent !important;
+    .sx-diagram svg marker :is(path, circle, polygon) {
+      fill: none !important;
+      stroke: CanvasText !important;
     }
   }
 }

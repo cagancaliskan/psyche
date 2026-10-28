@@ -57,12 +57,26 @@ that file inline in the page in place of the fence, inside a `figure` with a tex
 description its description, and an item the plan leaves undated is described as undated, never
 with the date the chart draws it at). The drawing holds geometry, classes and text and no colour;
 `src/styles/docs.css` paints it from the site's tokens, with what a reader needs to see at least
-3:1 against the card in both themes. A diagram wider than the column scales to three quarters of
+3:1 against the canvas in both themes. A diagram wider than the column scales to three quarters of
 its drawn size (nine tenths for a timeline on a narrow screen) and scrolls sideways beyond that;
 the scroll box fades at its edges, is named after the drawing and takes keyboard focus (it is a
 tab stop even where nothing scrolls, because static markup cannot know the reader's screen). A flowchart written left to right is drawn top to bottom, because
 a row of labelled boxes in a mono face is 900 to 1300px wide and the column is about 600; the
 timeline's "today" marker is left out, because a drawing made once cannot know the date.
+
+The geometry that CSS cannot reach is changed by the script's post-processing, so that the figure can be
+drawn as a drafting figure: node corners (rx) are taken off, a stadium becomes a square with a second
+square inside it (`terminal-inner`), an arrowhead is an open chevron, a gantt phase is a thin bar centred
+on its row (6px, 8px when in progress) with its label beside it, a gate is a small square with a crosshair
+of four ticks (`gate-ticks`), the bands behind the phases become one rule per phase and one for the axis,
+and an item the plan leaves undated (marked * in its name) carries the class `open` so that it can be
+drawn dashed or muted. A connection of a flowchart is a right-angled trace, as in the figure under the
+title of the research overview: down, across at half the height between two points, down again. The
+points Mermaid laid out between two nodes stay on the trace, so it never crosses a node and a label is
+still on its line; it leaves a box level, a decision at its vertices, and stops 4px short of the node,
+which is where Mermaid ends every connection, because the arrowhead's tip stands that far past the end
+of the path. A connection that does not run downward is left as Mermaid drew it. None of it adds,
+removes or changes a word of a title, a description or a label.
 
 `npm run diagrams` draws what is missing and deletes what no page uses. Run it after changing a
 diagram, after `python3 tools/publish/render_plan.py --write` moves a date in the gantt or the gate
@@ -189,8 +203,9 @@ What the site does so that the check passes, and what has to stay true:
   the reader's screen; `components/chrome/TableRegions.astro` (a script on every page) then takes the
   role, the name and the tab stop off a region whose table fits and puts them back the moment it
   scrolls, so a page of five tables does not cost five dead stops. Without script the static attributes
-  stay. The diagrams' scroll box is a tab stop even where nothing scrolls. The wrapper is the card and the
-  one that scrolls (`docs.css`). Astro 7 renders Markdown with Satteri, so the step is a Satteri plugin that a small
+  stay. The diagrams' scroll box is a tab stop even where nothing scrolls. The wrapper is the box that scrolls (`docs.css`); with
+  no card round a table, a 2px structure bar on the side where there is more is the cue that it scrolls, and a
+  table that fits shows none. Astro 7 renders Markdown with Satteri, so the step is a Satteri plugin that a small
   integration appends to the processor, as Starlight appends its own (`scripts/table-region.mjs`,
   tested in `scripts/table-region.test.mjs`); a `markdown.rehypePlugins` entry would need
   `@astrojs/markdown-remark`, which the site does not install. A table written as raw HTML in a Markdown
@@ -226,12 +241,16 @@ glass panels apart from the header's blur, no emoji, no stock 3D shapes and no m
 ### Tokens
 
 Every colour is a token, defined once in `src/styles/global.css`: dark on `:root`, light on
-`:root[data-theme='light']`. Components use the variables, never a raw colour.
+`:root[data-theme='light']`. Components use the variables, never a raw colour. The one place that holds
+their values instead is the syntax theme of the code blocks (`astro.config.mjs`): Expressive Code writes a
+theme's colours into the markup and checks their contrast, so it needs values. It uses three tokens, ink
+(`--sl-color-white`), muted (`--sx-muted`) and structure (`--sx-structure`), in both themes, and changes
+with them.
 
 | Role | Variable |
 |---|---|
 | Canvas | `--sl-color-black` |
-| Card | `--sx-surface` |
+| Surface: a fill, not a card | `--sx-surface` |
 | Raised, hover | `--sx-surface-2` |
 | Hairline | `--sx-hairline` |
 | Strong rule: the edge of a control, the mark of a state (3:1 or more against the canvas and both surfaces) | `--sx-rule-strong` |
@@ -241,15 +260,15 @@ Every colour is a token, defined once in `src/styles/global.css`: dark on `:root
 | Structure: walls, axes, grids, connectors | `--sx-structure` |
 | Spike: rare emphasis, such as the next gate | `--sx-spike` |
 
-`--sx-glow` is the signal glow (a shadow value), `--sx-grid` the grid line colour and `--sx-ease`
-the one easing curve. `--sx-lab-size` and `--sx-lab-track` are the one mono label of the site (10.5px,
+`--sx-grid` is the grid line colour and `--sx-ease` the one easing curve. `--sx-lab-size` and `--sx-lab-track` are the one mono label of the site (10.5px,
 0.13em, uppercase: a field label, a section head or a state label, weight 400 or 500). `--sx-dur`, `--sx-dur-bar` and `--sx-dur-line` are how long the chrome's state changes
 take (a colour, a bar running along a rule, an underline drawing) and are `0s` under
 `prefers-reduced-motion: reduce`, so no rule needs its own override. `--sx-gutter` is the landing
-page's gutter, which the footer's title block takes on that page. Radii are 14px for cards and 10px for inner elements. The pieces drawn as a drafting sheet (the
-chrome, the landing, the roadmap and status pages) have square corners and rules in place of cards, and there
-are no pills. A card is the card surface with a hairline border and a faint inner top edge; on hover
-its edge warms toward the signal colour and a soft light follows a mouse pointer.
+page's gutter, which the footer's title block takes on that page. Everything is drawn as a drafting sheet (the chrome, the landing, the roadmap and status pages, and the
+documentation's tables, code blocks and figures): corners are square (0 to 2px; a circle only where a shape
+is a dot or a ring by meaning), rules and ruled rows take the place of cards, and there are no pills. The
+surface tokens remain for a few fills (the search dialog, and the pictures of the maze and the battery), and
+no component is a card.
 
 ### Type
 
@@ -298,7 +317,9 @@ sections sit inside `class="not-content"`, which keeps Starlight's Markdown styl
   square field in the strong rule with a mono label and a key cap, and its dialog as a sheet with
   registration corners, a mono readout of the count and each result a mono page label over a ruled list
   of its sections; sidebar groups as indexed mono labels (01, 02, 03) with their pages on a hairline
-  rail; the contents list on the right in mono, on the same kind of rail. The current page, and the
+  rail; the contents list on the right in mono, on the same kind of rail. On a phone the contents toggle may
+  shrink and wrap its label at large text sizes (320px wide at 200 percent), and the heading named beside
+  it truncates first, so the page never scrolls sideways. The current page, and the
   heading being read, take a 2px signal bar on the rail and ink text, with no fill, and hover only
   changes the ink. Previous and next are ruled rows (a hairline above each and one under the pair, a
   mono label over the title, a short bar on the rule that runs the row's width on hover or focus), and
@@ -311,9 +332,22 @@ sections sit inside `class="not-content"`, which keeps Starlight's Markdown styl
   class or inside `.not-content`, so the custom pages and the components keep their own styles.
   Page titles and section headings are in Unbounded, each section opening with a mono index and a
   hairline; h3 is in the sans. Links are ink with a quiet underline that turns signal on hover
-  and focus; inline code is mono on the raised surface; tables are hairline cards with a mono
-  header row and tabular figures, each in a named scroll region that takes the focus ring (see
-  Accessibility check); quotes carry a structure bar; images and diagrams sit in hairline cards.
+  and focus; inline code is plain mono in a hairline box at 2px; lists have square markers and mono
+  numbers; the section-link icon is a mono `#`. Tables are ruled, with no card: a hairline above the
+  header, the header as a mono label over a stronger rule, a hairline under each row and tabular figures;
+  each is in a named scroll region that takes the focus ring and, where it scrolls, a 2px structure bar on
+  the side where there is more (see Accessibility check). Below 50rem, where Starlight drops its sidebar,
+  a table of three or more columns also has a floor on its width, so that a phone scrolls it instead of
+  squeezing a column to a word a line; beside the sidebars the column is narrower than that floor but wide
+  enough to wrap the table as it is, so no floor is set there. Code blocks are square, in a hairline frame
+  on the canvas, through Expressive Code's variables. Each has a caption line on a rule with a short
+  structure bar under its start: the title, or `Terminal` for a terminal frame, and none for a block with
+  neither (a caption that read `Text` or `Code` over every untitled block would name nothing). The line
+  holds a square copy button in the strong rule, always visible, so that it never covers the code. A block
+  that scrolls shows the table's bar on the side where there is more. The syntax colours are three inks
+  of the site (`astro.config.mjs`): comments muted, commands, keywords and functions in the structure
+  colour, everything else in ink, so no hue the site keeps for a meaning is used. Quotes carry a
+  structure bar, images a hairline frame, and diagrams are drafting figures (see below).
 - `src/components/chrome/PageTitle.astro` adds a ruled strip above every page title, as the head of a
   drawing sheet. A page of stage 1 (`substrate/*`) or stage 2 (`research/*`) opens it with the stage and
   its section ("Stage 1 Substrate") and ends it with that stage's state, read from the public ledger
@@ -321,7 +355,8 @@ sections sit inside `class="not-content"`, which keeps Starlight's Markdown styl
   colour when active, an outline otherwise). A page outside the stages opens with the sidebar's number for
   its group ("01 Start here"); the 404 page says "Error 404 ... Not filed". The stage number and the
   sidebar's group number are never printed on one strip: they are different numbers. Below 30rem the two
-  ends stack. Nothing is typed per page: the logic is `src/lib/pageChrome.ts` (tested in
+  ends stack, and a state too long for the line (large text on a narrow screen) wraps between its words
+  and the day, never inside the day. Nothing is typed per page: the logic is `src/lib/pageChrome.ts` (tested in
   `pageChrome.test.ts`, which also fails when the publication manifest gains a section that has no stage,
   or when a section title carries a program state in brackets: a state is read from the ledger, never written
   in a title). The stage numbers are
@@ -360,7 +395,17 @@ sections sit inside `class="not-content"`, which keeps Starlight's Markdown styl
 - Mermaid diagrams are written for GitHub and carry their own colours. The site draws none of them
   in the browser: each is drawn ahead of time into a colourless SVG (see Diagrams) and `docs.css`
   paints it from the live tokens, so one file reads in both themes. The labels were measured in
-  Martian Mono when the diagram was drawn, so the stylesheet changes colour only, never type.
+  Martian Mono when the diagram was drawn, so the stylesheet changes colour only, never type. A drawing
+  sits in a hairline frame with registration corners (the `.sx-reg` recipe, repeated in `docs.css` because
+  the figure's markup is written by `stage.py`), on the canvas, with no radius, grid, fill or shadow.
+  Flowchart nodes are square hairline boxes (a terminal node has a second square inside), connections are
+  right-angled hairline traces ending in an open chevron, and a group is a solid hairline frame: a dash
+  means "not yet" or "private" (a node the source dashes), never a group. The timeline reads in the roadmap's
+  notation (`styles/plan.css`): a rule per phase, a thin bar for each phase (an outline when planned, filled
+  in the structure colour when done, the signal colour in progress, dashed and muted where its end is not
+  fixed) and each gate a square mark with a crosshair, never a filled diamond. In forced colours the
+  bar in progress takes the system's highlight colour, the rules and gridlines the grey text colour, and a
+  label keeps its halo, so that a gridline does not strike through it.
 
 ### The roadmap and the status page
 
@@ -399,17 +444,96 @@ or state is typed in a component.
   that wording cannot go stale unseen. If a per-brick verdict is wanted, the ledger needs a structured
   field and `ledger_public` in `tools/publish/core.py` has to pass it on.
 
+### Figures on the documentation pages
+
+The visual under the title of a docs page (`components/docs/*`, mapped in `visuals.ts` and drawn by
+`chrome/PageTitle.astro`) is a drawing on the same sheet as the chrome: hairline rules, mono labels (the
+label tokens), the shared registration corners (`.sx-reg`), square marks, and ruled columns and rows in
+place of cards. The figures that `Figure.astro` draws (the stage arc, the release flow, the role lanes, the
+evaluation pipeline, the determinism tiers and the layer stack) have no fill, glow, shadow, coordinate
+grid, radius or motion, and ship no JavaScript of their own. The roadmap, gates and battery figures are
+`bare`: they keep the sheets and the scripts of their own pages. All of the figures' styling is
+`styles/docs-visuals.css`. A figure's words are the page's public summary, read from the ledger projection
+or written in its component; a change to a figure changes its drawing, never its claims.
+
+- **The frame** (`Figure.astro`) is a hairline box with registration corners and no fill. Its caption is
+  the figure's label (`Fig.` and its name, the `.sx-kicker`) over one line of lead, ruled off from the
+  drawing by a hairline across the full width of the frame, so a figure reads as a caption band over a
+  drawing. `--dv-pad` is the frame's padding, which the caption band and a closing band cancel with a
+  negative margin of the same size. The frame is a container named `sx-dv`, and the figures lay out by its
+  width, not the window's. `bare` is for a figure whose content is a sheet with its own frame and rules
+  (the roadmap's phase list, the decision gates, the battery explorer): it draws no frame, no corners and
+  no padding, and only the caption stays above the sheet. The Mermaid drawings in `docs.css` use the same
+  hairline and corners.
+- **Sequences** (the stage arc, the release flow and the role lanes, each an `ol.sx-seq`) draw every step
+  as a square on a hairline rail with its words beside or under it, numbered in the release flow and the
+  role lanes. The stage arc's markers are empty: the label under one already says "Stage 1", and the
+  marker's own line says whether the stage is current. Under 40rem of the figure's width the steps stack
+  and the rail runs down from marker to marker; what one stage hands to the next stands beside the rail on
+  a short leader. From 40rem the stage arc and the release flow are ruled columns, one per step: the rail
+  runs across, each column's rule drops from its marker, and the three rows (the hand-off, the marker with
+  its rail, the words) are shared by all columns through a subgrid, so the rails line up whatever the
+  length of a label. The role lanes stay one step under another and become ruled rows, with the role as a
+  mono label in a column of its own. A marker is a bordered square, so it survives forced colours, and it
+  says its state by shape as well as colour: dashed for a step that is not here (a private step, a stage
+  not specified yet, a step that only some changes take), a heavier line in the signal colour for the
+  current stage, a square in a square for where the flow ends. A stage's state is also a mono label with a
+  small square (filled when active, an outline when paused, dashed when not specified yet), as the title
+  strip draws it, and the day in it never splits. The rail is a border, dashed where it leads into a stage
+  that is not specified yet. Words wrap anywhere, and below 24rem of window width the frame's padding and
+  the markers give up some room, so that 320px at 200 percent text does not scroll sideways. The figures
+  hold no control, so they add no tab stop.
+- **The evaluation pipeline** (`EvaluationPipeline.astro`) is a drafting diagram: a node is a square
+  hairline box in the strong rule on the sheet's own fill, a private node is drawn with a dashed outline
+  and says so in words, and a zone (the agents, the metrics) is a solid box in the strong rule with its
+  mono label set into its top edge (a zone is not dashed: a dash means private). The connectors are fixed
+  traces in the structure colour that leave a box level, turn in the middle of the gap and enter the next
+  one level, with a small open arrowhead at every box they enter and a dot where they split or join. From
+  40rem of the figure's width the five columns sit on a 720 by 420 sheet under a ruler whose ticks number
+  them 01 to 05 (CSS counters with empty alt text, so the list keeps its own order and the numbers are not
+  read as words); the traces are one SVG on the same grid as the columns and line up through percentages.
+  Narrow, the boxes stack, a short connector with an arrowhead drops from each to the next, and a zone's
+  boxes wrap in a grid whose columns shrink to the figure (`min(7.5rem, 100%)`), so that 320px at 200
+  percent text does not scroll sideways. Boxes wrap words anywhere. Nothing moves.
+- **The determinism tiers** (`DeterminismTiers.astro`) are a ruled sheet with one row per tier, the
+  strongest first, the rows running from edge to edge of the frame under the caption band. A row is the
+  tier's letter over its gauge, then the guarantee and, under a hairline, what the tier applies to and how
+  it is checked in two columns split by a hairline (stacked below 40rem). The gauge is a scale of three
+  cells, the weakest tier on the left; the cells filled count the row's place on the scale. The scale is
+  labelled once, under the first row, with the tiers' own letters, as a ruler is marked once, and the
+  rows under it share it, so the order of strength reads by count and position, not colour. The letters
+  are drawn by the stylesheet from the data, so they add no text to the page or to search. A filled cell
+  is a border as thick as the cell, so it survives forced colours (the cells take Highlight there). The
+  gauge shows only the order the page states: a result built from parts at different tiers states the
+  weakest.
+- **The layer stack** (`LayerStack.astro`) is an elevation, not an isometric view: the five layers are
+  ruled bands one on top of the other, the store at the bottom, sharing their edges, each labelled with its
+  module in mono; a leader with a small square at the band runs to the layer's name, line and state; a
+  bracket on the left leaves the top band and enters the bottom one, the loop the last line describes,
+  with the "Loop" label at its foot. A state is a mono label with the square the status page draws (filled
+  for verified, a square in a square for a mechanism the tester verified), drawn with borders so it
+  survives forced colours. Below 34rem of the figure's width the bands and the bracket are left out and
+  it is a ruled list, the module a hairline tag under the name. A module name carries a break
+  opportunity after each underscore, so a long one wraps at its own seams. The list keeps reading order
+  from the bottom up. No skew, fill, light or motion.
+- **The kicker** (`.sx-kicker`) is the mono label of a section or a figure, reads the label tokens and
+  wraps onto a second line, label above name, when the figure is too narrow for both on one (320px at 200
+  percent text). The roadmap, the status page and the timeline import `docs-visuals.css` for it and for
+  nothing else.
+
 ### Motion
 
 - Hover and state changes take 180ms in the chrome (`--sx-dur`, which is `0s` under reduced motion); reveals take 600 to 900ms; everything uses `--sx-ease`.
   Landing blocks below the fold fade and rise once as they enter, through one shared observer.
-  Layout is never animated. Signal elements may glow; nothing loops on its own.
+  Layout is never animated. Nothing glows, and nothing loops on its own.
 - Maze and battery figures draw only the agent's trail and its finished route.
 - The landing's maze hero plays its sequence (the agent's trail, the goal, the direct route)
   three times and stops on the finished picture. A Pause button stops it at any point, and it
   also pauses while it is mostly off-screen or the tab is hidden. Elsewhere, figures move on
   hover, focus or a button, or play when they come into view, and anything that runs longer than
-  five seconds has a Pause button.
+  five seconds has a Pause button. The figures that `components/docs/Figure.astro` draws (the stage arc,
+  the release flow, the role lanes, the evaluation pipeline, the determinism tiers and the layer stack)
+  are the exception: they draw their finished picture and nothing in them moves.
 - The server renders the finished picture, so without JavaScript, or with
   `prefers-reduced-motion: reduce`, every figure shows its final frame and nothing moves.
 
