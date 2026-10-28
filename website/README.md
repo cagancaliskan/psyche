@@ -154,9 +154,10 @@ on anything it cannot audit: a page that does not answer 200, a state that will 
 tried twice) or a run in which axe tested fewer than 20 rules. It lists moderate and minor violations
 and never fails on them, and never fails on what axe marks "incomplete" (it lists those too: today only
 `color-contrast`). It needs Google Chrome or Chromium (`--chrome PATH` or `CHROME_PATH` names it) and
-installs its two dev packages, `puppeteer-core` and `axe-core`, at the exact versions pinned at the top
-of the script and with their own dependencies as `scripts/a11y-tools/package-lock.json` locks them (`npm ci`,
-tried three times; `scripts/a11y-tools.test.mjs` fails when the script and the lock disagree),
+installs its two dev packages, `puppeteer-core` and `axe-core`, at the exact versions that
+`scripts/a11y-tools/package.json` names and with their own dependencies as its `package-lock.json`
+locks them (`npm ci`, tried three times; `scripts/a11y-tools.test.mjs` fails when a version there is
+not exact or the lock disagrees),
 into `node_modules/.cache/psyche-a11y-tools` (`A11Y_TOOLS_DIR` names another), a directory it creates
 private and refuses when someone else owns it or others can write to it; they are not dependencies of
 the site. It closes the server
