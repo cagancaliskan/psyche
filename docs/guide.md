@@ -80,6 +80,9 @@ reads that file and offers it through the "Cite this repository" link on the rep
   [issue form](https://github.com/cagancaliskan/psyche/issues/new/choose).
 - **A security problem:** report it privately, as the [security policy](../SECURITY.md) describes,
   and not in a public issue or discussion.
+- **A change to the repository:** read
+  [Taking part from outside the project](../CONTRIBUTING.md#taking-part-from-outside-the-project)
+  first. It says where each thing goes, how to set up and what a pull request must pass.
 
 ## Where to go next
 
