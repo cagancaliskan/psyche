@@ -29,19 +29,19 @@ const group = (label: string, entries: SidebarItem[]): SidebarItem => ({ type: '
 // The shape tools/publish/stage.py writes: "Start here" with the hand-written pages, then one group
 // for each section of docs/publish.json.
 const sidebar = (current: string): SidebarItem[] => [
-  group('Start here', [link('Home', current === 'Home'), link('Test battery explorer', current === 'Battery')]),
-  group('Cognitive maps (active)', [link('Overview', current === 'Overview'), link('Decision gates', current === 'Gates')]),
-  group('Substrate (foundation)', [link('The substrate', current === 'Substrate')]),
+  group('Start here', [link('Home', current === 'Home'), link('Step through the paradigms', current === 'Battery')]),
+  group('Cognitive maps', [link('Overview', current === 'Overview'), link('Decision gates', current === 'Gates')]),
+  group('Substrate', [link('The substrate', current === 'Substrate')]),
 ];
 
-test('a section name drops the state in brackets that the staged labels carry', () => {
-  assert.equal(sectionName('Cognitive maps (active)'), 'Cognitive maps');
-  assert.equal(sectionName('Substrate (foundation)'), 'Substrate');
+test('a section name is the sidebar group\'s label, as it stands', () => {
+  assert.equal(sectionName('Cognitive maps'), 'Cognitive maps');
+  assert.equal(sectionName('Substrate'), 'Substrate');
   assert.equal(sectionName('Start here'), 'Start here');
-  assert.equal(sectionName('  Padded (paused)  '), 'Padded');
-  // a label that is only a bracket is kept whole rather than emptied
+  assert.equal(sectionName('  Padded  '), 'Padded');
+  // nothing is stripped: a state in a label would be shown as typed, which is why the manifest may not carry one
+  assert.equal(sectionName('Cognitive maps (active)'), 'Cognitive maps (active)');
   assert.equal(sectionName('(all)'), '(all)');
-  // brackets in the middle are part of the name
   assert.equal(sectionName('Stage (1) notes'), 'Stage (1) notes');
 });
 
@@ -54,7 +54,7 @@ test('the section of a page is the sidebar group that holds it, numbered as the 
 test('a page in no group has no section, and a nested group is found', () => {
   assert.equal(sectionOf(sidebar('Nowhere')), null);
   assert.equal(sectionOf([]), null);
-  const nested = [group('Outer (open)', [group('Inner', [link('Deep', true)])])];
+  const nested = [group('Outer', [group('Inner', [link('Deep', true)])])];
   assert.deepEqual(sectionOf(nested), { index: '01', name: 'Outer' });
   // a link at the top of the sidebar is not a group: it takes no number and holds no page
   const mixed = [link('Loose', true), group('First', [link('A')]), group('Second', [link('B', true)])];
@@ -64,7 +64,7 @@ test('a page in no group has no section, and a nested group is found', () => {
 test('the sheet number is the place among every link of the sidebar, counted from the sidebar', () => {
   assert.deepEqual(
     flattenLinks(sidebar('Gates')).map((l) => l.label),
-    ['Home', 'Test battery explorer', 'Overview', 'Decision gates', 'The substrate'],
+    ['Home', 'Step through the paradigms', 'Overview', 'Decision gates', 'The substrate'],
   );
   assert.deepEqual(sheetOf(sidebar('Home')), { position: '1', total: '5', text: '1 / 5' });
   assert.deepEqual(sheetOf(sidebar('Gates')), { position: '4', total: '5', text: '4 / 5' });
@@ -78,11 +78,11 @@ test('the sheet number is the place among every link of the sidebar, counted fro
   assert.equal(sheetOf(nested)?.text, '2 / 3');
 });
 
-test('every section of the publication manifest gives a section name', () => {
+test('every section of the publication manifest gives a section name, which is its title', () => {
   const manifest = read('docs/publish.json');
   for (const section of manifest.sections) {
     const name = sectionName(section.title);
-    assert.ok(name.length > 0 && !name.includes('('), `"${section.title}" gives "${name}"`);
+    assert.ok(name.length > 0 && name === section.title, `"${section.title}" gives "${name}"`);
   }
 });
 
@@ -145,24 +145,25 @@ test('every section of the manifest has a stage, and every stage names a line of
   }
 });
 
-test('a state a section title names in brackets is the ledger\'s state for that stage, or the title is stale', () => {
-  // The staged sidebar labels come from docs/publish.json, which is the architect-pm's file and can
-  // carry a state in brackets. The ledger is where program state lives (D-031), so a state word in a
-  // label must agree with it. A bracketed word that is not a program state ("foundation") says what the
-  // stage is, not where it stands, and is not checked.
-  const manifest = read('docs/publish.json');
-  const program = read('tools/ledger.json').program;
-  const states = new Set<string>(read('tools/ledger.json').program_states);
-  assert.ok(states.size >= 2);
-  for (const section of manifest.sections) {
-    const word = /\(([^)]*)\)\s*$/.exec(section.title)?.[1]?.trim().toLowerCase();
-    if (!word || !states.has(word)) continue;
-    const keys = new Set<string>(section.pages.map((p: { slug: string }) => sectionOfRoute(p.slug)));
-    for (const key of keys) {
-      const { line } = STAGE_OF_SECTION[key as keyof typeof STAGE_OF_SECTION];
-      assert.equal(program[line].state, word, `"${section.title}" says ${word}, but the ledger has program.${line}.state = ${program[line].state}: update the label in docs/publish.json`);
-    }
+test('no section title of the manifest carries a program state in brackets', () => {
+  // The sidebar's group labels are docs/publish.json's section titles, shown as typed. A state is typed
+  // once, in the ledger (program, D-031), and read from there: the title strip and the footer state it
+  // for the page being read. A bracketed "(active)" or "(paused)" beside a group would be a second copy
+  // that goes stale the day a line is paused or resumed, so no title carries one. A bracketed word that
+  // is not a program state says what a stage is, not where it stands, and is not checked here.
+  const states = new Set<string>(read('tools/ledger.json').program_states.map((w: string) => w.toLowerCase()));
+  assert.ok(states.size >= 2, 'the ledger lists its program states');
+  /** The program states a title names inside (), [] or {}. */
+  const bracketed = (title: string) =>
+    [...title.matchAll(/[(\[{]([^)\]}]*)[)\]}]/g)].flatMap((g) => g[1].toLowerCase().split(/[^a-z]+/)).filter((w) => states.has(w));
+  for (const section of read('docs/publish.json').sections) {
+    assert.deepEqual(bracketed(section.title), [], `"${section.title}" names a state in brackets: the ledger holds program state, so drop it from the label in docs/publish.json`);
   }
+  // the check bites: the labels the manifest used to carry would fail it
+  assert.deepEqual(bracketed('Cognitive maps (active)'), ['active']);
+  assert.deepEqual(bracketed('Cognitive maps [Paused]'), ['paused']);
+  assert.deepEqual(bracketed('Substrate (foundation)'), []);
+  assert.deepEqual(bracketed('Cognitive maps'), []);
 });
 
 test('the strip of a stage page opens with the stage and its section, and ends with the ledger\'s state', () => {
@@ -239,7 +240,7 @@ test('the title block holds the sheet, the stage and, on a stage 2 page, the nex
     { label: 'Stage', text: '1 · paused since 23\u00a0October\u00a02026' },
   ]);
   // a page outside the stages is a sheet and nothing more
-  assert.deepEqual(block('battery', 'Test battery explorer', 'Battery'), [{ label: 'Sheet', text: 'Test battery explorer', note: '2 / 5' }]);
+  assert.deepEqual(block('battery', 'Step through the paradigms', 'Battery'), [{ label: 'Sheet', text: 'Step through the paradigms', note: '2 / 5' }]);
 });
 
 test('a day in words is kept on one line, and nothing else is touched', () => {

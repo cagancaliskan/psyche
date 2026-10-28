@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type CSSProperties } from 'react';
 import {
   axisRange,
   currentPhase,
@@ -29,13 +29,19 @@ const tone = (status: string) => (status === 'active' ? 'now' : status);
 const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 /**
- * Interactive phase timeline, drawn as an instrument chart: one band per phase on a date axis,
- * gate diamonds at gate dates (the gate the line is waiting on in spike amber, a decided gate
- * filled), and the active phase and the today line in the signal colour. Choosing a phase shows
- * its outputs and gate in the card below, with the gate's decision status: pending once its date
- * has passed with no recorded decision, or decided, with the date and the next step. The today
- * line is added after hydration only, so the server-rendered HTML never contains a date that
- * would go stale; until then the gates are read from the plan's own as_of date.
+ * Interactive phase timeline, drawn as a sheet of a drawing: a hairline month axis with mono tick
+ * labels and ruled rows under it, one thin bar per phase, the gates as square marks (on the axis,
+ * lettered, and at the end of the bar they close), and the today line as a thin signal rule. The
+ * active phase is the only bar in the signal colour; the gate the line is waiting on is the only
+ * mark in the spike colour, a decided gate is filled. Choosing a phase shows its outputs and gate in
+ * the block below, with the gate's decision status: pending once its date has passed with no
+ * recorded decision, or decided, with the date and the next step. The today line is added after
+ * hydration only, so the server-rendered HTML never contains a date that would go stale; until then
+ * the gates are read from the plan's own as_of date.
+ *
+ * Catalog source (21st.dev): the month gridlines, the today marker and the milestone on the axis
+ * after "Gantt Chart" by klyv-ui, rewritten in plain CSS (styles/plan.css) with none of its code or
+ * dependencies. The scroll-drawn bars are credited in plan.css.
  */
 export default function Timeline({ plan }: Props) {
   const rows = useMemo(() => spans(plan), [plan]);
@@ -67,7 +73,7 @@ export default function Timeline({ plan }: Props) {
 
   return (
     <div className="sx-tl-wrap not-content">
-      <div className="sx-tl" role="group" aria-label="Research phases on a time axis">
+      <div className="sx-tl sx-reg" role="group" aria-label="Research phases on a time axis">
         <div className="sx-tl__chart">
           <div className="sx-tl__axis" aria-hidden="true">
             {ticks.map((t) => (
@@ -75,6 +81,24 @@ export default function Timeline({ plan }: Props) {
                 {t.label}
               </span>
             ))}
+            {plan.gates.map((g) => {
+              if (!g.date) return null;
+              const day = dayNumber(g.date);
+              if (day < range.from || day > range.to) return null;
+              const info = gateInfo(g);
+              return (
+                <span
+                  key={g.id}
+                  className="sx-gmark sx-tl__axmark"
+                  data-next={g.id === next ? '' : undefined}
+                  data-gate-state={info.state.kind}
+                  style={{ left: pct(fraction(day, range)) }}
+                  title={`Gate ${g.id}: ${g.title}, ${formatDay(g.date)}, ${info.phrase}`}
+                >
+                  <span className="sx-tl__axletter">{g.id}</span>
+                </span>
+              );
+            })}
           </div>
           <div className="sx-tl__body">
             {ticks.map((t) => (
@@ -86,25 +110,24 @@ export default function Timeline({ plan }: Props) {
               />
             ))}
             <ol className="sx-tl__rows">
-              {rows.map((r) => {
+              {rows.map((r, i) => {
                 const left = fraction(r.from, range);
                 const end = fraction(r.to, range);
                 const width = Math.max(end - left, 0.012);
                 const g = r.phase.gate ? gates.get(r.phase.gate) : undefined;
                 const gateDay = g?.date ? dayNumber(g.date) : null;
                 // Labels sit after the band (and its gate marker); late phases put them before it.
-                // Each label may wrap to a second line inside the room it has. A label before its
-                // band stops short of the today line when that line lies to its left, so the line
-                // never cuts through the label (with a floor, so a narrow room stays readable).
+                // Each label may wrap to a second line inside the room it has, which is all the room
+                // on its side of the band. Where the today line lies across a label, the text is
+                // knocked out of it (styles/plan.css), so the label need not stop short of the line.
                 const after = end <= 0.6;
                 const gap = gateDay !== null ? '1rem' : '0.5rem';
-                const room = todayVisible && todayAt < left ? left - todayAt : left;
-                const beforeMax = room < left ? `max(calc(${pct(room)} - 1rem), 6rem)` : `calc(${pct(left)} - 0.5rem)`;
+                const beforeMax = `calc(${pct(left)} - 0.5rem)`;
                 const labelStyle = after
                   ? { left: `calc(${pct(left + width)} + ${gap})`, maxWidth: `calc(${pct(1 - left - width)} - ${gap})` }
                   : { right: `calc(${pct(1 - left)} + 0.5rem)`, maxWidth: beforeMax };
                 return (
-                  <li key={r.phase.id} className="sx-tl__row">
+                  <li key={r.phase.id} className="sx-tl__row" style={{ '--k': Math.min(i, 6) } as CSSProperties}>
                     <button
                       type="button"
                       className="sx-tl__hit"
@@ -120,12 +143,14 @@ export default function Timeline({ plan }: Props) {
                         aria-hidden="true"
                       />
                       <span className="sx-tl__label" data-side={after ? 'after' : 'before'} style={labelStyle} aria-hidden="true">
-                        <span className="sx-tl__id">{r.phase.id}</span> {r.phase.title}
+                        <span className="sx-tl__text">
+                          <span className="sx-tl__id">{r.phase.id}</span> {r.phase.title}
+                        </span>
                       </span>
                     </button>
                     {gateDay !== null && (
                       <span
-                        className="sx-tl__gate"
+                        className="sx-gmark sx-tl__gate"
                         data-next={g!.id === next ? '' : undefined}
                         data-gate-state={gateInfo(g!).state.kind}
                         style={{ left: pct(fraction(gateDay, range)) }}
@@ -144,7 +169,7 @@ export default function Timeline({ plan }: Props) {
             )}
           </div>
         </div>
-        <section className="sx-tl__card sx-spot" data-spot data-status={chosen.phase.status} aria-live="polite">
+        <section className="sx-tl__card" data-status={chosen.phase.status} aria-live="polite">
           <div className="sx-tl__card-head">
             <span className="sx-tl__card-id" aria-hidden="true">
               {chosen.phase.id}
@@ -166,7 +191,7 @@ export default function Timeline({ plan }: Props) {
           </ul>
           {gate && chosenGate && (
             <p className="sx-tl__gateline">
-              <span className="sx-diamond" data-next={gate.id === next ? '' : undefined} data-gate-state={chosenGate.state.kind} aria-hidden="true" />
+              <span className="sx-gmark" data-next={gate.id === next ? '' : undefined} data-gate-state={chosenGate.state.kind} aria-hidden="true" />
               <span>
                 Ends at Gate {gate.id} ({gate.title}){gate.date ? `, on ${formatDay(gate.date)}` : `, ${gate.date_rule}`}:{' '}
                 {gate.question}

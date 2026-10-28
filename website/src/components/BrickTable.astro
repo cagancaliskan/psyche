@@ -1,0 +1,52 @@
+---
+// One table of bricks: a row each, with the id, the name, and the build status and the meaning
+// verdict in columns of their own. Rows are drawn as grids (styles/status.css), which would drop the
+// table's meaning for assistive technology, so every table part carries its role in the markup.
+import type { BrickRow } from '../lib/status.ts';
+
+interface Props {
+  rows: BrickRow[];
+  /** What the table is, for assistive technology. */
+  name: string;
+}
+const { rows, name } = Astro.props;
+---
+
+<table class="sx-brk" role="table" aria-label={name}>
+  <thead class="sx-brk__cols" role="rowgroup">
+    <tr role="row">
+      <th scope="col" role="columnheader">Brick</th>
+      <th scope="col" role="columnheader">Name</th>
+      <th scope="col" role="columnheader">Build status</th>
+      <th scope="col" role="columnheader">Meaning verdict</th>
+    </tr>
+  </thead>
+  <tbody role="rowgroup">
+    {
+      rows.map((r) => (
+        <tr class="sx-brk__row" role="row">
+          <th scope="row" role="rowheader" class="sx-brk__id">
+            <code>{r.id}</code>
+          </th>
+          <td role="cell" class="sx-brk__name">{r.name}</td>
+          <td role="cell" class="sx-brk__cell" data-axis="build" data-label="Build">
+            {r.build ? (
+              <span class="sx-st" data-state={r.build.state}>
+                <span class="sx-st__mark" aria-hidden="true" />
+                {r.build.label}
+              </span>
+            ) : (
+              <span class="sx-st" data-state="none">None recorded</span>
+            )}
+          </td>
+          <td role="cell" class="sx-brk__cell" data-axis="meaning" data-label="Meaning">
+            <span class="sx-st" data-state={r.meaning.state}>
+              <span class="sx-st__mark" aria-hidden="true" />
+              {r.meaning.label}
+            </span>
+          </td>
+        </tr>
+      ))
+    }
+  </tbody>
+</table>

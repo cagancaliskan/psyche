@@ -3187,6 +3187,35 @@ def test_stage_diagrams(tmp: Path) -> None:
     check(rc == 1 and "event-handler" in err, "a committed drawing with an event handler is refused at staging")
 
 
+def test_stage_sidebar_labels() -> None:
+    section("stage: the hand-written pages' sidebar labels say what each page is, and are not a document's title")
+    custom = [(label, path) for label, path in stage.CUSTOM_PAGES if path]
+    labels = [label for label, _ in stage.CUSTOM_PAGES]
+    check(len({x.casefold() for x in labels}) == len(labels), "no two hand-written pages share a label")
+
+    # the titles of the staged documents, as the stager takes them: the manifest's override or the first heading
+    manifest = core.load_manifest(REPO)
+    titles = []
+    for page in core.manifest_pages(manifest):
+        text = (REPO / page["src"]).read_text(encoding="utf-8")
+        titles.append(page.get("title") or stage.split_title(text, page["src"])[0])
+    check(len(titles) >= 10 and all(titles), "the titles of the published documents are read")
+    for label, path in custom:
+        low = label.casefold()
+        clash = [t for t in titles if t.casefold() in low or low in t.casefold()]
+        check(clash == [], f"the label {label!r} is not, and does not contain, a document title (found {clash})")
+    check(all(label.casefold() != "home" or not path for label, path in stage.CUSTOM_PAGES),
+          "only the home page is labelled Home")
+
+    # a page's own title is its sidebar label: the front matter of website/src/pages/<name>.astro says the same
+    for label, path in custom:
+        page_file = REPO / "website" / "src" / "pages" / (path.strip("/") + ".astro")
+        text = page_file.read_text(encoding="utf-8")
+        found = re.search(r"^\s*title: '([^'\n]*)',?$", text, re.M)
+        check(found is not None and found.group(1) == label,
+              f"{page_file.name} has the title {label!r} that its sidebar label shows")
+
+
 # ─────────────────────────────────────────────────────────────────────────────
 # this file's own source
 # ─────────────────────────────────────────────────────────────────────────────
@@ -3259,6 +3288,7 @@ def main() -> int:
         test_diagrams(tmp)
         test_diagrams_repo(tmp)
         test_stage_diagrams(tmp)
+        test_stage_sidebar_labels()
         test_source_hygiene()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)

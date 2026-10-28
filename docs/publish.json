@@ -15,7 +15,7 @@
   "repo": "cagancaliskan/psyche",
   "sections": [
     {
-      "title": "Cognitive maps (active)",
+      "title": "Cognitive maps",
       "pages": [
         {"src": "docs/research/README.md", "slug": "research", "wiki": "Research-Overview", "description": "Overview of stage 2 of Psyche: a test of whether a spiking network with local plasticity shows, on classic tests, behaviour that an internal map would explain."},
         {"src": "docs/research/origins.md", "slug": "research/origins", "wiki": "Research-Origins", "description": "How the substrate, stage 1 of Psyche, led to stage 2: what it built and showed, what carries into spiking cognitive maps, and where the stages point."},
@@ -30,7 +30,7 @@
       ]
     },
     {
-      "title": "Substrate (foundation)",
+      "title": "Substrate",
       "pages": [
         {"src": "docs/PSYCHE.md", "slug": "substrate/overview", "wiki": "Substrate-Overview", "title": "The substrate", "description": "The substrate, stage 1 of Psyche: a dependency-free Python memory-and-activation prototype, what is verified, what is not claimed, and where it stands."},
         {"src": "docs/ARCHITECTURE.md", "slug": "substrate/architecture", "wiki": "Substrate-Architecture", "title": "Architecture", "description": "The as-built reference for the substrate's code: its modules, data model, public surfaces and invariants, and the reasons behind the key design decisions."},

@@ -83,9 +83,9 @@
   --sx-glow: 0 0 0.9rem color-mix(in oklab, var(--sx-agent) 45%, transparent);
   --sx-grid: color-mix(in oklab, var(--sx-structure) 9%, transparent);
   --sx-ease: cubic-bezier(0.2, 0.7, 0.1, 1);
-  /* The one mono label of the site, on the landing page, the battery and the chrome alike: a field
-     label or a section head. Heads take weight 500, field labels 400. Chips are the only smaller
-     mono type (10px, 0.12em), in plan.css. */
+  /* The one mono label of the site, on the landing page, the battery, the chrome, the roadmap and the
+     status page alike: a field label, a section head or a state label. Heads take weight 500, field
+     labels 400. */
   --sx-lab-size: 0.65625rem;
   --sx-lab-track: 0.13em;
   /* The gutter of the landing page's sheet, and so of the footer beneath it (landing.css, hero.css). */
@@ -880,7 +880,8 @@
      A hairline frame with registration corners (`.sx-reg`) whose cells share their rules: one row of
      the sheet's own facts (its title and number, its stage, the next gate) and, under a shared rule, a
      quieter row of the repository's links and the page's date in mono. No logo, no fill, no icon. On a
-     phone the cells stack, label beside value; from 40rem they sit side by side under their labels. A
+     phone the cells stack, label beside value, and a value with no room beside its label (large text on
+     a narrow phone) moves under it; from 40rem they sit side by side under their labels. A
      link rests on an underline in the strong rule (3:1) and turns signal on hover and focus. On the
      landing page the block runs on the landing's own gutter, so it sits on the grid of the sections
      above it. After the outer and column borders of "Reshaped Table" by reshaped, the ruled list of
@@ -894,12 +895,19 @@
     margin: 0;
   }
   .sx-foot__c {
-    display: grid;
-    grid-template-columns: 6rem minmax(0, 1fr);
-    gap: 0.75rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
     align-items: baseline;
     padding: 0.75rem 1rem;
     border-block-start: 1px solid var(--sx-hairline);
+  }
+  .sx-foot__c > dt {
+    flex: 0 0 6rem;
+  }
+  .sx-foot__c > dd {
+    flex: 1 1 8rem;
+    min-inline-size: 0;
   }
   .sx-foot__c:first-child {
     border-block-start: 0;

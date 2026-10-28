@@ -20,7 +20,6 @@ import { PROJECT_DESCRIPTION } from '@/lib/seo.ts';
 import { withBase } from '@/lib/url.ts';
 import '@/styles/landing.css';
 import '@/styles/landing/links.css';
-import '@/styles/landing/roadmap.css';
 
 const p = plan as unknown as Plan;
 const led = ledger as unknown as PublicLedger;
@@ -54,9 +53,7 @@ const stats = [
   </div>
 
   <div class="sx-lp">
-    <div class="sx-landing-now">
-      <NowLine client:idle plan={p} label="Now in stage 2" />
-    </div>
+    <NowLine client:idle plan={p} label="Now in stage 2" />
 
     <StageLedger />
 
@@ -73,10 +70,10 @@ const stats = [
     <section class="sx-lp-section" aria-labelledby="sx-roadmap-title" data-caliper="03 Roadmap">
       <div class="not-content">
         <SectionHeader id="sx-roadmap-title" title="Stage 2 roadmap" index="03" kicker="Roadmap">
-          <p>The current research line, <cite>{p.line.title}</cite>, runs in {p.phases.length} phases with {p.gates.length} decision gates. Choose a phase to see what it delivers; the full schedule is on the <a class="sx-lp-a" href={withBase('roadmap/')}>roadmap page</a>.</p>
+          <p>The current research line, <cite>{p.line.title}</cite>, runs in {p.phases.length} phases with {p.gates.length} decision gates. Choose a phase to see what it delivers; the full schedule is on the <a class="sx-lp-a" href={withBase('roadmap/')}>timeline page</a>.</p>
         </SectionHeader>
       </div>
-      <div class="sx-landing-roadmap" data-reveal>
+      <div data-reveal>
         <Timeline client:visible plan={p} />
         <TimelineList plan={p} />
       </div>

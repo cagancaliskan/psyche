@@ -1,9 +1,27 @@
 /*
- * Roadmap and status pieces: the now strip, the phase timeline, the gate stepper, the stats band
- * and the brick cards, drawn as instrument readouts: mono labels and ticks, structure-blue axes
- * and gridlines, the signal colour only for the active phase and "now", spike amber only for the
- * next gate. Imported by the components that use them. The layer statement repeats the one in
- * global.css, so the order holds whichever stylesheet the browser reads first.
+ * The roadmap's pieces (the now readout, the phase timeline and its list, the gate list), one skin
+ * shared by the landing's roadmap section, the roadmap page and the research roadmap and gates
+ * pages: a drafting sheet. Hairline rules and gridlines, a month axis in mono, thin ruled bars for phases, square marks for gates, a thin
+ * signal rule for today, registration corners (the shared .sx-reg recipe in global.css) on the
+ * chart's sheet, ruled rows and columns in place of cards and pills. The signal colour marks only
+ * what is current (the active phase, "now", today); the spike colour marks only the gate the line
+ * is waiting on. No glow, no shadow and no decorative gradient (the only gradients are the hairline
+ * ticks of a gate mark); a fill marks a state alone: a phase that is done or active, a gate that is
+ * decided or pending. The status page's pieces are in status.css and the substrate readout in
+ * readout.css. Imported by the components that use them.
+ * The layer statement repeats the one in global.css, so the order holds whichever stylesheet the
+ * browser reads first.
+ *
+ * Catalog sources (21st.dev), rewritten in plain CSS with none of their code or dependencies: the
+ * month gridlines, the today marker and the milestone on the axis after "Gantt Chart" by klyv-ui;
+ * the bars that draw along the axis and the rows that wake as they arrive, as CSS scroll-driven
+ * animations with no script, after "Scroll animated timeline" by ibrandify (they run over the entry
+ * of the block into view, so a block fully on screen, a browser without scroll-driven animation
+ * and reduced motion all show the finished frame); the two-part label and value of the now
+ * readout after "Status Badge" by serafimcloud; the state label with its marker after "Status" by
+ * diceui; the gate list's connecting rule and square marks after "Stepper" by kevingirelli and its
+ * label column and ruled rows after "Spec Sheet" by isaiahbjork; the dated rows of the phase list
+ * after "Milestone Timeline" by olewandowski1.
  */
 @layer base, starlight, theme, components, utilities;
 
@@ -16,7 +34,7 @@
   /* global.css caps every paragraph and list item in page content at a reading measure, outside any
      layer. These pieces lay out their own widths (a timeline row must span the whole axis), so the
      cap is lifted for them; only an important declaration in a layer outranks an unlayered one. */
-  :is(.sx-tl-wrap, .sx-tll-wrap, .sx-gs-wrap, .sx-bricks, .sx-nowchips, .sx-stats) :is(p, li) {
+  :is(.sx-tl-wrap, .sx-tll-wrap, .sx-gs-wrap, .sx-nowchips) :is(p, li) {
     max-width: none !important;
   }
 
@@ -37,38 +55,36 @@
     max-width: 64ch;
     color: var(--sl-color-gray-2);
   }
-  .sx-wide > .sx-status-kicker {
-    margin: 0 0 0.75rem;
-  }
-  .sx-wide > .sx-status-kicker + .sx-stats {
-    margin-top: 0;
-  }
 
   /* Card titles are UI text in the sans. global.css sets display type on every markdown h3 outside
      any layer, so only an important declaration in a layer outranks it on the custom pages. */
-  :is(.sx-gs__card, .sx-tl__card, .sx-bricks__card) h3 {
+  :is(.sx-gs__head, .sx-tl__card) h3 {
     font-family: var(--sl-font) !important;
     letter-spacing: normal !important;
   }
 
-  /* ---------- Chips ---------- */
+  /* The roadmap's rules and the one hairline of its ruled rows. */
+  :is(.sx-nowchips, .sx-tl-wrap, .sx-tll-wrap, .sx-gs-wrap) {
+    --pl-rule: var(--sx-hairline);
+    --pl-axis: color-mix(in oklab, var(--sx-structure) 42%, transparent);
+    --pl-grid: color-mix(in oklab, var(--sx-structure) 13%, transparent);
+  }
 
-  /* Status chip: a mono pill with an indicator dot, after "Status" by diceui (21st.dev), without
-     the pulse. "Now" takes the signal colour; the next gate takes spike amber. */
+  /* ---------- State labels and gate marks ---------- */
+
+  /* A state is a mono label with a small marker, never a pill, and the marker's shape says it as the
+     word does: a phase is a ring (planned), a disc in the signal colour (active) or a filled disc
+     (done); a gate is a square, hollow (upcoming), filled (decided), in the spike colour (pending)
+     or dashed (not reached). "Next" is a label in a hairline box in the spike colour. */
   .sx-chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    padding: 0.2rem 0.6rem;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 999px;
-    background: var(--sl-color-black);
-    color: var(--sl-color-gray-1);
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.625rem;
-    font-weight: 500;
-    letter-spacing: 0.12em;
-    line-height: 1.45;
+    gap: 0.5rem;
+    padding: 0;
+    border: 0;
+    color: var(--sx-muted);
+    font: 400 var(--sx-lab-size) / 1.2 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
     text-transform: uppercase;
     white-space: nowrap;
   }
@@ -80,47 +96,103 @@
     flex: none;
     width: 0.4rem;
     height: 0.4rem;
-    border-radius: 50%;
     border: 1px solid var(--sx-structure);
+    border-radius: 50%;
   }
-  .sx-chip:is([data-tone='done'], [data-tone='decided'])::before {
+  .sx-chip[data-tone='done']::before {
     background: var(--sx-structure);
   }
   .sx-chip[data-tone='now'] {
-    border-color: color-mix(in oklab, var(--sx-agent) 45%, transparent);
-    color: var(--sx-agent);
+    color: var(--sl-color-white);
+    font-weight: 500;
   }
   .sx-chip[data-tone='now']::before {
     border-color: var(--sx-agent);
     background: var(--sx-agent);
-    box-shadow: var(--sx-glow);
   }
-  .sx-chip:is([data-tone='next'], [data-tone='pending']) {
-    border-color: color-mix(in oklab, var(--sx-spike) 55%, transparent);
+  .sx-chip:is([data-tone='upcoming'], [data-tone='pending'], [data-tone='decided'])::before {
+    border-radius: 0;
+  }
+  .sx-chip[data-tone='decided']::before {
+    background: var(--sx-structure);
+  }
+  .sx-chip[data-tone='pending'] {
     color: var(--sx-spike);
   }
-  .sx-chip:is([data-tone='next'], [data-tone='pending'])::before {
+  .sx-chip[data-tone='pending']::before {
     border-color: var(--sx-spike);
-    border-radius: 1px;
     background: var(--sx-spike);
-    transform: rotate(45deg);
+  }
+  .sx-chip[data-tone='next'] {
+    padding: 0.2rem 0.5rem;
+    border: 1px solid var(--sx-spike);
+    color: var(--sx-spike);
+    line-height: 1;
+  }
+  .sx-chip[data-tone='next']::before {
+    display: none;
   }
 
-  /* Disclosure used by the gate cards and the collapsed brick list. */
+  /* A gate mark: a square datum with its crosshair, like a registration mark. The element is the
+     square; its pseudo-element holds the four ticks beyond its sides. --s is the side, --stub the
+     length of a tick, --m the colour: structure, the spike colour for the gate the line is waiting
+     on (with a second square round it), and a decided or pending gate is filled. In text it sits beside the first line of a gate's words; the
+     chart sets its own size and place. */
+  .sx-gmark {
+    --s: 0.5rem;
+    --stub: 0.25rem;
+    --m: var(--sx-structure);
+    position: relative;
+    flex: none;
+    align-self: flex-start;
+    width: var(--s);
+    height: var(--s);
+    margin: 0.45rem 0.25rem 0;
+    border: 1px solid var(--m);
+    background: var(--sl-color-black);
+  }
+  .sx-gmark[data-next] {
+    --m: var(--sx-spike);
+    /* A second square round the first: the next gate is told by its shape, not by its colour alone
+       (WCAG 1.4.1). */
+    outline: 1px solid var(--m);
+    outline-offset: 2px;
+  }
+  /* Past its date with no decision recorded: in the spike colour, whether or not it is the next
+     gate, and filled, as the gate list's state label is. */
+  .sx-gmark[data-gate-state='pending'] {
+    --m: var(--sx-spike);
+  }
+  .sx-gmark:is([data-gate-state='decided'], [data-gate-state='pending']) {
+    background: var(--m);
+  }
+  .sx-gmark::before {
+    content: '';
+    position: absolute;
+    inset: calc(-1px - var(--stub));
+    pointer-events: none;
+    background:
+      linear-gradient(var(--m), var(--m)) left center / var(--stub) 1px no-repeat,
+      linear-gradient(var(--m), var(--m)) right center / var(--stub) 1px no-repeat,
+      linear-gradient(var(--m), var(--m)) center top / 1px var(--stub) no-repeat,
+      linear-gradient(var(--m), var(--m)) center bottom / 1px var(--stub) no-repeat;
+  }
+
+  /* Disclosure used by the gate rows and the folded list of designed bricks: a native details whose
+     summary is a mono label with a small chevron. */
   .sx-disclosure > summary {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     list-style: none;
     cursor: pointer;
-    border-radius: 0.25rem;
     font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.6875rem;
+    font-size: var(--sx-lab-size);
     font-weight: 500;
-    letter-spacing: 0.12em;
+    letter-spacing: var(--sx-lab-track);
     text-transform: uppercase;
     color: var(--sx-muted);
-    transition: color 180ms var(--sx-ease);
+    transition: color var(--sx-dur) var(--sx-ease);
   }
   .sx-disclosure > summary::-webkit-details-marker {
     display: none;
@@ -132,7 +204,7 @@
     border-inline-end: 1.5px solid currentColor;
     border-block-end: 1.5px solid currentColor;
     transform: rotate(-45deg);
-    transition: transform 180ms var(--sx-ease);
+    transition: transform var(--sx-dur) var(--sx-ease);
   }
   .sx-disclosure[open] > summary::before {
     transform: rotate(45deg);
@@ -145,155 +217,171 @@
     outline-offset: 3px;
   }
 
-  /* ---------- Now strip ---------- */
+  /* ---------- The now readout: two cells on a datum line ---------- */
 
-  /* Two-part mono chips, after "Status Badge" by serafimcloud (21st.dev). The "now" dot is the
-     only element on the site that pulses, and only for a few seconds. */
+  /* Each cell sits under a hairline with the short colour stub the hero's stage rows carry: a mono
+     label with its marker over the value, the countdown as a quiet figure at the end of the value's
+     line. The signal colour marks "now" (the disc and the stub); the next gate keeps the spike colour
+     on its square. Two cells side by side from 38rem of width, stacked below. */
   .sx-nowchips {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem 0.75rem;
-    margin: 0.75rem 0 2rem;
+    container: sx-now / inline-size;
+    margin: 1.25rem 0 0;
+  }
+  .sx-nowchips__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    border-bottom: 1px solid var(--pl-rule);
   }
   .sx-pair {
-    display: inline-flex;
-    align-items: stretch;
-    max-width: 100%;
+    --c: var(--sx-structure);
+    position: relative;
+    display: grid;
+    align-content: start;
+    gap: 0.55rem;
     margin: 0;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 999px;
-    background: var(--sx-surface);
-    box-shadow: inset 0 1px 0 color-mix(in oklab, white 4%, transparent);
-    font-size: 0.875rem;
-    line-height: 1.35;
-    overflow: hidden;
+    padding: 1.05rem 0 1.3rem;
+    border-top: 1px solid var(--pl-rule);
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+  .sx-pair[data-tone='now'] {
+    --c: var(--sx-agent);
+  }
+  .sx-pair::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -1px;
+    width: 28px;
+    height: 2px;
+    background: var(--c);
+  }
+  @container sx-now (min-width: 38rem) {
+    .sx-nowchips__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .sx-pair {
+      padding-right: 2rem;
+    }
+    .sx-pair + .sx-pair {
+      padding-left: 2rem;
+      border-left: 1px solid var(--pl-rule);
+    }
+  }
+  .sx-pair:only-child {
+    grid-column: 1 / -1;
   }
   .sx-pair__key {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 0.55rem;
-    padding: 0.45rem 0.8rem 0.45rem 0.85rem;
-    border-inline-end: 1px solid var(--sx-hairline);
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.625rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
+    gap: 0.65rem;
     color: var(--sx-muted);
+    font: 400 var(--sx-lab-size) / 1.2 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
     white-space: nowrap;
   }
+  /* The live line is set in ink and weight, not in a colour. */
+  .sx-pair[data-tone='now'] .sx-pair__key {
+    color: var(--sl-color-white);
+    font-weight: 500;
+  }
   .sx-pair__dot {
+    position: relative;
     flex: none;
     width: 0.45rem;
     height: 0.45rem;
-    border-radius: 50%;
     border: 1px solid var(--sx-structure);
-  }
-  .sx-pair[data-tone='now'] {
-    border-color: color-mix(in oklab, var(--sx-agent) 35%, var(--sx-hairline));
-  }
-  .sx-pair[data-tone='now'] .sx-pair__key {
-    color: var(--sx-agent);
+    border-radius: 50%;
   }
   .sx-pair[data-tone='now'] .sx-pair__dot {
     border-color: var(--sx-agent);
     background: var(--sx-agent);
-    box-shadow: var(--sx-glow);
   }
-  .sx-pair[data-tone='next'] .sx-pair__dot {
-    border-color: var(--sx-spike);
-    border-radius: 1px;
-    transform: rotate(45deg);
+  .sx-pair__key .sx-gmark {
+    --stub: 0.28rem;
+    align-self: center;
+    margin: 0 0.2rem;
   }
   .sx-pair__val {
-    display: inline-flex;
+    display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 0.25rem 0.6rem;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.2rem 1.5rem;
     min-width: 0;
-    padding: 0.45rem 0.95rem 0.45rem 0.85rem;
-    color: var(--sl-color-gray-1);
+    color: var(--sl-color-white);
     font-variant-numeric: tabular-nums;
   }
-  .sx-pair__id {
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.75rem;
-    color: var(--sx-structure);
+  .sx-pair__val > span:first-child {
+    min-width: 0;
+    text-wrap: pretty;
   }
-  .sx-pair[data-tone='now'] .sx-pair__id {
-    color: var(--sx-agent);
+  .sx-pair__id {
+    margin-right: 0.3rem;
+    color: var(--sx-structure);
+    font: 400 0.75rem / 1 var(--font-mono);
+    letter-spacing: 0.06em;
   }
   .sx-pair__days {
-    padding: 0.05rem 0.5rem;
-    border: 1px solid color-mix(in oklab, var(--sx-spike) 50%, transparent);
-    border-radius: 999px;
-    color: var(--sx-spike);
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.625rem;
-    letter-spacing: 0.1em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    color: var(--sx-muted);
+    font: 400 var(--sx-lab-size) / 1.2 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
     text-transform: uppercase;
     white-space: nowrap;
+    font-variant-numeric: tabular-nums;
   }
-  /* A gate past its date with no recorded decision: the same chip, filled, so it does not read as
-     a count of days. */
+  .sx-pair__days::before {
+    content: '';
+    width: 1.1rem;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.5;
+  }
+  /* A gate past its date with no recorded decision. */
   .sx-pair__days[data-pending] {
-    border-color: var(--sx-spike);
-    background: color-mix(in oklab, var(--sx-spike) 14%, transparent);
-  }
-  @keyframes sx-now-pulse {
-    0%,
-    100% {
-      opacity: 1;
-      box-shadow: var(--sx-glow);
-    }
-    50% {
-      opacity: 0.4;
-      box-shadow: 0 0 0 transparent;
-    }
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .sx-pair[data-tone='now'] .sx-pair__dot {
-      animation: sx-now-pulse 2.4s ease-in-out 2;
-    }
+    color: var(--sx-spike);
   }
 
   /* ---------- Phase timeline ---------- */
 
-  /* An instrument chart: mono month ticks over structure-blue gridlines, one band per phase, the
-     active band in the signal colour with its glow, gate diamonds (the next one in spike amber)
-     and a signal today line. Month gridlines and the today chip follow "Gantt Chart" by klyv-ui
-     (21st.dev). Below 36rem of width the list form takes over. */
+  /* One sheet holds the chart and the phase beneath it; four registration corners (.sx-reg) mark its
+     edge. The chart is a hairline month axis with mono ticks, the gates as lettered squares on its
+     rule, ruled rows with one thin bar each, and a signal rule for today. Below 36rem of width the
+     list form takes over. */
   .sx-tl-wrap,
   .sx-tll-wrap {
     container: sx-plan / inline-size;
   }
   .sx-tl {
-    --row: 2.6rem;
-    --grid: color-mix(in oklab, var(--sx-structure) 20%, transparent);
+    --row: 2.5rem;
     position: relative;
-    margin: 1.25rem 0 0.5rem;
+    margin: 1.5rem 0 0;
+    padding: 1.4rem 1.25rem;
+  }
+  @container sx-plan (min-width: 48rem) {
+    .sx-tl {
+      padding: 1.75rem 2rem;
+    }
   }
   .sx-tl__chart {
     position: relative;
-    padding: 0.85rem 1rem 0;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 14px;
-    background: color-mix(in oklab, var(--sx-surface) 72%, var(--sl-color-black));
-    box-shadow: inset 0 1px 0 color-mix(in oklab, white 4%, transparent);
   }
   .sx-tl__axis {
     position: relative;
-    height: 1.7rem;
-    border-bottom: 1px solid color-mix(in oklab, var(--sx-structure) 60%, transparent);
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.625rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
+    height: 1.75rem;
+    border-bottom: 1px solid var(--pl-axis);
     color: var(--sx-muted);
+    font: 400 var(--sx-lab-size) / 1 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
   }
   .sx-tl__tick {
     position: absolute;
-    bottom: 0.45rem;
+    bottom: 0.5rem;
     transform: translateX(-50%);
     white-space: nowrap;
   }
@@ -302,149 +390,199 @@
     position: absolute;
     left: 50%;
     top: calc(100% + 0.2rem);
-    height: 0.25rem;
-    border-inline-start: 1px solid var(--sx-structure);
+    height: 0.3rem;
+    border-inline-start: 1px solid color-mix(in oklab, var(--sx-structure) 75%, transparent);
+  }
+  /* A gate on the axis: a square astride the rule, its letter beneath, over the row it closes. */
+  .sx-tl__axmark {
+    --s: 0.625rem;
+    --stub: 0.2rem;
+    position: absolute;
+    bottom: calc(var(--s) / -2 - 0.5px);
+    z-index: 1;
+    margin: 0;
+    transform: translateX(-50%);
+  }
+  .sx-tl__axletter {
+    position: absolute;
+    left: 50%;
+    top: calc(100% + var(--stub) + 0.15rem);
+    padding: 0 0.2rem;
+    transform: translateX(-50%);
+    background: var(--sl-color-black);
+    color: var(--sx-muted);
+    font: 500 var(--sx-lab-size) / 1 var(--font-mono);
+    letter-spacing: 0;
+  }
+  .sx-tl__axmark:is([data-next], [data-gate-state='pending']) .sx-tl__axletter {
+    color: var(--sx-spike);
+  }
+  /* The next gate's letter is also underlined, so it is not told by colour alone. */
+  .sx-tl__axmark[data-next] .sx-tl__axletter {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
   }
   .sx-tl__body {
     position: relative;
-    padding-bottom: 2rem;
+    padding: 1.45rem 0 2.1rem;
   }
   .sx-tl__gridline {
     position: absolute;
     top: 0;
-    bottom: 0.6rem;
+    bottom: 2.1rem;
     width: 0;
-    border-inline-start: 1px solid var(--grid);
+    border-inline-start: 1px solid var(--pl-grid);
   }
   .sx-tl__rows {
     position: relative;
     list-style: none;
     margin: 0;
-    padding: 0.5rem 0 0;
+    padding: 0;
+    border-top: 1px solid var(--pl-rule);
   }
   .sx-tl__row {
     position: relative;
     height: var(--row);
     margin: 0;
+    border-bottom: 1px solid var(--pl-rule);
   }
+
+  /* A row is one button: hover washes it, the chosen row is washed in ink and carries the hero's
+     short stub on its upper rule. */
   .sx-tl__hit {
+    /* The wash over the row (an ink and how much of it), read again by the label's knockout below. */
+    --wash: 0%;
+    --wash-ink: var(--sx-structure);
     position: absolute;
     inset: 0;
     width: 100%;
     margin: 0;
     padding: 0;
     border: 0;
-    border-radius: 10px;
-    background: transparent;
+    border-radius: 0;
+    background: color-mix(in oklab, var(--wash-ink) var(--wash), transparent);
     color: inherit;
     font: inherit;
     text-align: start;
     cursor: pointer;
-    transition: background-color 180ms var(--sx-ease);
+    transition: background-color var(--sx-dur) var(--sx-ease);
   }
   .sx-tl__hit:hover {
-    background: color-mix(in oklab, var(--sx-structure) 7%, transparent);
+    --wash: 6%;
+  }
+  .sx-tl__hit[aria-pressed='true'] {
+    --wash: 4%;
+    --wash-ink: var(--sl-color-white);
+  }
+  .sx-tl__hit[aria-pressed='true']::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -1px;
+    width: 28px;
+    height: 2px;
+    background: var(--sl-color-white);
   }
   .sx-tl__hit:focus-visible {
     outline: 2px solid var(--sx-agent);
-    outline-offset: 2px;
+    outline-offset: -2px;
   }
+
+  /* Bars: thin and ruled. A planned phase is an outline, a done phase is filled, the active phase is
+     the signal colour and a little thicker, and an open end is dashed in the muted ink. */
   .sx-tl__band {
+    --bh: 0.375rem;
     position: absolute;
-    top: calc(50% - 0.5rem);
-    height: 1rem;
-    border: 1px solid color-mix(in oklab, var(--sx-structure) 75%, transparent);
-    border-radius: 999px;
-    background: color-mix(in oklab, var(--sx-structure) 12%, transparent);
-  }
-  .sx-tl__band[data-status='done'] {
-    background: var(--sx-structure);
-  }
-  .sx-tl__band[data-status='active'] {
-    border-color: var(--sx-agent);
-    background: var(--sx-agent);
-    box-shadow: var(--sx-glow);
+    top: calc(50% - var(--bh) / 2);
+    height: var(--bh);
+    border: 1px solid color-mix(in oklab, var(--sx-structure) 80%, transparent);
+    background: none;
   }
   .sx-tl__band[data-open='true'] {
     border-style: dashed;
+    border-color: var(--sx-muted);
   }
-  .sx-tl__hit[aria-pressed='true'] .sx-tl__band {
-    box-shadow:
-      0 0 0 2px var(--sl-color-black),
-      0 0 0 3px var(--sl-color-white);
+  .sx-tl__band[data-status='done'] {
+    border-color: var(--sx-structure);
+    background: var(--sx-structure);
   }
-  .sx-tl__hit[aria-pressed='true'] .sx-tl__band[data-status='active'] {
-    box-shadow:
-      0 0 0 2px var(--sl-color-black),
-      0 0 0 3px var(--sl-color-white),
-      var(--sx-glow);
+  .sx-tl__band[data-status='active'] {
+    --bh: 0.5rem;
+    border-color: var(--sx-agent);
+    background: var(--sx-agent);
   }
+
+  /* The label stands above the today line (z-index 3) and its words are knocked out of the line, the
+     gridlines and the wash they sit on: the text has the canvas behind it, with the row's wash laid
+     over, so a rule never strikes a letter. The knockout is on an inline box, so it follows each line
+     of a wrapped label and stops at its last word. It has no block padding, so a two-line label stays
+     inside its row and never covers the rule between rows. */
   .sx-tl__label {
     position: absolute;
+    z-index: 3;
     top: 50%;
     transform: translateY(-50%);
-    font-size: 0.875rem;
-    line-height: 1.2;
     color: var(--sl-color-gray-2);
+    font-size: 0.875rem;
+    line-height: 1.25;
     text-wrap: balance;
   }
   .sx-tl__label[data-side='before'] {
     text-align: end;
   }
-  .sx-tl__id {
-    margin-inline-end: 0.45rem;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.6875rem;
-    letter-spacing: 0.06em;
-    color: var(--sx-structure);
+  .sx-tl__text {
+    padding: 0 0.3rem;
+    background: color-mix(in oklab, var(--wash-ink) var(--wash), var(--sl-color-black));
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+    transition: background-color var(--sx-dur) var(--sx-ease);
   }
+  .sx-tl__id {
+    margin-inline-end: 0.5rem;
+    color: var(--sx-structure);
+    font: 400 0.6875rem / 1 var(--font-mono);
+    letter-spacing: 0.08em;
+  }
+  .sx-tl__band[data-status='active'] + .sx-tl__label,
   .sx-tl__hit[aria-pressed='true'] .sx-tl__label {
     color: var(--sl-color-white);
-    font-weight: 600;
   }
+  .sx-tl__hit[aria-pressed='true'] .sx-tl__label {
+    font-weight: 500;
+  }
+
+  /* The gate a bar closes: a square at its end, over the bar's own rule. */
   .sx-tl__gate {
-    pointer-events: none;
-    z-index: 1;
+    --s: 0.625rem;
+    --stub: 0.3rem;
     position: absolute;
-    top: calc(50% - 0.4rem);
-    width: 0.8rem;
-    height: 0.8rem;
-    transform: translateX(-50%) rotate(45deg);
-    border: 1.5px solid var(--sx-structure);
-    background: var(--sl-color-black);
+    top: calc(50% - var(--s) / 2);
+    z-index: 1;
+    margin: 0;
+    transform: translateX(-50%);
+    pointer-events: none;
   }
-  .sx-tl__gate[data-next] {
-    border-color: var(--sx-spike);
-    background: color-mix(in oklab, var(--sx-spike) 25%, var(--sl-color-black));
-    box-shadow: 0 0 0.6rem color-mix(in oklab, var(--sx-spike) 45%, transparent);
-  }
-  .sx-tl__gate[data-gate-state='decided'] {
-    background: var(--sx-structure);
-  }
+
+  /* Today: a hairline in the signal colour from the axis to the last rule, its label in mono beneath. */
   .sx-tl__today {
     pointer-events: none;
     z-index: 2;
     position: absolute;
     top: 0;
-    bottom: 1.6rem;
+    bottom: 2.1rem;
     width: 0;
     border-inline-start: 1px solid var(--sx-agent);
-    box-shadow: 0 0 0.5rem color-mix(in oklab, var(--sx-agent) 55%, transparent);
   }
   .sx-tl__today-chip {
     position: absolute;
     top: 100%;
     left: 0;
+    padding: 0.4rem 0 0;
     transform: translateX(-50%);
-    padding: 0.05rem 0.45rem;
-    border-radius: 999px;
-    background: var(--sx-agent);
-    color: var(--sl-color-black);
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.625rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    line-height: 1.6;
+    color: var(--sx-agent);
+    font: 500 var(--sx-lab-size) / 1.2 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
     text-transform: uppercase;
     white-space: nowrap;
   }
@@ -455,58 +593,75 @@
     transform: translateX(-100%);
   }
 
-  /* The chosen phase, as a card. */
+  /* ---------- The chosen phase, under the chart ---------- */
+
+  /* No card: a ruled block that opens with the hero's short stub in the phase's colour. The figures on
+     the left (id, title, state, dates), what it delivers on the right from 48rem. */
   .sx-tl__card {
-    margin-top: 0.85rem;
-    padding: 1.1rem 1.25rem 1.2rem;
+    --c: var(--sx-structure);
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      'head'
+      'when'
+      'kick'
+      'outs'
+      'gate';
+    column-gap: 3rem;
+    margin: 1.5rem 0 0;
+    padding: 1.35rem 0 0;
+    border-top: 1px solid var(--pl-rule);
+  }
+  .sx-tl__card[data-status='active'] {
+    --c: var(--sx-agent);
+  }
+  .sx-tl__card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -1px;
+    width: 28px;
+    height: 2px;
+    background: var(--c);
   }
   .sx-tl__card-head {
+    grid-area: head;
     display: flex;
     flex-wrap: wrap;
-    align-items: center;
-    gap: 0.5rem 0.75rem;
+    align-items: baseline;
+    gap: 0.35rem 0.9rem;
   }
   .sx-tl__card-id {
-    display: inline-grid;
-    place-items: center;
-    min-width: 2.25rem;
-    height: 2.25rem;
-    padding: 0 0.45rem;
-    border: 1px solid color-mix(in oklab, var(--sx-structure) 70%, transparent);
-    border-radius: 10px;
-    background: var(--sl-color-black);
-    color: var(--sl-color-white);
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.75rem;
-    font-weight: 500;
-    letter-spacing: 0.06em;
-  }
-  .sx-tl__card[data-status='active'] .sx-tl__card-id {
-    border-color: var(--sx-agent);
-    color: var(--sx-agent);
-    box-shadow: var(--sx-glow);
+    color: var(--sx-structure);
+    font: 500 0.75rem / 1 var(--font-mono);
+    letter-spacing: 0.08em;
   }
   .sx-tl__card h3 {
     margin: 0;
-    font-size: 1.125rem;
-    font-weight: 600;
-    line-height: 1.25;
     color: var(--sl-color-white);
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.25;
   }
   .sx-tl__when {
-    margin: 0.65rem 0 0;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.75rem;
+    grid-area: when;
+    margin: 0.6rem 0 0;
     color: var(--sx-muted);
+    font: 400 0.75rem / 1.4 var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
-  .sx-tl__card .sx-kicker {
-    margin-top: 1rem;
+  .sx-tl__card > .sx-kicker {
+    grid-area: kick;
+    margin: 1.5rem 0 0;
+    font-size: var(--sx-lab-size);
+    letter-spacing: var(--sx-lab-track);
   }
   .sx-tl__outputs {
+    grid-area: outs;
     display: grid;
-    gap: 0.35rem;
-    margin: 0.45rem 0 0;
+    gap: 0.45rem;
+    margin: 0.7rem 0 0;
     padding: 0;
     list-style: none;
   }
@@ -519,121 +674,126 @@
     content: '';
     position: absolute;
     inset-inline-start: 0;
-    top: 0.55em;
-    width: 0.4rem;
-    height: 0.4rem;
+    top: 0.6em;
+    width: 0.35rem;
+    height: 0.35rem;
     border: 1px solid var(--sx-structure);
-    border-radius: 2px;
   }
   .sx-tl__gateline {
+    grid-area: gate;
     display: flex;
     align-items: baseline;
     gap: 0.65rem;
-    margin: 1rem 0 0;
-    padding-top: 0.85rem;
-    border-top: 1px solid var(--sx-hairline);
+    margin: 1.25rem 0 0;
+    padding-top: 1rem;
+    border-top: 1px solid var(--pl-rule);
+    color: var(--sl-color-gray-2);
     font-size: 0.9375rem;
+    line-height: 1.5;
   }
-  .sx-diamond {
-    flex: none;
-    display: inline-block;
-    width: 0.55rem;
-    height: 0.55rem;
-    transform: rotate(45deg);
-    border: 1.5px solid var(--sx-structure);
-  }
-  .sx-diamond[data-next] {
-    border-color: var(--sx-spike);
-    background: color-mix(in oklab, var(--sx-spike) 25%, transparent);
-  }
-  .sx-diamond[data-gate-state='decided'] {
-    background: var(--sx-structure);
-  }
-  /* The gate's decision status under the question in the timeline's card. */
+  /* The gate's decision status under the question in the chosen phase. */
   .sx-tl__gatenote {
     color: var(--sl-color-white);
   }
   .sx-tl__gatenote[data-tone='pending'] {
     color: var(--sx-spike);
   }
+  @container sx-plan (min-width: 48rem) {
+    .sx-tl__card {
+      grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+      grid-template-areas:
+        'head kick'
+        'when outs'
+        '. gate';
+    }
+    .sx-tl__card-head,
+    .sx-tl__card > .sx-kicker {
+      align-self: baseline;
+    }
+    .sx-tl__card > .sx-kicker {
+      margin-top: 0;
+    }
+    .sx-tl__outputs {
+      margin-top: 0.85rem;
+    }
+  }
 
-  /* Narrow screens and no width to spare: the same phases as a list. */
+  /* ---------- The phase list: ruled rows, the narrow form of the timeline ---------- */
+
+  /* Shown only where the timeline has too little width. A row per phase between hairlines: its id
+     and title, its dates in mono beside its state, and its gate. The active phase carries the short
+     signal bar on its top rule; an open end is a dashed rule. */
   .sx-tll {
     display: none;
-    position: relative;
     list-style: none;
-    margin: 1.25rem 0 0;
+    margin: 1.5rem 0 0;
     padding: 0;
-  }
-  .sx-tll::before {
-    content: '';
-    position: absolute;
-    inset-inline-start: 0.5rem;
-    top: 0.6rem;
-    bottom: 0.6rem;
-    border-inline-start: 1px solid color-mix(in oklab, var(--sx-structure) 55%, transparent);
   }
   .sx-tll__item {
     position: relative;
     margin: 0;
-    padding: 0 0 1.25rem 2rem;
+    padding: 1.1rem 0 1.2rem;
+    border-top: 1px solid var(--pl-rule);
   }
-  .sx-tll__mark {
+  .sx-tll__item:last-child {
+    border-bottom: 1px solid var(--pl-rule);
+  }
+  .sx-tll__item[data-open='true'] {
+    border-top-style: dashed;
+  }
+  .sx-tll__item[data-status='active']::before {
+    content: '';
     position: absolute;
-    inset-inline-start: 0.05rem;
-    top: 0.3rem;
-    width: 0.95rem;
-    height: 0.95rem;
-    border: 1px solid var(--sx-structure);
-    border-radius: 50%;
-    background: var(--sl-color-black);
-  }
-  .sx-tll__item[data-status='done'] .sx-tll__mark {
-    background: var(--sx-structure);
-  }
-  .sx-tll__item[data-status='active'] .sx-tll__mark {
-    border-color: var(--sx-agent);
+    left: 0;
+    top: -1px;
+    width: 28px;
+    height: 2px;
     background: var(--sx-agent);
-    box-shadow: var(--sx-glow);
-  }
-  .sx-tll__item[data-open='true'] .sx-tll__mark {
-    border-style: dashed;
   }
   .sx-tll__head {
+    display: grid;
+    grid-template-columns: 2.5rem minmax(0, 1fr);
+    align-items: baseline;
     margin: 0;
-    line-height: 1.3;
     color: var(--sl-color-white);
+    line-height: 1.3;
   }
   .sx-tll__id {
-    margin-inline-end: 0.4rem;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.75rem;
     color: var(--sx-structure);
-  }
-  .sx-tll__item[data-status='active'] .sx-tll__id {
-    color: var(--sx-agent);
+    font: 400 0.75rem / 1 var(--font-mono);
+    letter-spacing: 0.06em;
   }
   .sx-tll__head strong {
     font-size: 1rem;
-    font-weight: 600;
+    font-weight: 500;
   }
   .sx-tll__when {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.35rem 0.6rem;
-    margin: 0.35rem 0 0;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.6875rem;
+    gap: 0.35rem 0.9rem;
+    margin: 0.4rem 0 0;
+    padding-inline-start: 2.5rem;
     color: var(--sx-muted);
+    font: 400 0.6875rem / 1.4 var(--font-mono);
+    letter-spacing: 0.06em;
+    font-variant-numeric: tabular-nums;
   }
   .sx-tll__gate {
     display: flex;
     align-items: baseline;
-    gap: 0.55rem;
-    margin: 0.35rem 0 0;
-    font-size: 0.875rem;
+    gap: 0.5rem;
+    margin: 0.6rem 0 0;
+    padding-inline-start: 2.5rem;
     color: var(--sl-color-gray-2);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  /* The text beside the mark may wrap inside a long word, so the line fits a narrow phone at large
+     text sizes. */
+  .sx-tll__gate > span:not(.sx-gmark) {
+    min-width: 0;
+    overflow-wrap: anywhere;
   }
   .sx-tll__note {
     display: block;
@@ -652,381 +812,250 @@
     }
   }
 
-  /* ---------- Gate stepper ---------- */
+  /* ---------- Gate list: a ruled sheet, a row per gate ---------- */
 
-  /* Gates in order, after "Stepper" by kevingirelli (21st.dev): side by side from 52rem of width,
-     a vertical rail below that. The next upcoming gate is the one place spike amber is used. */
+  /* The gate's letter in a square on a vertical rule, then its title with its date and state, then
+     the question and what happens if the gate is missed. Rows are hairlines; from 40rem of width the
+     title and the question are two columns with a rule between them, below that one stacks on the
+     other. The gate the line is waiting on has the mark in the spike colour and the short bar on
+     its top rule; a decided gate's mark is filled. */
   .sx-gs-wrap {
     container: sx-gates / inline-size;
-    margin-top: 1.25rem;
+    --gs-pad: 1.35rem;
+    --gs-mark: 2.25rem;
+    margin-top: 1.5rem;
   }
   .sx-gs {
-    display: grid;
     list-style: none;
     margin: 0;
     padding: 0;
   }
   .sx-gs__item {
-    display: grid;
-    grid-template-columns: 2.5rem minmax(0, 1fr);
-    column-gap: 1rem;
+    position: relative;
     margin: 0;
+    border-top: 1px solid var(--pl-rule);
   }
-  .sx-gs__rail {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
+  .sx-gs__item:last-child {
+    border-bottom: 1px solid var(--pl-rule);
+  }
+  /* The rule the marks sit on, from the first mark to the last. */
+  .sx-gs__item::before {
+    content: '';
+    position: absolute;
+    left: calc(var(--gs-mark) / 2);
+    top: 0;
+    bottom: 0;
+    border-inline-start: 1px solid var(--pl-axis);
+    pointer-events: none;
+  }
+  .sx-gs__item:first-child::before {
+    top: calc(var(--gs-pad) + var(--gs-mark) / 2);
+  }
+  .sx-gs__item:last-child::before {
+    bottom: auto;
+    height: calc(var(--gs-pad) + var(--gs-mark) / 2);
+  }
+  .sx-gs__item[data-next]::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: -1px;
+    width: 28px;
+    height: 2px;
+    background: var(--sx-spike);
+  }
+  .sx-gs__row {
+    display: grid;
+    grid-template-columns: var(--gs-mark) minmax(0, 1fr);
+    column-gap: 1rem;
+    min-width: 0;
   }
   .sx-gs__mark {
-    flex: none;
+    position: relative;
+    z-index: 1;
+    grid-column: 1;
+    grid-row: 1 / span 2;
     display: grid;
     place-items: center;
-    width: 2.5rem;
-    height: 2.5rem;
+    align-self: start;
+    width: var(--gs-mark);
+    height: var(--gs-mark);
+    margin-top: var(--gs-pad);
     border: 1px solid color-mix(in oklab, var(--sx-structure) 70%, transparent);
-    border-radius: 10px;
     background: var(--sl-color-black);
     color: var(--sl-color-white);
-    font-family: var(--sx-font-display);
-    font-size: 1.1rem;
-    font-weight: 400;
+    font: 500 0.875rem / 1 var(--font-mono);
   }
-  .sx-gs__line {
-    flex: 1;
-    width: 0;
-    min-height: 1rem;
-    border-inline-start: 1px solid color-mix(in oklab, var(--sx-structure) 55%, transparent);
+  .sx-gs__item[data-gate-state='decided'] .sx-gs__mark {
+    border-color: var(--sx-structure);
+    background: color-mix(in oklab, var(--sx-structure) 22%, var(--sl-color-black));
   }
-  .sx-gs__item:last-child .sx-gs__line {
-    display: none;
+  .sx-gs__item[data-gate-state='not-reached'] .sx-gs__mark {
+    border-style: dashed;
+    color: var(--sx-muted);
   }
-  .sx-gs__card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
+  .sx-gs__item[data-next] .sx-gs__mark {
+    border-color: var(--sx-spike);
+    color: var(--sx-spike);
+  }
+  .sx-gs__head {
+    grid-column: 2;
     min-width: 0;
-    margin-bottom: 1rem;
-    padding: 1rem 1.1rem 1.05rem;
+    padding-top: var(--gs-pad);
   }
-  .sx-gs__item:last-child .sx-gs__card {
-    margin-bottom: 0;
+  .sx-gs__body {
+    grid-column: 2;
+    min-width: 0;
+    padding: 0.85rem 0 var(--gs-pad);
   }
-  .sx-gs__card h3 {
+  .sx-gs__head h3 {
     margin: 0;
+    color: var(--sl-color-white);
     font-size: 1.0625rem;
     font-weight: 600;
     line-height: 1.25;
-    color: var(--sl-color-white);
   }
   .sx-gs__meta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.4rem 0.5rem;
-    margin: 0;
-    font-size: 0.875rem;
-    color: var(--sx-muted);
+    gap: 0.45rem 0.9rem;
+    margin: 0.5rem 0 0;
   }
   .sx-gs__when {
     flex-basis: 100%;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.75rem;
     color: var(--sl-color-gray-1);
+    font: 400 0.75rem / 1.4 var(--font-mono);
     font-variant-numeric: tabular-nums;
   }
   .sx-gs__note {
-    margin: 0;
+    margin: 0.6rem 0 0;
+    color: var(--sl-color-white);
     font-size: 0.875rem;
     line-height: 1.5;
-    color: var(--sl-color-white);
   }
   .sx-gs__note[hidden] {
     display: none;
   }
   .sx-gs__question {
     margin: 0;
-    font-size: 0.9375rem;
-    line-height: 1.5;
     color: var(--sl-color-gray-2);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    text-wrap: pretty;
   }
   .sx-gs__miss {
-    margin-top: auto;
-    padding-top: 0.6rem;
-    border-top: 1px solid var(--sx-hairline);
+    margin-top: 1rem;
   }
   .sx-gs__miss p {
-    margin: 0.5rem 0 0;
-    font-size: 0.875rem;
-    line-height: 1.5;
+    max-width: 60ch;
+    margin: 0.6rem 0 0;
     color: var(--sx-muted);
-  }
-  .sx-gs__item[data-state='decided'] .sx-gs__mark {
-    border-color: var(--sx-structure);
-    background: color-mix(in oklab, var(--sx-structure) 22%, var(--sl-color-black));
-  }
-  .sx-gs__item[data-next] .sx-gs__mark {
-    border-color: var(--sx-spike);
-    color: var(--sx-spike);
-    box-shadow: 0 0 0.9rem color-mix(in oklab, var(--sx-spike) 35%, transparent);
-  }
-  .sx-gs__item[data-next] .sx-gs__card {
-    border-color: color-mix(in oklab, var(--sx-spike) 50%, var(--sx-hairline));
-  }
-  @container sx-gates (min-width: 52rem) {
-    .sx-gs {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      column-gap: 1rem;
-    }
-    .sx-gs__item {
-      grid-template-columns: minmax(0, 1fr);
-      grid-template-rows: auto 1fr;
-      row-gap: 0.85rem;
-    }
-    .sx-gs__rail {
-      flex-direction: row;
-    }
-    .sx-gs__line {
-      width: auto;
-      height: 0;
-      min-height: 0;
-      margin-inline: 0.5rem -1rem;
-      border-inline-start: 0;
-      border-top: 1px solid color-mix(in oklab, var(--sx-structure) 55%, transparent);
-    }
-    .sx-gs__card {
-      margin-bottom: 0;
-    }
-  }
-
-  /* ---------- Stats band ---------- */
-
-  /* After "Stats Band" by kuratlielia (21st.dev), divided layout: one card ruled into cells, mono
-     labels over large display figures with tabular digits. The server renders the final numbers;
-     a small script counts up once, in view. */
-  .sx-stats {
-    container: sx-stats / inline-size;
-    margin: 0 0 2rem;
-  }
-  .sx-stats__title {
-    margin: 0 0 1rem;
-    font-family: var(--sx-font-display);
-    font-size: clamp(1.6rem, 1.1rem + 1.8vw, 2.5rem);
-    font-weight: 400;
-    letter-spacing: -0.02em;
-    line-height: 1.1;
-    color: var(--sl-color-white);
-  }
-  .sx-stats__clip {
-    overflow: hidden;
-    border-radius: 13px;
-  }
-  .sx-stats__grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin: 0 -1px -1px 0;
-    padding: 0;
-  }
-  @container sx-stats (min-width: 30rem) {
-    .sx-stats__grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
-  }
-  @container sx-stats (min-width: 46rem) {
-    .sx-stats__grid {
-      grid-template-columns: repeat(var(--count, 4), minmax(0, 1fr));
-    }
-  }
-  .sx-stats__item {
-    display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
-    margin: 0;
-    padding: 1rem 1.15rem 1.15rem;
-    border-inline-end: 1px solid var(--sx-hairline);
-    border-block-end: 1px solid var(--sx-hairline);
-  }
-  .sx-stats__label {
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-    margin: 0;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.625rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: var(--sx-muted);
-  }
-  .sx-stats__index {
-    color: var(--sx-structure);
-    font-variant-numeric: tabular-nums;
-  }
-  .sx-stats__figure {
-    margin: 0;
-    font-family: var(--sx-font-display);
-    font-size: clamp(2.1rem, 1.5rem + 2.6cqi, 3.25rem);
-    font-weight: 300;
-    letter-spacing: -0.03em;
-    line-height: 1;
-    color: var(--sl-color-white);
-    font-variant-numeric: tabular-nums lining-nums;
-  }
-  .sx-stats__number {
-    display: inline-grid;
-  }
-  .sx-stats__number > * {
-    grid-area: 1 / 1;
-  }
-  .sx-stats__sizer {
-    visibility: hidden;
-  }
-  .sx-stats__detail {
-    margin: 0;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.6875rem;
-    line-height: 1.45;
-    color: var(--sx-muted);
-    font-variant-numeric: tabular-nums;
-  }
-  .sx-stats__caption {
-    max-width: 68ch;
-    margin: 0.85rem 0 0;
     font-size: 0.875rem;
     line-height: 1.55;
-    color: var(--sx-muted);
+    text-wrap: pretty;
   }
-
-  /* ---------- Brick cards (status page) ---------- */
-
-  /* Status columns as cards with a mono count, after "Quarterly Roadmap Columns" by olewandowski1
-     (21st.dev). Each status has its own marker shape, so colour is never the only cue. */
-  .sx-bricks {
-    container: sx-bricks / inline-size;
-    margin-top: 1.25rem;
-  }
-  .sx-bricks__grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    gap: 1rem;
-  }
-  @container sx-bricks (min-width: 40rem) {
-    .sx-bricks__grid {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+  @container sx-gates (min-width: 40rem) {
+    .sx-gs__row {
+      grid-template-columns: var(--gs-mark) minmax(0, 15rem) minmax(0, 1fr);
+      column-gap: 0;
+    }
+    .sx-gs__mark {
+      grid-row: 1;
+    }
+    .sx-gs__head {
+      grid-column: 2;
+      padding: var(--gs-pad) 1.5rem var(--gs-pad) 1.25rem;
+      border-inline-end: 1px solid var(--pl-rule);
+    }
+    .sx-gs__body {
+      grid-column: 3;
+      padding: var(--gs-pad) 0 var(--gs-pad) 1.5rem;
     }
   }
-  .sx-bricks__card {
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-    margin: 0;
-    padding: 1rem 1.15rem 1.1rem;
-  }
-  .sx-bricks__card[data-tone='designed'] {
-    border-style: dashed;
-  }
-  .sx-bricks__head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 1rem;
-  }
-  .sx-bricks__title {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin: 0.15rem 0 0;
-    font-size: 1.0625rem;
-    font-weight: 600;
-    line-height: 1.3;
-    color: var(--sl-color-white);
-  }
-  .sx-bricks__dot {
-    flex: none;
-    width: 0.65rem;
-    height: 0.65rem;
-    border: 1.5px solid var(--sx-structure);
-    border-radius: 50%;
-    background: var(--sx-structure);
-  }
-  [data-tone='built'] .sx-bricks__dot {
-    background: transparent;
-  }
-  [data-tone='stopped'] .sx-bricks__dot {
-    border-color: var(--sl-color-gray-3);
-    border-radius: 2px;
-    background: var(--sl-color-gray-3);
-  }
-  [data-tone='designed'] .sx-bricks__dot,
-  [data-tone='other'] .sx-bricks__dot {
-    border-style: dashed;
-    border-color: var(--sl-color-gray-3);
-    background: transparent;
-  }
-  .sx-bricks__count {
-    margin: 0;
-    padding: 0.15rem 0.6rem;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 999px;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 1rem;
-    font-weight: 500;
-    line-height: 1.4;
-    color: var(--sl-color-white);
-    font-variant-numeric: tabular-nums lining-nums;
-  }
-  .sx-bricks__note {
-    margin: 0.6rem 0 0;
-    font-size: 0.875rem;
-    line-height: 1.5;
-    color: var(--sx-muted);
-  }
-  .sx-bricks__card > .sx-disclosure {
-    margin-top: 0.9rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid var(--sx-hairline);
-  }
-  .sx-bricks__list {
-    display: grid;
-    grid-template-columns: max-content minmax(0, 1fr);
-    gap: 0.45rem 0.75rem;
-    margin: 0.9rem 0 0;
-    padding: 0.8rem 0 0;
-    border-top: 1px solid var(--sx-hairline);
-    list-style: none;
-    font-size: 0.875rem;
-    line-height: 1.4;
-  }
-  .sx-disclosure > .sx-bricks__list {
-    margin-top: 0.6rem;
-    padding-top: 0;
-    border-top: 0;
-  }
-  .sx-bricks__list li {
-    display: grid;
-    grid-column: 1 / -1;
-    grid-template-columns: 4.75rem minmax(0, 1fr);
-    grid-template-columns: subgrid;
-    margin: 0;
-    color: var(--sl-color-gray-2);
-  }
-  .sx-bricks__id {
-    align-self: start;
-    justify-self: start;
-    padding: 0.05rem 0.4rem;
-    border: 1px solid var(--sx-hairline);
-    border-radius: 999px;
-    background: var(--sl-color-black);
-    color: var(--sx-structure);
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: 0.6875rem;
-    line-height: 1.5;
+
+  /* ---------- Forced colours ---------- */
+
+  /* Forced colours swap every fill and border colour for the system's, which would draw a done or
+     active bar, and a decided or pending gate, like a planned one. A system colour named here is
+     kept, so the state still reads: done and decided in the text colour, active and the next gate in
+     the highlight colour. The shapes (the outline round the next gate, the dashed open end, the
+     thicker active bar) are borders and outlines and survive as they are. */
+  @media (forced-colors: active) {
+    .sx-tl__band[data-status='done'] {
+      border-color: CanvasText;
+      background: CanvasText;
+    }
+    .sx-tl__band[data-status='active'] {
+      border-color: Highlight;
+      background: Highlight;
+    }
+    .sx-gmark:is([data-gate-state='decided'], [data-gate-state='pending']) {
+      background: CanvasText;
+    }
+    .sx-gmark[data-next] {
+      --m: Highlight;
+    }
+    .sx-gmark[data-next][data-gate-state='pending'] {
+      background: Highlight;
+    }
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .sx-disclosure > summary,
-    .sx-disclosure > summary::before,
-    .sx-tl__hit {
-      transition: none;
+  /* ---------- Motion: the bars draw, the rows wake ---------- */
+
+  /* Scroll-driven, over the entry of each block into view (see the header). */
+  @keyframes sx-rm-draw {
+    from {
+      transform: scaleX(0);
+    }
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes sx-rm-appear {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes sx-rm-rise {
+    from {
+      opacity: 0.3;
+      transform: translateY(0.75rem);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+
+  @supports (animation-timeline: view()) {
+    @media (prefers-reduced-motion: no-preference) {
+      .sx-tl__body {
+        view-timeline-name: --sx-rm-chart;
+      }
+      /* --k is a row's place in the chart (set on the row), so the bars draw one after another. */
+      .sx-tl__band {
+        transform-origin: left center;
+        animation: sx-rm-draw linear both;
+        animation-duration: auto;
+        animation-timeline: --sx-rm-chart;
+        animation-range: entry calc(var(--k, 0) * 6%) entry calc(40% + var(--k, 0) * 6%);
+      }
+      .sx-tl__gate {
+        animation: sx-rm-appear linear both;
+        animation-duration: auto;
+        animation-timeline: --sx-rm-chart;
+        animation-range: entry calc(20% + var(--k, 0) * 6%) entry calc(60% + var(--k, 0) * 6%);
+      }
+      .sx-tll__item {
+        animation: sx-rm-rise linear both;
+        animation-duration: auto;
+        animation-timeline: view();
+        animation-range: entry 0% entry 70%;
+      }
     }
   }
 }

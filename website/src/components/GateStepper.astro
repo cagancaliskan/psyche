@@ -1,12 +1,16 @@
 ---
-// The decision gates in order, each with its date or the rule that will set it, its status, the
-// question it decides and what happens if it is missed. The gate the line is waiting on is marked
-// in spike amber from the plan's as_of date at build time. A gate past its date with no recorded
-// decision reads "decision pending" and stays the marked one; a decided gate reads "decided" with
-// the day it was decided and the next step, and nothing more (D-034). A small script moves the
-// mark and the wording to match the reader's today (lib/gateClock.ts).
+// The decision gates in order, as a ruled sheet: a row per gate, with the gate's letter in a square
+// mark on a vertical rule, its title and date, its state, the question it decides and what happens
+// if it is missed. The gate the line is waiting on is marked in the spike colour from the plan's
+// as_of date at build time. A gate past its date with no recorded decision reads "decision
+// pending" and stays the marked one; a decided gate reads "decided" with the day it was decided
+// and the next step, and nothing more (D-034). A small script moves the mark and the wording to
+// match the reader's today (lib/gateClock.ts); every data attribute it reads stays on the row.
+//
+// Catalog source (21st.dev): the numbered steps on a connecting rule after "Stepper" by
+// kevingirelli, with the label column and ruled rows of "Spec Sheet" by isaiahbjork, rewritten in
+// plain CSS (styles/plan.css).
 import { formatDay, gateLabel, gateNote, gateState, lineStoppedAt, nextGate, type Plan } from '../lib/plan.ts';
-import '../styles/docs-visuals.css';
 import '../styles/plan.css';
 
 interface Props {
@@ -40,25 +44,26 @@ const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
             data-next={isNext ? '' : undefined}
             aria-current={isNext ? 'step' : undefined}
           >
-            <div class="sx-gs__rail" aria-hidden="true">
-              <span class="sx-gs__mark">{g.id}</span>
-              <span class="sx-gs__line" />
-            </div>
-            <article class="sx-gs__card sx-spot" data-spot>
-              <h3>Gate {g.id}: {g.title}</h3>
-              <p class="sx-gs__meta">
-                <span class="sx-gs__when">
-                  {g.date ? <time datetime={g.date}>{formatDay(g.date)}</time> : label(g.date_rule ?? 'date not yet fixed')}
-                  {moved && <span> (moved from {formatDay(g.baseline_date!)})</span>}
-                </span>{' '}
-                <span class="sx-chip" data-tone={chip.tone} data-gate-chip>{chip.text}</span> <span class="sx-chip" data-tone="next" data-next-chip hidden={!isNext}>Next</span>
-              </p>
-              <p class="sx-gs__note" data-gate-note hidden={note === null}>{note}</p>
-              <p class="sx-gs__question">{g.question}</p>
-              <details class="sx-gs__miss sx-disclosure">
-                <summary>If missed</summary>
-                <p>{g.if_missed}</p>
-              </details>
+            <article class="sx-gs__row">
+              <span class="sx-gs__mark" aria-hidden="true">{g.id}</span>
+              <div class="sx-gs__head">
+                <h3>Gate {g.id}: {g.title}</h3>
+                <p class="sx-gs__meta">
+                  <span class="sx-gs__when">
+                    {g.date ? <time datetime={g.date}>{formatDay(g.date)}</time> : label(g.date_rule ?? 'date not yet fixed')}
+                    {moved && <span> (moved from {formatDay(g.baseline_date!)})</span>}
+                  </span>{' '}
+                  <span class="sx-chip" data-tone={chip.tone} data-gate-chip>{chip.text}</span> <span class="sx-chip" data-tone="next" data-next-chip hidden={!isNext}>Next</span>
+                </p>
+                <p class="sx-gs__note" data-gate-note hidden={note === null}>{note}</p>
+              </div>
+              <div class="sx-gs__body">
+                <p class="sx-gs__question">{g.question}</p>
+                <details class="sx-gs__miss sx-disclosure">
+                  <summary>If missed</summary>
+                  <p>{g.if_missed}</p>
+                </details>
+              </div>
             </article>
           </li>
         );
@@ -69,7 +74,6 @@ const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
 
 <script>
   import { applyGateClock } from '../lib/gateClock.ts';
-  import './docs/motion.ts';
 
   for (const root of document.querySelectorAll<HTMLElement>('[data-gate-stepper]')) applyGateClock(root);
 </script>

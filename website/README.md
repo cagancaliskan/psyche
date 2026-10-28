@@ -44,7 +44,7 @@ long-term aim. Stage states and dates are read from the ledger projection, never
 | `npm run check:og` | Fail if the social image was not drawn for the stage the ledger says is active |
 | `npm run og` | Draw the social image again from the ledger's program state |
 | `npm run icons` | Draw the PNG icons in `public/` from `brand/psyche-icon.svg` |
-| `npm test` | Unit tests for the plan, maze, battery, head, sitemap-date and page-chrome (title strip, sheet number, stage line, next gate, footer date and links) logic, for the table regions, for the search override (it must stay Starlight's component with its three edits) and for the lock of the accessibility check's two packages |
+| `npm test` | Unit tests for the plan, maze, battery, head, sitemap-date, page-chrome (title strip, sheet number, stage line, next gate, footer date and links) and status-page (the readout's figures and each brick's two axes, `lib/status.ts`) logic, for the table regions, for the search override (it must stay Starlight's component with its three edits) and for the lock of the accessibility check's two packages |
 
 ### Diagrams
 
@@ -242,12 +242,12 @@ Every colour is a token, defined once in `src/styles/global.css`: dark on `:root
 
 `--sx-glow` is the signal glow (a shadow value), `--sx-grid` the grid line colour and `--sx-ease`
 the one easing curve. `--sx-lab-size` and `--sx-lab-track` are the one mono label of the site (10.5px,
-0.13em, uppercase: a field label or a section head, weight 400 or 500); chips in `plan.css` are the only
-smaller mono type. `--sx-dur`, `--sx-dur-bar` and `--sx-dur-line` are how long the chrome's state changes
+0.13em, uppercase: a field label, a section head or a state label, weight 400 or 500). `--sx-dur`, `--sx-dur-bar` and `--sx-dur-line` are how long the chrome's state changes
 take (a colour, a bar running along a rule, an underline drawing) and are `0s` under
 `prefers-reduced-motion: reduce`, so no rule needs its own override. `--sx-gutter` is the landing
-page's gutter, which the footer's title block takes on that page. Radii are 14px for cards, 10px for inner elements and fully round for pills
-and chips. A card is the card surface with a hairline border and a faint inner top edge; on hover
+page's gutter, which the footer's title block takes on that page. Radii are 14px for cards and 10px for inner elements. The pieces drawn as a drafting sheet (the
+chrome, the landing, the roadmap and status pages) have square corners and rules in place of cards, and there
+are no pills. A card is the card surface with a hairline border and a faint inner top edge; on hover
 its edge warms toward the signal colour and a soft light follows a mouse pointer.
 
 ### Type
@@ -322,7 +322,8 @@ sections sit inside `class="not-content"`, which keeps Starlight's Markdown styl
   sidebar's group number are never printed on one strip: they are different numbers. Below 30rem the two
   ends stack. Nothing is typed per page: the logic is `src/lib/pageChrome.ts` (tested in
   `pageChrome.test.ts`, which also fails when the publication manifest gains a section that has no stage,
-  or when a section title names a program state that the ledger does not hold). The stage numbers are
+  or when a section title carries a program state in brackets: a state is read from the ledger, never written
+  in a title). The stage numbers are
   fixed there, as in `tools/publish/og.py`. The file lives with the other chrome, outside the folders that
   date `/roadmap/` and `/status/` (`scripts/sitemap-lastmod.mjs`), so a change to the strip moves no
   page's date.
@@ -359,6 +360,43 @@ sections sit inside `class="not-content"`, which keeps Starlight's Markdown styl
   in the browser: each is drawn ahead of time into a colourless SVG (see Diagrams) and `docs.css`
   paints it from the live tokens, so one file reads in both themes. The labels were measured in
   Martian Mono when the diagram was drawn, so the stylesheet changes colour only, never type.
+
+### The roadmap and the status page
+
+Both are drawn as sheets, in the same language as the chrome: hairline rules, mono labels (the label
+tokens), registration corners (`.sx-reg`), ruled rows in place of cards, square marks, and the signal
+colour kept for what is current. A state is a mono label with a small marker whose shape says it as the
+word does, so colour is never the only cue (WCAG 1.4.1), and the markers are drawn with borders, so
+they survive forced colours. Everything is read from the plan or the ledger projection; no count, date
+or state is typed in a component.
+
+- **The roadmap** (`styles/plan.css`; `Timeline.tsx`, `NowLine.tsx`, `TimelineList.astro`,
+  `GateStepper.astro`) is one skin on the landing, `/roadmap/`, `/research/roadmap/` and
+  `/research/gates/`. The timeline is a hairline month axis with ruled rows and one thin bar per phase
+  (an outline when planned, filled when done, the signal colour when active, dashed at an open end).
+  Gates are square marks with a crosshair, lettered on the axis and at the end of the bar they close;
+  the next gate has a second square round its mark and an underlined letter, and a gate past its date
+  with no decision is filled in the spike colour. Today is a thin signal rule, and each phase label is
+  knocked out of it. Below 36rem of the chart's own width the phase list takes over. The gate list is
+  a ruled sheet, a row per gate with its letter on a vertical rule, in two columns from 40rem. The
+  bars and the gate marks have forced-colours rules, because forced colours would otherwise draw every
+  state like a planned one. `lib/gateClock.ts` keeps working through the data attributes
+  (`data-gate-id`, `data-gate-state`, `data-next` and the rest); keep them.
+- **The substrate readout** (`components/landing/SubstrateReadout.astro`, `styles/readout.css`) is the
+  one readout of the landing, `/status/` and the substrate overview. It lays out by the width of its
+  own container (one row each below 30rem, three to a row from 30rem, all in one row from 52rem, the
+  label over the figure below 20rem), because the same figures sit in columns of three different
+  widths. `framed` draws it as a sheet, with a slot under the figures.
+- **The brick board** (`components/BrickBoard.astro`, `components/BrickTable.astro`,
+  `styles/status.css`, `lib/status.ts`) is a key to the two axes over one ruled row per brick, build
+  status and meaning verdict in columns of their own (CONTRIBUTING rule 3). It is a real `table`: the
+  rows are CSS grids, which would drop the table's meaning for assistive technology, so every part
+  carries its role in the markup. The ledger projection holds one status per brick, and a status is a
+  name on one axis or the other, so a brick with a build status reads "Not earned" on the meaning axis
+  (true while the meaning bar is open) and a brick with a meaning verdict reads "None recorded" on the
+  build axis. `lib/status.test.ts` fails if the meaning bar is no longer open or a brick is earned, so
+  that wording cannot go stale unseen. If a per-brick verdict is wanted, the ledger needs a structured
+  field and `ledger_public` in `tools/publish/core.py` has to pass it on.
 
 ### Motion
 

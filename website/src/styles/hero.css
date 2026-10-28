@@ -8,10 +8,11 @@
  * Catalog sources (21st.dev), rewritten in plain CSS and a few lines of script, without a motion
  * library: the stroke draw after "Animated Signature" by dqnamo (a pathLength 1 dash reveal on a
  * near-linear pen curve), the line-by-line rise after "Text Reveal (Mask)" by soralabs (clipped
- * lines, expo-out), the primary action after "Expanding Arrow Button" by starc007 (a tile that
- * widens on hover or focus, only where hover exists, with a press) and the secondary after
- * "Underline Link" by balick (a background-gradient underline that follows line breaks, draws in
- * from the left and leaves to the right).
+ * lines, expo-out), the primary action after "Frame Button" by radiumcoders (a ruled, square-cornered
+ * control whose four L-shaped corner marks step outward on hover, only where hover exists), the
+ * secondary after "Underline Link" by balick (a background-gradient underline that follows line
+ * breaks, draws in from the left and leaves to the right) and the key of the sheets after "Legends"
+ * by airbnb-visx (a swatch of the series' own colour, then its name in neutral type).
  *
  * Site tokens only, so light and dark switch through the variables. Without script, or with
  * reduced motion, nothing is hidden and the finished frame shows.
@@ -136,130 +137,102 @@
     gap: 20px 30px;
   }
 
-  /* ---- Primary action: Expanding Arrow Button ---- */
+  /* ---- Primary action: a ruled control (Frame Button) ---- */
 
+  /* A square-cornered box in the strong rule, the label in the reading face as the landing's other
+     links are, and a plain arrow. Nothing is filled and nothing is signal-coloured at rest. On hover
+     (where hover exists) the rule and the arrow turn to the signal colour, the arrow steps on and four
+     corner marks stand off from the box; on keyboard focus the rule and the arrow turn the same way
+     and the site's 2px signal ring is drawn round it (the marks are for the pointer, the ring is the
+     focus indicator). The marks are the registration corners of the sheets (global.css, .sx-reg), drawn
+     on the control's own ::before so they can move; --sx-dur is 0s under reduced motion, so they appear
+     without moving. */
   .sx-layers__btn {
-    --tile: 44px;
-    --inset: 3px;
-    --shift: -44px;
-    /* 0 at rest, 1 on hover (where hover exists) or keyboard focus; the rest follows from it. */
-    --open: 0;
     position: relative;
-    isolation: isolate;
     box-sizing: border-box;
     display: inline-flex;
     align-items: center;
-    height: 52px;
-    padding: 0 34px 0 calc(var(--tile) + 20px);
-    overflow: hidden;
-    border: 1px solid color-mix(in oklab, var(--sx-hairline), var(--sx-agent) calc(var(--open) * 45%));
-    border-radius: 999px;
-    background: var(--sx-surface);
+    gap: 18px;
+    min-height: 52px;
+    padding: 0 20px 0 24px;
+    border: 1px solid var(--sx-rule-strong);
+    border-radius: 0;
+    background: transparent;
     color: var(--sl-color-white);
-    font: 500 15px/1 var(--font-sans);
+    font: 500 15px/1.2 var(--font-sans);
     letter-spacing: 0.005em;
     text-decoration: none;
     cursor: pointer;
+    transition: border-color var(--sx-dur) var(--sx-ease);
+  }
+  .sx-layers__btn::before {
+    --sx-reg: var(--sx-agent);
+    --sx-reg-len: 9px;
+    content: '';
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    background:
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 0 / var(--sx-reg-len) 1px,
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 0 / 1px var(--sx-reg-len),
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 0 / var(--sx-reg-len) 1px,
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 0 / 1px var(--sx-reg-len),
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 100% / var(--sx-reg-len) 1px,
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 100% / 1px var(--sx-reg-len),
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 100% / var(--sx-reg-len) 1px,
+      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 100% / 1px var(--sx-reg-len);
+    background-repeat: no-repeat;
     transition:
-      border-color 500ms var(--sx-ease),
-      transform 200ms var(--sx-ease);
-  }
-  .sx-layers__btn:focus-visible {
-    --open: 1;
-    outline: 2px solid var(--sx-structure);
-    outline-offset: 3px;
-  }
-  @media (hover: hover) {
-    .sx-layers__btn:hover {
-      --open: 1;
-    }
-  }
-  /* The press of the catalog button (a spring there, a short ease here). */
-  .sx-layers__btn:active {
-    transform: scale(0.97);
+      inset var(--sx-dur) var(--sx-ease),
+      opacity var(--sx-dur) var(--sx-ease);
   }
   .sx-layers__btn-label {
-    position: relative;
-    z-index: 1;
     white-space: nowrap;
-    transform: translateX(calc(var(--open) * var(--shift)));
-    transition: transform 650ms var(--sx-ease);
-  }
-  .sx-layers__tile {
-    position: absolute;
-    z-index: 2;
-    inset: var(--inset) auto var(--inset) var(--inset);
-    width: calc(var(--tile) + var(--open) * (100% - 2 * var(--inset) - var(--tile)));
-    overflow: hidden;
-    border-radius: 999px;
-    background: var(--sx-agent);
-    color: var(--sl-color-black);
-    transition: width 650ms var(--sx-ease);
-  }
-  /* The label again, in the tile's ink, aligned to the one below so the tile's edge reads as a
-     colour change running through the text. */
-  .sx-layers__tile-label {
-    position: absolute;
-    top: 50%;
-    left: calc(var(--tile) + 20px - var(--inset));
-    white-space: nowrap;
-    transform: translate(calc(var(--open) * var(--shift)), -50%);
-    transition: transform 650ms var(--sx-ease);
   }
   .sx-layers__arrow {
-    position: absolute;
-    top: 50%;
-    right: 12px;
+    flex: none;
     width: 20px;
     height: 20px;
-    margin-top: -10px;
+    color: var(--sx-muted);
     fill: none;
     stroke: currentColor;
     stroke-width: 1.75;
     stroke-linecap: round;
     stroke-linejoin: round;
-  }
-  /* The trail: three chevrons that fade in behind the arrow, brightest first. */
-  .sx-layers__trail {
-    position: absolute;
-    top: 50%;
-    right: 36px;
-    display: flex;
-    gap: 3px;
-    height: 12px;
-    margin-top: -6px;
-  }
-  .sx-layers__trail i {
-    display: block;
-    width: 8px;
-    height: 12px;
-    opacity: calc(var(--open) * var(--o));
-    transform: translateX(calc((1 - var(--open)) * 12px));
     transition:
-      opacity 500ms var(--sx-ease) calc(var(--open) * var(--dly)),
-      transform 600ms var(--sx-ease) calc(var(--open) * var(--dly));
+      color var(--sx-dur) var(--sx-ease),
+      transform var(--sx-dur) var(--sx-ease);
   }
-  .sx-layers__trail i:nth-child(1) {
-    --o: 0.22;
-    --dly: 0.26s;
+  .sx-layers__btn:focus-visible {
+    border-color: var(--sx-agent);
+    outline: 2px solid var(--sx-agent);
+    outline-offset: 4px;
   }
-  .sx-layers__trail i:nth-child(2) {
-    --o: 0.5;
-    --dly: 0.19s;
+  .sx-layers__btn:focus-visible .sx-layers__arrow {
+    color: var(--sx-agent);
+    transform: translateX(3px);
   }
-  .sx-layers__trail i:nth-child(3) {
-    --o: 0.85;
-    --dly: 0.12s;
+  @media (hover: hover) {
+    .sx-layers__btn:hover {
+      border-color: var(--sx-agent);
+    }
+    .sx-layers__btn:hover::before {
+      inset: -6px;
+      opacity: 1;
+    }
+    .sx-layers__btn:hover .sx-layers__arrow {
+      color: var(--sx-agent);
+      transform: translateX(3px);
+    }
   }
-  .sx-layers__trail svg {
-    display: block;
-    width: 8px;
-    height: 12px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.5;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  .sx-layers__btn:active .sx-layers__arrow {
+    transform: translateX(5px);
+  }
+  @media (forced-colors: active) {
+    .sx-layers__btn::before {
+      --sx-reg: CanvasText;
+    }
   }
 
   /* ---- Secondary action: Underline Link ---- */
@@ -447,7 +420,10 @@
   }
 
   /* The sheets named during the intro: a flat list under the figure, left-aligned and one line
-     each, so the captions never overlap the sheets or each other. Gone once the logo has formed. */
+     each, so the captions never overlap the sheets or each other. Gone once the logo has formed.
+     Each line is a key: a short stroke in the sheet's own colour (the mark's colours, which are the
+     bowls' and not a state), then the words in muted type. Signal green means "active" and nothing
+     else, so no word here is set in a sheet's colour. */
   .sx-layers__legend {
     position: absolute;
     left: 0;
@@ -464,18 +440,17 @@
     letter-spacing: 0.07em;
     text-transform: uppercase;
     white-space: nowrap;
-    color: var(--c);
+    color: var(--sx-muted);
     opacity: 0;
   }
   .sx-layers__legend li::before {
     content: '';
     display: inline-block;
     width: 22px;
-    height: 1px;
+    height: 2px;
     margin-right: 10px;
     vertical-align: middle;
-    background: currentColor;
-    opacity: 0.55;
+    background: var(--c);
   }
 
   /* The shared top edge, drawn once the sheets coincide and behind the strokes (it comes first in
@@ -534,12 +509,14 @@
       width: 100%;
     }
   }
+  /* The stage's key is the 2px stroke on the row's rule (li::before), in the sheet's own colour; the
+     words are muted, as every mono label is, so signal green is left to what is active. */
   .sx-layers__stages .k {
     grid-area: k;
-    font: 400 10.5px/1.2 var(--font-mono);
-    letter-spacing: 0.13em;
+    font: 400 var(--sx-lab-size)/1.2 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
     text-transform: uppercase;
-    color: var(--c);
+    color: var(--sx-muted);
   }
   .sx-layers__stages .nm {
     grid-area: nm;

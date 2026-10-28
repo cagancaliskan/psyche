@@ -133,39 +133,42 @@ name and author so that anyone can find the original and read the terms its auth
 | Animated Beam | dillionverma | Light pulse on the evaluation pipeline figure | `components/docs/EvaluationPipeline.astro` |
 | Animated Sidebar | unlumen | Active marker in the sidebar | `styles/global.css` |
 | Animated Signature | dqnamo | Stroke draw of the hero mark and the maze figure | `styles/hero.css`, `styles/landing/maze-figure.css` |
+| Audit Log Table | arihantcodes | Mono identifier column and the state cell that is a marker and a word, in the brick board | `styles/status.css`, `components/BrickBoard.astro` |
 | Command Menu | victor-teles | Search dialog: grouped results, the match in ink | `styles/global.css` |
 | Corner Frame | kevingirelli | Registration corner marks on figures, battery sheets, the search dialog, the footer's title block and the 404 page (one shared recipe, `.sx-reg`) | `styles/global.css`, `styles/battery.css`, `styles/notfound.css`, `styles/landing/maze-figure.css`, `components/landing/MazeFigure.astro`, `components/chrome/Footer.astro`, `components/BatteryExplorer.tsx` |
-| Expanding Arrow Button | starc007 | Primary action in the hero | `styles/hero.css` |
 | Footer with Navigation Grid | shadcnui-blocks | A row of links under a divider, in the footer's title block | `styles/global.css`, `components/chrome/Footer.astro` |
-| Gantt Chart | klyv-ui | Month gridlines and today marker of the roadmap timeline | `styles/plan.css` |
+| Frame Button | radiumcoders | Primary action in the hero: a ruled, square-cornered control whose four corner marks step outward on hover | `styles/hero.css` |
+| Gantt Chart | klyv-ui | Month gridlines, today marker and gate marks on the axis of the roadmap timeline | `styles/plan.css`, `components/Timeline.tsx` |
+| Health Checks | astralyxdev | Rows that lead with a state mark and end with its word, and two signals of one item kept apart, in the brick board | `styles/status.css`, `components/BrickBoard.astro` |
 | How It Works Steps | ln-dev7 | Sequence figures in the documentation | `styles/docs-visuals.css` |
 | Input Group with Keyboard Shortcut | sean0205 | Search button | `styles/global.css` |
 | Interactive List Preview | hyperiux | Battery rows | `styles/landing/battery-rows.css`, `components/battery/BatteryTeaser.astro` |
 | Kbd | shadcn | Shortcut key cap on the search button | `styles/global.css` |
 | Kbd Input Group | uiable | Search button | `styles/global.css` |
+| Key Value List | corr | The label column and value column of the captured-run facts, stacked when narrow | `styles/status.css`, `pages/status.astro` |
 | Klyv Animated Beam | klyv-ui | Light pulse along the connectors of documentation figures | `styles/docs-visuals.css` |
 | Kokonut UI Scroll Index | kokonutd | Passed, current and ahead states of the battery index | `styles/battery.css`, `components/BatteryExplorer.tsx` |
+| Legends | airbnb-visx | The key to the hero's four sheets: a swatch in each sheet's own colour, then its name in neutral type | `styles/hero.css` |
 | Line Draw SVG | pulkitxm | Route draw in the battery pictures | `styles/battery.css` |
 | Link Button | hyperiux | Section-end links | `styles/landing/links.css` |
+| Milestone Timeline | olewandowski1 | Dated rows with a status label in the roadmap's phase list | `components/TimelineList.astro`, `styles/plan.css` |
 | Note | shugar | Asides | `styles/global.css` |
 | Not Found 404 Page | mohammadshehadeh | The 404 page: a mono label, one sentence and a ruled list of places to go | `pages/404.astro`, `styles/notfound.css` |
-| Number Ticker | dillionverma | Count-up of headline numbers | `components/ui/StatsBand.astro` |
 | Numberless Pagination | shadcnui-blocks | Previous and next links | `styles/global.css` |
 | Page Header with Breadcrumbs | olewandowski1 | The ruled strip of stage, section and state above a page title | `styles/docs.css`, `components/chrome/PageTitle.astro` |
-| Quarterly Roadmap Columns | olewandowski1 | Status columns on the status page | `styles/plan.css` |
 | Reshaped Table | reshaped | The shared outer and column rules of the footer's title block (the idea only; the package is not used) | `styles/global.css`, `components/chrome/Footer.astro` |
 | Reveal | asanshay | Scroll reveals on the landing page | `styles/landing.css`, `pages/index.astro` |
-| Scroll animated timeline | ibrandify | Scroll-drawn bands and rail on the landing roadmap | `styles/landing/roadmap.css` |
+| Scroll animated timeline | ibrandify | Scroll-drawn bars of the roadmap timeline and rows of its list | `styles/plan.css` |
 | Scroll Caliper | nikolas-sapa | Measuring rail in the page gutter | `styles/landing/caliper.css`, `components/landing/CaliperRail.astro` |
 | Search Input with Keyboard Shortcut | shadcnspace | Search button | `styles/global.css` |
 | Sidebar Light | inference-sh | Sidebar rail and rows | `styles/global.css` |
-| Spec Sheet | isaiahbjork | Ruled tables and rows on the landing and battery pages, the bar on a previous or next rule, on a footer or title rule and on the 404 rows | `styles/global.css`, `styles/docs.css`, `styles/notfound.css`, `styles/battery.css`, `styles/landing/ledger.css`, `styles/landing/rows.css`, `components/landing/StageLedger.astro`, `components/landing/HowBuilt.astro`, `components/landing/PublicWithheld.astro`, `components/landing/SubstrateReadout.astro`, `pages/battery.astro` |
+| Spec Sheet | isaiahbjork | Ruled tables and rows on the landing and battery pages, the label column and ruled rows of the gate list and of the brick board, the bar on a previous or next rule, on a footer or title rule and on the 404 rows | `styles/global.css`, `styles/docs.css`, `styles/notfound.css`, `styles/battery.css`, `styles/landing/ledger.css`, `styles/landing/rows.css`, `components/landing/StageLedger.astro`, `components/landing/HowBuilt.astro`, `components/landing/PublicWithheld.astro`, `components/landing/SubstrateReadout.astro`, `styles/readout.css`, `components/BrickBoard.astro`, `styles/status.css`, `components/GateStepper.astro`, `styles/plan.css`, `pages/battery.astro` |
 | Spotlight | kevingirelli | Pointer-following light on cards | `styles/docs-visuals.css` |
 | Stack | abhishek-mallick | Layer stack figure | `styles/docs-visuals.css` |
-| Stats Band | kuratlielia | Band of headline numbers | `styles/plan.css`, `components/ui/StatsBand.astro` |
-| Status | diceui | Status chip | `styles/plan.css` |
-| Status Badge | serafimcloud | Two-part chips of the "now" strip | `styles/plan.css` |
-| Stepper | kevingirelli | Step rows of the battery and the gate stepper | `styles/battery.css`, `styles/plan.css`, `components/BatteryExplorer.tsx` |
+| Stats Band | kuratlielia | Label-over-figure cells of the substrate readout | `styles/readout.css`, `components/landing/SubstrateReadout.astro` |
+| Status | diceui | State label with its marker, in the roadmap's timeline, list and gate rows | `styles/plan.css` |
+| Status Badge | serafimcloud | Two-part label and value of the "now" readout | `styles/plan.css`, `components/NowLine.tsx` |
+| Stepper | kevingirelli | Step rows of the battery, and the connecting rule and square marks of the gate list | `styles/battery.css`, `styles/plan.css`, `components/BatteryExplorer.tsx`, `components/GateStepper.astro` |
 | Table | originui | Tables in the documentation | `styles/docs.css` |
 | Table of Contents | appica-dev | Current-heading bar of the contents list | `styles/global.css` |
 | Table of Contents | mohammadshehadeh | Sidebar rail and the battery index | `styles/global.css`, `styles/battery.css`, `components/BatteryExplorer.tsx` |

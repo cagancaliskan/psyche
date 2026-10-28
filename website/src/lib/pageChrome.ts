@@ -28,13 +28,12 @@ function holdsCurrent(item: SidebarItem): boolean {
 }
 
 /**
- * A sidebar group's label as a section name. The staged labels still carry a state in brackets
- * ("Cognitive maps (active)"), which the stage line states from the ledger; the name keeps only what
- * comes before a closing bracket.
+ * A sidebar group's label as a section name: the label itself. The labels in docs/publish.json carry no
+ * state ("Cognitive maps", "Substrate"), because a state is typed once, in the ledger, and read from
+ * there by the stage line; pageChrome.test.ts fails when a section title names one.
  */
 export function sectionName(label: string): string {
-  const name = label.replace(/\s*\([^)]*\)\s*$/, '').trim();
-  return name || label.trim();
+  return label.trim();
 }
 
 export interface Section {

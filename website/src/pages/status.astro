@@ -1,32 +1,31 @@
 ---
+// The substrate's status as two ruled sheets: the captured test run (the readout, then its facts as a
+// label column and a value column, stacked when narrow, after "Key Value List" by corr (21st.dev),
+// rewritten in plain markup and CSS with none of its code or dependencies) and the brick board. The
+// numbers, dates and states are read from the ledger projection; none is typed here. The styles are
+// in styles/status.css and styles/readout.css.
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { Aside } from '@astrojs/starlight/components';
 import BrickBoard from '../components/BrickBoard.astro';
-import StatsBand from '../components/ui/StatsBand.astro';
+import SubstrateReadout from '../components/landing/SubstrateReadout.astro';
 import ledger from '../data/ledger.public.json';
 import { withBase } from '../lib/url.ts';
 import { formatDay } from '../lib/plan.ts';
 import { stateLabel, type PublicLedger } from '../lib/ledger.ts';
+import { substrateReadout } from '../lib/status.ts';
 import '../styles/docs-visuals.css';
+import '../styles/status.css';
 
 const led = ledger as unknown as PublicLedger;
 const t = led.tests;
-const interpreters = led.determinism.interpreters;
-const seeds = led.determinism.hash_seeds;
 const substrate = led.program.substrate;
 const maps = led.program.cognitive_map;
 const since = formatDay(substrate.since);
 const capturedOn = formatDay(t.captured_at.slice(0, 10));
-const meaningBar = String(led.meaning_bar.status).toLowerCase();
+const meaningBar = stateLabel(String(led.meaning_bar.status).toLowerCase());
 
-// Every number in the band is read from the ledger projection.
-const stats = [
-  { label: 'Suites', value: t.suites },
-  { label: 'Assertions', value: t.assertions },
-  { label: 'Failures', value: t.failures },
-  { label: 'CPython versions', value: interpreters.length, detail: interpreters.join(', ') },
-  { label: 'Hash seeds', value: seeds.length, detail: seeds.join(', ') },
-];
+// Every number in the readout is read from the ledger projection.
+const stats = substrateReadout(led);
 const overview = withBase('substrate/overview/');
 const architecture = withBase('substrate/architecture/');
 const methodology = withBase('substrate/methodology/');
@@ -39,11 +38,31 @@ const methodology = withBase('substrate/methodology/');
     tableOfContents: false,
   }}
 >
-  <div class="sx-wide">
-    <p class="sx-kicker sx-status-kicker"><span class="sx-kicker__index">01</span> Test run</p>
-    <StatsBand title="The captured test run" items={stats}>
-      Captured on {capturedOn} with CPython {t.captured_python}. The counts are identical on every version listed, and determinism is probed under each hash seed. The meaning bar is {meaningBar}.
-    </StatsBand>
+  <div class="sx-wide sx-status">
+    <section class="sx-section" aria-labelledby="sx-status-run">
+      <p class="sx-kicker"><span class="sx-kicker__index">01</span> Test run</p>
+      <h2 id="sx-status-run">The captured test run</h2>
+      <SubstrateReadout items={stats} framed>
+        <dl class="sx-facts">
+          <div class="sx-facts__row">
+            <dt class="sx-facts__label">Captured</dt>
+            <dd class="sx-facts__value">{capturedOn}, CPython {t.captured_python}</dd>
+          </div>
+          <div class="sx-facts__row">
+            <dt class="sx-facts__label">Counts</dt>
+            <dd class="sx-facts__value">Identical on every version listed</dd>
+          </div>
+          <div class="sx-facts__row">
+            <dt class="sx-facts__label">Determinism</dt>
+            <dd class="sx-facts__value">Probed under each hash seed</dd>
+          </div>
+          <div class="sx-facts__row">
+            <dt class="sx-facts__label">Meaning bar</dt>
+            <dd class="sx-facts__value">{meaningBar}</dd>
+          </div>
+        </dl>
+      </SubstrateReadout>
+    </section>
 
     <Aside type="note" title={`${stateLabel(substrate.state)} and maintained`}>
       The substrate is Psyche's stage 1 and its foundation. Its development has been {substrate.state} since {since} (decision {substrate.decision}), while stage 2, spiking cognitive maps, is {maps.state}. No new work starts on the substrate; its tests and checks stay maintained.
@@ -63,10 +82,13 @@ const methodology = withBase('substrate/methodology/');
       privately.
     </p>
 
-    <section class="sx-section">
+    <section class="sx-section" aria-labelledby="sx-status-bricks">
       <p class="sx-kicker"><span class="sx-kicker__index">02</span> Build status</p>
-      <h2>Bricks</h2>
-      <p>Each brick of the substrate, grouped by its build status in the ledger.</p>
+      <h2 id="sx-status-bricks">Bricks</h2>
+      <p>
+        Each brick of the substrate with its build status, as the ledger records it, and its meaning verdict. The two
+        are separate axes: a brick can be built and verified while no meaning verdict has been earned.
+      </p>
       <p>
         Brick names such as &ldquo;the depression path&rdquo; name mechanisms in the substrate, not clinical models.
       </p>

@@ -1,9 +1,15 @@
 ---
 // The research roadmap as an ordered list: the narrow-screen form of the timeline. It shows only
-// where the timeline has too little width (see .sx-tll in plan.css). The gate the line is waiting
-// on is read from the plan's own as_of date, so the HTML stays deterministic; a small script then
-// moves the mark and the wording to the reader's today (lib/gateClock.ts), so a gate past its date
-// with no recorded decision reads "decision pending" here as it does in the timeline.
+// where the timeline has too little width (see .sx-tll in styles/plan.css). Each phase is a ruled
+// row: its id and title, its dates in mono and its state, and the gate that closes it; the phase
+// the plan marks active carries a short signal bar on its top rule, and a phase with an open end
+// has a dashed rule. The gate the line is waiting on is read from the plan's own as_of date, so the
+// HTML stays deterministic; a small script then moves the mark and the wording to the reader's
+// today (lib/gateClock.ts), so a gate past its date with no recorded decision reads "decision
+// pending" here as it does in the timeline.
+//
+// Catalog source (21st.dev): the dated rows with a status label after "Milestone Timeline" by
+// olewandowski1 (a date, a status and a title per entry), rewritten as ruled rows in plain CSS.
 import { formatDay, gateNote, gateState, lineStoppedAt, nextGate, phaseWhen, type Plan } from '../lib/plan.ts';
 import '../styles/plan.css';
 
@@ -26,7 +32,6 @@ const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
         const note = g && state ? gateNote(g, state) : null;
         return (
           <li class="sx-tll__item" data-status={p.status} data-open={p.start === null || p.end === null ? 'true' : 'false'}>
-            <span class="sx-tll__mark" aria-hidden="true" />
             <p class="sx-tll__head">
               <span class="sx-tll__id">{p.id}</span> <strong>{p.title}</strong>
             </p>
@@ -42,7 +47,7 @@ const label = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
                 data-decided-on={g.decided_on ?? ''}
                 data-next-step={g.next_step ?? ''}
               >
-                <span class="sx-diamond" data-gate-mark data-gate-state={state?.kind} data-next={g.id === next ? '' : undefined} aria-hidden="true" />
+                <span class="sx-gmark" data-gate-mark data-gate-state={state?.kind} data-next={g.id === next ? '' : undefined} aria-hidden="true" />
                 <span>
                   Gate {g.id} ({g.title}): {g.date ? formatDay(g.date) : g.date_rule}{' '}
                   <span class="sx-tll__note" data-gate-note hidden={note === null}>{note}</span>
