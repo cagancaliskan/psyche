@@ -106,6 +106,13 @@ repository, and a test suite is written apart from the code it attacks.
 [How Psyche is run](governance.md) sets out the roles, how decisions are recorded and how funding
 stands.
 
+## Is Psyche affiliated with Nous Research?
+
+No. Psyche has no affiliation with Nous Research, an AI lab, or with the network that the lab
+announced under the name Psyche for decentralised training of AI models. Nor did the project have
+one under its earlier name, Nous. That name, retired by [D-030](../DECISIONS.md), remains in the
+title of the archived report ([Reader's guide](guide.md#how-to-cite)).
+
 ## Can I fund or support the work?
 
 Psyche has no external funding yet. Its project lead is searching for funding, and a person willing
