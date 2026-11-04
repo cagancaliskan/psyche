@@ -97,8 +97,8 @@ jobs:
           fi
 
       # What the disclosure job scans: the HTML of the research, custom and Start here pages, the 404
-      # page included, the three walls page and the progress feed, which carries the plan's text to
-      # feed readers. Not included on purpose: the rest of dist/substrate/ (the substrate's own pre-existing
+      # page included, the three walls page, the progress feed, which carries the plan's text to
+      # feed readers, and the blog (its index, its posts and its feed). Not included on purpose: the rest of dist/substrate/ (the substrate's own pre-existing
       # record, which uses some denylisted words in the substrate's sense), dist/pagefind/
       # (the search index of every page) and dist/_astro/ (library bundles, whose code
       # legitimately contains common words). The research sources and docs/PSYCHE.md are
@@ -122,6 +122,8 @@ jobs:
             website/dist/governance/
             website/dist/substrate/three-walls/
             website/dist/progress.xml
+            website/dist/blog/
+            website/dist/blog.xml
           if-no-files-found: error
           retention-days: 1
 

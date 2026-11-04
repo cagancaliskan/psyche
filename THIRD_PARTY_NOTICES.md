@@ -134,7 +134,9 @@ name and author so that anyone can find the original and read the terms its auth
 | Animated Sidebar | unlumen | Active marker in the sidebar | `styles/global.css` |
 | Animated Signature | dqnamo | Stroke draw of the hero mark and the maze figure | `styles/hero.css`, `styles/landing/maze-figure.css` |
 | Audit Log Table | arihantcodes | Mono identifier column and the state cell that is a marker and a word, in the brick board | `styles/status.css`, `components/BrickBoard.astro` |
+| Blog Cards | sumonadotwork | The dashed leader that runs from a post's title to its day, in the landing page's latest posts | `styles/landing/posts.css`, `components/landing/LatestPosts.astro` |
 | Blueprint Tiers | arihantcodes_1f7b8c4d | Tiers as ruled rows of hairlines with mono labels, laid out by the figure's own width (the idea only; nothing copied), in the determinism tiers figure | `styles/docs-visuals.css` |
+| Changelog | mohammadshehadeh | The date rail beside each ruled entry of the blog's index (its filter, badges and subscribe form are not used) | `styles/blog.css`, `pages/blog/index.astro` |
 | Changelog Timeline | shadcnui-blocks | A label column beside a rule that carries its marker, in the role lanes (the idea only) | `styles/docs-visuals.css` |
 | Circuit Board | componentry | Traces that leave a box level, turn in the gap and enter the next box level, with an arrowhead where they end (the idea only; no animation, light or code), in the evaluation pipeline figure | `styles/docs-visuals.css`, `components/docs/EvaluationPipeline.astro` |
 | Code Block | 0xuser64bit | The caption line of a code block: the title or a terminal's label as a mono label, a copy button at its end, over the code | `styles/docs.css` |
@@ -225,3 +227,12 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
+
+## 4. The blog's editor
+
+The blog's editor at `/psyche/admin/` (`website/public/admin/`) is Sveltia CMS
+(<https://github.com/sveltia/sveltia-cms>), by Kohei Yoshino, under the MIT licence. It is neither
+installed nor copied: the page loads one version-pinned file of the `@sveltia/cms` npm package from
+unpkg, with an integrity hash, in the browser of the person who signs in, and that package loads the
+rest of its own files and its fonts. None of it is bundled into the site, and it remains under the
+licence it ships with.

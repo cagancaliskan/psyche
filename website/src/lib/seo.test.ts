@@ -7,9 +7,11 @@ import {
   PROJECT_DESCRIPTION,
   SITE_URL,
   jsonLdScript,
+  postJsonLd,
   projectJsonLd,
   routeOf,
   seoHead,
+  type ArticleFacts,
   type HeadEntry,
 } from './seo.ts';
 
@@ -145,4 +147,46 @@ test('the 404 page has its own name and description, and is the one page that is
   // the route is what routeOf names the page's address
   assert.equal(routeOf(`${BASE}404/`), NOT_FOUND.route);
   assert.equal(routeOf(`${BASE}404`), NOT_FOUND.route);
+});
+
+const ARTICLE: ArticleFacts = { published: '2026-11-04', modified: '2026-11-06', author: 'Cagan Caliskan', tags: ['project', 'methods'] };
+const withUrl = (head: HeadEntry[], url: string): HeadEntry[] => [...head, { tag: 'meta', attrs: { property: 'og:url', content: url } }];
+
+test('a blog post carries its days, author and tags, and one BlogPosting with the same facts', () => {
+  const url = `${SITE_URL}blog/opening-the-log/`;
+  const head = withUrl(starlightHead('Opening the log', 'Why the project keeps a dated public log.'), url);
+  const out = seoHead(head, 'blog/opening-the-log', ARTICLE);
+  assert.equal(attrOf(out, 'property', 'og:type'), 'article');
+  assert.equal(attrOf(out, 'property', 'article:published_time'), '2026-11-04');
+  assert.equal(attrOf(out, 'property', 'article:modified_time'), '2026-11-06');
+  assert.equal(attrOf(out, 'property', 'article:author'), 'Cagan Caliskan');
+  assert.deepEqual(out.filter((e) => e.attrs?.property === 'article:tag').map((e) => e.attrs?.content), ['project', 'methods']);
+  const scripts = out.filter((e) => e.tag === 'script');
+  assert.equal(scripts.length, 1);
+  const data = JSON.parse(scripts[0].content ?? '');
+  assert.equal(data['@type'], 'BlogPosting');
+  assert.equal(data.headline, 'Opening the log');
+  assert.equal(data.url, url);
+  assert.equal(data.datePublished, '2026-11-04');
+  assert.equal(data.dateModified, '2026-11-06');
+  assert.equal(data.author.name, 'Cagan Caliskan');
+  assert.deepEqual(data.keywords, ['project', 'methods']);
+});
+
+test('a post never revised has no modified time, and its BlogPosting is modified on the day it was published', () => {
+  const facts: ArticleFacts = { published: '2026-11-04', modified: null, author: 'A', tags: [] };
+  const out = seoHead(withUrl(starlightHead('T', 'D.'), `${SITE_URL}blog/t/`), 'blog/t', facts);
+  assert.equal(attrOf(out, 'property', 'article:modified_time'), undefined);
+  assert.equal(out.filter((e) => e.attrs?.property === 'article:tag').length, 0);
+  const data = postJsonLd({ url: `${SITE_URL}blog/t/`, title: 'T', description: 'D.', article: facts });
+  assert.equal(data.dateModified, '2026-11-04');
+  assert.equal('keywords' in data, false);
+});
+
+test('article facts are never written on the landing page or the 404 page', () => {
+  for (const route of ['', '404']) {
+    const out = seoHead(starlightHead('T', 'D.'), route, ARTICLE);
+    assert.equal(attrOf(out, 'property', 'article:published_time'), undefined);
+    assert.equal(out.filter((e) => e.tag === 'script').length, route === '' ? 1 : 0);
+  }
 });

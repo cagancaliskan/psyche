@@ -58,13 +58,18 @@ const BASE = '/psyche/';
 // Every page of the site: each folder of dist/ with an index.html (the home page included), then the
 // 404 page, which the host serves for a missing address (the file itself is opened here, so its script
 // has run as it does for a reader). Found, not listed, so a page added later is audited without anyone
-// remembering to add it. The search index and the bundles are not pages.
+// remembering to add it. The search index and the bundles are not pages, and neither is the blog's
+// editor (public/admin/, copied to dist/admin/): a third-party application, loaded from a pinned address,
+// for the person who signs in, with no text of the site's own; scripts/check-seo.mjs holds it to its own
+// rules (noindex, a content security policy, one pinned script with an integrity hash).
 const NOT_PAGES = new Set(['_astro', 'pagefind']);
+const EDITOR = 'admin';
 function findPages() {
   const found = [];
   const walk = (dir, rel) => {
     if (existsSync(join(dir, 'index.html'))) found.push(rel);
     for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (rel === '' && entry.name === EDITOR) continue;
       if (entry.isDirectory() && !NOT_PAGES.has(entry.name)) walk(join(dir, entry.name), `${rel}${entry.name}/`);
     }
   };

@@ -3,7 +3,9 @@
 // drawing sheet. A page of a stage opens with the stage and its section ("Stage 1  Substrate") and
 // ends with the stage's state, read from the public ledger projection ("Active", "Paused since ...");
 // a page outside the stages opens with the sidebar's number for its group ("01  Start here"); the 404
-// page says "Error 404 ... Not filed". The stage number and the sidebar's group number are never
+// page says "Error 404 ... Not filed"; a blog post opens with "Blog" and the day it was published and
+// ends with its author, and under its title a line gives the day it was revised, if it was, and its
+// tags, all read from the post's front matter (lib/blog.ts). The stage number and the sidebar's group number are never
 // printed together: they are different numbers. Nothing is typed per page: lib/pageChrome.ts reads the
 // sidebar Starlight built for the page and the ledger. Structure after the eyebrow, status and rule of
 // "Page Header with Breadcrumbs" by olewandowski1 (21st.dev), drawn here as a hairline strip in mono
@@ -12,7 +14,9 @@
 // folders that date /roadmap/ and /status/ (scripts/sitemap-lastmod.mjs), so a change to the strip
 // moves no page's date.
 import Default from '@astrojs/starlight/components/PageTitle.astro';
+import blog from '../../data/blog.json';
 import ledger from '../../data/ledger.public.json';
+import { isPostRoute, postMeta } from '../../lib/blog.ts';
 import type { PublicLedger } from '../../lib/ledger.ts';
 import { titleStrip } from '../../lib/pageChrome.ts';
 import { routeOf } from '../../lib/seo.ts';
@@ -22,9 +26,21 @@ const route = Astro.locals.starlightRoute;
 const Visual = visualFor(route.id);
 // The route as the address says it: the 404 page has no entry id of its own.
 const here = routeOf(Astro.url.pathname);
-const strip = titleStrip(here, route.sidebar, ledger as unknown as Pick<PublicLedger, 'program'>);
+const data = route.entry.data as { date?: string; updated?: string; author?: string; tags?: string[] };
+const post = isPostRoute(here) && data.date ? postMeta({ ...data, date: data.date }, blog.author) : null;
+const strip = post ? null : titleStrip(here, route.sidebar, ledger as unknown as Pick<PublicLedger, 'program'>);
 ---
 
+{
+  post && (
+    <div class="sx-pt not-content" data-pagefind-ignore>
+      <p class="sx-pt__section">
+        <span class="sx-pt__idx">Blog</span> <time datetime={post.published.iso}>{post.published.label}</time>
+      </p>
+      <p class="sx-pt__stage">{post.author}</p>
+    </div>
+  )
+}
 {
   strip && (
     <div class="sx-pt not-content" data-pagefind-ignore>
@@ -46,6 +62,24 @@ const strip = titleStrip(here, route.sidebar, ledger as unknown as Pick<PublicLe
   )
 }
 <Default />
+{
+  post && (post.updated || post.tags.length > 0) && (
+    <div class="sx-post-meta not-content" data-pagefind-ignore>
+      {post.updated && (
+        <p class="sx-post-meta__rev">
+          Revised <time datetime={post.updated.iso}>{post.updated.label}</time>
+        </p>
+      )}
+      {post.tags.length > 0 && (
+        <ul class="sx-post-meta__tags" aria-label="Tags">
+          {post.tags.map((t) => (
+            <li>{t.label}</li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
 {
   Visual && (
     <div class="not-content sx-dv-slot">

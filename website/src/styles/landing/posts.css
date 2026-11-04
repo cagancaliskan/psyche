@@ -1,0 +1,90 @@
+/*
+ * The landing page's latest posts (components/landing/LatestPosts.astro): ruled rows, each a post's
+ * title, a dashed leader to the day it was published, and its description under them. A drafting
+ * sheet like the rest of the landing page: hairline rules, mono labels, no cards, no images and no
+ * fill. The dashed leader after "Blog Cards" by sumonadotwork (21st.dev), rewritten in plain CSS
+ * with none of its code. Kept apart from styles/blog.css, the index's sheet, so the landing page
+ * loads only these rules. The layer statement repeats the one in global.css, so the order holds
+ * whichever stylesheet the browser reads first.
+ */
+@layer base, starlight, theme, components, utilities;
+
+@layer components {
+  .sx-lp-posts {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border-block-start: 1px solid var(--sx-hairline);
+  }
+  .sx-lp-posts__item {
+    display: grid;
+    gap: 0.35rem;
+    margin: 0;
+    padding-block: 1.1rem;
+    border-block-end: 1px solid var(--sx-hairline);
+  }
+  .sx-lp-posts__line {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    margin: 0;
+    min-inline-size: 0;
+  }
+  .sx-lp-posts__title {
+    min-inline-size: 0;
+    color: var(--sl-color-white);
+    font: 500 1.0625rem / 1.35 var(--font-sans);
+    text-decoration: none;
+  }
+  .sx-lp-posts__title:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--sx-structure);
+    text-underline-offset: 0.2em;
+  }
+  .sx-lp-posts__title:focus-visible {
+    outline: 2px solid var(--sx-structure);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+  /* The leader: a dashed hairline from the title to the day, drawn, not read. */
+  .sx-lp-posts__lead {
+    flex: 1 1 2rem;
+    min-inline-size: 1.5rem;
+    border-block-end: 1px dashed var(--sx-hairline);
+    transform: translateY(-0.3em);
+  }
+  .sx-lp-posts__day {
+    flex: none;
+    font: 500 var(--sx-lab-size) / 1.4 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--sx-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  .sx-lp-posts__desc {
+    margin: 0;
+    max-inline-size: var(--sx-measure, 68ch);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--sl-color-gray-2);
+  }
+  .sx-lp-posts__empty {
+    margin: 0;
+    padding-block: 1.1rem;
+    border-block-end: 1px solid var(--sx-hairline);
+    color: var(--sl-color-gray-2);
+  }
+  @media (max-width: 29.99rem) {
+    .sx-lp-posts__line {
+      flex-wrap: wrap;
+      gap: 0.3rem;
+    }
+    .sx-lp-posts__lead {
+      display: none;
+    }
+    .sx-lp-posts__day {
+      flex-basis: 100%;
+    }
+  }
+}

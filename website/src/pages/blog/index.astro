@@ -1,0 +1,78 @@
+---
+// The blog's index: every published post, newest first, grouped by the year it was published. Each post
+// is a ruled entry: a rail with its day and its tags, then its title as the link and its description,
+// after the date rail and ruled entries of "Changelog" by mohammadshehadeh (21st.dev), rewritten in
+// plain markup and CSS with none of its code, filter, badges or subscribe form. The posts are read from
+// src/data/blog.json, which tools/publish/stage.py writes from the posts of docs/blog/ in the commit
+// being built; nothing is typed here per post. With no post published yet the page says so and points
+// to the feed. The styles are in styles/blog.css.
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import blog from '../../data/blog.json';
+import { BLOG_FEED_FILE, postsByYear, tagLabel, type BlogData } from '../../lib/blog.ts';
+import { formatDay } from '../../lib/plan.ts';
+import { withBase } from '../../lib/url.ts';
+import '../../styles/blog.css';
+
+const data = blog as BlogData;
+const years = postsByYear(data.posts);
+const feed = withBase(BLOG_FEED_FILE);
+const policy = withBase('research/disclosure-policy/');
+const progress = withBase('progress/');
+---
+
+<StarlightPage
+  frontmatter={{
+    title: 'Blog',
+    description: 'Dated posts from Psyche, an open research project in stages: what each stage has built, how the work is done and checked, and what has been made public.',
+    tableOfContents: false,
+  }}
+>
+  <div class="sx-blog not-content">
+    <div class="sx-blog__head">
+      <p class="sx-blog__lead">
+        Dated posts on the project: the substrate's record, how the work is done and checked, and the reading behind it. Each post keeps to the <a href={policy}>disclosure policy</a>, so the current state of stage 2 stays private until it is released. The plan's own changes are on the <a href={progress}>progress page</a>.
+      </p>
+      <p class="sx-blog__feed">
+        <a class="sx-blog__feed-link" href={feed} type="application/atom+xml">Follow the blog with its Atom feed</a>
+      </p>
+    </div>
+
+    {
+      years.length === 0 ? (
+        <p class="sx-blog__empty">No post has been published yet. The feed lists each post the day it is published.</p>
+      ) : (
+        years.map(({ year, posts }) => (
+          <section class="sx-blog__year" aria-labelledby={`sx-blog-${year}`}>
+            <h2 class="sx-blog__year-title" id={`sx-blog-${year}`}>
+              {year}
+            </h2>
+            <ol class="sx-blog__list">
+              {posts.map((post) => (
+                <li class="sx-blog__entry">
+                  <div class="sx-blog__rail">
+                    <time class="sx-blog__day" datetime={post.date}>
+                      {formatDay(post.date)}
+                    </time>
+                    {post.tags.length > 0 && (
+                      <ul class="sx-blog__tags" aria-label="Tags">
+                        {post.tags.map((tag) => (
+                          <li>{tagLabel(tag)}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div class="sx-blog__body">
+                    <h3 class="sx-blog__title">
+                      <a href={withBase(post.route)}>{post.title}</a>
+                    </h3>
+                    <p class="sx-blog__desc">{post.description}</p>
+                  </div>
+                </li>
+              ))}
+            </ol>
+          </section>
+        ))
+      )
+    }
+  </div>
+</StarlightPage>

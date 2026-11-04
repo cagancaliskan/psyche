@@ -417,6 +417,7 @@ jobs:
             README.md MOC.md docs/research docs/PSYCHE.md cogmap
             docs/guide.md docs/faq.md docs/progress.md docs/governance.md docs/three-walls.md
             CITATION.cff website/src website/README.md docs/publish.json tools/research_plan.json
+            docs/blog website/public/admin
           )
           python3 -B tools/publish/check_disclosure.py \
             --denylist "${RUNNER_TEMP}/disclosure-denylist.txt" "${scan[@]}"

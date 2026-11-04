@@ -9,6 +9,7 @@
     "links to any other tracked file become GitHub links pinned to the publishing commit, and a dead relative link fails the build.",
     "never_publish entries ending in / are directory prefixes; the others are files. Each must be a canonical relative path (no leading / or ./, no backslash), or the manifest is refused.",
     "Matching is case-insensitive, so it can only refuse more, never less. tools/publish/render_plan.py also renders generated blocks in the pages listed here.",
+    "Blog posts under docs/blog/ are not listed here: tools/publish/stage.py publishes each post that is not a draft under the same guard, and a post carries its own title, date and description in its own front matter. The description rule below holds for a post too, and no post may repeat the description of a page.",
     "title, where given, replaces a page's first heading as its site title. description is the page's meta description and its link preview: one plain sentence of 120 to 160 characters that no other page repeats, written from the page itself with no figure typed by hand. tools/publish/stage.py writes it into the staged page and refuses a page that has none."
   ],
   "site_base": "/psyche/",

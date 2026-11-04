@@ -1,0 +1,202 @@
+# Sveltia CMS configuration for the Psyche blog editor (served at /psyche/admin/).
+#
+# Safety model in short:
+#   * Every save lands on a branch named cms/posts/<slug> and opens a pull request.
+#     Nothing in this editor writes to main.
+#   * The posts collection has publish: false, so the editor shows no publish
+#     control. Publishing means merging the pull request on GitHub, after the
+#     required checks (governance, build, run_tests) are green. The editor must
+#     never merge, because an administrator may bypass the ruleset on main in
+#     pull_request mode, and a merge from the editor would skip red checks.
+#   * Sign-in is by fine-grained access token only (see auth_methods below).
+
+backend:
+  name: github
+  repo: cagancaliskan/psyche
+  branch: main
+
+  # Token sign-in only. The OAuth option would contact a third-party service
+  # (the default relay), which the page policy does not allow and the project
+  # does not run.
+  auth_methods: [token]
+
+  # Plain ASCII commit messages in the repository's style. Only these tags are
+  # used: {{slug}} (entry slug) and {{path}} (file path). Sveltia adds no
+  # co-author or trailer lines to these commits, and signoff_commits stays off.
+  commit_messages:
+    create: 'docs(blog): add {{slug}}'
+    update: 'docs(blog): edit {{slug}}'
+    delete: 'docs(blog): remove {{slug}}'
+    uploadMedia: 'docs(blog): add media {{path}}'
+    deleteMedia: 'docs(blog): remove media {{path}}'
+    openAuthoring: '{{message}}'
+  signoff_commits: false
+
+# Review before anything is merged. direct_publish is off, so there is no
+# "Save and Publish" shortcut that would commit straight to main.
+publish_mode:
+  type: editorial_workflow
+  direct_publish: false
+
+# Required for the entry-relative media of the posts collection to apply.
+# Posts keep their own images in the post's folder. The image dialog inside a
+# post also offers this global location, and the separate Asset Library page
+# writes to it; a picture chosen or uploaded there is refused when the post is
+# staged (a post may only link pictures in its own folder), so always pick the
+# post's own folder. The Asset Library commits straight to main, which the
+# ruleset refuses anyway.
+media_folder: docs/blog
+
+media_libraries:
+  default:
+    config:
+      # 4 MiB per file, the same limit the staging step enforces.
+      max_file_size: 4194304
+      # Lowercase, hyphenated, ASCII file names.
+      slugify_filename: true
+      # JPEG and PNG uploads are saved as WebP (any JPEG extension, .jfif and
+      # .jpe included, ends as .webp). GIF, AVIF, WebP and SVG are kept as they
+      # are. The staging step accepts png, jpg, jpeg, webp, avif, gif and svg.
+      transformations:
+        jpeg:
+          format: webp
+          quality: 90
+        png:
+          format: webp
+          quality: 92
+
+# Slugs become folder names and URLs: /psyche/blog/<slug>/
+slug:
+  encoding: ascii
+  clean_accents: true
+  sanitize_replacement: '-'
+  lowercase: true
+  trim: true
+  maxlength: 80
+
+# Written into every front matter block: double-quoted strings, no empty
+# optional fields.
+output:
+  omit_empty_optional_fields: true
+  yaml:
+    quote: double
+    indent_size: 2
+    indent_sequences: true
+
+site_url: https://cagancaliskan.github.io/psyche/
+display_url: https://cagancaliskan.github.io/psyche/blog/
+app_title: Psyche blog editor
+logo:
+  src: /psyche/favicon.svg
+  show_in_header: true
+
+collections:
+  - name: posts
+    label: Posts
+    label_singular: Post
+    description: Blog posts. Saving opens a pull request; merging it on GitHub publishes the post. Every save, a draft included, is public on GitHub at once.
+    folder: docs/blog
+    path: '{{slug}}/index'
+    extension: md
+    format: frontmatter
+    create: true
+    # Deleting a post still goes through a pull request (editorial workflow).
+    delete: true
+    # Hides every publish control. Do not remove this line.
+    publish: false
+    # Images and other media sit in the post's own folder, beside index.md.
+    media_folder: ''
+    public_folder: ''
+    # The slug is typed in when a post is created and cannot be changed later.
+    # It has no template on purpose: a slug the editor fills from the title is
+    # never tested against the pattern, and can keep characters (_ ~) or a
+    # length the staging step refuses. A typed slug is held to the same rule
+    # as staging: lowercase letters, digits and single hyphens, at most 80
+    # characters, and never "index", which is the blog's own index.
+    identifier_field: title
+    slug:
+      editable: [create]
+      hint: The address of the post, typed once and never changed. Lowercase letters, digits and single hyphens, at most 80 characters, for example why-psyche-keeps-a-blog.
+      pattern: ['^(?!index$)(?=.{1,80}$)[a-z0-9]+(?:-[a-z0-9]+)*$', 'Use lowercase letters, digits and single hyphens, at most 80 characters, and not "index".']
+    preview_path: 'blog/{{slug}}/'
+    preview_path_date_field: date
+    summary: '{{title}} ({{date}})'
+    sortable_fields:
+      fields: [date, title]
+      default:
+        field: date
+        direction: descending
+    view_filters:
+      filters:
+        - { name: draft, label: Drafts, field: draft, pattern: true }
+        - { name: tag-project, label: 'Tag: project', field: tags, pattern: project }
+        - { name: tag-substrate, label: 'Tag: substrate', field: tags, pattern: substrate }
+        - { name: tag-cognitive-maps, label: 'Tag: cognitive-maps', field: tags, pattern: cognitive-maps }
+        - { name: tag-methods, label: 'Tag: methods', field: tags, pattern: methods }
+        - { name: tag-engineering, label: 'Tag: engineering', field: tags, pattern: engineering }
+        - { name: tag-reading, label: 'Tag: reading', field: tags, pattern: reading }
+        - { name: tag-site, label: 'Tag: site', field: tags, pattern: site }
+    fields:
+      - name: title
+        label: Title
+        widget: string
+        required: true
+        maxlength: 120
+
+      - name: date
+        label: Date
+        widget: datetime
+        type: date
+        format: YYYY-MM-DD
+        default: '{{now}}'
+        required: true
+
+      - name: description
+        label: Description
+        widget: string
+        required: true
+        minlength: 120
+        maxlength: 160
+        # The same rule as the staging step (core.description_problem): one
+        # sentence on one line, ending in a full stop, no markup characters.
+        pattern: ['^(?=\S)(?!.*[.!?]\s)[^<>&`*_\[\]\n\r\t]*[^.!?<>&`*_\[\]\s]\.$', 'One plain sentence ending in a full stop, without < > & ` * _ [ ] and with no other sentence before it.']
+        hint: One plain sentence of 120 to 160 characters, ending in a full stop, without < > & ` * _ [ ]. It is shown in search results and link previews, and it must differ from every other page and post.
+
+      - name: tags
+        label: Tags
+        widget: select
+        multiple: true
+        max: 4
+        required: false
+        hint: Up to four.
+        options: [project, substrate, cognitive-maps, methods, engineering, reading, site]
+
+      - name: author
+        label: Author
+        widget: string
+        required: false
+        maxlength: 80
+        hint: Leave empty to use the project lead.
+
+      - name: updated
+        label: Updated
+        widget: datetime
+        type: date
+        format: YYYY-MM-DD
+        required: false
+        hint: Set it when the post is changed after publication. It must not be earlier than the date.
+
+      - name: draft
+        label: Draft
+        widget: boolean
+        default: false
+        hint: A draft is never shown on the site, but every save, a draft included, is public on GitHub at once.
+
+      - name: body
+        label: Body
+        widget: markdown
+        sanitize_preview: true
+        # No level-one heading: the title comes from the field above, and the
+        # staging step refuses one in the body.
+        buttons: [bold, italic, strikethrough, code, link, heading-two, heading-three, heading-four, heading-five, heading-six, quote, bulleted-list, numbered-list]
+        hint: Start headings at level two. Give every image alt text, one sentence saying what it shows. Keep images in the post's own folder (not the global one); png, jpeg, webp, avif, gif or svg, at most 4 MiB.

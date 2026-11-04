@@ -1,0 +1,45 @@
+---
+// The landing page's latest posts: the three newest published posts, each its title as the link, a
+// dashed leader to the day it was published, and its description, after the leader of "Blog Cards" by
+// sumonadotwork (21st.dev), rewritten in plain markup and CSS with none of its code. The posts are read
+// from src/data/blog.json (tools/publish/stage.py); nothing is typed here per post. With none published
+// yet the section says so and still leads to the blog. The styles are in styles/landing/posts.css.
+import SectionHeader from '@/components/landing/SectionHeader.astro';
+import blog from '@/data/blog.json';
+import { BLOG_FEED_FILE, latestPosts, type BlogData } from '@/lib/blog.ts';
+import { formatDay } from '@/lib/plan.ts';
+import { withBase } from '@/lib/url.ts';
+import '@/styles/landing/posts.css';
+
+const posts = latestPosts((blog as BlogData).posts, 3);
+---
+
+<section class="sx-lp-section not-content" aria-labelledby="sx-blog-title" data-caliper="07 Blog">
+  <SectionHeader id="sx-blog-title" title="From the blog" index="07" kicker="Blog">
+    <p>Dated posts on what is public: the substrate's record, how the work is done and checked, and the reading behind it.</p>
+  </SectionHeader>
+  <div data-reveal>
+    {
+      posts.length > 0 ? (
+        <ol class="sx-lp-posts">
+          {posts.map((post) => (
+            <li class="sx-lp-posts__item">
+              <p class="sx-lp-posts__line">
+                <a class="sx-lp-posts__title" href={withBase(post.route)}>{post.title}</a>
+                <span class="sx-lp-posts__lead" aria-hidden="true" />
+                <time class="sx-lp-posts__day" datetime={post.date}>{formatDay(post.date)}</time>
+              </p>
+              <p class="sx-lp-posts__desc">{post.description}</p>
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p class="sx-lp-posts__empty">No post has been published yet.</p>
+      )
+    }
+  </div>
+  <p class="sx-lp-links" data-reveal>
+    <a class="sx-lp-link" href={withBase('blog/')}>Read the blog</a>
+    <a class="sx-lp-link" href={withBase(BLOG_FEED_FILE)} type="application/atom+xml">Follow it with the Atom feed</a>
+  </p>
+</section>

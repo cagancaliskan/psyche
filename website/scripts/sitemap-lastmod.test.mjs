@@ -37,6 +37,7 @@ function fixture() {
   write('website/src/components/landing/Hero.astro', 'a');
   write('tools/research_plan.json', '{}');
   write('tools/ledger.json', '{}');
+  write('docs/blog/first-post/index.md', '---\ntitle: "First"\n---\n');
   git(dir, ['add', '-A']);
   git(dir, ['commit', '-q', '-m', 'one'], '2026-01-10T12:00:00Z');
   write('docs/research/gates.md', '# Gates\n\nmore\n');
@@ -65,6 +66,10 @@ test('sourcesByRoute lists the site pages and every docs page of the manifest', 
     assert.deepEqual(s['substrate/overview'], ['docs/PSYCHE.md']);
     assert.ok(s[''].includes('website/src/pages/index.astro') && s[''].includes('tools/ledger.json'));
     assert.ok(s.battery.includes('website/src/pages/battery.astro') && s.battery.includes('website/src/components/BatteryExplorer.tsx'));
+    // a post is dated by its own folder, and the index and the landing page by every post
+    assert.deepEqual(s['blog/first-post'], ['docs/blog/first-post']);
+    assert.ok(s.blog.includes('docs/blog/first-post') && s[''].includes('docs/blog/first-post'));
+    assert.ok(!s.blog.includes('docs/blog') && !s[''].includes('docs/blog'), 'the guide and drafts are not sources');
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -87,6 +92,30 @@ test('each page gets the date of the last commit that touched its own files', ()
     assert.equal(serialize({ url: url('') }).lastmod, '2026-05-20T17:45:00.000Z');
     // other fields of the entry are kept
     assert.deepEqual(Object.keys(serialize({ url: url('battery'), changefreq: 'weekly' })).sort(), ['changefreq', 'lastmod', 'url']);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
+
+test("the blog's index is dated by its posts, and a change to the authoring guide moves no date", () => {
+  const dir = fixture();
+  try {
+    const write = (rel, text) => {
+      mkdirSync(dirname(join(dir, rel)), { recursive: true });
+      writeFileSync(join(dir, rel), text);
+    };
+    write('docs/blog/README.md', '# Writing for the blog\n');
+    git(dir, ['add', '-A']);
+    git(dir, ['commit', '-q', '-m', 'guide'], '2026-08-01T10:00:00Z');
+    const lastmodOf = makeLastmod({ repoRoot: dir });
+    assert.equal(lastmodOf('blog'), '2026-01-10T12:00:00.000Z');
+    assert.equal(lastmodOf('blog/first-post'), '2026-01-10T12:00:00.000Z');
+    // a staged list names the published posts; a folder that is not in it (a draft) is not read
+    write('docs/blog/a-draft/index.md', '---\ndraft: true\n---\n');
+    write('website/src/data/blog.json', JSON.stringify({ author: 'A', posts: [{ slug: 'first-post' }] }));
+    git(dir, ['add', 'docs/blog/a-draft/index.md']);
+    git(dir, ['commit', '-q', '-m', 'draft'], '2026-09-01T10:00:00Z');
+    assert.equal(makeLastmod({ repoRoot: dir })('blog'), '2026-01-10T12:00:00.000Z');
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
@@ -157,6 +186,7 @@ const SRC = join(REPO, 'website', 'src');
 const DERIVED = {
   'website/src/data/plan.json': 'tools/research_plan.json',
   'website/src/data/ledger.public.json': 'tools/ledger.json',
+  'website/src/data/blog.json': 'docs/blog',
 };
 
 /** The modules a page file imports, followed to the end, as repository-relative paths. Imports of
@@ -190,7 +220,7 @@ function importClosure(entry) {
 }
 
 test('every module a site page imports is in that page\'s source list, so a change to it moves the date', () => {
-  const entries = { '': 'index', roadmap: 'roadmap', battery: 'battery', status: 'status' };
+  const entries = { '': 'index', roadmap: 'roadmap', battery: 'battery', status: 'status', blog: 'blog/index' };
   // Not text of the page: stylesheets. Data the build writes into src/data is covered by its source.
   for (const [route, name] of Object.entries(entries)) {
     const listed = SITE_PAGES[route];

@@ -8,6 +8,7 @@ import BatteryTeaser from '@/components/battery/BatteryTeaser.astro';
 import CaliperRail from '@/components/landing/CaliperRail.astro';
 import CiteContact from '@/components/landing/CiteContact.astro';
 import HowBuilt from '@/components/landing/HowBuilt.astro';
+import LatestPosts from '@/components/landing/LatestPosts.astro';
 import MazeFigure from '@/components/landing/MazeFigure.astro';
 import PublicWithheld from '@/components/landing/PublicWithheld.astro';
 import SectionHeader from '@/components/landing/SectionHeader.astro';
@@ -96,6 +97,8 @@ const stats = [
         <a class="sx-lp-link" href={withBase('substrate/overview/')}>Read what the substrate is</a>
       </p>
     </section>
+
+    <LatestPosts />
 
     <CiteContact />
   </div>

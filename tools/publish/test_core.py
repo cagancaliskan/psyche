@@ -129,6 +129,7 @@ import core                    # noqa: E402
 import render_plan as RP       # noqa: E402
 import ci_c2                   # noqa: E402
 import diagrams as DG          # noqa: E402
+import blog as BL              # noqa: E402
 import og as OG                # noqa: E402
 import stage                   # noqa: E402
 
@@ -622,6 +623,14 @@ def test_guard(tmp: Path) -> None:
     check(has(probs, "listed twice"), "a duplicated src is refused")
     check(has(probs, ".slug"), "a malformed slug is refused")
     check(has(probs, "reserved wiki page"), "a reserved wiki name is refused")
+    for slug in ("blog", "blog/why-psyche-keeps-a-blog", "admin", "admin/x"):
+        clash = copy.deepcopy(GUARD_MANIFEST)
+        clash["sections"][0]["pages"].append({"src": "docs/clash.md", "slug": slug, "wiki": "Clash-Page"})
+        check(has(core.manifest_problems(clash), "is reserved"),
+              f"a manifest page at the reserved route {slug!r} is refused, so it cannot shadow a post or the editor")
+    near = copy.deepcopy(GUARD_MANIFEST)
+    near["sections"][0]["pages"].append({"src": "docs/near.md", "slug": "blogs/x", "wiki": "Near-Page"})
+    check(not has(core.manifest_problems(near), "is reserved"), "a slug that only begins with the letters of a reserved route is not refused")
     check(core.manifest_problems(GUARD_MANIFEST) == [], "the fixture manifest is valid")
     for entry in ("/docs/design/", "./docs/paper/", "docs\\report\\", "docs//x/", "docs/../x/",
                   "", 5):
@@ -3215,8 +3224,8 @@ def test_stage_diagrams(tmp: Path) -> None:
 
 def test_stage_sidebar_labels() -> None:
     section("stage: the hand-written pages' sidebar labels say what each page is, and are not a document's title")
-    custom = [(label, path) for label, path in stage.CUSTOM_PAGES if path]
-    labels = [label for label, _ in stage.CUSTOM_PAGES]
+    custom = [(label, path) for label, path in stage.CUSTOM_PAGES if path] + [stage.BLOG_PAGE]
+    labels = [label for label, _ in stage.CUSTOM_PAGES] + [stage.BLOG_PAGE[0]]
     check(len({x.casefold() for x in labels}) == len(labels), "no two hand-written pages share a label")
 
     # the titles of the staged documents, as the stager takes them: the manifest's override or the first heading
@@ -3236,6 +3245,10 @@ def test_stage_sidebar_labels() -> None:
     # a page's own title is its sidebar label: the front matter of website/src/pages/<name>.astro says the same
     for label, path in custom:
         page_file = REPO / "website" / "src" / "pages" / (path.strip("/") + ".astro")
+        if not page_file.is_file() and (label, path) == stage.BLOG_PAGE:
+            page_file = REPO / "website" / "src" / "pages" / path.strip("/") / "index.astro"
+            if not page_file.is_file():
+                continue          # the blog index page belongs to the site lane
         text = page_file.read_text(encoding="utf-8")
         found = re.search(r"^\s*title: '([^'\n]*)',?$", text, re.M)
         check(found is not None and found.group(1) == label,
@@ -4287,16 +4300,20 @@ def test_stage_sidebar() -> None:
           f"the first group is Start here, the others follow in manifest order, and none repeats it: {labels}")
     items = sidebar[0]["items"]
     custom = [{"label": label, "link": "/" + path} for label, path in stage.CUSTOM_PAGES]
+    blog_item = {"label": "Blog", "link": "/blog/"}
     docs = [{"label": titles[pg["slug"]], "slug": pg["slug"]} for pg in start["pages"]]
-    check(items == custom[:1] + docs + custom[1:] and items[0] == {"label": "Home", "link": "/"},
-          "Home first, then the manifest's Start here pages in manifest order, then the other hand-written pages")
+    at = [d["slug"] for d in docs].index("progress") + 1
+    docs_with_blog = docs[:at] + [blog_item] + docs[at:]
+    check(items == custom[:1] + docs_with_blog + custom[1:] and items[0] == {"label": "Home", "link": "/"},
+          "Home first, then the manifest's Start here pages in manifest order with Blog right after progress, then the other hand-written pages")
     check(len(docs) >= 4 and len({i["label"].casefold() for i in items}) == len(items),
           "no two entries of the first group share a label")
     in_groups = [i["slug"] for g in sidebar for i in g["items"] if "slug" in i]
     check(in_groups == [pg["slug"] for pg in core.manifest_pages(manifest)],
           "every published page is in the sidebar once, in manifest order")
-    check([i["link"] for g in sidebar for i in g["items"] if "link" in i] == ["/" + path for _, path in stage.CUSTOM_PAGES],
-          "the hand-written pages are in the sidebar once")
+    check([i["link"] for g in sidebar for i in g["items"] if "link" in i]
+          == ["/" + path for _, path in stage.CUSTOM_PAGES[:1]] + ["/blog/"] + ["/" + path for _, path in stage.CUSTOM_PAGES[1:]],
+          "the hand-written pages and the Blog are in the sidebar once")
     check(manifest["sections"][0]["title"] == stage.START_GROUP and stage.START_GROUP == "Start here",
           "the manifest's first section is the Start here section")
 
@@ -4307,12 +4324,17 @@ def test_stage_sidebar() -> None:
     fx_titles = {n: n.upper() for n in ("a1", "a2", "s1", "s2", "b1")}
     got = stage.build_sidebar(fx, fx_titles)
     check([g["label"] for g in got] == ["Start here", "Alpha", "Beta"]
-          and [i["label"] for i in got[0]["items"]][:3] == ["Home", "S1", "S2"]
+          and [i["label"] for i in got[0]["items"]][:4] == ["Home", "S1", "S2", "Blog"]
           and [i["label"] for i in got[1]["items"]] == ["A1", "A2"],
           "the section is moved to the front wherever the manifest lists it, its pages in their order")
     none = stage.build_sidebar({"sections": [{"title": "Alpha", "pages": [pg("a1")]}]}, {"a1": "A1"})
-    check([g["label"] for g in none] == ["Start here", "Alpha"] and none[0]["items"] == custom,
-          "without such a section the first group is the hand-written pages alone")
+    check([g["label"] for g in none] == ["Start here", "Alpha"]
+          and none[0]["items"] == custom[:1] + [blog_item] + custom[1:],
+          "without such a section the first group is the hand-written pages and the Blog")
+    fx2 = {"sections": [{"title": "Start here", "pages": [pg("s1"), pg("progress"), pg("s2")]}]}
+    got2 = stage.build_sidebar(fx2, {"s1": "S1", "progress": "P", "s2": "S2"})
+    check([i["label"] for i in got2[0]["items"]][:5] == ["Home", "S1", "P", "Blog", "S2"],
+          "Blog stands right after the page whose slug is progress, wherever it is listed")
     for odd in ("start here", "START HERE", "Start Here"):
         try:
             stage.build_sidebar({"sections": [{"title": odd, "pages": [pg("s1")]}]}, {"s1": "S1"})
@@ -4345,7 +4367,7 @@ def test_stage_progress(tmp: Path) -> None:
           "progress.json holds the events of the committed plan, its day and zone, and the citation file's author")
     side = json.loads((data / "sidebar.json").read_text(encoding="utf-8"))
     check([g["label"] for g in side] == ["Start here", "Fixture"]
-          and [i["label"] for i in side[0]["items"]][:2] == ["Home", "The start"]
+          and [i["label"] for i in side[0]["items"]][:3] == ["Home", "The start", "Blog"]
           and side[0]["items"][1] == {"label": "The start", "slug": "start"},
           "the staged sidebar has one Start here group, with the manifest's page after Home")
     first = (data / "progress.json").read_bytes()
@@ -4386,6 +4408,501 @@ def test_stage_progress(tmp: Path) -> None:
     stage.stage_site(root2, "HEAD")
     quiet = json.loads((root2 / "website/src/data/progress.json").read_text(encoding="utf-8"))
     check(quiet["events"] == [] and quiet["as_of"] == "2026-10-23", "a plan with nothing yet stages no event")
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# the blog (blog.py, and stage.py's part in it)
+# ─────────────────────────────────────────────────────────────────────────────
+
+BLOG_D1 = ("A post written for the fixture repository to give the blog tests a description of the right "
+           "length, in plain words, within the bounds that the rule sets.")
+BLOG_D2 = ("A second post written for the fixture repository, with a description of its own so that no "
+           "two posts repeat one, in plain words, within the bounds set.")
+BLOG_SRC = "docs/blog/a-post/index.md"
+
+
+def front(**over) -> str:
+    """A post's front matter and a small body; a key set to None is left out."""
+    fields = {"title": '"A title"', "date": '"2026-10-01"', "description": json.dumps(BLOG_D1)}
+    fields.update(over)
+    head = "".join(f"{k}: {v}\n" for k, v in fields.items() if v is not None)
+    return "---\n" + head + "---\n\nBody text.\n"
+
+
+def parse_ok(text: str):
+    fields, body, line = BL.parse_front_matter(text, BLOG_SRC)
+    return BL.validate_front(fields, BLOG_SRC, "Ada Example"), body, line
+
+
+def refuses_with(fn, *needles: str) -> bool:
+    try:
+        fn()
+    except core.PublishError as e:
+        return all(n in str(e) for n in needles)
+    return False
+
+
+def test_blog_parser() -> None:
+    section("blog: the front matter subset, every key's rule, and the body")
+    check(core.description_problem(BLOG_D1) is None and core.description_problem(BLOG_D2) is None,
+          "(the fixture descriptions are valid)")
+    meta, body, line = parse_ok(front())
+    check(meta["title"] == "A title" and meta["date"] == date(2026, 10, 1) and meta["updated"] is None
+          and meta["tags"] == [] and meta["author"] == "Ada Example" and meta["draft"] is False
+          and body == "\nBody text.\n" and line == 6,
+          "a minimal post: the author defaults to the citation file's, no tags, not a draft; the body and its line")
+    meta, _, _ = parse_ok(front(title="'It''s plain'", date="2026-10-01", updated="2026-10-05",
+                                tags='["project", "methods"]', author="Bea Second", draft="false"))
+    check(meta["title"] == "It's plain" and meta["updated"] == date(2026, 10, 5)
+          and meta["tags"] == ["project", "methods"] and meta["author"] == "Bea Second",
+          "single quotes with '', plain dates and plain scalars, a flow list and a boolean")
+    check(parse_ok(front(tags="[project, methods]"))[0]["tags"] == ["project", "methods"]
+          and parse_ok(front(tags="[]"))[0]["tags"] == []
+          and parse_ok(front(tags="\n  - project\n  - \"site\""))[0]["tags"] == ["project", "site"]
+          and parse_ok(front(tags="\n- engineering"))[0]["tags"] == ["engineering"],
+          "an unquoted flow list, an empty list and block lists (indented or not)")
+    check(parse_ok(front(title=r'"Say \"hi\" \\ a\/b \u00e9"'))[0]["title"] == 'Say "hi" \\ a/b ' + chr(0xE9),
+          "the double-quoted escapes")
+    check(parse_ok(front(draft="true"))[0]["draft"] is True, "draft: true")
+    check(parse_ok(front(date="2026-10-01", updated="2026-10-02", author="Ada 2"))[0]["updated"] == date(2026, 10, 2)
+          and parse_ok(front(tags="\n  - project\n  - site"))[0]["tags"] == ["project", "site"]
+          and parse_ok(front(author='"12"'))[0]["author"] == "12",
+          "a plain day, a block list at one indentation and a quoted number are still accepted")
+    check(parse_ok("---\r\ntitle: \"T\"\r\ndate: 2026-10-01\r\ndescription: " + json.dumps(BLOG_D1) + "\r\n---\r\nBody\r\n")[1]
+          == "Body\r\n", "CRLF line endings are read, and the body is returned as written")
+
+    refused = [
+        ("no front matter", "# Title\n\nText.\n", "BLOG-NONE"),
+        ("unclosed block", "---\ntitle: \"A\"\n", "not closed"),
+        ("a comment", front(title='"A"').replace("---\n\n", "# note\n---\n\n", 1), "comments"),
+        ("an unknown key", front(slug='"x"'), "not one a post may carry"),
+        ("a repeated key", front().replace("---\n\n", 'title: "B"\n---\n\n', 1), "given twice"),
+        ("a missing title", front(title=None), "no 'title'"),
+        ("a missing date", front(date=None), "no 'date'"),
+        ("a missing description", front(description=None), "no 'description'"),
+        ("an empty title", front(title='""'), "1 to 120"),
+        ("a long title", front(title='"' + "x" * 121 + '"'), "1 to 120"),
+        ("a title with a newline escape", front(title=r'"a\nb"'), "one line"),
+        ("an impossible date", front(date='"2026-02-30"'), "real calendar day"),
+        ("a loose date", front(date='"20261001"'), "YYYY-MM-DD"),
+        ("updated before date", front(updated='"2026-09-30"'), "before the date"),
+        ("a short description", front(description='"Too short."'), "description"),
+        ("a description with markup", front(description=json.dumps(BLOG_D1.replace("plain", "*plain*"))), "markup"),
+        ("a tag outside the list", front(tags='["misc"]'), "not a known tag"),
+        ("a repeated tag", front(tags='["site", "site"]'), "twice"),
+        ("five tags", front(tags='["project", "substrate", "methods", "reading", "site"]'), "at most 4"),
+        ("tags as text", front(tags="project"), "must be a list"),
+        ("a long author", front(author='"' + "x" * 81 + '"'), "1 to 80"),
+        ("draft as text", front(draft='"yes"'), "true or false"),
+        ("a nested mapping", front().replace("---\n\n", "meta:\n  a: b\n---\n\n", 1), "no value"),
+        ("a block scalar", front(title="|"), "start with"),
+        ("an anchor", front(title="&a x"), "start with"),
+        ("a plain value with a colon", front(title="a: b"), "': '"),
+        ("a plain value with a comment", front(title="a #b"), "comment"),
+        ("a plain null", front(author="null"), "null or a boolean"),
+        ("text after a quote", front(title='"a" b'), "nothing may follow"),
+        ("an unclosed quote", front(title='"a'), "not closed"),
+        ("a bad escape", front(title=r'"a\qb"'), "not supported"),
+        ("a surrogate escape", front(title=r'"\ud83d"'), "surrogate"),
+        ("a flow list that does not close", front(tags="[project"), "must close"),
+        ("a trailing comma", front(tags="[project, ]"), "missing after a comma"),
+        ("a flow mapping", front(title="{a: b}"), "start with"),
+        ("a key with no value", front(tags=""), "no value"),
+        ("a list item that is a boolean", front(tags="\n  - true"), "boolean"),
+        ("a plain True", front(author="True"), "null or a boolean"),
+        ("a plain TRUE", front(author="TRUE"), "null or a boolean"),
+        ("a plain False", front(draft="False"), "null or a boolean"),
+        ("a plain integer", front(author="12"), "number"),
+        ("a plain signed integer", front(author="-3"), "number"),
+        ("a plain hex number", front(author="0x1F"), "number"),
+        ("a plain octal number", front(author="0o17"), "number"),
+        ("a plain float", front(author="1.5"), "number"),
+        ("a plain exponent", front(author="1e3"), "number"),
+        ("a plain .inf", front(author=".inf"), "number"),
+        ("a plain -.Inf", front(author="-.Inf"), "number"),
+        ("a plain .nan", front(author=".nan"), "number"),
+        ("a plain number in a flow list", front(tags="[7]"), "number"),
+        ("a plain True in a flow list", front(tags="[True]"), "null or a boolean"),
+        ("a lone dash", front(author="-"), "indicator"),
+        ("a lone question mark", front(author="?"), "indicator"),
+        ("a lone colon", front(author=":"), "indicator"),
+        ("a block list with mixed indentation", front(tags="\n  - project\n- site"), "one indentation"),
+        ("a block list with mixed indentation, the other way", front(tags="\n- project\n  - site"), "one indentation"),
+    ]
+    for label, text, needle in refused:
+        if needle == "BLOG-NONE":
+            ok = refuses_with(lambda t=text: BL.parse_front_matter(t, BLOG_SRC), BLOG_SRC + ":1:")
+        else:
+            ok = refuses_with(lambda t=text: parse_ok(t), BLOG_SRC + ":", needle)
+        check(ok, f"refused: {label}")
+    try:
+        parse_ok(front(date='"2026-02-30"'))
+    except core.PublishError as e:
+        check(str(e).startswith(BLOG_SRC + ":3:"), f"a refusal names the line of the key: {e}")
+    check(refuses_with(lambda: BL.parse_front_matter("---\ntitle: a\n  continued\n---\n", BLOG_SRC),
+                       BLOG_SRC + ":3:", "indented"), "a continued line is refused with its number")
+    check(sorted(BL.TAGS) == sorted(set(BL.TAGS)) and "project" in BL.TAGS and len(BL.TAGS) == 7,
+          "TAGS is the one list of seven tags")
+
+    # the body: no level-one heading outside fenced code
+    check(BL.body_problem("\n## Two\n\n```\n# not a heading\n```\n", 6) is None, "a hash line in a fence is not a heading")
+    check(BL.body_problem("\ntext\n\n# One\n", 6) == (9, BL.body_problem("\ntext\n\n# One\n", 6)[1])
+          and "level-one" in BL.body_problem("\ntext\n\n# One\n", 6)[1],
+          "a level-one heading is refused with its line in the file")
+    check(BL.body_problem("#\n", 1) is not None and BL.body_problem("   # x\n", 1) is not None
+          and BL.body_problem("    # code\n", 1) is None and BL.body_problem("#hashtag\n", 1) is None,
+          "an empty or indented-by-three heading is one; four spaces is code; '#word' is text")
+
+    # the body, read as CommonMark reads it
+    for label, text, line in [("a heading in a block quote", "> # x\n", 1), ("a heading in a list item", "- # x\n", 1),
+                              ("a heading in a numbered item", "1. # x\n", 1),
+                              ("a heading after text", "Text.\n\n# x\n", 3)]:
+        got = BL.body_problem(text, 6)
+        check(got is not None and got[0] == 6 + line - 1 and "level-one" in got[1], f"refused: {label}")
+    check(BL.body_problem("<!--\n# not a heading\n-->\n", 1) is None
+          and BL.body_problem("<pre>\n# not a heading\n</pre>\n", 1) is None
+          and BL.body_problem("```\n# not a heading\n```\n", 1) is None
+          and BL.body_problem("~~~\n> # nor this\n~~~\n", 1) is None
+          and BL.body_problem("> ## two\n\n- ## two\n", 1) is None,
+          "a hash line in an HTML comment, a <pre> or a fence is not a heading; level two in a quote is fine")
+    alt_need = "alt text"
+    for label, text in [("an empty alt", "![](x.png)\n"), ("a blank alt", "![ ](x.png)\n"),
+                        ("an empty alt in a sentence", "See ![](x.png) here.\n"),
+                        ("an img with no alt", '<img src="x.png">\n'),
+                        ("an img with an empty alt", '<img src="x.png" alt="">\n'),
+                        ("an img with a blank alt", "<img src='x.png' alt='  '>\n"),
+                        ("a capital IMG", '<IMG SRC="x.png"/>\n')]:
+        got = BL.body_problem("\ntext\n\n" + text, 6)
+        check(got is not None and got[0] == 9 and alt_need in got[1] and "one sentence" in got[1], f"refused: {label}")
+    check(BL.body_problem("![A chart of the loss.](x.png)\n\n<img src=\"x.png\" alt=\"A chart\">\n", 1) is None
+          and BL.body_problem("<img alt=x src=\"x.png\">\n", 1) is None
+          and BL.body_problem("```\n![](x.png)\n<img src=x>\n```\n", 1) is None
+          and BL.body_problem("Write `![](x.png)` and ``<img src=x>`` for it.\n", 1) is None
+          and BL.body_problem("    ![](x.png)\n", 1) is None,
+          "an image with alt text passes, and an empty one in a fence, a code span or indented code is not read")
+
+    # layout: what may stand under docs/blog/
+    ok = ["docs/blog/README.md", "docs/blog/a-post/index.md", "docs/blog/a-post/pic.PNG", "docs/blog/a-post/d.svg"]
+    check(BL.layout(ok) == {"a-post": ["d.svg", "pic.PNG"]}, "README.md, index.md and media in a slug folder are the layout")
+    bad = [
+        ("a file directly in docs/blog", ["docs/blog/notes.md", "docs/blog/a-post/index.md"], "only README.md"),
+        ("a folder that is not a slug", ["docs/blog/A_Post/index.md"], "not a slug"),
+        ("a double hyphen", ["docs/blog/a--post/index.md"], "not a slug"),
+        ("a long slug", ["docs/blog/" + "a" * 81 + "/index.md"], "not a slug"),
+        ("a subfolder", ["docs/blog/a-post/index.md", "docs/blog/a-post/img/p.png"], "no subfolder"),
+        ("another file type", ["docs/blog/a-post/index.md", "docs/blog/a-post/data.json"], "not a file a post may hold"),
+        ("a markdown file beside the post", ["docs/blog/a-post/index.md", "docs/blog/a-post/notes.md"], "not a file a post may hold"),
+        ("a media name with a space", ["docs/blog/a-post/index.md", "docs/blog/a-post/a b.png"], "not a file a post may hold"),
+        ("a media name that starts with a dot", ["docs/blog/a-post/index.md", "docs/blog/a-post/.p.png"], "not a file a post may hold"),
+        ("a folder with no index.md", ["docs/blog/a-post/p.png"], "no index.md"),
+        ("the reserved slug index", ["docs/blog/index/index.md"], "reserved"),
+        ("a media name that is a hidden file", ["docs/blog/a-post/index.md", "docs/blog/a-post/.hidden.png"], "not a file a post may hold"),
+        ("a media name with a space and a tilde", ["docs/blog/a-post/index.md", "docs/blog/a-post/~a b.png"], "not a file a post may hold"),
+        ("a media name that starts with a hyphen", ["docs/blog/a-post/index.md", "docs/blog/a-post/-x.png"], "not a file a post may hold"),
+    ]
+    for label, paths, needle in bad:
+        check(refuses_with(lambda ps=paths: BL.layout(ps), needle), f"layout refuses {label}")
+    check(BL.layout(["docs/blog/a-post/index.md", "docs/blog/a-post/_dsc1234.jpg", "docs/blog/a-post/diagram~v2.png",
+                     "docs/blog/a-post/~tmp.webp"]) == {"a-post": ["_dsc1234.jpg", "diagram~v2.png", "~tmp.webp"]}
+          and BL.layout(["docs/blog/index-two/index.md"]) == {"index-two": []},
+          "an editor-slugified name with a leading underscore or a tilde is a picture; index-two is a slug")
+
+
+def test_blog_media() -> None:
+    section("blog: SVG pictures that could run script are refused")
+    good = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 4"><rect width="4" height="4"/><title>x</title></svg>'
+    check(BL.svg_problems(good) == [], "a plain SVG is accepted")
+    frag = (b'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><g id="g"/></defs>'
+            b'<use xlink:href="#g"/><image href="data:image/png;base64,AAAA"/></svg>')
+    check(BL.svg_problems(frag) == [], "a #fragment and a data:image/png reference are accepted")
+    harmless = (b'<?xml version="1.0" encoding="UTF-8"?><svg xmlns="http://www.w3.org/2000/svg"><style>/* colours */'
+                b'.a{fill:#123456;stroke:rgb(1,2,3)}@media (prefers-color-scheme: dark){.a{fill:#fff}}'
+                b'.b{fill:url(#g);background:url("data:image/png;base64,AAAA")}</style>'
+                b'<defs><linearGradient id="g"/></defs><rect class="a" style="fill:url(#g)" fill="url(#g)"/></svg>')
+    check(BL.svg_problems(harmless) == [], f"an XML declaration and a harmless style (colours, @media, fragment and data urls) pass: {BL.svg_problems(harmless)}")
+    check(BL.svg_problems(b'<svg xmlns="http://www.w3.org/2000/svg"><s:rect xmlns:s="http://www.w3.org/2000/svg"/></svg>') == [],
+          "a prefixed SVG element is read with its namespace")
+    real = REPO / "docs/blog/why-psyche-keeps-a-blog/how-a-post-is-published.svg"
+    if real.exists():
+        check(BL.svg_problems(real.read_bytes()) == [], "the committed example picture passes")
+    wrap = lambda inner: b'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' + inner + b"</svg>"  # noqa: E731
+    cases = [
+        ("a script element", wrap(b"<script>alert(1)</script>"), "script"),
+        ("a prefixed script element", wrap(b'<s:script xmlns:s="http://www.w3.org/2000/svg"/>'), "script"),
+        ("an onload attribute", wrap(b'<rect onload="x()"/>'), "event attribute"),
+        ("an onclick attribute in capitals", wrap(b'<rect ONCLICK="x()"/>'), "event attribute"),
+        ("foreignObject", wrap(b"<foreignObject/>"), "foreignobject"),
+        ("an iframe", wrap(b"<iframe/>"), "iframe"),
+        ("an embed", wrap(b"<embed/>"), "embed"),
+        ("an object", wrap(b"<object/>"), "object"),
+        ("a javascript: URL", wrap(b'<a href="javascript:alert(1)"><rect/></a>'), "javascript:"),
+        ("a javascript: URL split by a tab", wrap(b'<a xlink:href="java&#9;script:x"><rect/></a>'), "javascript:"),
+        ("an external href", wrap(b'<image href="https://example.invalid/x.png"/>'), "neither a #fragment"),
+        ("a data:text/html href", wrap(b'<a xlink:href="data:text/html;base64,AAAA"><rect/></a>'), "neither a #fragment"),
+        ("a data:image/svg+xml href", wrap(b'<image href="data:image/svg+xml;base64,AAAA"/>'), "neither a #fragment"),
+        ("a src", wrap(b'<image src="x.png"/>'), "neither a #fragment"),
+        ("a doctype", b'<!DOCTYPE svg><svg xmlns="http://www.w3.org/2000/svg"/>', "DOCTYPE"),
+        ("an entity declaration", b'<!DOCTYPE svg [<!ENTITY e "x">]><svg xmlns="http://www.w3.org/2000/svg"/>', "ENTITY"),
+        ("an animation of href", wrap(b'<a><set attributeName="href" to="#x"/></a>'), "animates"),
+        ("a document that is not XML", b"<svg", "well-formed"),
+        ("UTF-16 text", "<svg/>".encode("utf-16"), "not UTF-8"),
+        ("an xml-stylesheet with an XSLT data URL",
+         b'<?xml version="1.0"?><?xml-stylesheet type="text/xsl" href="data:text/xml;base64,AAAA"?>'
+         b'<svg xmlns="http://www.w3.org/2000/svg"/>', "processing instruction"),
+        ("an xml-stylesheet pointing at another file",
+         b'<?xml-stylesheet type="text/xsl" href="other.svg"?><svg xmlns="http://www.w3.org/2000/svg"/>', "processing instruction"),
+        ("an xml-stylesheet pointing at itself", b'<?xml-stylesheet href="#s"?><svg xmlns="http://www.w3.org/2000/svg"/>',
+         "processing instruction"),
+        ("any other processing instruction", wrap(b"<?php x ?>"), "processing instruction"),
+        ("an embedded xsl:stylesheet", wrap(b'<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"/>'), "XSLT"),
+        ("an xsl:element building a script",
+         wrap(b'<x:element xmlns:x="http://www.w3.org/1999/XSL/Transform" name="script"/>'), "XSLT"),
+        ("an XSLT attribute on the root",
+         b'<svg xmlns="http://www.w3.org/2000/svg" xmlns:x="http://www.w3.org/1999/XSL/Transform" x:version="1.0"/>', "XSLT"),
+        ("a root that is not svg", b'<html xmlns="http://www.w3.org/2000/svg"/>', "root"),
+        ("an XSLT stylesheet as the root", b'<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="1.0"/>', "root"),
+        ("a root in no namespace", b"<svg><rect/></svg>", "root"),
+        ("a root in another namespace", b'<svg xmlns="http://www.w3.org/1999/xhtml"/>', "root"),
+        ("a style with url(https://x)", wrap(b"<style>.a{fill:url(https://x.invalid/a.svg#b)}</style>"), "url()"),
+        ("a style with a quoted url", wrap(b"<style>.a{background:url( 'https://x.invalid/a.png' )}</style>"), "url()"),
+        ("a style with url(javascript:)", wrap(b"<style>.a{fill:url(javascript:alert(1))}</style>"), "javascript:"),
+        ("a style with @import", wrap(b'<style>@import "https://x.invalid/a.css";</style>'), "@import"),
+        ("a style with @import url", wrap(b"<style>@import url(https://x.invalid/a.css);</style>"), "@import"),
+        ("a style with an escaped url", wrap(b"<style>.a{fill:\\75 rl(https://x.invalid/a)}</style>"), "url()"),
+        ("a style with a long-escaped url", wrap(b"<style>.a{fill:\\000075rl(https://x.invalid/a)}</style>"), "url()"),
+        ("a style with a comment inside @import", wrap(b"<style>@im/**/port 'a';@import/**/'b';</style>"), "@import"),
+        ("a style in CDATA with a url", wrap(b"<style><![CDATA[.a{fill:url(https://x.invalid/a)}]]></style>"), "url()"),
+        ("a style with a url to a data:text/html", wrap(b"<style>.a{fill:url(data:text/html;base64,AAAA)}</style>"), "url()"),
+        ("a style with a data:image/svg+xml url", wrap(b"<style>.a{fill:url(data:image/svg+xml;base64,AAAA)}</style>"), "url()"),
+        ("a style attribute with a url", wrap(b'<rect style="fill:url(https://x.invalid/a)"/>'), "url()"),
+        ("a style attribute with an escaped url", wrap(b'<rect style="fill:\\75rl(https://x.invalid/a)"/>'), "url()"),
+        ("a style attribute with image-set", wrap(b'<rect style="background:image-set(\'https://x.invalid/a.png\' 1x)"/>'), "image-set"),
+        ("a presentation attribute with a url", wrap(b'<rect fill="url(https://x.invalid/a)"/>'), "url()"),
+        ("a prefixed svg script in the default namespace", wrap(b'<q:script xmlns:q="http://www.w3.org/2000/svg"/>'), "script"),
+    ]
+    for label, data, needle in cases:
+        probs = BL.svg_problems(data)
+        check(any(needle.lower() in x.lower() for x in probs), f"refused: {label}: {probs}")
+
+
+def blog_post(slug: str, title: str, day: str, desc: str, *, updated: str = None, extra: str = "",
+              body: str = "A paragraph.\n") -> str:
+    head = f'---\ntitle: "{title}"\ndate: "{day}"\n' + (f'updated: "{updated}"\n' if updated else "")
+    return head + f"description: {json.dumps(desc)}\n{extra}---\n\n{body}"
+
+
+def test_blog_order() -> None:
+    section("blog: newest first, prev and next, the staged head, blog.json")
+    def mk(slug, day, upd=None):
+        return BL.Post(slug, BL.post_src(slug), slug.upper(), day, upd, BLOG_D1, [], "Ada", "", 1, [])
+    posts = BL.order([mk("b", "2026-10-01"), mk("a", "2026-10-01"), mk("c", "2026-09-01"), mk("d", "2026-10-01", "2026-10-09"),
+                      mk("e", "2026-10-02", "2026-10-03")])
+    check([p.slug for p in posts] == ["e", "d", "a", "b", "c"],
+          "date descending, then updated descending with none last, then slug ascending")
+    check(BL.neighbours(posts, 0) == (posts[1], None) and BL.neighbours(posts, 2) == (posts[3], posts[1])
+          and BL.neighbours(posts, 4) == (None, posts[3]),
+          "prev is the next older post, next the next newer, None at the ends")
+    manifest = core.load_manifest(REPO)
+    head = BL.staged_front_matter(manifest, posts[1], posts[2], posts[0], "0123456789abcdef0123")
+    check(head == ('---\ntitle: "D"\n'
+                   f'description: {json.dumps(BLOG_D1)}\n'
+                   'editUrl: "https://github.com/cagancaliskan/psyche/blob/main/docs/blog/d/index.md"\n'
+                   'date: "2026-10-01"\nupdated: "2026-10-09"\nauthor: "Ada"\ntags: []\n'
+                   'prev: {"link": "/psyche/blog/a/", "label": "A"}\n'
+                   'next: {"link": "/psyche/blog/e/", "label": "E"}\n---\n'
+                   '<!-- ledger:ignore-file -->\n'
+                   '<!-- GENERATED by tools/publish/stage.py from docs/blog/d/index.md at 0123456789ab; do not edit -->\n\n'),
+          "the staged head: exactly the keys of the contract, in order")
+    head = BL.staged_front_matter(manifest, posts[4]._replace(tags=["project", "methods"]), None, posts[3], "0123456789abcdef0123")
+    check('tags: ["project", "methods"]\nprev: false\nnext: {"link": "/psyche/blog/b/", "label": "B"}\n' in head
+          and "updated:" not in head, "no updated line without one, false for a missing neighbour, tags as a flow list")
+    check(BL.blog_json(manifest, posts[:2], "Ada") == {"author": "Ada", "posts": [
+        {"slug": "e", "route": "blog/e/", "title": "E", "date": "2026-10-02", "updated": "2026-10-03",
+         "description": BLOG_D1, "tags": [], "author": "Ada"},
+        {"slug": "d", "route": "blog/d/", "title": "D", "date": "2026-10-01", "updated": "2026-10-09",
+         "description": BLOG_D1, "tags": [], "author": "Ada"}]}, "blog.json holds the posts as the contract gives them")
+    m = BL.link_mapping(manifest, posts, posts[0])
+    check(m["docs/blog/a/index.md"] == "/psyche/blog/a/", "a post's source maps to its route")
+
+
+def commit_all(root: Path, paths, message: str) -> None:
+    git_ok(root, "add", "--", *paths)
+    git_ok(root, "-c", "user.name=Fixture", "-c", "user.email=fixture@example.invalid", "commit", "-q",
+           "--no-verify", "-m", message)
+
+
+PNG_BYTES = b"\x89PNG\r\n\x1a\n" + bytes(range(256))
+SVG_OK = b'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 4 4"><rect width="4" height="4"/></svg>\n'
+
+
+def test_blog_tree(tmp: Path) -> None:
+    section("blog: the working tree is listed by git, so an ignored file is not a stray")
+    if not GIT:
+        check(False, "git is required for the tree test and was not found")
+        return
+    root = new_root(tmp)
+    write(root, ".gitignore", ".DS_Store\n")
+    write(root, "docs/blog/README.md", "# Guide\n")
+    write(root, "docs/blog/a-post/index.md", blog_post("a-post", "T", "2026-10-01", BLOG_D1))
+    write(root, "docs/blog/gone/index.md", blog_post("gone", "G", "2026-10-02", BLOG_D2))
+    git_repo(root, [".gitignore", "docs/blog/README.md", "docs/blog/a-post/index.md", "docs/blog/gone/index.md"])
+    write(root, "docs/blog/.DS_Store", b"\x00", binary=True)
+    write(root, "docs/blog/a-post/.DS_Store", b"\x00", binary=True)
+    write(root, "docs/blog/a-post/new.png", PNG_BYTES, binary=True)
+    (root / "docs/blog/gone/index.md").unlink()
+    (root / "docs/blog/gone").rmdir()
+    got = BL._tree(root, None)
+    check(got == ["docs/blog/README.md", "docs/blog/a-post/index.md", "docs/blog/a-post/new.png"],
+          f"tracked and untracked files count, an ignored .DS_Store and a deleted file do not: {got}")
+    check(BL.layout(got) == {"a-post": ["new.png"]}, "so the layout of the working tree is clean")
+    check([x[0] for x in BL.sources(root)] == ["docs/blog/a-post/index.md"], "sources reads the working tree through that listing")
+    write(root, "docs/blog/a-post/stray.txt", "x\n")
+    check(refuses_with(lambda: BL.layout(BL._tree(root, None)), "stray.txt", "not a file a post may hold"),
+          "an untracked stray that is not ignored is still named")
+
+
+def test_blog_stage(tmp: Path) -> None:
+    section("blog: stage_site on a repository with two posts, their media, links in both directions, refusals")
+    if not GIT:
+        check(False, "git is required for the stage tests and was not found")
+        return
+    manifest = copy.deepcopy(GUARD_MANIFEST)
+    manifest["sections"].insert(0, {"title": stage.START_GROUP, "pages": [
+        {"src": "docs/progress.md", "slug": "progress", "wiki": "Progress", "description": SECOND_DESCRIPTION}]})
+    post1 = blog_post("first", "First post", "2026-09-01", BLOG_D1, extra='tags: ["project", "methods"]\nauthor: "Bea Second"\n',
+                      body="See ![chart](chart.png) and the [drawing](./fig.svg), then [the next post](../second/index.md), "
+                           "[the page](../../ok.md) and [the readme](../README.md).\n")
+    post2 = blog_post("second", "Second post", "2026-10-01", BLOG_D2, updated="2026-10-05",
+                      body="Back to [the first](../first/index.md).\n")
+    extra = {"docs/blog/README.md": "# Writing a post\n\nThe guide.\n", "docs/blog/first/index.md": post1,
+             "docs/blog/second/index.md": post2, "docs/progress.md": "# Progress\n\nSee [the second post](blog/second/index.md).\n"}
+    root, _, _ = diagram_fixture(tmp, manifest=manifest, extra=extra)
+    write(root, "docs/blog/first/chart.png", PNG_BYTES, binary=True)
+    write(root, "docs/blog/first/fig.svg", SVG_OK, binary=True)
+    commit_all(root, ["docs/blog/first/chart.png", "docs/blog/first/fig.svg"], "fixture media")
+    res = stage.stage_site(root, "HEAD")
+    sha = git_ok(root, "rev-parse", "HEAD")
+    out = root / "website/src/content/docs/blog"
+    first = (out / "first/index.md").read_text(encoding="utf-8")
+    second = (out / "second/index.md").read_text(encoding="utf-8")
+    check(res["posts"] == 2, "stage_site reports two posts")
+    expected_head = (
+        '---\ntitle: "First post"\n'
+        f'description: {json.dumps(BLOG_D1)}\n'
+        'editUrl: "https://github.com/owner/name/blob/main/docs/blog/first/index.md"\n'
+        'date: "2026-09-01"\nauthor: "Bea Second"\ntags: ["project", "methods"]\n'
+        'prev: false\nnext: {"link": "/psyche/blog/second/", "label": "Second post"}\n---\n'
+        '<!-- ledger:ignore-file -->\n'
+        f'<!-- GENERATED by tools/publish/stage.py from docs/blog/first/index.md at {sha[:12]}; do not edit -->\n\n')
+    check(first.startswith(expected_head), "the first post's staged front matter is exactly the contract's")
+    check("![chart](./chart.png)" in first and "the [drawing](./fig.svg)" in first,
+          "a link or image naming the post's own picture is ./<file>")
+    check("[the next post](/psyche/blog/second/)" in first, "a link to another post is its route")
+    check(f"https://github.com/owner/name/blob/{sha}/docs/ok.md" not in first and "(/psyche/ok/)" in first,
+          "a link from a post to a docs page is that page's route")
+    check(f"https://github.com/owner/name/blob/{sha}/docs/blog/README.md" in first,
+          "a link to another file stays a pinned GitHub link")
+    check('updated: "2026-10-05"' in second and 'prev: {"link": "/psyche/blog/first/", "label": "First post"}\nnext: false' in second
+          and 'author: "Ada Example"' in second and "tags: []" in second and "(/psyche/blog/first/)" in second,
+          "the second post: updated, the citation author, tags [], its neighbours, a link to the first")
+    check((out / "first/chart.png").read_bytes() == PNG_BYTES and (out / "first/fig.svg").read_bytes() == SVG_OK
+          and not (out / "second/chart.png").exists(), "the pictures are copied byte for byte, beside their post only")
+    page = (root / "website/src/content/docs/progress.md").read_text(encoding="utf-8")
+    check("(/psyche/blog/second/)" in page, "a link from a docs page to a post is the post's route")
+    data = json.loads((root / "website/src/data/blog.json").read_text(encoding="utf-8"))
+    check(data == {"author": "Ada Example", "posts": [
+        {"slug": "second", "route": "blog/second/", "title": "Second post", "date": "2026-10-01", "updated": "2026-10-05",
+         "description": BLOG_D2, "tags": [], "author": "Ada Example"},
+        {"slug": "first", "route": "blog/first/", "title": "First post", "date": "2026-09-01", "updated": None,
+         "description": BLOG_D1, "tags": ["project", "methods"], "author": "Bea Second"}]},
+          "blog.json: newest first, with the contract's fields")
+    stage_json = json.loads((root / "website/src/data/stage.json").read_text(encoding="utf-8"))
+    side = json.loads((root / "website/src/data/sidebar.json").read_text(encoding="utf-8"))
+    check(stage_json["posts"] == 2 and stage_json["pages"] == 2 and side[0]["items"][1:3] == [
+        {"label": "Progress", "slug": "progress"}, {"label": "Blog", "link": "/blog/"}],
+          "stage.json counts the posts; the sidebar has Blog right after progress")
+    rc, o, e = capture(stage.main, ["--target", "site", "--root", str(root)])
+    check(rc == 0 and "2 post(s)" in o, "the command line reports the post count")
+    before = (out / "first/index.md").read_bytes()
+    stage.stage_site(root, "HEAD")
+    check((out / "first/index.md").read_bytes() == before, "staging twice writes the same bytes")
+
+    # a draft is not staged, and an unfinished one on disk does not stop staging
+    write(root, "docs/blog/wip/index.md", blog_post("wip", "Unfinished", "2026-11-01", BLOG_D1, extra="draft: true\n"))
+    write(root, "docs/blog/wip/huge.png", b"x" * (BL.MEDIA_MAX + 1), binary=True)
+    commit_all(root, ["docs/blog/wip/index.md", "docs/blog/wip/huge.png"], "fixture draft")
+    write(root, "docs/blog/wip/index.md", "edited and not committed\n")
+    res = stage.stage_site(root, "HEAD")
+    check(res["posts"] == 2 and not (out / "wip").exists()
+          and "wip" not in (root / "website/src/data/blog.json").read_text(encoding="utf-8"),
+          "a draft is not staged, its pictures are not read, and its uncommitted edit is not a modification")
+    git_ok(root, "checkout", "-q", "--", "docs/blog/wip/index.md")
+    rough = ('---\ntitle: "Rough"\ndescription: "short"\ntags: [nope]\nauthor: ""\ndraft: true\n---\n\n# Anything\n![](x.png)\n')
+    write(root, "docs/blog/rough/index.md", rough)
+    commit_all(root, ["docs/blog/rough/index.md"], "fixture rough draft")
+    res = stage.stage_site(root, "HEAD")
+    check(res["posts"] == 2 and not (out / "rough").exists(),
+          "a draft with a short description, no date, an unknown tag and an empty author does not stop staging")
+    git_ok(root, "reset", "-q", "--hard", "HEAD~1")
+    write(root, "docs/blog/rough/index.md", rough.replace("draft: true", 'draft: "yes"'))
+    commit_all(root, ["docs/blog/rough/index.md"], "fixture odd draft")
+    rc, _o, e = capture(stage.main, ["--target", "site", "--root", str(root)])
+    check(rc == 1 and "docs/blog/rough/index.md:" in e and "true or false" in e,
+          f"a draft that is not a boolean still stops staging: {e.strip()[:100]}")
+    git_ok(root, "reset", "-q", "--hard", "HEAD~1")
+
+    # refusals, each from a commit that holds the fault
+    def refused_after(label: str, files: dict, needle: str, binary: bool = False, remove: list = ()) -> None:
+        for rel, body in files.items():
+            write(root, rel, body, binary=binary)
+        for rel in remove:
+            git_ok(root, "rm", "-q", "-f", "--", rel)
+        commit_all(root, list(files), f"fixture {label}")
+        rc, o, e = capture(stage.main, ["--target", "site", "--root", str(root)])
+        check(rc == 1 and needle in e, f"staging stops: {label}: {e.strip()[:120]}")
+        git_ok(root, "reset", "-q", "--hard", "HEAD~1")
+
+    refused_after("a duplicate description between posts", {"docs/blog/third/index.md": blog_post("third", "T", "2026-10-02", BLOG_D1)},
+                  "the same description")
+    refused_after("a description repeating a page's", {"docs/blog/third/index.md": blog_post("third", "T", "2026-10-02", SECOND_DESCRIPTION)},
+                  "docs/progress.md")
+    refused_after("a H1 in the body", {"docs/blog/third/index.md": blog_post("third", "T", "2026-10-02", BLOG_D2.replace("second", "third"),
+                                                                           body="# Again\n")}, "level-one")
+    refused_after("an image with no alt", {"docs/blog/third/index.md": blog_post("third", "T", "2026-10-02", BLOG_D2.replace("second", "third"),
+                                                                              body="![](x.png)\n")}, "alt text")
+    refused_after("the slug index", {"docs/blog/index/index.md": blog_post("index", "T", "2026-10-02", BLOG_D2.replace("second", "third"))},
+                  "reserved")
+    refused_after("a file directly in docs/blog", {"docs/blog/stray.md": "x\n"}, "only README.md")
+    refused_after("another file in a post folder", {"docs/blog/first/notes.txt": "x\n"}, "not a file a post may hold")
+    refused_after("an oversized picture", {"docs/blog/first/big.png": b"x" * (BL.MEDIA_MAX + 1)}, "MiB", binary=True)
+    refused_after("an unsafe SVG", {"docs/blog/first/bad.svg": b'<svg xmlns="http://www.w3.org/2000/svg"><script/></svg>'},
+                  "script", binary=True)
+    refused_after("a front matter fault", {"docs/blog/third/index.md": blog_post("third", "T", "2026-13-02", BLOG_D2)},
+                  "docs/blog/third/index.md:3:")
+    refused_after("a pragma that opts the post out", {"docs/blog/third/index.md": blog_post(
+        "third", "T", "2026-10-02", BLOG_D2.replace("second", "third"), body="<!-- ledger:ignore-file -->\n")}, "ignore-file")
+    write(root, "docs/blog/first/index.md", post1 + "edited\n")
+    try:
+        stage.stage_site(root, "HEAD")
+        check(False, "a post modified on disk stops staging")
+    except core.PublishError as e:
+        check("differs" in str(e) or "modified" in str(e), "a post modified on disk stops staging")
+    git_ok(root, "checkout", "-q", "--", "docs/blog/first/index.md")
+    check(stage.stage_site(root, "HEAD")["posts"] == 2, "(restored)")
+
+    # the diagrams check covers a post's fence
+    fence = "```mermaid\n" + FLOW2 + "\n```\n"
+    write(root, "docs/blog/first/index.md", blog_post("first", "First post", "2026-09-01", BLOG_D1,
+                                                     extra='tags: ["project", "methods"]\nauthor: "Bea Second"\n', body=fence))
+    commit_all(root, ["docs/blog/first/index.md"], "fixture fence")
+    check(any("docs/blog/first/index.md" in x and "no drawing" in x for x in DG.check(root)),
+          "a Mermaid fence in a post needs a drawing, like a page's")
+    check(any(d["where"][0].startswith("docs/blog/first/index.md:") for d in DG.listing(root)["diagrams"]),
+          "--list names the post's fence for the render script")
+    draft_src = blog_post("first", "First post", "2026-09-01", BLOG_D1, extra="draft: true\n", body=fence)
+    write(root, "docs/blog/first/index.md", draft_src)
+    check(DG.check(root) == [] or all("docs/blog/first" not in x for x in DG.check(root)),
+          "a draft's fence needs no drawing")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -4468,6 +4985,11 @@ def main() -> int:
         test_front_door(tmp)
         test_stage_sidebar()
         test_stage_progress(tmp)
+        test_blog_parser()
+        test_blog_media()
+        test_blog_order()
+        test_blog_tree(tmp)
+        test_blog_stage(tmp)
         test_source_hygiene()
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
