@@ -2,13 +2,21 @@
 #
 # Safety model in short:
 #   * Every save lands on a branch named cms/posts/<slug> and opens a pull request.
-#     Nothing in this editor writes to main.
+#     Nothing in the entry editor writes to main; the Asset Library tries to, and
+#     the ruleset refuses it.
 #   * The posts collection has publish: false, so the editor shows no publish
 #     control. Publishing means merging the pull request on GitHub, after the
-#     required checks (governance, build, run_tests) are green. The editor must
-#     never merge, because an administrator may bypass the ruleset on main in
-#     pull_request mode, and a merge from the editor would skip red checks.
+#     required checks (governance, build, run_tests) and the disclosure check
+#     are green. The editor must never merge, because an administrator may
+#     bypass the ruleset on main in pull_request mode, and a merge from the
+#     editor would skip red checks.
+#   * The token can do more than the interface: it can merge a pull request, and
+#     push a branch whose pull request runs its checks with the repository's
+#     secrets. docs/blog/README.md says how to keep it to one editing session.
 #   * Sign-in is by fine-grained access token only (see auth_methods below).
+#   * tools/publish/test_core.py (test_blog_editor_config) fails if the backend,
+#     token sign-in, the editorial workflow, direct_publish: false, publish: false,
+#     or the slug or title pattern are loosened.
 
 backend:
   name: github
@@ -21,8 +29,7 @@ backend:
   auth_methods: [token]
 
   # Plain ASCII commit messages in the repository's style. Only these tags are
-  # used: {{slug}} (entry slug) and {{path}} (file path). Sveltia adds no
-  # co-author or trailer lines to these commits, and signoff_commits stays off.
+  # used: {{slug}} (entry slug) and {{path}} (file path). signoff_commits stays off.
   commit_messages:
     create: 'docs(blog): add {{slug}}'
     update: 'docs(blog): edit {{slug}}'
@@ -42,7 +49,8 @@ publish_mode:
 # Posts keep their own images in the post's folder. The image dialog inside a
 # post also offers this global location, and the separate Asset Library page
 # writes to it; a picture chosen or uploaded there is refused when the post is
-# staged (a post may only link pictures in its own folder), so always pick the
+# staged (a file that stands directly in docs/blog/ is refused, since only
+# README.md may), so always pick the
 # post's own folder. The Asset Library commits straight to main, which the
 # ruleset refuses anyway.
 media_folder: docs/blog
@@ -56,7 +64,11 @@ media_libraries:
       slugify_filename: true
       # JPEG and PNG uploads are saved as WebP (any JPEG extension, .jfif and
       # .jpe included, ends as .webp). GIF, AVIF, WebP and SVG are kept as they
-      # are. The staging step accepts png, jpg, jpeg, webp, avif, gif and svg.
+      # are. The staging step accepts png, jpg, jpeg, webp, avif, gif and svg,
+      # and refuses a file whose bytes are not the format its name says. The
+      # conversion uses the browser's own WebP encoder; in a browser without one
+      # (Safari) the fallback encoder is blocked by the page policy, so the file
+      # may not be WebP and staging then refuses it.
       transformations:
         jpeg:
           format: webp
@@ -94,7 +106,7 @@ collections:
   - name: posts
     label: Posts
     label_singular: Post
-    description: Blog posts. Saving opens a pull request; merging it on GitHub publishes the post. Every save, a draft included, is public on GitHub at once.
+    description: Blog posts. Saving opens a pull request; merging it on GitHub, once its checks and the disclosure check pass, publishes the post. Every save, a draft included, is public on GitHub at once.
     folder: docs/blog
     path: '{{slug}}/index'
     extension: md
@@ -112,12 +124,13 @@ collections:
     # never tested against the pattern, and can keep characters (_ ~) or a
     # length the staging step refuses. A typed slug is held to the same rule
     # as staging: lowercase letters, digits and single hyphens, at most 80
-    # characters, and never "index", which is the blog's own index.
+    # characters, and never "index" (the blog's own index) nor build, dist or
+    # venv (directory names the publishing guard skips; blog.reserved_slugs).
     identifier_field: title
     slug:
       editable: [create]
-      hint: The address of the post, typed once and never changed. Lowercase letters, digits and single hyphens, at most 80 characters, for example why-psyche-keeps-a-blog.
-      pattern: ['^(?!index$)(?=.{1,80}$)[a-z0-9]+(?:-[a-z0-9]+)*$', 'Use lowercase letters, digits and single hyphens, at most 80 characters, and not "index".']
+      hint: The address of the post, typed once and never changed. Lowercase letters, digits and single hyphens, at most 80 characters, not index, build, dist or venv, for example why-psyche-keeps-a-blog.
+      pattern: ['^(?!(?:index|build|dist|venv)$)(?=.{1,80}$)[a-z0-9]+(?:-[a-z0-9]+)*$', 'Use lowercase letters, digits and single hyphens, at most 80 characters, and not index, build, dist or venv.']
     preview_path: 'blog/{{slug}}/'
     preview_path_date_field: date
     summary: '{{title}} ({{date}})'
@@ -142,6 +155,8 @@ collections:
         widget: string
         required: true
         maxlength: 120
+        # The page head shows the title as text, so staging refuses < and >.
+        pattern: ['^[^<>]*$', 'No < or >; write the words out.']
 
       - name: date
         label: Date
@@ -199,4 +214,4 @@ collections:
         # No level-one heading: the title comes from the field above, and the
         # staging step refuses one in the body.
         buttons: [bold, italic, strikethrough, code, link, heading-two, heading-three, heading-four, heading-five, heading-six, quote, bulleted-list, numbered-list]
-        hint: Start headings at level two. Give every image alt text, one sentence saying what it shows. Keep images in the post's own folder (not the global one); png, jpeg, webp, avif, gif or svg, at most 4 MiB.
+        hint: Start headings at level two. Give every image alt text, one sentence saying what it shows. Keep images in the post's own folder (not the global one); png, jpeg, webp, avif, gif or svg, at most 4 MiB. Raw HTML is limited to a few inert tags (see docs/blog/README.md), and HTML source belongs in a code block.
