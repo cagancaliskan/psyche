@@ -1,6 +1,7 @@
 ---
 // The landing hero: the Psyche mark taken apart, as four thin sheets in CSS 3D (a stem and three
-// nested bowls) beside the project's statement, its lead and two actions. The sheets fan out,
+// nested bowls) beside the project's statement, its lead, its actions and a row that leads to the newest
+// blog post. The sheets fan out,
 // are drawn in build order, then close into the logo; a stage list (real text, read from the
 // public ledger) sits on the mark's top edge. The figure is decoration and hidden from assistive
 // technology; the stage list says the same in words. The server markup is the finished frame.
@@ -13,13 +14,18 @@
 // (the intro's legend and the stage list) is a short stroke in each bowl's own colour, which is the
 // mark's and not a state, followed by words in muted type: signal green is kept for what is active.
 import PMark from './brand/PMark.astro';
+import blog from '@/data/blog.json';
 import ledger from '@/data/ledger.public.json';
+import { latestPosts, type BlogData } from '@/lib/blog.ts';
 import { stateLabel, type PublicLedger } from '@/lib/ledger.ts';
 import { withBase } from '@/lib/url.ts';
 import '@/styles/hero.css';
 
 const led = ledger as unknown as PublicLedger;
 const name = 'Psyche';
+// The newest published post, for the row under the actions (src/data/blog.json, staged by
+// tools/publish/stage.py); with none published yet the row leads to the blog's index.
+const [latest] = latestPosts((blog as BlogData).posts, 1);
 
 // A stage's status word follows the ledger's program state; a paused stage is kept, as a citable
 // artifact. The ledger has no state for later stages, which are open by definition.
@@ -63,6 +69,13 @@ const corners = ['tl', 'tr', 'bl', 'br'];
       </div>
       <div class="sx-layers__act"><a class="sx-layers__ulink" href={withBase('battery/')}>Step through the paradigms</a></div>
       <div class="sx-layers__act"><a class="sx-layers__ulink" href={withBase('guide/')}>Start with the Reader's guide</a></div>
+      <div class="sx-layers__act sx-layers__act--news">
+        <a class="sx-layers__news" href={withBase(latest ? latest.route : 'blog/')}>
+          <span class="sx-layers__news-tag">{latest ? 'Latest post' : 'Blog'}</span>{' '}
+          <span class="sx-layers__news-title">{latest ? latest.title : 'Read the blog'}</span>
+          <svg class="sx-layers__news-arrow" viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="M4 10h11M10.5 5.5 15 10l-4.5 4.5" /></svg>
+        </a>
+      </div>
     </div>
   </div>
 

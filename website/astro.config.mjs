@@ -108,12 +108,14 @@ export default defineConfig({
       // stage 1 and stage 2 pages, the stage's state.
       // Footer: Starlight's (edit link, previous and next) with a title block below: the sheet, its stage,
       // the next gate, the project's links and the page's date.
+      // SocialIcons: the blog as a word, then Starlight's GitHub link, in the header and the phone menu.
       // Search: Starlight's, with the key cap drawn rather than written, so the button's name holds the
       // text drawn on it (WCAG 2.5.3); src/lib/searchOverride.test.ts keeps it in step with Starlight's.
       components: {
         PageTitle: './src/components/chrome/PageTitle.astro',
         Footer: './src/components/chrome/Footer.astro',
         Search: './src/components/chrome/Search.astro',
+        SocialIcons: './src/components/chrome/SocialIcons.astro',
       },
       // The 404 page is src/pages/404.astro, a StarlightPage set as a drafting sheet.
       disable404Route: true,

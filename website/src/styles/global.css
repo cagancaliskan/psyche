@@ -505,9 +505,46 @@
       border-color var(--sx-dur) var(--sx-ease);
   }
 
-  /* Right-hand group: GitHub and the theme picker, muted until hovered. */
+  /* Right-hand group: the blog, GitHub and the theme picker, muted until hovered. */
   .social-icons::after {
     border-inline-end-color: var(--sx-hairline);
+  }
+  /* The blog link (components/chrome/SocialIcons.astro): a square box in the strong rule with a mono
+     label, the same recipe as the search field beside it, so it reads as a control of the header and
+     not as an icon. Its label is in ink, where the search field's placeholder is muted, so it is the
+     first thing the right of the header offers. On the blog its rule is the structure colour, the mark
+     the sidebar gives the current page. */
+  .social-icons a.sx-navlink {
+    display: inline-flex;
+    align-items: center;
+    height: 2.25rem;
+    padding-inline: 0.85rem;
+    border: 1px solid var(--sx-rule-strong);
+    color: var(--sl-color-white);
+    font-family: var(--sl-font-mono);
+    font-size: var(--sx-lab-size);
+    font-weight: 500;
+    letter-spacing: var(--sx-lab-track);
+    line-height: 1;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: border-color var(--sx-dur) var(--sx-ease);
+  }
+  .social-icons a.sx-navlink:hover {
+    color: var(--sl-color-white);
+    border-color: var(--sl-color-white);
+  }
+  .social-icons a.sx-navlink[data-current] {
+    border-color: var(--sx-structure);
+  }
+  .social-icons a.sx-navlink:focus-visible {
+    outline: 2px solid var(--sx-structure);
+    outline-offset: 3px;
+  }
+  @media (forced-colors: active) {
+    .social-icons a.sx-navlink {
+      border-color: LinkText;
+    }
   }
   .social-icons a,
   starlight-theme-select label {

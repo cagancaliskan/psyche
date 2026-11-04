@@ -1,0 +1,19 @@
+---
+// The links at the right of the header: the blog, as a word, then Starlight's own social links (GitHub).
+// Starlight shows this group in the header from 50rem up and at the foot of the phone menu below that, so
+// the blog is one click away on every page that has either. The link says "Blog" in the header's mono
+// labels, muted like the GitHub mark until hovered, and marks itself as the current page on the blog's
+// index (aria-current) and as the current section on a post. A text link beside the GitHub link in a top
+// bar, after "NavBar" by mohitsapat (21st.dev), the idea only: none of its code, menu or motion is used.
+// The styles are in styles/global.css, next to the rest of the header.
+import Default from '@astrojs/starlight/components/SocialIcons.astro';
+import { routeOf } from '../../lib/seo.ts';
+import { withBase } from '../../lib/url.ts';
+
+const here = routeOf(Astro.url.pathname);
+const index = here === 'blog';
+const inBlog = index || here.startsWith('blog/');
+---
+
+<a class="sx-navlink" href={withBase('blog/')} aria-current={index ? 'page' : undefined} data-current={inBlog ? '' : undefined}>Blog</a>
+<Default />

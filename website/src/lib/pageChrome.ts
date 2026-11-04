@@ -11,7 +11,7 @@
  */
 import type { ProgramLine, PublicLedger } from './ledger.ts';
 import { formatDay, nextGate, type Plan } from './plan.ts';
-import { NOT_FOUND, REPO_URL } from './seo.ts';
+import { BASE, NOT_FOUND, REPO_URL } from './seo.ts';
 
 /** The part of a Starlight sidebar entry that is read here (utils/routing/types.d.ts). */
 export interface SidebarItem {
@@ -263,12 +263,14 @@ export interface FooterLink {
 
 /**
  * The footer's links, in the order they are shown. Each says what it does, not the name of the file it
- * opens. The files are the repository's own: the licence, the citation file (which GitHub offers as
- * "Cite this repository"), the security policy (how to report a vulnerability). The discussions are
- * where questions go.
+ * opens. The blog comes first, the one page of the site among them, so it is a link from every page,
+ * the landing page included, which has no sidebar. The files are the repository's own: the licence, the
+ * citation file (which GitHub offers as "Cite this repository"), the security policy (how to report a
+ * vulnerability). The discussions are where questions go.
  */
-export function footerLinks(repo: string = REPO_URL): FooterLink[] {
+export function footerLinks(repo: string = REPO_URL, base: string = BASE): FooterLink[] {
   return [
+    { text: 'Blog', href: `${base}blog/` },
     { text: 'MIT licence', href: `${repo}/blob/main/LICENSE` },
     { text: 'Source code', href: repo },
     { text: 'Discussions', href: `${repo}/discussions` },
