@@ -120,7 +120,7 @@ import sys
 import tempfile
 import types
 import unicodedata
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -4528,6 +4528,26 @@ def test_blog_parser() -> None:
         ("a lone colon", front(author=":"), "indicator"),
         ("a block list with mixed indentation", front(tags="\n  - project\n- site"), "one indentation"),
         ("a block list with mixed indentation, the other way", front(tags="\n- project\n  - site"), "one indentation"),
+        ("a plain day as the title", front(title="2026-11-04"), "date or a time"),
+        ("a plain timestamp as the author", front(author="2026-11-04 10:30:00"), "date or a time"),
+        ("a plain timestamp with a zone", front(author="2026-11-04T10:30:00Z"), "date or a time"),
+        ("a plain short timestamp", front(author="2026-1-4 9:30:00 +03:00"), "date or a time"),
+        ("a title with a <", front(title='"A <b>bold</b> title"'), "no < or >"),
+        ("a title that closes the head's title", front(title='"T </title><script>x()</script>"'), "no < or >"),
+        ("an author with a >", front(author='"Ada > Bea"'), "no < or >"),
+        ("a title with a right-to-left override", front(title=json.dumps("A " + chr(0x202E) + "title")), "invisible"),
+        ("a title with a zero-width space", front(title=json.dumps("A" + chr(0x200B) + "title")), "invisible"),
+        ("an author with a byte-order mark inside", front(author=json.dumps("Ada" + chr(0xFEFF))), "invisible"),
+        ("an author with a soft hyphen", front(author=json.dumps("Ada" + chr(0xAD) + "Bea")), "invisible"),
+        ("a description with a NUL", front(description=json.dumps(BLOG_D1[:30] + chr(0) + BLOG_D1[31:])), "invisible"),
+        ("a description with an escape character", front(description=json.dumps(BLOG_D1[:30] + chr(0x1B) + BLOG_D1[31:])),
+         "invisible"),
+        ("a description with a right-to-left override", front(description=json.dumps(BLOG_D1[:30] + chr(0x202E) + BLOG_D1[31:])),
+         "invisible"),
+        ("a description with a line separator", front(description=json.dumps(BLOG_D1[:30] + chr(0x2028) + BLOG_D1[31:])),
+         "invisible"),
+        ("a description with a next-line character", front(description=json.dumps(BLOG_D1[:30] + chr(0x85) + BLOG_D1[31:])),
+         "invisible"),
     ]
     for label, text, needle in refused:
         if needle == "BLOG-NONE":
@@ -4541,6 +4561,15 @@ def test_blog_parser() -> None:
         check(str(e).startswith(BLOG_SRC + ":3:"), f"a refusal names the line of the key: {e}")
     check(refuses_with(lambda: BL.parse_front_matter("---\ntitle: a\n  continued\n---\n", BLOG_SRC),
                        BLOG_SRC + ":3:", "indented"), "a continued line is refused with its number")
+    check(refuses_with(lambda: BL.parse_front_matter(chr(0xFEFF) + front(), BLOG_SRC), BLOG_SRC + ":1:", "byte-order mark"),
+          "a byte-order mark is named as such, not as a missing front matter block")
+    check(parse_ok(front(title='"2026-11-04"'))[0]["title"] == "2026-11-04"
+          and parse_ok(front(author='"2026-11-04 10:30:00"'))[0]["author"] == "2026-11-04 10:30:00"
+          and parse_ok(front(date="2026-10-01", updated="2026-10-02"))[0]["updated"] == date(2026, 10, 2)
+          and parse_ok(front(title='"Fish & chips, 2 x 3 = 6"'))[0]["title"] == "Fish & chips, 2 x 3 = 6",
+          "a quoted date or time is text; date and updated still take a plain day; & and = stay allowed in a title")
+    check(refuses_with(lambda: parse_ok(front(date="2026-10-01T10:00:00")), "real calendar day"),
+          "a plain timestamp as the date is still refused by the day rule, with that rule's message")
     check(sorted(BL.TAGS) == sorted(set(BL.TAGS)) and "project" in BL.TAGS and len(BL.TAGS) == 7,
           "TAGS is the one list of seven tags")
 
@@ -4571,7 +4600,11 @@ def test_blog_parser() -> None:
                         ("an img with no alt", '<img src="x.png">\n'),
                         ("an img with an empty alt", '<img src="x.png" alt="">\n'),
                         ("an img with a blank alt", "<img src='x.png' alt='  '>\n"),
-                        ("a capital IMG", '<IMG SRC="x.png"/>\n')]:
+                        ("a capital IMG", '<IMG SRC="x.png"/>\n'),
+                        ("an img with only a data-alt", '<img src="x.png" data-alt="A chart.">\n'),
+                        ("an alt that is a character reference for a space", "![&#32;](x.png)\n"),
+                        ("an alt that is a zero-width space", "![" + chr(0x200B) + "](x.png)\n"),
+                        ("an img alt that is a no-break space reference", '<img src="x.png" alt="&nbsp;">\n')]:
         got = BL.body_problem("\ntext\n\n" + text, 6)
         check(got is not None and got[0] == 9 and alt_need in got[1] and "one sentence" in got[1], f"refused: {label}")
     check(BL.body_problem("![A chart of the loss.](x.png)\n\n<img src=\"x.png\" alt=\"A chart\">\n", 1) is None
@@ -4599,9 +4632,28 @@ def test_blog_parser() -> None:
         ("a media name that is a hidden file", ["docs/blog/a-post/index.md", "docs/blog/a-post/.hidden.png"], "not a file a post may hold"),
         ("a media name with a space and a tilde", ["docs/blog/a-post/index.md", "docs/blog/a-post/~a b.png"], "not a file a post may hold"),
         ("a media name that starts with a hyphen", ["docs/blog/a-post/index.md", "docs/blog/a-post/-x.png"], "not a file a post may hold"),
+        ("a slug with a trailing line break", ["docs/blog/a-post\n/index.md"], "not a slug"),
+        ("a media name with a trailing line break", ["docs/blog/a-post/index.md", "docs/blog/a-post/p.png\n"],
+         "not a file a post may hold"),
+        ("two media names that differ only in case",
+         ["docs/blog/a-post/index.md", "docs/blog/a-post/Pic.png", "docs/blog/a-post/pic.png"], "differ only in case"),
+        ("two media names that differ only in the case of the extension",
+         ["docs/blog/a-post/index.md", "docs/blog/a-post/pic.PNG", "docs/blog/a-post/pic.png"], "differ only in case"),
+        ("the reserved slug build", ["docs/blog/build/index.md"], "reserved"),
+        ("the reserved slug dist", ["docs/blog/dist/index.md"], "reserved"),
+        ("the reserved slug venv", ["docs/blog/venv/index.md"], "reserved"),
     ]
     for label, paths, needle in bad:
         check(refuses_with(lambda ps=paths: BL.layout(ps), needle), f"layout refuses {label}")
+    skipped = core.ledger_check().SKIP_DIRS
+    check(BL.reserved_slugs()[0] == "index" and {"build", "dist", "venv"} <= set(BL.reserved_slugs())
+          and all(d in BL.reserved_slugs() for d in skipped if BL.SLUG_RE.match(d))
+          and all(BL.SLUG_RE.match(s) for s in BL.reserved_slugs()),
+          f"every directory name the guard skips that is a slug is reserved: {BL.reserved_slugs()}")
+    check(BL.layout(["docs/blog/a-post/index.md", "docs/blog/a-post/pic.png", "docs/blog/b-post/index.md",
+                     "docs/blog/b-post/Pic.png"]) == {"a-post": ["pic.png"], "b-post": ["Pic.png"]}
+          and BL.layout(["docs/blog/dist-notes/index.md"]) == {"dist-notes": []},
+          "the same name in two folders is fine, and a slug that only starts with a reserved one is a slug")
     check(BL.layout(["docs/blog/a-post/index.md", "docs/blog/a-post/_dsc1234.jpg", "docs/blog/a-post/diagram~v2.png",
                      "docs/blog/a-post/~tmp.webp"]) == {"a-post": ["_dsc1234.jpg", "diagram~v2.png", "~tmp.webp"]}
           and BL.layout(["docs/blog/index-two/index.md"]) == {"index-two": []},
@@ -4623,9 +4675,12 @@ def test_blog_media() -> None:
     check(BL.svg_problems(b'<svg xmlns="http://www.w3.org/2000/svg"><s:rect xmlns:s="http://www.w3.org/2000/svg"/></svg>') == [],
           "a prefixed SVG element is read with its namespace")
     real = REPO / "docs/blog/why-psyche-keeps-a-blog/how-a-post-is-published.svg"
-    if real.exists():
-        check(BL.svg_problems(real.read_bytes()) == [], "the committed example picture passes")
+    check(real.exists() and BL.svg_problems(real.read_bytes()) == [], "the committed example picture exists and passes")
     wrap = lambda inner: b'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' + inner + b"</svg>"  # noqa: E731
+    check(BL.svg_problems(wrap(b'<text xml:lang="en" xml:space="preserve">x</text>')) == []
+          and BL.svg_problems(wrap(b'<a xlink:href="#g" xlink:title="t"><rect/></a>')) == []
+          and BL.svg_problems(b'<?xml version="1.0" encoding="utf-8"?><svg xmlns="http://www.w3.org/2000/svg"/>') == [],
+          "xml:lang, xml:space, XLink attributes and a declared UTF-8 encoding are accepted")
     cases = [
         ("a script element", wrap(b"<script>alert(1)</script>"), "script"),
         ("a prefixed script element", wrap(b'<s:script xmlns:s="http://www.w3.org/2000/svg"/>'), "script"),
@@ -4679,10 +4734,166 @@ def test_blog_media() -> None:
         ("a style attribute with image-set", wrap(b'<rect style="background:image-set(\'https://x.invalid/a.png\' 1x)"/>'), "image-set"),
         ("a presentation attribute with a url", wrap(b'<rect fill="url(https://x.invalid/a)"/>'), "url()"),
         ("a prefixed svg script in the default namespace", wrap(b'<q:script xmlns:q="http://www.w3.org/2000/svg"/>'), "script"),
+        ("an XHTML meta refresh",
+         wrap(b'<h:meta xmlns:h="http://www.w3.org/1999/xhtml" http-equiv="refresh" content="0;url=https://x.invalid/"/>'),
+         "outside the SVG namespace"),
+        ("an XHTML form", wrap(b'<h:form xmlns:h="http://www.w3.org/1999/xhtml" action="https://x.invalid/"/>'),
+         "outside the SVG namespace"),
+        ("a drawing program's RDF metadata",
+         wrap(b'<metadata><rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"/></metadata>'), "outside the SVG namespace"),
+        ("an element in no namespace", b'<svg xmlns="http://www.w3.org/2000/svg"><g xmlns=""><a/></g></svg>', "outside the SVG namespace"),
+        ("an XML Events handler", wrap(b"<handler/>"), "handler"),
+        ("a listener", wrap(b"<listener/>"), "listener"),
+        ("an xml:base", wrap(b'<a xml:base="https://x.invalid/"><use href="#g"/></a>'), "xml:base"),
+        ("an xml:id", wrap(b'<rect xml:id="a"/>'), "xml:id"),
+        ("an XML Events attribute", wrap(b'<rect xmlns:ev="http://www.w3.org/2001/xml-events" ev:event="click"/>'), "namespace"),
+        ("a drawing program's attribute",
+         wrap(b'<g xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" inkscape:label="x"/>'), "namespace"),
+        ("a set of an event attribute", wrap(b'<rect><set attributeName="onmouseover" to="x()"/></rect>'), "animates an event"),
+        ("an animate of onclick", wrap(b'<rect><animate attributeName="onclick" values="x()"/></rect>'), "animates an event"),
+        ("a UTF-16 encoding declaration", b'<?xml version="1.0" encoding="UTF-16"?><svg xmlns="http://www.w3.org/2000/svg"/>',
+         "declares the encoding"),
+        ("an unknown encoding declaration", b'<?xml version="1.0" encoding="nope"?><svg xmlns="http://www.w3.org/2000/svg"/>',
+         "declares the encoding"),
+        ("a Latin-1 encoding declaration",
+         b"<?xml version='1.0' encoding='ISO-8859-1'?><svg xmlns=\"http://www.w3.org/2000/svg\"/>", "declares the encoding"),
+        ("CSS with expression()", wrap(b'<rect style="width:expression(x())"/>'), "expression"),
+        ("CSS with -moz-binding", wrap(b'<rect style="-moz-binding:url(x.xml#a)"/>'), "-moz-binding"),
+        ("CSS with behavior:", wrap(b'<rect style="behavior:url(x.htc)"/>'), "behavior"),
+        ("CSS with src()", wrap(b"<style>@font-face{src(x)}</style>"), "src()"),
+        ("a url( split by a comment", wrap(b"<style>.a{fill:u/**/rl(https://x.invalid/a)}</style>"), "url()"),
+        ("an @IMPORT in capitals", wrap(b'<style>@IMPORT "https://x.invalid/a.css";</style>'), "@import"),
+        ("a URL( in capitals", wrap(b"<style>.a{fill:URL(https://x.invalid/a)}</style>"), "url()"),
+        ("a JAVASCRIPT: URL in capitals", wrap(b'<a href="JAVASCRIPT:x()"><rect/></a>'), "javascript:"),
     ]
     for label, data, needle in cases:
         probs = BL.svg_problems(data)
         check(any(needle.lower() in x.lower() for x in probs), f"refused: {label}: {probs}")
+
+    section("blog: a raster picture holds the format its name says")
+    png = b"\x89PNG\r\n\x1a\n" + bytes(8)
+    avif = (24).to_bytes(4, "big") + b"ftypavif" + bytes(4) + b"mif1miaf"
+    avif_compatible = (24).to_bytes(4, "big") + b"ftypmif1" + bytes(4) + b"avifmiaf"
+    for name, data in [("a.png", png), ("a.PNG", png), ("a.jpg", b"\xff\xd8\xff\xe0" + bytes(8)), ("a.jpeg", b"\xff\xd8\xff\xdb"),
+                       ("a.gif", b"GIF89a" + bytes(4)), ("a.gif", b"GIF87a"), ("a.webp", b"RIFF" + bytes(4) + b"WEBPVP8 "),
+                       ("a.avif", avif), ("a.avif", avif_compatible), ("a.svg", b"<svg/>")]:
+        check(BL.raster_problem(name, data) is None, f"accepted: {name} that starts like one ({data[:12]!r})")
+    for label, name, data in [("an SVG named .png", "a.png", SVG_OK), ("HTML named .gif", "a.gif", b"<html><script>x()</script></html>"),
+                              ("a PNG named .jpg", "a.jpg", png), ("a GIF named .jpeg", "a.jpeg", b"GIF89a"),
+                              ("a RIFF WAVE named .webp", "a.webp", b"RIFF" + bytes(4) + b"WAVEfmt "),
+                              ("a HEIC named .avif", "a.avif", (24).to_bytes(4, "big") + b"ftypheic" + bytes(12)),
+                              ("an AVIF whose ftyp box runs past the file", "a.avif", (99).to_bytes(4, "big") + b"ftypavif"),
+                              ("an empty .png", "a.png", b""), ("a PNG signature cut short", "a.png", png[:7])]:
+        why = BL.raster_problem(name, data)
+        check(why is not None and "does not start the way" in why, f"refused: {label}: {why}")
+
+
+def test_blog_html() -> None:
+    section("blog: raw HTML in a body is held to a short list of inert tags")
+    refused = [
+        ("a script element", "<script>x()</script>\n", "<script>"),
+        ("a script element in capitals", "<SCRIPT>x()</SCRIPT>\n", "<script>"),
+        ("a script in a list item", "- <script>x()</script>\n", "<script>"),
+        ("a script in a block quote", "> <script>x()</script>\n", "<script>"),
+        ("a script inline code would show as text", "`<script>x()</script>`\n", "<script>"),
+        ("a script indented under an HTML block", "<b>\n    <script>x()</script>\n</b>\n", "<script>"),
+        ("an iframe", '<iframe src="https://example.invalid/"></iframe>\n', "<iframe>"),
+        ("an inline svg with onload", '<svg onload="x()"></svg>\n', "<svg>"),
+        ("a math element", '<math><mi xlink:href="javascript:x()">x</mi></math>\n', "<math>"),
+        ("a meta refresh", '<meta http-equiv="refresh" content="0;url=https://example.invalid/">\n', "<meta>"),
+        ("a form", '<form action="https://example.invalid/"><button>x</button></form>\n', "<form>"),
+        ("a style element", "<style>body{display:none}</style>\n", "<style>"),
+        ("a base element", '<base href="https://example.invalid/">\n', "<base>"),
+        ("an event handler on an image", 'Text <img src="x.png" alt="A chart." onerror="x()"> more\n', "onerror"),
+        ("an event handler on an allowed tag", 'x <b onclick="x()">y</b>\n', "onclick"),
+        ("an event handler on details", '<details ontoggle="x()" open><summary>x</summary></details>\n', "ontoggle"),
+        ("a style attribute", '<b style="background:url(https://example.invalid/)">x</b>\n', "style"),
+        ("an attribute the tag does not take", '<a href="https://example.org/" target="_blank">x</a>\n', "target"),
+        ("an attribute given twice", '<a href="https://example.org/" href="https://example.org/b">x</a>\n', "twice"),
+        ("a javascript: link", '<a href="javascript:x()">x</a>\n', "javascript:"),
+        ("a javascript: link behind a character reference", '<a href="&#106;avascript:x()">x</a>\n', "javascript:"),
+        ("a javascript: link split by a tab reference", '<a href="java&#9;script:x()">x</a>\n', "javascript:"),
+        ("a javascript: link in mixed case after a space", '<a href=" JaVaScRiPt:x()">x</a>\n', "javascript:"),
+        ("a javascript: link behind a named colon", '<a href="javascript&colon;x()">x</a>\n', "javascript:"),
+        ("a data: link", '<a href="data:text/html;base64,AAAA">x</a>\n', "data:"),
+        ("a data: picture", '<img src="data:image/svg+xml;base64,AAAA" alt="A chart.">\n', "data:"),
+        ("an http: picture", '<img src="http://example.invalid/x.png" alt="A chart.">\n', "http:"),
+        ("a javascript: autolink", "<javascript:x()>\n", "javascript:"),
+        ("a data: autolink", "<data:text/html;base64,AAAA>\n", "data:"),
+        ("a tag that runs onto the next line", "<img\nsrc=x onerror=x()>\n", "does not close on its line"),
+        ("a lone script opener, an HTML block's start", '<script\nsrc="https://example.invalid/x.js"></script>\n',
+         "does not close on its line"),
+        ("an unclosed attribute", '<a href="x\n', "does not close on its line"),
+        ("a tag with no space between attributes", '<a href="https://example.org/"title="t">x</a>\n', "cannot be read"),
+        ("a form feed inside a tag", '<a href=x\x0conclick>y</a>\n', "control character"),
+        ("a comment that a browser ends at once", "<!--> <script>x()</script> -->\n", "comment"),
+        ("a comment with --!>", "<!-- a --!> <script>x()</script> -->\n", "comment"),
+        ("a comment with -- inside", "<!-- a -- b -->\n", "comment"),
+        ("a comment over several lines", "<!--\n<script>x()</script>\n-->\n", "comment"),
+        ("a CDATA section", "<![CDATA[x]]>\n", "declaration"),
+        ("a doctype", "<!DOCTYPE html>\n", "declaration"),
+        ("a processing instruction", "<?php echo 1 ?>\n", "processing instruction"),
+        ("an image whose alt is only inside its title", '<img src="x.png" title="alt=A chart.">\n', "alt text"),
+        ("an image with an empty alt", '<img src="x.png" alt="">\n', "alt text"),
+    ]
+    for label, body, needle in refused:
+        got = BL.html_problem(body, 6)
+        check(got is not None and needle in got[1], f"refused: {label}: {got}")
+    got = BL.html_problem("Text.\n\nMore text.\n<iframe></iframe>\n", 6)
+    check(got is not None and got[0] == 9, f"a refusal names the line in the file: {got}")
+    accepted = [
+        ("a < and a > that are text", "a < b and c > d, and a<3 heart\n"),
+        ("autolinks to https and an address", "<https://example.org/page> and <someone@example.org> and <mailto:a@b.c>\n"),
+        ("the inline tags", '<a href="https://example.org/" title="A page">x</a>, <br>, <br/>, <kbd>Ctrl</kbd>, '
+                            'H<sub>2</sub>O, x<sup>2</sup>, <abbr title="Spiking neural network">SNN</abbr>\n'),
+        ("relative and fragment links", '<a href="../other-post/index.md">x</a> <a href="#notes">y</a> <a href="/psyche/">z</a>\n'),
+        ("a picture of the post's folder", '<img src="figure.png" alt="What the figure shows." width="320" height="200">\n'),
+        ("an https picture", '<img src="https://example.org/a.png" alt="A chart.">\n'),
+        ("details and summary", "<details><summary>More</summary>\n\nText.\n\n</details>\n"),
+        ("a one-line comment and a pragma", "<!-- a note -->\n<!-- ledger:allow-claim -->\n"),
+        ("a fenced block of HTML", "```html\n<script>x()</script>\n<iframe></iframe>\n```\n"),
+        ("a tilde fence", "~~~\n<script>x()</script>\n~~~\n"),
+        ("an indented code block", "Text.\n\n    <script>x()</script>\n"),
+        ("inline code with no markup", "Run `make check` and `npm test`.\n"),
+        ("a Markdown link and image", "[a page](../../progress.md) and ![A chart.](chart.png)\n"),
+        ("an end tag before a non-letter", "Text </ 3\n"),
+    ]
+    for label, body in accepted:
+        check(BL.html_problem(body, 1) is None, f"accepted: {label}: {BL.html_problem(body, 1)}")
+    real = REPO / "docs/blog/why-psyche-keeps-a-blog/index.md"
+    fields, body, line = BL.parse_front_matter(real.read_text(encoding="utf-8"), str(real))
+    check(BL.html_problem(body, line) is None and BL.body_problem(body, line) is None,
+          "the committed first post passes the body checks")
+    check(BL.url_problem("https://example.org/", picture=True) is None and BL.url_problem("pic.png", picture=True) is None
+          and BL.url_problem("mailto:a@b.c", picture=False) is None and BL.url_problem("mailto:a@b.c", picture=True) is not None
+          and BL.url_problem("C:/x", picture=False) is not None and BL.url_problem("vbscript:x", picture=False) is not None,
+          "url_problem: https or relative pictures; http, https, mailto or relative links; any other scheme is refused")
+
+
+def test_blog_editor_config() -> None:
+    section("blog: the editor's configuration keeps the settings its safety rests on")
+    cfg = (REPO / "website/public/admin/config.yml").read_text(encoding="utf-8")
+    text = "\n".join(ln for ln in cfg.splitlines() if not ln.lstrip().startswith("#"))
+    check(re.search(r"(?m)^backend:\n  name: github\n  repo: cagancaliskan/psyche\n  branch: main$", text) is not None,
+          "the backend is GitHub, this repository, branch main")
+    check(re.search(r"(?m)^  auth_methods: \[token\]$", text) is not None, "sign-in is by access token only")
+    check(re.search(r"(?m)^publish_mode:\n  type: editorial_workflow\n  direct_publish: false$", text) is not None,
+          "every save goes to a branch and a pull request, with no direct publish")
+    collections = re.findall(r"(?m)^  - name: (\S+)$", text)
+    check(collections == ["posts"] and len(re.findall(r"(?m)^    publish: false$", text)) == len(collections)
+          and re.search(r"(?m)^    publish: true", text) is None,
+          f"every collection hides the publish control: {collections}")
+    m = re.search(r"(?m)^    slug:\n(?:      .*\n)*?      pattern: \['([^']*)'", text + "\n")
+    check(m is not None, "the collection's slug has a pattern")
+    if m:
+        rx = re.compile(m.group(1))
+        refused = [s for s in BL.reserved_slugs() + ("a--b", "Ab", "-a", "a-", "a_b", "x" * 81, "") if rx.match(s)]
+        passed = [s for s in ("why-psyche-keeps-a-blog", "x" * 80, "index-two", "dist-notes", "a1") if not rx.match(s)]
+        check(not refused and not passed,
+              f"the editor's slug pattern refuses what staging refuses: let through {refused}, refused {passed}")
+    title = re.search(r"(?m)^      - name: title\n(?:        .*\n)*?        pattern: \['([^']*)'", text + "\n")
+    check(title is not None and not re.match(title.group(1), "A <b> title") and re.match(title.group(1), "A title & more"),
+          "the editor's title field refuses < and >, as staging does")
 
 
 def blog_post(slug: str, title: str, day: str, desc: str, *, updated: str = None, extra: str = "",
@@ -4769,6 +4980,7 @@ def test_blog_stage(tmp: Path) -> None:
     manifest = copy.deepcopy(GUARD_MANIFEST)
     manifest["sections"].insert(0, {"title": stage.START_GROUP, "pages": [
         {"src": "docs/progress.md", "slug": "progress", "wiki": "Progress", "description": SECOND_DESCRIPTION}]})
+    manifest["never_publish"] = manifest["never_publish"] + ["docs/blog/first/secret.png"]
     post1 = blog_post("first", "First post", "2026-09-01", BLOG_D1, extra='tags: ["project", "methods"]\nauthor: "Bea Second"\n',
                       body="See ![chart](chart.png) and the [drawing](./fig.svg), then [the next post](../second/index.md), "
                            "[the page](../../ok.md) and [the readme](../README.md).\n")
@@ -4881,6 +5093,46 @@ def test_blog_stage(tmp: Path) -> None:
                   "docs/blog/third/index.md:3:")
     refused_after("a pragma that opts the post out", {"docs/blog/third/index.md": blog_post(
         "third", "T", "2026-10-02", BLOG_D2.replace("second", "third"), body="<!-- ledger:ignore-file -->\n")}, "ignore-file")
+    third_desc = BLOG_D2.replace("second", "third")
+    refused_after("a script in a post body", {"docs/blog/third/index.md": blog_post(
+        "third", "T", "2026-10-02", third_desc, body="Text <script>x()</script>\n")}, "<script>")
+    refused_after("an iframe in a post body", {"docs/blog/third/index.md": blog_post(
+        "third", "T", "2026-10-02", third_desc, body='<iframe src="https://example.invalid/"></iframe>\n')}, "<iframe>")
+    refused_after("an event handler in a post body", {"docs/blog/third/index.md": blog_post(
+        "third", "T", "2026-10-02", third_desc, body='A <b onclick="x()">word</b>.\n')}, "onclick")
+    refused_after("a javascript: link in a post body", {"docs/blog/third/index.md": blog_post(
+        "third", "T", "2026-10-02", third_desc, body='<a href="javascript:x()">a link</a>\n')}, "javascript:")
+    refused_after("a javascript: Markdown link in a post body", {"docs/blog/third/index.md": blog_post(
+        "third", "T", "2026-10-02", third_desc, body="[a link](javascript:x())\n")}, "scheme")
+    refused_after("a javascript: Markdown image in a post body", {"docs/blog/third/index.md": blog_post(
+        "third", "T", "2026-10-02", third_desc, body="![A chart.](javascript:x())\n")}, "scheme")
+    refused_after("a data: reference definition in a post body", {"docs/blog/third/index.md": blog_post(
+        "third", "T", "2026-10-02", third_desc, body="[a link][r]\n\n[r]: data:text/html;base64,AAAA\n")}, "scheme")
+    refused_after("a title with markup", {"docs/blog/third/index.md": blog_post(
+        "third", "T </title><script>x()</script>", "2026-10-02", third_desc)}, "no < or >")
+    refused_after("an SVG named .png", {"docs/blog/first/fake.png": SVG_OK}, "does not start the way PNG files do", binary=True)
+    refused_after("a picture under never_publish", {"docs/blog/first/secret.png": PNG_BYTES}, "never_publish", binary=True)
+    soon = (date.today() + timedelta(days=3)).isoformat()
+    refused_after("a post dated after its commit", {"docs/blog/third/index.md": blog_post(
+        "third", "T", soon, third_desc)}, "later than the day after the commit")
+    refused_after("an updated day after its commit", {"docs/blog/third/index.md": blog_post(
+        "third", "T", "2026-10-02", third_desc, updated=soon)}, "later than the day after the commit")
+    tomorrow = (date.today() + timedelta(days=1)).isoformat()
+    write(root, "docs/blog/third/index.md", blog_post("third", "T", tomorrow, third_desc))
+    commit_all(root, ["docs/blog/third/index.md"], "fixture post dated tomorrow")
+    check(stage.stage_site(root, "HEAD")["posts"] == 3, "a post dated the day after its commit is staged (any time zone)")
+    git_ok(root, "reset", "-q", "--hard", "HEAD~1")
+    os.symlink("chart.png", root / "docs/blog/first/link.png")
+    commit_all(root, ["docs/blog/first/link.png"], "fixture symbolic link")
+    rc, _o, e = capture(stage.main, ["--target", "site", "--root", str(root)])
+    check(rc == 1 and "symbolic link" in e, f"staging stops: a picture that is a symbolic link: {e.strip()[:120]}")
+    git_ok(root, "reset", "-q", "--hard", "HEAD~1")
+    write(root, "docs/blog/first/largest.png", PNG_BYTES[:8] + bytes(BL.MEDIA_MAX - 8), binary=True)
+    commit_all(root, ["docs/blog/first/largest.png"], "fixture largest picture")
+    res = stage.stage_site(root, "HEAD")
+    check(res["posts"] == 2 and (out / "first/largest.png").stat().st_size == BL.MEDIA_MAX,
+          "a picture of exactly the limit is staged")
+    git_ok(root, "reset", "-q", "--hard", "HEAD~1")
     write(root, "docs/blog/first/index.md", post1 + "edited\n")
     try:
         stage.stage_site(root, "HEAD")
@@ -4987,6 +5239,8 @@ def main() -> int:
         test_stage_progress(tmp)
         test_blog_parser()
         test_blog_media()
+        test_blog_html()
+        test_blog_editor_config()
         test_blog_order()
         test_blog_tree(tmp)
         test_blog_stage(tmp)

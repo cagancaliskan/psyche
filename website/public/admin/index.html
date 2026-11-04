@@ -25,7 +25,8 @@
         The main bundle carries an SRI hash (script tag below). Its lazily loaded
         chunks come from the same path, which is why the path is allowed as a
         prefix instead of a single file. A CSP source with a path matches that path
-        and everything below it.
+        and everything below it. The chunks carry no hash: for them the pin rests
+        on unpkg serving the published files of this version unchanged.
       style-src 'self' 'unsafe-inline'
         The editor sets style attributes and injects style elements at run time
         (Svelte), which Sveltia's own CSP guide permits. 'unsafe-inline' is for
@@ -63,7 +64,8 @@
       URL such as @sveltia/cms or @latest.
       integrity is the SHA-384 of dist/sveltia-cms.js from the npm tarball, and it
       was checked to be identical to the bytes unpkg serves at this URL. The
-      browser refuses the file if a single byte differs. crossorigin="anonymous"
+      browser refuses this file if a single byte differs; the chunks it loads
+      later have no such check (see the policy above). crossorigin="anonymous"
       makes the request a CORS request without cookies, which SRI requires.
       To upgrade: change the version here and in the Content-Security-Policy
       above, and recompute the hash.
