@@ -3,9 +3,11 @@
 // real table (screen-reader caption, column headers, a row header on every row) with the stages as
 // columns, rewritten in plain Astro and CSS without its React, framer-motion or colour palette. Each
 // column is headed by the Psyche mark with only that stage's bowl lit (brand/StageGlyph.astro);
-// the rows are the stage's state, what it asks, what is kept and where to read more. On a narrow
-// container the table becomes three stacked sheets (src/styles/landing/ledger.css), which reorders
-// the same cells, so the markup is written once.
+// the rows are the stage's state, what it asks, what is kept and where to read more. The stylesheet
+// (src/styles/landing/ledger.css) draws each column as a stage box and, on a narrow container,
+// stacks the three boxes, which reorders the same cells, so the markup is written once. The row
+// headers stay in the table for screen readers and are hidden to the eye, because every cell names
+// its row in front of its text.
 //
 // The state follows the public ledger's program state exactly as the hero reads it
 // (components/LayersHero.astro): a paused stage is kept, as a citable artifact, and later stages
@@ -94,8 +96,8 @@ const stages: Stage[] = [
 const labels = { state: 'State', asks: 'What it asks', kept: 'What is kept', read: 'Read' };
 ---
 
-<section class="sx-lp-section not-content" aria-labelledby="sx-stages-title" data-caliper="01 Stages">
-  <SectionHeader id="sx-stages-title" title="One project, in stages" index="01" kicker="Stages">
+<section class="sx-lp-section not-content" aria-labelledby="sx-stages-title" data-caliper="Stages">
+  <SectionHeader id="sx-stages-title" title="One project, in stages" kicker="Stages">
     <p>Each stage stands on the one before it and is kept as a citable artifact, so the work behind it stays usable wherever the road stops.</p>
   </SectionHeader>
 
@@ -104,10 +106,9 @@ const labels = { state: 'State', asks: 'What it asks', kept: 'What is kept', rea
       <caption class="sr-only">
         Psyche's stages side by side: the state of each, what it asks, what is kept and where to read more.
       </caption>
-      <colgroup><col /><col /><col /><col /></colgroup>
       <thead role="rowgroup">
         <tr role="row">
-          <th class="sx-lg__corner" scope="col" role="columnheader"><span class="sr-only">Aspect</span></th>
+          <th class="sx-lg__corner sr-only" scope="col" role="columnheader"><span class="sr-only">Aspect</span></th>
           {
             stages.map((s) => (
               <th class="sx-lg__ch" scope="col" role="columnheader" data-k={s.key}>
@@ -125,7 +126,7 @@ const labels = { state: 'State', asks: 'What it asks', kept: 'What is kept', rea
       </thead>
       <tbody role="rowgroup">
         <tr role="row">
-          <th class="sx-lg__rh" scope="row" role="rowheader">{labels.state}</th>
+          <th class="sx-lg__rh sr-only" scope="row" role="rowheader">{labels.state}</th>
           {
             stages.map((s) => (
               <td role="cell" data-k={s.key} data-row="state" data-label={labels.state} data-state={s.state}>
@@ -136,7 +137,7 @@ const labels = { state: 'State', asks: 'What it asks', kept: 'What is kept', rea
           }
         </tr>
         <tr role="row">
-          <th class="sx-lg__rh" scope="row" role="rowheader">{labels.asks}</th>
+          <th class="sx-lg__rh sr-only" scope="row" role="rowheader">{labels.asks}</th>
           {
             stages.map((s) => (
               <td role="cell" data-k={s.key} data-row="asks" data-label={labels.asks}>
@@ -147,7 +148,7 @@ const labels = { state: 'State', asks: 'What it asks', kept: 'What is kept', rea
           }
         </tr>
         <tr role="row">
-          <th class="sx-lg__rh" scope="row" role="rowheader">{labels.kept}</th>
+          <th class="sx-lg__rh sr-only" scope="row" role="rowheader">{labels.kept}</th>
           {
             stages.map((s) => (
               <td role="cell" data-k={s.key} data-row="kept" data-label={labels.kept}>
@@ -158,7 +159,7 @@ const labels = { state: 'State', asks: 'What it asks', kept: 'What is kept', rea
           }
         </tr>
         <tr role="row">
-          <th class="sx-lg__rh" scope="row" role="rowheader">{labels.read}</th>
+          <th class="sx-lg__rh sr-only" scope="row" role="rowheader">{labels.read}</th>
           {
             stages.map((s) => (
               <td role="cell" data-k={s.key} data-row="read" data-label={labels.read}>

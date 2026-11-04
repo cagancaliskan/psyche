@@ -1,9 +1,9 @@
 ---
-// The page a reader sees for an address that does not exist, set as a drafting sheet in the language
-// of the landing and the battery. Above the title, the strip every page opens with says "Error 404 ...
-// Not filed" (components/chrome/PageTitle.astro); then a framed sheet with registration corners holds
-// the address that was asked for and one plain sentence, and a ruled list leads to places to go. When
-// the address is close to a page of the site, one more row names it. Starlight's own 404 route is
+// The page a reader sees for an address that does not exist, in the language of the landing and the
+// battery. Above the title, the strip every page opens with says "Error 404 ... Not filed"
+// (components/chrome/PageTitle.astro); then a flat box with a hairline edge holds the address that was
+// asked for, one plain sentence and a way back to the start, and a grid of boxes leads to places to
+// go. When the address is close to a page of the site, one more box names it. Starlight's own 404 route is
 // switched off in astro.config.mjs (`disable404Route`), and this page takes its place; the host serves
 // it as 404.html.
 //
@@ -12,10 +12,10 @@
 // without it: the address that was asked for (the page is static, so only the browser knows it), the
 // nearest filed page, and the row that opens the search, which cannot work without script either.
 //
-// Structure after "Not Found 404 Page" by mohammadshehadeh (a mono label, a short sentence, a ruled
-// "try one of these" list of routes with an arrow), "404 Did You Mean" by ziegfiroyt (the address that
-// was asked for, and the closest matching page) and "404 Search And Popular Links" by olewandowski1
-// (a list whose rows share their rules), without their buttons, boxes or fills.
+// Structure after "Not Found 404 Page" by mohammadshehadeh (a label, a short sentence, a "try one of
+// these" list of routes with an arrow), "404 Did You Mean" by ziegfiroyt (the address that was asked
+// for, and the closest matching page) and "404 Search And Popular Links" by olewandowski1 (a list of
+// popular links), rewritten in plain markup and CSS.
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { Icon } from '@astrojs/starlight/components';
 import NearestPage from '@/components/chrome/NearestPage.astro';
@@ -43,12 +43,13 @@ const places = [
   }}
 >
   <div class="sx-nf not-content">
-    <div class="sx-nf__sheet sx-reg">
+    <div class="sx-nf__sheet">
       <p class="sx-nf__asked" data-asked hidden>
         <span class="sx-nf__k">Requested</span>
         <span class="sx-nf__addr" data-asked-path></span>
       </p>
       <p class="sx-nf__lead">No sheet is filed at this address.</p>
+      <a class="sx-nf__home" href={withBase('')}>Back to the start</a>
     </div>
 
     <h2 class="sx-nf__k sx-nf__k--list">Try one of these</h2>

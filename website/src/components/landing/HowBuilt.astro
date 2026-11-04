@@ -1,8 +1,9 @@
 ---
-// How the work is built: four numbered rows ruled by hairlines (a mono index, a title, a
-// sentence), no icons and no diagrams. The ruled rhythm follows "Spec Sheet" by isaiahbjork
-// (21st.dev); the section-end links are in styles/landing/links.css. The determinism row reads
-// its counts from the public ledger.
+// How the work is built: four boxes in a two by two grid (a title and a sentence each), no icons
+// and no numbers, because the four are not a sequence. The card grid follows the plain table of
+// "Spec Sheet" by isaiahbjork (21st.dev), laid out as boxes; the styles are in styles/landing/rows.css
+// and the section-end links in styles/landing/links.css. The determinism box reads its counts from
+// the public ledger.
 import ledger from '@/data/ledger.public.json';
 import type { PublicLedger } from '@/lib/ledger.ts';
 import { withBase } from '@/lib/url.ts';
@@ -12,8 +13,6 @@ import '@/styles/landing/links.css';
 
 const { determinism } = ledger as unknown as PublicLedger;
 
-// The section's place on the page; the rows are numbered under it (04.1, 04.2, ...).
-const section = '04';
 const rows = [
   {
     title: 'One ledger',
@@ -34,17 +33,16 @@ const rows = [
 ];
 ---
 
-<section class="sx-lp-section not-content" aria-labelledby="sx-built-title" data-caliper="04 Method">
-  <SectionHeader id="sx-built-title" title="How the work is built" index={section} kicker="Method">
+<section class="sx-lp-section not-content" aria-labelledby="sx-built-title" data-caliper="Method">
+  <SectionHeader id="sx-built-title" title="How the work is built" kicker="Method">
     <p>The method came with the substrate and carries into every stage.</p>
   </SectionHeader>
-  <ol class="sx-ruled sx-ruled--method" role="list">
+  <ol class="sx-method" role="list">
     {
-      rows.map((row, i) => (
-        <li class="sx-ruled__row" data-reveal>
-          <span class="sx-ruled__idx" aria-hidden="true">{section}.{i + 1}</span>
-          <h3 class="sx-ruled__title">{row.title}</h3>
-          <p class="sx-ruled__text">{row.text}</p>
+      rows.map((row) => (
+        <li class="sx-method__card" data-reveal>
+          <h3 class="sx-method__title">{row.title}</h3>
+          <p class="sx-method__text">{row.text}</p>
         </li>
       ))
     }

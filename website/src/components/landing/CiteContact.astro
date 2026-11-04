@@ -1,11 +1,10 @@
 ---
-// How to cite Psyche and how to reach the project: the landing's closing section, two ruled rows in a
-// definition list (a mono label, then what to do), no icons and no card. The row structure, a
-// definition list of label and value pairs that stacks on a narrow screen, follows "Key Value List" by
-// corr (21st.dev), without its rounded border, truncation or colour classes; the ruled rhythm and the
-// rules that draw in are the landing's own (styles/landing/rows.css, after "Spec Sheet" by isaiahbjork,
-// 21st.dev) and the links are in styles/landing/links.css. The row's own layout is
-// styles/landing/cite.css.
+// How to cite Psyche and how to reach the project: the landing's closing section, one flat panel
+// with a violet edge (the project as a whole) holding two parts in a definition list, each a label and
+// what to do, with its links as buttons. The structure, a definition list of label and value pairs that
+// stacks on a narrow screen, follows "Key Value List" by corr (21st.dev), without its rounded border,
+// truncation or colour classes; the outlined button (class sx-pill) is the landing's own
+// (styles/landing/rows.css) and the panel's layout is styles/landing/cite.css.
 //
 // The citation is the preferred citation of CITATION.cff at the repository root, in the form the README
 // and docs/PSYCHE.md print it: the archived report of stage 1 on Zenodo, with its DOI as the link, and the
@@ -18,7 +17,6 @@ import { REPO_URL } from '@/lib/seo.ts';
 import { withBase } from '@/lib/url.ts';
 import SectionHeader from './SectionHeader.astro';
 import '@/styles/landing/rows.css';
-import '@/styles/landing/links.css';
 import '@/styles/landing/cite.css';
 
 // preferred-citation in CITATION.cff.
@@ -33,24 +31,25 @@ const cite = {
 const doiUrl = `https://doi.org/${cite.doi}`;
 ---
 
-<section class="sx-lp-section not-content" id="cite" aria-labelledby="sx-cite-title" data-caliper="08 Cite">
-  <SectionHeader id="sx-cite-title" title="Cite and contact" index="08" kicker="Cite">
+<section class="sx-lp-section not-content" id="cite" aria-labelledby="sx-cite-title" data-caliper="Cite">
+  <SectionHeader id="sx-cite-title" title="Cite and contact" kicker="Cite">
     <p>New to Psyche? <a class="sx-lp-a" href={withBase('guide/')}>The Reader's guide</a> is the place to begin.</p>
   </SectionHeader>
-  <dl class="sx-ruled sx-ruled--cite">
-    <div class="sx-ruled__row" data-reveal>
+  <dl class="sx-cite" data-reveal>
+    <div class="sx-cite__part">
       <dt class="sx-cite__k">Cite</dt>
       <dd class="sx-cite__v">
         <p class="sx-cite__lead">To cite Psyche today, cite the archived report of its first stage.</p>
-        <p class="sx-cite__ref">{cite.author} ({cite.year}). <cite>{cite.title}.</cite> {cite.publisher}. <a class="sx-lp-a" href={doiUrl}>{doiUrl}</a></p>
+        <p class="sx-cite__ref">{cite.author} ({cite.year}). <cite>{cite.title}.</cite> {cite.publisher}.</p>
         <p class="sx-cite__note">{cite.note}</p>
+        <a class="sx-pill" href={doiUrl}>{doiUrl}</a>
       </dd>
     </div>
-    <div class="sx-ruled__row" data-reveal>
+    <div class="sx-cite__part sx-cite__part--contact">
       <dt class="sx-cite__k">Contact</dt>
       <dd class="sx-cite__v">
         <p class="sx-cite__lead">To ask a question or raise a point, write in GitHub Discussions on the repository.</p>
-        <a class="sx-lp-link" href={`${REPO_URL}/discussions`}>Open GitHub Discussions</a>
+        <a class="sx-pill sx-pill--primary" href={`${REPO_URL}/discussions`}>Open GitHub Discussions</a>
       </dd>
     </div>
   </dl>

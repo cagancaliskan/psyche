@@ -73,7 +73,7 @@ export default function Timeline({ plan }: Props) {
 
   return (
     <div className="sx-tl-wrap not-content">
-      <div className="sx-tl sx-reg" role="group" aria-label="Research phases on a time axis">
+      <div className="sx-tl" role="group" aria-label="Research phases on a time axis">
         <div className="sx-tl__chart">
           <div className="sx-tl__axis" aria-hidden="true">
             {ticks.map((t) => (

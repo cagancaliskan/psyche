@@ -12,7 +12,7 @@ interface Props {
  * Current phase and next gate, as two cells of a ruled readout on a datum line (styles/plan.css):
  * a mono label with its marker (a disc in the signal colour for "now", a square gate mark in the
  * spike colour for the next gate) over the value, and the days left as a quiet figure at the end of
- * the value's line. Nothing glows or pulses. The server render uses the plan's own as_of date, so
+ * the value's line. The marks are solid and still. The server render uses the plan's own as_of date, so
  * the HTML is deterministic; the browser then recomputes the phase and the gate and adds the days
  * left. A gate past its date with no recorded decision stays the next gate and reads "decision
  * pending" in place of the days left; after a decision that the line stops there is no next gate,

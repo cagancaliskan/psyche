@@ -1,12 +1,12 @@
 ---
-// A static instrument readout for the substrate's maintained record: one hairline-ruled row of
-// cells, each a figure in Unbounded 200 with tabular digits and its mono label under it, a muted
-// detail below that. Nothing counts up; the server writes the final figures and they never change
-// on the page. The landing page shows it plain; the status page and the substrate overview show it
-// as a sheet (`framed`: a hairline frame with registration corners), and the status page slots its
-// captured-run facts under the figures, inside the frame. The ruled rhythm follows "Spec Sheet" by
-// isaiahbjork (21st.dev) and the label-over-figure cell "Stats Band" by kuratlielia (21st.dev); the
-// styles are in styles/readout.css, which a docs page loads without the landing's.
+// A static readout for the substrate's maintained record: a row of stat tiles edged in mint (the
+// hue of stage 1), each a large figure in Unbounded with tabular digits, its label under it and a
+// muted detail below that. Nothing counts up; the server writes the final figures and they never
+// change on the page. The landing page shows the tiles plain; the status page and the substrate
+// overview show them in a panel (`framed`), and the status page slots its captured-run facts under
+// the tiles, inside the panel. The tile follows the label-over-figure cell "Stats Band" by
+// kuratlielia (21st.dev); the styles are in styles/readout.css, which a docs page loads without
+// the landing's.
 import '@/styles/readout.css';
 
 interface Item {
@@ -16,7 +16,7 @@ interface Item {
 }
 interface Props {
   items: Item[];
-  /** Draw the readout as a sheet: a hairline frame with registration corners. */
+  /** Draw the readout inside a panel, so facts slotted under the tiles share it. */
   framed?: boolean;
 }
 const { items, framed = false } = Astro.props;
@@ -24,7 +24,7 @@ const fmt = new Intl.NumberFormat('en-US');
 const cells = Math.min(Math.max(items.length, 1), 6);
 ---
 
-<div class:list={['sx-readout-wrap not-content', framed && 'sx-readout-wrap--sheet sx-reg']}>
+<div class:list={['sx-readout-wrap not-content', framed && 'sx-readout-wrap--sheet']}>
   <dl class="sx-readout" style={`--cells: ${cells}`}>
     {
       items.map((item) => (

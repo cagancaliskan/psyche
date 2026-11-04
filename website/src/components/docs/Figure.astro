@@ -1,11 +1,10 @@
 ---
-// The frame every docs visual sits in, drawn as a drafting figure: a hairline frame with the site's
-// registration corners (.sx-reg, global.css, after "Corner Frame" by kevingirelli on 21st.dev), then
-// a mono label ("Fig." and the figure's name) and one line of lead, ruled off from the drawing. No
-// fill, no grid, no radius, no shadow, no motion.
+// The frame every docs visual sits in, drawn as a hairline box on the surface: a caption (the figure's
+// name as a label in the stage colour, and one line of lead) on a raised strip across the top, then the
+// drawing. No grid, no motion.
 // `bare` is for a figure whose content is a sheet of its own, with a frame and rules of its own
-// (the roadmap's phase list, the decision gates, the battery explorer): it draws no frame, no
-// corners and no padding, and only the label and the lead stay above that sheet.
+// (the roadmap's phase list, the decision gates, the battery explorer): it draws no frame and no
+// padding, and only the label and the lead stay above that sheet.
 import '@/styles/docs-visuals.css';
 
 interface Props {
@@ -17,9 +16,9 @@ interface Props {
 const { kicker, lead, bare = false, class: extra } = Astro.props;
 ---
 
-<figure class:list={['sx-dv', bare ? 'sx-dv--bare' : 'sx-reg', extra]}>
+<figure class:list={['sx-dv', bare && 'sx-dv--bare', extra]}>
   <figcaption class="sx-dv__cap">
-    <span class="sx-kicker" data-pagefind-ignore><span class="sx-kicker__index" aria-hidden="true">Fig.</span> {kicker}</span>{' '}
+    <span class="sx-kicker" data-pagefind-ignore>{kicker}</span>{' '}
     {lead && <span class="sx-dv__lead">{lead}</span>}
   </figcaption>
   <slot />

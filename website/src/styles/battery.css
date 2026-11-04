@@ -1,15 +1,15 @@
 /*
  * The test battery: its pictures (shared with the landing's battery rows, see
- * styles/landing/battery-rows.css) and the battery page, set as a drafting sheet set in the
- * landing's language (styles/landing/maze-figure.css): sharp sheets with hairline registration
- * corners, a ruler with mono numerals on each axis, a mono "Fig." label and caption, ruled rows
- * with one short tick on the current one, and one signal accent. Tokens only, so light and dark
- * switch through the variables. Signal green is kept for the agent: a step's tick and number take it
- * only when that step's picture shows the agent (a route, a goal or the test pair); every other
- * current mark is ink.
+ * styles/landing/battery-rows.css) and the battery page. The page is stage 2, so its hue is the map
+ * blue. A segmented control of square cells names the five paradigms (T1 to T5) and marks the one in
+ * view; each paradigm is a drawing on the arena, the flat night plate the agent's world is drawn on
+ * in both themes, beside a box that holds its question and its steps. A step is a row of its own, and
+ * the current one is marked in the map blue, or in mint when its picture shows the agent. Mint is kept
+ * for the agent: the route, the goal and the test pair. Tokens only, so light and dark switch through
+ * the variables.
  *
  * Pictures: structure-blue walls as a very low fill inside a fine outline, the agent's reward-free
- * trail in ink, one signal route, a ringed start and a goal ring with its dot. Motion shows only the
+ * trail in ink, one mint route, a ringed start and a goal ring with its dot. Motion shows only the
  * agent's trail and route, the arc between a test pair and a new goal ring, drawing along their
  * length; doors, goal dots and node labels fade. Nothing grows from a point. With reduced motion,
  * every picture is its final frame. The layer statement repeats global.css, so the order holds
@@ -17,10 +17,10 @@
  *
  * Catalog sources (21st.dev), rewritten in plain CSS: the step rows after "Stepper" by kevingirelli
  * (complete, current and upcoming states) and "Vertical Titled Stepper" by sean0205 (a number and a
- * title per step); the row marker after "Spec Sheet" by isaiahbjork (a short bar that marks a row);
- * the index after "Table of Contents" (one active entry) and "Kokonut UI Scroll Index" by kokonutd
- * (passed, current and ahead ticks); the corner marks after "Corner Frame" by kevingirelli; the path
- * draw after "Line Draw SVG" by pulkitxm, as CSS on pathLength="1".
+ * title per step); the segmented control after "Segmented Control" by klyv-ui (a track with
+ * one filled option); the index states after "Table of Contents" (one active entry) and "Kokonut UI
+ * Scroll Index" by kokonutd (passed, current and ahead); the
+ * path draw after "Line Draw SVG" by pulkitxm, as CSS on pathLength="1".
  */
 @layer base, starlight, theme, components, utilities;
 
@@ -128,7 +128,7 @@
   }
 
   /* ---------- Battery page: wider than prose, for this page only ---------- */
-  /* The same pattern as body:has(.sx-wide) in plan.css, with more room for the sheets. */
+  /* The same pattern as body:has(.sx-wide) in plan.css, with more room for the drawings. */
   body:has(.sx-bat) {
     --sl-content-width: 68rem;
   }
@@ -137,12 +137,12 @@
     color: var(--sl-color-white);
   }
 
-  /* ---------- Intro: a short lead and a ruled row of notes ---------- */
+  /* ---------- Intro: a short lead and two note boxes ---------- */
   .sx-bat__intro {
     margin-bottom: clamp(2rem, 1.4rem + 2vw, 3rem);
   }
   .sx-bat__lead {
-    max-width: 34rem;
+    max-width: 40rem;
     margin: 0 0 clamp(1.75rem, 1.2rem + 1.5vw, 2.5rem);
     font-family: var(--font-sans);
     font-size: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
@@ -153,178 +153,125 @@
     text-wrap: pretty;
   }
 
-  /* Two ruled rows, a mono label and its text, the row marker on the first rule. On narrow widths
-     the text sits under its label. */
+  /* Two boxes, a label over its text, side by side from 34rem. */
   .sx-bnotes {
-    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
     margin: 0;
     padding: 0;
     list-style: none;
-    border-bottom: 1px solid var(--sx-hairline);
-  }
-  .sx-bnotes::before {
-    content: '';
-    position: absolute;
-    z-index: 1;
-    left: 0;
-    top: -1px;
-    width: 28px;
-    height: 2px;
-    background: var(--sx-structure);
-    pointer-events: none;
   }
   .sx-bnotes > li {
     display: grid;
-    grid-template-columns: minmax(0, 1fr);
-    row-gap: 0.55rem;
+    align-content: start;
+    gap: 0.5rem;
     margin: 0;
-    padding: 1rem 0 1.1rem;
-    border-top: 1px solid var(--sx-hairline);
+    padding: var(--sx-pad-card);
+    border: 1px solid var(--sx-hairline);
+    border-radius: var(--sx-r-m);
+    background: var(--sx-surface);
   }
   .sx-bnotes p {
     margin: 0;
   }
   .sx-bnotes .sx-bnotes__k {
-    font-family: var(--font-mono);
+    font-family: var(--sx-lab-font);
     font-size: var(--sx-lab-size);
-    font-weight: 400;
+    font-weight: var(--sx-lab-weight);
     line-height: 1.5;
     letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
-    color: var(--sx-muted);
+    text-transform: var(--sx-lab-case);
+    color: var(--sx-structure);
   }
   .sx-bnotes__t {
-    max-width: 40rem;
     font-size: 0.9375rem;
-    line-height: 1.55;
+    line-height: 1.6;
     color: var(--sl-color-gray-2);
     text-wrap: pretty;
   }
-  /* The hero's Underline Link: a faint rule at rest and an ink line that draws in from the left on
-     hover or focus and leaves to the right. */
   .sx-bnotes a {
-    --open: 0;
-    padding-block: 2px;
     color: var(--sl-color-white);
-    text-decoration: none;
-    background-image: linear-gradient(currentColor, currentColor), linear-gradient(color-mix(in oklab, currentColor 28%, transparent), color-mix(in oklab, currentColor 28%, transparent));
-    background-repeat: no-repeat;
-    background-size:
-      calc(var(--open) * 100%) 1px,
-      100% 1px;
-    background-position:
-      calc((1 - var(--open)) * 100%) 100%,
-      0 100%;
-    transition: background-size 450ms var(--sx-ease);
+    text-decoration-color: color-mix(in oklab, var(--sx-structure) 70%, transparent);
+    text-underline-offset: 0.2em;
   }
-  .sx-bnotes a:is(:hover, :focus-visible) {
-    --open: 1;
-  }
-
   @container sx-bat (min-width: 34rem) {
-    .sx-bnotes > li {
-      grid-template-columns: 11rem minmax(0, 1fr);
-      column-gap: 1.5rem;
-      align-items: baseline;
+    .sx-bnotes {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
     }
   }
 
-  /* ---------- Index: T1 to T5 as a ruled row that marks the test in view ---------- */
+  /* ---------- Index: T1 to T5 as a segmented control that marks the test in view ---------- */
   .sx-bt {
-    --bi-h: 3.75rem;
-  }
-  @container sx-bat (max-width: 38rem) {
-    .sx-bt {
-      --bi-h: 2.9rem;
-    }
+    --bi-h: 4.25rem;
   }
   .sx-bi {
     position: sticky;
     top: var(--sl-nav-height, 3.5rem);
     z-index: 5;
+    padding-block: 0.6rem;
     background: var(--sl-color-black);
   }
   .sx-bi ol {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 0.25rem;
     margin: 0;
-    padding: 0;
+    padding: 0.3rem 0;
     list-style: none;
-    border-top: 1px solid var(--sx-hairline);
-    border-bottom: 1px solid var(--sx-hairline);
+    border-block: 1px solid var(--sx-hairline);
   }
   .sx-bi li {
-    position: relative;
     margin: 0;
   }
-  /* The row marker: a short bar on the rule. The test in view takes the whole width of its cell, in
-     ink (the signal colour is kept for the agent); those already passed keep the structure colour,
-     those ahead are fainter. */
-  .sx-bi li::before {
-    content: '';
-    position: absolute;
-    z-index: 1;
-    left: 0;
-    top: -1px;
-    width: 28px;
-    height: 2px;
-    background: var(--sx-structure);
-    pointer-events: none;
-    transition:
-      width 550ms var(--sx-ease),
-      background-color 550ms var(--sx-ease),
-      opacity 550ms var(--sx-ease);
-  }
-  .sx-bi li[data-state='ahead']::before {
-    opacity: 0.45;
-  }
-  .sx-bi li[data-state='current']::before {
-    width: 100%;
-    background: var(--sl-color-white);
-  }
-  @media (hover: hover) {
-    .sx-bi li:hover::before {
-      width: 100%;
-      opacity: 1;
-    }
-  }
-  .sx-bi li:has(a:focus-visible)::before {
-    width: 100%;
-    opacity: 1;
-  }
+  /* One cell each. The test in view is the filled one, in the primary button's colours (the canvas
+     colour on the blue); those already passed or ahead are muted, and the cell you point at takes the
+     ink. */
   .sx-bi a {
     display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    gap: 0.3rem;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.1rem 0.5rem;
     box-sizing: border-box;
-    min-height: var(--bi-h);
-    padding: 0.85rem 0.75rem 0.65rem 0;
+    min-height: 2.75rem;
+    padding: 0.45rem 0.9rem;
+    border-radius: var(--sx-r-pill);
     color: var(--sx-muted);
+    text-align: center;
     text-decoration: none;
-    transition: color 180ms var(--sx-ease);
+    transition:
+      color var(--sx-dur) var(--sx-ease),
+      background-color var(--sx-dur) var(--sx-ease);
   }
-  .sx-bi a:hover,
-  .sx-bi a[aria-current] {
+  .sx-bi a:hover {
     color: var(--sl-color-white);
   }
-  /* The ring is drawn inside the cell, so it never overprints the next cell's label. */
+  .sx-bi a[aria-current] {
+    background: var(--sx-structure);
+    color: var(--sl-color-black);
+  }
+  /* The ring is drawn inside the cell, so it never overprints the next cell. */
   .sx-bi a:focus-visible {
     outline-offset: -2px;
   }
   .sx-bi__id {
     font: 500 var(--sx-lab-size) / 1.2 var(--font-mono);
-    letter-spacing: var(--sx-lab-track);
     font-variant-numeric: tabular-nums;
-    color: var(--sx-structure);
   }
   .sx-bi__name {
-    font: 500 0.8125rem / 1.3 var(--font-sans);
+    font: 600 0.8125rem / 1.3 var(--font-sans);
     text-wrap: balance;
   }
   /* On a phone the index is the ids alone; each name is still the link's name for assistive
      technology, and is the heading of its sheet. */
   @container sx-bat (max-width: 38rem) {
+    .sx-bt {
+      --bi-h: 3.75rem;
+    }
+    .sx-bi a {
+      padding-inline: 0.25rem;
+    }
     .sx-bi__name {
       position: absolute;
       width: 1px;
@@ -335,42 +282,29 @@
     }
   }
 
-  /* ---------- One drawing sheet per test ---------- */
+  /* ---------- One block per test: the drawing on the arena, a box beside it ---------- */
   .sx-bt__stack > .sx-bs:first-child {
-    margin-top: clamp(2.25rem, 1.8rem + 1.5vw, 3rem);
+    margin-top: clamp(1.5rem, 1.2rem + 1vw, 2rem);
   }
   .sx-bt__stack > .sx-bs:last-child {
     margin-bottom: 2rem;
   }
   .sx-bs {
-    position: relative;
     display: grid;
     grid-template-columns: minmax(0, 1fr);
-    row-gap: 1.75rem;
-    margin-top: clamp(3.5rem, 2.5rem + 4vw, 5.5rem);
-    padding-top: clamp(1.5rem, 1.2rem + 1vw, 2rem);
-    border-top: 1px solid var(--sx-hairline);
-    /* A link to a sheet lands it under the index, not behind it. Starlight's own scroll padding on
+    row-gap: 1.5rem;
+    margin-top: var(--sx-space-section);
+    /* A link to a block lands it under the index, not behind it. Starlight's own scroll padding on
        the page already clears the header. */
-    scroll-margin-top: calc(var(--bi-h, 3.75rem) + 0.5rem);
-  }
-  .sx-bs::before {
-    content: '';
-    position: absolute;
-    top: -1px;
-    left: 0;
-    width: 28px;
-    height: 2px;
-    background: var(--sx-structure);
-    pointer-events: none;
+    scroll-margin-top: calc(var(--bi-h, 4.25rem) + 0.5rem);
   }
   /* Whatever is scrolled to (a focused control, a heading reached by a screen reader) lands below
      the header and the sticky index, never behind them. */
   .sx-bs :is(h2, button) {
     scroll-margin-top: var(--bi-h);
   }
-  /* Wide: the sheet on the left, the name above the question and the steps in the margin. Narrow:
-     the name, the sheet, then the question and the steps. */
+  /* Wide: the drawing on the left, the name above the question and the steps in the margin. Narrow:
+     the name, the drawing, then the question and the steps. */
   @container sx-bat (min-width: 50rem) {
     .sx-bs {
       grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
@@ -378,8 +312,7 @@
       grid-template-areas:
         'fig head'
         'fig body';
-      column-gap: clamp(2rem, 5cqw, 4rem);
-      row-gap: 1.5rem;
+      column-gap: clamp(1.5rem, 4cqw, 3rem);
       align-items: start;
     }
     .sx-bs__fig {
@@ -393,58 +326,31 @@
     }
   }
 
-  /* ---- The sheet: registration corners, a ruler on each axis and the plot ---- */
+  /* ---- The arena: the drawing's night plate, a ruler on each axis and the plot ---- */
   .sx-bs__fig {
     display: grid;
-    gap: 1.1rem;
+    gap: 1rem;
     min-width: 0;
     margin: 0;
   }
+  /* The sheet is an arena (global.css, .sx-arena): the flat night plate in both themes, with its own tokens,
+     background and corners. Here only its grid and its padding. */
   .sx-bs__sheet {
     position: relative;
     display: grid;
     grid-template-columns: 2.4rem minmax(0, 1fr);
     grid-template-rows: 1.5rem auto;
     gap: 6px;
-    padding: 0.9rem 1.1rem 1.1rem 0.8rem;
-    background: color-mix(in oklab, var(--sx-surface) 70%, transparent);
+    padding: clamp(1rem, 0.8rem + 1vw, 1.6rem) clamp(1rem, 0.8rem + 1vw, 1.6rem) clamp(1rem, 0.8rem + 1vw, 1.6rem) 0.9rem;
   }
   /* The chain is one-dimensional: it has a ruler on its one axis and no column for a second. */
   .sx-bs__sheet[data-kind='chain'] {
     grid-template-columns: 0 minmax(0, 1fr);
   }
-  /* Registration corners: hairline L shapes on the sheet's box, never a full frame. */
+  /* The registration corners belong to the drafting sheet, which the arena replaces. They stay in the
+     markup, so they must not take a place in the grid. */
   .sx-bs__cm {
-    --size: 14px;
-    position: absolute;
-    width: var(--size);
-    height: var(--size);
-    border: 0 solid var(--sx-structure);
-    pointer-events: none;
-  }
-  .sx-bs__cm.tl {
-    left: 0;
-    top: 0;
-    border-left-width: 1px;
-    border-top-width: 1px;
-  }
-  .sx-bs__cm.tr {
-    right: 0;
-    top: 0;
-    border-right-width: 1px;
-    border-top-width: 1px;
-  }
-  .sx-bs__cm.bl {
-    left: 0;
-    bottom: 0;
-    border-left-width: 1px;
-    border-bottom-width: 1px;
-  }
-  .sx-bs__cm.br {
-    right: 0;
-    bottom: 0;
-    border-right-width: 1px;
-    border-bottom-width: 1px;
+    display: none;
   }
 
   /* Rulers: numerals on the long ticks, a short tick at every cell. The ticks are SVG stretched
@@ -510,7 +416,7 @@
     container: sx-bp / inline-size;
   }
   .sx-bs__plot .sx-pic {
-    /* The agent's lines are drawn in the drawing's units, so their width follows the sheet: about
+    /* The agent's lines are drawn in the drawing's units, so their width follows the arena: about
        three pixels for the route and one and a half for the trail, in four steps. */
     --rw: 0.05;
     --tw: 0.024;
@@ -543,20 +449,17 @@
     text-wrap: pretty;
   }
   .sx-bs__fig-no {
-    font: 400 var(--sx-lab-size) / 1 var(--font-mono);
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    font: 500 var(--sx-lab-size) / 1 var(--font-mono);
     color: var(--sl-color-white);
   }
-  /* The separator is drawn here, with room on both sides, so the tracked label does not leave it
-     attached to the sentence. */
+  /* The separator is drawn here, with room on both sides, so it is not left attached to the sentence. */
   .sx-bs__fig-no::after {
     content: '\00b7';
     margin-inline: 0.9em 0.5em;
     color: var(--sx-muted);
   }
 
-  /* ---- The margin: name, question and the steps as ruled rows ---- */
+  /* ---- The margin: the name, then a box with the question and the steps ---- */
   .sx-bs__head {
     min-width: 0;
   }
@@ -564,10 +467,15 @@
     display: flex;
     flex-direction: column;
     min-width: 0;
+    padding: var(--sx-pad-card);
+    border: 1px solid var(--sx-hairline);
+    border-radius: var(--sx-r-m);
+    background: var(--sx-surface);
   }
   .sx-bs__head h2 {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 0.6rem;
     margin: 0;
     font-family: var(--sx-font-display);
@@ -578,32 +486,31 @@
     color: var(--sl-color-white);
     text-wrap: balance;
   }
+  /* The test's id (T1) is data, so it is set in the mono face. */
   .sx-bs__id {
+    padding: 0;
+    border-radius: var(--sx-r-pill);
     font: 500 var(--sx-lab-size) / 1.2 var(--font-mono);
-    letter-spacing: var(--sx-lab-track);
     font-variant-numeric: tabular-nums;
-    color: var(--sx-structure);
+    color: var(--sl-color-white);
   }
   .sx-bs :where(.sx-bs__head, .sx-bs__body) p {
     margin: 0;
   }
   .sx-bs .sx-bs__paradigm {
     margin-top: 0.75rem;
-    font: 400 var(--sx-lab-size) / 1.4 var(--font-mono);
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    font-size: 0.9375rem;
+    line-height: 1.4;
     color: var(--sx-muted);
   }
   .sx-bs .sx-bs__setup {
-    max-width: 36rem;
     font-size: 0.9375rem;
     line-height: 1.6;
     color: var(--sl-color-gray-2);
     text-wrap: pretty;
   }
   .sx-bs .sx-bs__ask {
-    max-width: 36rem;
-    margin-top: 0.9rem;
+    margin-top: 1rem;
     font-size: 1rem;
     line-height: 1.55;
     color: var(--sl-color-white);
@@ -611,62 +518,46 @@
   }
   .sx-bs__lab {
     display: block;
-    margin-bottom: 0.45rem;
-    font: 400 var(--sx-lab-size) / 1.2 var(--font-mono);
+    margin-bottom: 0.3rem;
+    font-family: var(--sx-lab-font);
+    font-size: var(--sx-lab-size);
+    font-weight: var(--sx-lab-weight);
+    line-height: 1.2;
     letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
-    color: var(--sx-muted);
+    text-transform: var(--sx-lab-case);
+    color: var(--sx-structure);
   }
 
-  /* The steps are the landing figure's key: ruled rows, a mono number, the step's name and its
-     line. The current one carries a tick on its rule, in ink, or in the signal colour when its
-     picture shows the agent; steps already shown keep a structure-coloured number. */
+  /* The steps are rows: a mono number, the step's name and its line. The current one carries a rule
+     down its start edge in the map blue, or in mint when its picture shows the agent; steps already
+     shown keep a blue number. */
   .sx-bs__steps {
-    margin: 1.75rem 0 0;
+    display: grid;
+    gap: 0.25rem;
+    margin: 1.5rem 0 0;
     padding: 0;
     list-style: none;
   }
   .sx-bs__steps > li {
     --c: var(--sl-color-gray-3);
-    position: relative;
     margin: 0;
-    border-top: 1px solid var(--sx-hairline);
-  }
-  .sx-bs__steps > li:last-child {
-    border-bottom: 1px solid var(--sx-hairline);
+    border-inline-start: 3px solid transparent;
+    transition: border-color var(--sx-dur) var(--sx-ease);
   }
   .sx-bs__steps > li[data-state='done'] {
     --c: var(--sx-structure);
   }
   .sx-bs__steps > li[data-state='current'] {
-    --c: var(--sl-color-white);
+    --c: var(--sx-structure);
+    border-inline-start-color: var(--sx-structure);
   }
   .sx-bs__steps > li[data-state='current'][data-agent] {
     --c: var(--sx-agent);
-  }
-  .sx-bs__steps > li::before {
-    content: '';
-    position: absolute;
-    z-index: 1;
-    left: 0;
-    top: -1px;
-    width: 28px;
-    height: 2px;
-    background: var(--c);
-    transform: scaleX(0);
-    transform-origin: left;
-    pointer-events: none;
-    transition: transform 550ms var(--sx-ease);
-  }
-  .sx-bs__steps > li[data-state='current']::before {
-    transform: none;
+    border-inline-start-color: var(--sx-agent);
   }
   @media (hover: hover) {
-    .sx-bs__steps > li:hover::before {
-      transform: none;
-    }
-    .sx-bs__steps > li:not([data-state='current']):hover::before {
-      --c: var(--sx-structure);
+    .sx-bs__steps > li:not([data-state='current']):hover {
+      background: var(--sx-surface-2);
     }
   }
   .sx-bs__steps button {
@@ -679,9 +570,9 @@
     row-gap: 5px;
     align-items: baseline;
     width: 100%;
-    padding: 15px 0 17px;
+    padding: 12px 14px 14px;
     border: 0;
-    border-radius: 0;
+    border-radius: var(--sx-r-s);
     background: none;
     color: inherit;
     font: inherit;
@@ -693,16 +584,15 @@
   }
   .sx-bs__steps .k {
     grid-area: k;
-    font: 400 var(--sx-lab-size) / 1.2 var(--font-mono);
-    letter-spacing: var(--sx-lab-track);
+    font: 500 var(--sx-lab-size) / 1.2 var(--font-mono);
     font-variant-numeric: tabular-nums;
     color: var(--c);
   }
   .sx-bs__steps .nm {
     grid-area: nm;
-    font: 500 16px / 1.3 var(--font-sans);
+    font: 600 16px / 1.3 var(--font-sans);
     color: var(--sl-color-gray-2);
-    transition: color 180ms var(--sx-ease);
+    transition: color var(--sx-dur) var(--sx-ease);
   }
   .sx-bs__steps .tx {
     grid-area: tx;
@@ -718,12 +608,12 @@
     color: var(--sl-color-gray-2);
   }
 
-  /* Pause and Play: a quiet mono control on a hairline. With reduced motion a sheet does not step on
-     its own, so the control is not drawn at all, from the server's first paint on. */
+  /* Pause and Play: the secondary button, an outlined rectangle. With reduced motion a sheet does not step on its
+     own, so the control is not drawn at all, from the server's first paint on. */
   .sx-bs__ctl {
     display: flex;
     align-items: center;
-    margin-top: 1.1rem;
+    margin-top: 1.25rem;
   }
   @media (prefers-reduced-motion: reduce) {
     .sx-bs__ctl {
@@ -734,20 +624,23 @@
     display: inline-flex;
     align-items: center;
     gap: 0.55rem;
-    min-height: 2rem;
-    padding: 0.3rem 0.8rem 0.3rem 0.65rem;
+    min-height: 2.25rem;
+    padding: 0.4rem 1rem 0.4rem 0.8rem;
     border: 1px solid var(--sx-hairline);
-    border-radius: 0;
-    background: transparent;
-    font: 500 var(--sx-lab-size) / 1.2 var(--font-mono);
+    border-radius: var(--sx-r-pill);
+    background: var(--sx-surface-2);
+    font-family: var(--sx-lab-font);
+    font-size: var(--sx-lab-size);
+    font-weight: var(--sx-lab-weight);
+    line-height: 1.2;
     letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    text-transform: var(--sx-lab-case);
     color: var(--sl-color-white);
     cursor: pointer;
-    transition: border-color 180ms var(--sx-ease);
+    transition: background-color var(--sx-dur) var(--sx-ease);
   }
   .sx-bs__toggle:hover {
-    border-color: var(--sx-structure);
+    background: transparent;
   }
   .sx-bs__toggle svg {
     width: 0.8rem;
@@ -755,24 +648,16 @@
     stroke-width: 1.5;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .sx-bi li::before,
-    .sx-bi a,
-    .sx-bs__steps > li::before,
-    .sx-bs__steps .nm,
-    .sx-bs__toggle,
-    .sx-bnotes a {
-      transition: none;
-    }
-  }
-
-  /* Windows High Contrast repaints background-only marks as the canvas; the current marks keep a
-     system colour. */
+  /* Windows High Contrast repaints a background as the canvas; the test in view keeps a system
+     colour. */
   @media (forced-colors: active) {
-    .sx-bi li[data-state='current']::before,
-    .sx-bs__steps > li[data-state='current']::before {
+    .sx-bi a[aria-current] {
       background: Highlight;
+      color: HighlightText;
       forced-color-adjust: none;
+    }
+    .sx-bs__steps > li[data-state='current'] {
+      outline: 2px solid Highlight;
     }
   }
 

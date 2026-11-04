@@ -5,14 +5,19 @@
  * together until they coincide as the logo. The stages grow outward: the inner bowl is stage 1,
  * the middle bowl stage 2, and the outer bowl, open at the stem, is what is still to come.
  *
+ * The mark is drawn over a faint drafting grid, strongest behind the figure, as on the first
+ * drawings of the site; there is no glow and no gradient fill. The main action is a flat blue
+ * button with square corners, the others are outlined; the newest post is a ruled link; the three
+ * stages beside the mark are entries of a legend, each a square swatch in the hue its stage carries
+ * across the site (mint for stage 1, blue for stage 2, violet for the stages to come). The bowls keep
+ * the mark's own colours.
+ *
  * Catalog sources (21st.dev), rewritten in plain CSS and a few lines of script, without a motion
  * library: the stroke draw after "Animated Signature" by dqnamo (a pathLength 1 dash reveal on a
  * near-linear pen curve), the line-by-line rise after "Text Reveal (Mask)" by soralabs (clipped
- * lines, expo-out), the primary action after "Frame Button" by radiumcoders (a ruled, square-cornered
- * control whose four L-shaped corner marks step outward on hover, only where hover exists), the
- * secondary after "Underline Link" by balick (a background-gradient underline that follows line
- * breaks, draws in from the left and leaves to the right) and the key of the sheets after "Legends"
- * by airbnb-visx (a swatch of the series' own colour, then its name in neutral type).
+ * lines, expo-out), the tag, title and arrow of the post link after "Announcement" by
+ * haydenbleasel and the key of the sheets after "Legends" by airbnb-visx (a swatch of the series'
+ * own colour, then its name in neutral type).
  *
  * Site tokens only, so light and dark switch through the variables. Without script, or with
  * reduced motion, nothing is hidden and the finished frame shows.
@@ -36,19 +41,19 @@
     box-sizing: border-box;
     width: 100vw;
     /* Flush under the header: cancels the content panel's top padding. */
-    margin-block: -1.5rem 1.5rem;
+    margin-block: -1.5rem 0;
     margin-inline: calc(50% - 50vw);
     height: clamp(640px, calc(100vh - var(--sl-nav-height, 4rem)), 920px);
-    padding-inline: max(clamp(24px, 6vw, 104px), calc((100vw - 90rem) / 2));
+    padding-inline: var(--sx-gutter);
     display: grid;
     grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
     align-items: center;
     column-gap: clamp(24px, 4vw, 72px);
     overflow: hidden;
-    border-bottom: 1px solid var(--sx-hairline);
     color: var(--sl-color-white);
   }
-  /* A faint drafting grid, strongest behind the figure. */
+  /* A faint drafting grid, strongest behind the figure: 1px lines in the structure colour, faded out
+     away from the mark by a mask, never a fill. */
   .sx-layers::before {
     content: '';
     position: absolute;
@@ -134,211 +139,119 @@
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 20px 30px;
+    gap: 14px 12px;
+  }
+  /* The main action has its row; the two others share the next one. */
+  .sx-layers__act:first-child {
+    flex-basis: 100%;
   }
 
-  /* ---- The newest blog post: a ruled row under the actions ----
-     One link on a line of its own: a mono tag in the structure colour ("Latest post"), the post's title
-     in the reading face and a plain arrow, inside a square box in the hairline rule, after the tag and
-     title of "Announcement" by haydenbleasel (21st.dev), drawn square and ruled, not as a pill. Quieter
-     than the primary action and louder than the underline links: on hover the rule turns to ink and
-     the arrow steps on, on focus the site's ring is drawn. */
+  /* ---- Actions: rectangular buttons ---- */
+
+  /* The main action is a filled blue button (night text on the light blue in the dark theme, near-white on
+     the deep blue in the light one); the other two are outlined buttons on the raised surface. All three
+     take the site's focus ring from global.css, and the arrow steps on where hover exists. */
+  .sx-layers__btn,
+  .sx-layers__ulink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7em;
+    min-height: 48px;
+    box-sizing: border-box;
+    padding: 0.8em 1.35em;
+    border: 1px solid transparent;
+    border-radius: var(--sx-r-pill);
+    font: 600 0.9375rem/1.2 var(--font-sans);
+    text-decoration: none;
+    transition:
+      background-color var(--sx-dur) var(--sx-ease),
+      border-color var(--sx-dur) var(--sx-ease);
+  }
+  .sx-layers__btn {
+    background: var(--sx-structure);
+    color: var(--sl-color-black);
+  }
+  .sx-layers__ulink {
+    border-color: var(--sx-rule-strong);
+    color: var(--sl-color-white);
+  }
+  .sx-layers__btn-label {
+    white-space: nowrap;
+  }
+  .sx-layers__arrow,
+  .sx-layers__news-arrow {
+    flex: none;
+    width: 1.25em;
+    height: 1.25em;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    transition: transform var(--sx-dur) var(--sx-ease);
+  }
+  @media (hover: hover) {
+    .sx-layers__btn:hover {
+      background: color-mix(in oklab, var(--sx-structure) 86%, var(--sl-color-white));
+    }
+    .sx-layers__ulink:hover {
+      border-color: var(--sx-structure);
+    }
+    .sx-layers__btn:hover .sx-layers__arrow,
+    .sx-layers__news:hover .sx-layers__news-arrow {
+      transform: translateX(3px);
+    }
+  }
+  @media (forced-colors: active) {
+    .sx-layers__btn,
+    .sx-layers__ulink,
+    .sx-layers__news {
+      border-color: LinkText;
+    }
+  }
+
+  /* ---- The newest blog post: a ruled link under the actions ----
+     One link on a line of its own, between two hairlines: a tag with a violet square ("Latest post"),
+     the post's title and an arrow, after "Announcement" by haydenbleasel (21st.dev). */
   .sx-layers__act--news {
     flex-basis: 100%;
+    margin-top: 6px;
   }
   .sx-layers__news {
     display: inline-flex;
     align-items: center;
     gap: 0.75rem;
     max-inline-size: 100%;
-    padding: 0.55rem 0.8rem;
-    border: 1px solid var(--sx-hairline);
+    padding: 0.55rem 0 0.55rem;
+    border: 0;
+    border-block: 1px solid var(--sx-hairline);
     color: var(--sl-color-white);
     text-decoration: none;
-    transition: border-color var(--sx-dur) var(--sx-ease);
   }
   .sx-layers__news-tag {
     flex: none;
-    padding-inline-end: 0.75rem;
-    border-inline-end: 1px solid var(--sx-hairline);
-    color: var(--sx-structure);
-    font: 500 var(--sx-lab-size) / 1.4 var(--font-mono);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    font: var(--sx-lab-weight) var(--sx-lab-size) / 1.4 var(--sx-lab-font);
     letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    color: var(--sx-violet);
+  }
+  .sx-layers__news-tag::before {
+    content: '';
+    width: 0.5em;
+    height: 0.5em;
+    border-radius: 0;
+    background: var(--sx-violet);
   }
   .sx-layers__news-title {
     min-inline-size: 0;
     font: 500 15px/1.3 var(--font-sans);
   }
   .sx-layers__news-arrow {
-    flex: none;
-    inline-size: 1rem;
-    block-size: 1rem;
-    fill: none;
-    stroke: var(--sx-muted);
-    stroke-width: 1.75;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition:
-      transform var(--sx-dur) var(--sx-ease),
-      stroke var(--sx-dur) var(--sx-ease);
-  }
-  .sx-layers__news:focus-visible {
-    outline: 2px solid var(--sx-structure);
-    outline-offset: 3px;
-  }
-  @media (hover: hover) {
-    .sx-layers__news:hover {
-      border-color: var(--sl-color-white);
-    }
-    .sx-layers__news:hover .sx-layers__news-arrow {
-      transform: translateX(3px);
-      stroke: var(--sl-color-white);
-    }
-  }
-  @media (prefers-reduced-motion: reduce) {
-    .sx-layers__news-arrow {
-      transition: none;
-    }
-  }
-  @media (forced-colors: active) {
-    .sx-layers__news {
-      border-color: LinkText;
-    }
-  }
-
-  /* ---- Primary action: a ruled control (Frame Button) ---- */
-
-  /* A square-cornered box in the strong rule, the label in the reading face as the landing's other
-     links are, and a plain arrow. Nothing is filled and nothing is signal-coloured at rest. On hover
-     (where hover exists) the rule and the arrow turn to the signal colour, the arrow steps on and four
-     corner marks stand off from the box; on keyboard focus the rule and the arrow turn the same way
-     and the site's 2px signal ring is drawn round it (the marks are for the pointer, the ring is the
-     focus indicator). The marks are the registration corners of the sheets (global.css, .sx-reg), drawn
-     on the control's own ::before so they can move; --sx-dur is 0s under reduced motion, so they appear
-     without moving. */
-  .sx-layers__btn {
-    position: relative;
-    box-sizing: border-box;
-    display: inline-flex;
-    align-items: center;
-    gap: 18px;
-    min-height: 52px;
-    padding: 0 20px 0 24px;
-    border: 1px solid var(--sx-rule-strong);
-    border-radius: 0;
-    background: transparent;
-    color: var(--sl-color-white);
-    font: 500 15px/1.2 var(--font-sans);
-    letter-spacing: 0.005em;
-    text-decoration: none;
-    cursor: pointer;
-    transition: border-color var(--sx-dur) var(--sx-ease);
-  }
-  .sx-layers__btn::before {
-    --sx-reg: var(--sx-agent);
-    --sx-reg-len: 9px;
-    content: '';
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    pointer-events: none;
-    background:
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 0 / var(--sx-reg-len) 1px,
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 0 / 1px var(--sx-reg-len),
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 0 / var(--sx-reg-len) 1px,
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 0 / 1px var(--sx-reg-len),
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 100% / var(--sx-reg-len) 1px,
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 100% / 1px var(--sx-reg-len),
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 100% / var(--sx-reg-len) 1px,
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 100% / 1px var(--sx-reg-len);
-    background-repeat: no-repeat;
-    transition:
-      inset var(--sx-dur) var(--sx-ease),
-      opacity var(--sx-dur) var(--sx-ease);
-  }
-  .sx-layers__btn-label {
-    white-space: nowrap;
-  }
-  .sx-layers__arrow {
-    flex: none;
-    width: 20px;
-    height: 20px;
-    color: var(--sx-muted);
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 1.75;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition:
-      color var(--sx-dur) var(--sx-ease),
-      transform var(--sx-dur) var(--sx-ease);
-  }
-  .sx-layers__btn:focus-visible {
-    border-color: var(--sx-agent);
-    outline: 2px solid var(--sx-agent);
-    outline-offset: 4px;
-  }
-  .sx-layers__btn:focus-visible .sx-layers__arrow {
-    color: var(--sx-agent);
-    transform: translateX(3px);
-  }
-  @media (hover: hover) {
-    .sx-layers__btn:hover {
-      border-color: var(--sx-agent);
-    }
-    .sx-layers__btn:hover::before {
-      inset: -6px;
-      opacity: 1;
-    }
-    .sx-layers__btn:hover .sx-layers__arrow {
-      color: var(--sx-agent);
-      transform: translateX(3px);
-    }
-  }
-  .sx-layers__btn:active .sx-layers__arrow {
-    transform: translateX(5px);
-  }
-  @media (forced-colors: active) {
-    .sx-layers__btn::before {
-      --sx-reg: CanvasText;
-    }
-  }
-
-  /* ---- Secondary action: Underline Link ---- */
-
-  /* Two background lines on an inline box, so the underline follows the text across a line break
-     (box-decoration-break: clone): a faint rule at rest, and the ink line that draws in from the
-     left on hover or focus and leaves to the right (only its size is transitioned). */
-  .sx-layers__ulink {
-    --open: 0;
-    --rule: color-mix(in oklab, currentColor 26%, transparent);
-    padding-block: 7px;
-    color: var(--sl-color-white);
-    font: 500 15px/1.2 var(--font-sans);
-    text-decoration: none;
-    background-image: linear-gradient(currentColor, currentColor), linear-gradient(var(--rule), var(--rule));
-    background-repeat: no-repeat;
-    background-size:
-      calc(var(--open) * 100%) 1px,
-      100% 1px;
-    background-position:
-      calc((1 - var(--open)) * 100%) 100%,
-      0 100%;
-    -webkit-box-decoration-break: clone;
-    box-decoration-break: clone;
-    transition: background-size 450ms var(--sx-ease);
-  }
-  .sx-layers__ulink:focus-visible {
-    --open: 1;
-    outline: 2px solid var(--sx-structure);
-    outline-offset: 2px;
-    border-radius: 2px;
-  }
-  @media (hover: hover) {
-    .sx-layers__ulink:hover {
-      --open: 1;
-    }
+    width: 1rem;
+    height: 1rem;
+    color: var(--sx-violet);
   }
 
   /* ---- The figure: four planes in CSS 3D ---- */
@@ -506,9 +419,7 @@
   .sx-layers__legend li {
     display: block;
     padding-bottom: 3px;
-    font: 400 10px/14px var(--font-mono);
-    letter-spacing: 0.07em;
-    text-transform: uppercase;
+    font: 500 0.75rem/14px var(--font-sans);
     white-space: nowrap;
     color: var(--sx-muted);
     opacity: 0;
@@ -523,9 +434,13 @@
     background: var(--c);
   }
 
-  /* The shared top edge, drawn once the sheets coincide and behind the strokes (it comes first in
-     the markup). Its 1px is the upper half of the edge's stroke and the row the stage list's
-     first rule also occupies. */
+  /* ---- The stage list (real text): three small entries on a coloured rule ----
+     Each entry carries the hue its stage has across the site (--h): mint for stage 1, blue for stage 2,
+     violet for the stages to come. That is the stage's own hue, not the colour of its bowl. The active
+     stage is told by ink and weight. */
+
+  /* The datum: a hairline on the mark's top edge that runs out to the page's edge, behind the stage
+     list, tying the mark to it, as on the first drawing of the hero. */
   .sx-layers__datum {
     position: absolute;
     left: -52px;
@@ -535,79 +450,71 @@
     background: var(--sx-hairline);
     pointer-events: none;
   }
-
-  /* ---- The stage list (real text) ---- */
-
   .sx-layers__stages {
     display: grid;
-    grid-auto-rows: 1fr;
     flex: none;
-    align-self: flex-start;
-    width: clamp(184px, 15vw, 226px);
-    /* The first rule lies on the mark's top edge: 11.823% of the figure's height, less the 1px
-       the datum is raised by. */
-    margin: calc(var(--pw) * 28.25 / 25.43 * 0.11823 - 1px) 0 0;
+    gap: 12px;
+    width: clamp(196px, 16vw, 240px);
+    margin: 0;
     padding: 0;
     list-style: none;
   }
   .sx-layers__stages li {
-    position: relative;
+    --h: var(--sx-violet);
     display: grid;
     grid-template-columns: 1fr auto;
     grid-template-areas:
       'k st'
       'nm nm';
     column-gap: 12px;
-    row-gap: 5px;
-    align-content: start;
+    row-gap: 6px;
     align-items: baseline;
-    padding: 15px 0 19px;
-    border-top: 1px solid var(--sx-hairline);
+    padding: 0.85rem 0 0.9rem;
+    border: 0;
+    border-block-start: 2px solid var(--h);
+    transition: border-color var(--sx-dur) var(--sx-ease);
   }
-  .sx-layers__stages li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: -1px;
-    width: 28px;
-    height: 2px;
-    background: var(--c);
-    transition: width 550ms var(--sx-ease);
+  .sx-layers__stages li[data-k='inner'] {
+    --h: var(--sx-agent);
+  }
+  .sx-layers__stages li[data-k='middle'] {
+    --h: var(--sx-structure);
   }
   @media (hover: hover) {
-    .sx-layers__stages li:hover::before {
-      width: 100%;
+    .sx-layers__stages li:hover {
+      border-color: var(--h);
     }
   }
-  /* The stage's key is the 2px stroke on the row's rule (li::before), in the sheet's own colour; the
-     words are muted, as every mono label is, so signal green is left to what is active. */
   .sx-layers__stages .k {
     grid-area: k;
-    font: 400 var(--sx-lab-size)/1.2 var(--font-mono);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    font: var(--sx-lab-weight) var(--sx-lab-size) / 1.2 var(--sx-lab-font);
     letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
-    color: var(--sx-muted);
+    color: var(--h);
+  }
+  .sx-layers__stages .k::before {
+    content: '';
+    width: 0.5em;
+    height: 0.5em;
+    border-radius: 0;
+    background: var(--h);
   }
   .sx-layers__stages .nm {
     grid-area: nm;
-    font: 400 16px/1.3 var(--font-sans);
+    font: 500 16px/1.3 var(--font-sans);
     color: var(--sl-color-white);
   }
-  /* Status words in muted mono; the active stage is marked by ink and weight, not by a colour. */
   .sx-layers__stages .st {
     grid-area: st;
-    font: 400 10.5px/1.2 var(--font-mono);
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
+    font: 500 0.75rem/1.2 var(--font-sans);
     text-align: right;
     color: var(--sx-muted);
   }
   .sx-layers__stages li[data-state='active'] .st {
-    font-weight: 500;
+    font-weight: 600;
     color: var(--sl-color-white);
-  }
-  .sx-layers__stages li[data-state='active'] .nm {
-    font-weight: 500;
   }
 
   /* Hovering a stage row isolates its bowl (mouse only, once the intro is over). */
@@ -683,6 +590,15 @@
   }
 
   @media (prefers-reduced-motion: no-preference) {
+    /* The datum draws out from the mark once the sheets have closed. */
+    .sx-layers.js .sx-layers__datum {
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 1100ms var(--sx-ease) 1800ms;
+    }
+    .sx-layers.js.go .sx-layers__datum {
+      transform: none;
+    }
     /* Hidden until the script has measured the lines and started the intro. */
     .sx-layers.js:not(.go) [data-split] {
       visibility: hidden;
@@ -770,16 +686,7 @@
       animation: none;
     }
 
-    .sx-layers.js .sx-layers__datum {
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform 1100ms var(--sx-ease) 1800ms;
-    }
-    .sx-layers.js.go .sx-layers__datum {
-      transform: none;
-    }
-
-    /* The stage list rises one row after another once the sheets have closed. */
+    /* The stage entries rise one after another once the sheets have closed. */
     .sx-layers__stages li:nth-child(1) {
       --d: 2250ms;
     }
@@ -790,30 +697,14 @@
       --d: 2430ms;
     }
     .sx-layers.js .sx-layers__stages li {
-      border-top-color: transparent;
-    }
-    .sx-layers.js .sx-layers__stages li::before {
-      transform: scaleX(0);
-      transform-origin: left;
-      transition:
-        transform 900ms var(--sx-ease) var(--d, 0ms),
-        width 550ms var(--sx-ease);
-    }
-    .sx-layers.js .sx-layers__stages li > * {
       opacity: 0;
       transform: translateY(10px);
       transition:
         opacity 800ms var(--sx-ease) var(--d, 0ms),
-        transform 800ms var(--sx-ease) var(--d, 0ms);
+        transform 800ms var(--sx-ease) var(--d, 0ms),
+        border-color var(--sx-dur) var(--sx-ease);
     }
     .sx-layers.js.go .sx-layers__stages li {
-      border-top-color: var(--sx-hairline);
-      transition: border-color 800ms var(--sx-ease) var(--d, 0ms);
-    }
-    .sx-layers.js.go .sx-layers__stages li::before {
-      transform: none;
-    }
-    .sx-layers.js.go .sx-layers__stages li > * {
       opacity: 1;
       transform: none;
     }
@@ -828,21 +719,19 @@
     }
   }
 
-  /* ---- Phone: the figure first, then the copy, then the stages ---- */
+  /* ---- Phone: the figure first, then the copy, then the stages ----
+     The figure is kept small enough that the statement and the main action still reach the first
+     screen of a phone. */
 
   @media (max-width: 900px) {
     .sx-layers {
-      --pw: min(64vw, 270px);
+      --pw: min(50vw, 200px);
       height: auto;
       min-height: clamp(640px, calc(100vh - var(--sl-nav-height, 3.5rem)), 920px);
       grid-template-columns: minmax(0, 1fr);
       align-content: start;
-      row-gap: 30px;
-      padding: 30px 24px 44px;
-    }
-    .sx-layers::before {
-      -webkit-mask-image: radial-gradient(90% 40% at 50% 22%, black 0%, transparent 80%);
-      mask-image: radial-gradient(90% 40% at 50% 22%, black 0%, transparent 80%);
+      row-gap: 22px;
+      padding-block: 22px 48px;
     }
     .sx-layers__fig {
       display: contents;

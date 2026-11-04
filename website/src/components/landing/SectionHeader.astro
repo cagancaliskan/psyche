@@ -1,34 +1,31 @@
 ---
-// A landing section's opening, drawn like a line on a drafting sheet: a mono index and kicker (after
-// "Tagline" by shadcncraft, 21st.dev) standing on a hairline datum line that runs to the content
-// edge, the display heading rising out of a clip once in view (after "Text Reveal (Mask)" by
-// soralabs, 21st.dev, in plain CSS and a few lines of script, without its motion library) and at
-// most one short paragraph in the default slot. The kicker repeats the heading, so assistive
-// technology skips it. The server markup is the finished frame: only below the fold, with script
-// and without reduced motion, a header waits until it scrolls into view. Styles are in
-// src/styles/landing/section-header.css.
+// A landing section's opening: a kicker (a legend entry: a square swatch in the hue the section is
+// about, then its name; after "Tagline" by shadcncraft, 21st.dev), then the display heading rising
+// out of a clip once in view (after "Text Reveal (Mask)" by soralabs, 21st.dev, in plain CSS and a
+// few lines of script, without its motion library) and at most one short lead in the default slot.
+// The kicker repeats the heading, so assistive technology skips it. The server markup is the
+// finished frame: only below the fold, with script and without reduced motion, a header waits until
+// it scrolls into view. Styles are in src/styles/landing/section-header.css.
 import '@/styles/landing/section-header.css';
+
+type Hue = 'agent' | 'structure' | 'violet' | 'spike';
 
 interface Props {
   id: string;
   title: string;
-  /** The section's position on the page, e.g. "01". */
-  index?: string;
   /** A one- or two-word name for the kicker. */
   kicker?: string;
+  /** The hue of the kicker's dot; by default taken from what the kicker names. */
+  hue?: Hue;
 }
-const { id, title, index, kicker } = Astro.props;
+// What each section is about: mint is stage 1, blue is stage 2 and its structure, violet is the
+// project as a whole.
+const hues: Record<string, Hue> = { Substrate: 'agent', Battery: 'structure', Roadmap: 'structure' };
+const { id, title, kicker, hue = hues[kicker ?? ''] ?? 'violet' } = Astro.props;
 ---
 
-<header class="sx-sh" data-sh>
-  {
-    kicker && (
-      <p class="sx-sh__kicker" aria-hidden="true">
-        {index && <span class="sx-sh__idx">{index}</span>}
-        <span class="sx-sh__name">{kicker}</span>
-      </p>
-    )
-  }
+<header class="sx-sh" data-sh data-hue={hue}>
+  {kicker && <p class="sx-sh__kicker" aria-hidden="true">{kicker}</p>}
   <h2 class="sx-sh__title" id={id}><span class="sx-sh__clip"><span>{title}</span></span></h2>
   <slot />
 </header>

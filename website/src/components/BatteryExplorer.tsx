@@ -235,7 +235,7 @@ function Sheet({ test, inView }: { test: Test; inView: boolean }) {
       </header>
 
       <figure className="sx-bs__fig">
-        <div className="sx-bs__sheet" aria-hidden="true" data-pagefind-ignore="" data-kind={test.kind} data-animate={view.animate ? '' : undefined}>
+        <div className="sx-arena sx-bs__sheet" aria-hidden="true" data-pagefind-ignore="" data-kind={test.kind} data-animate={view.animate ? '' : undefined}>
           <i className="sx-bs__cm tl" />
           <i className="sx-bs__cm tr" />
           <i className="sx-bs__cm bl" />

@@ -36,8 +36,8 @@ export const NOT_FOUND = {
     'The address you followed does not match a page of this site. These lead to the home page, the research overview, the test battery and the substrate status.',
 } as const;
 
-/** The brand canvas colours (brand/README.md), for the browser's address bar. */
-export const THEME_COLOR = { light: '#f5f7fb', dark: '#05070d' } as const;
+/** The site's canvas colours (--sl-color-black in styles/global.css), for the browser's address bar. */
+export const THEME_COLOR = { light: '#f5f7fb', dark: '#0a0f1e' } as const;
 
 const PROJECT_ID = `${SITE_URL}#project`;
 const WEBSITE_ID = `${SITE_URL}#website`;

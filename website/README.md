@@ -10,7 +10,7 @@ on the site is read against rule 1 (claims discipline) and the
 - [What the site is](#what-the-site-is)
 - [How a build works](#how-a-build-works)
 - [Commands](#commands)
-- [Design language: the drafting sheet](#design-language-the-drafting-sheet)
+- [Design language: neural cartography, in colour](#design-language-neural-cartography-in-colour)
 - [Component inventory](#component-inventory)
 - [Checks](#checks)
 - [CI](#ci)
@@ -182,14 +182,16 @@ Run in `website/` after `npm ci`. From the repository root, `make site` runs `np
 | `npm run check:diagrams` | `diagrams.py --check` |
 | `npm run check:a11y` | axe-core at WCAG 2.2 AA over `dist/` (Chrome; not part of `build`) |
 
-## Design language: the drafting sheet
+## Design language: neural cartography, in colour
 
-Every surface is set as a sheet from a drawing set: hairline rules, mono labels, square corners (0 to
-2px; a circle only for a dot or ring), ruled rows instead of cards, registration corners on framed
-sheets, no pills, glow or shadow. The only blurs are behind the header and the phone contents bar and
-behind the search dialog.
+The site is set as a drafting sheet, in the language its drawings already speak: square corners,
+hairline edges, flat colour, rulers and registration marks, and no gradient, glow, shadow, pill or
+tinted card. Colour is drawn the way the illustrations draw it: a rule in a hue, a square swatch before
+a label (as in a map's legend), a line, a solid mark. Hairlines separate rows and edge blocks.
+Decorative numbering is gone; real sequences (phases P0 to P5, gates A to D, paradigms T1 to T5) keep
+their numbers.
 
-### Tokens and inks (`src/styles/global.css`)
+### Tokens and hues (`src/styles/global.css`)
 
 Components use tokens, never a raw colour. Dark is `:root`; light is `:root[data-theme='light']`.
 Starlight's `--sl-color-*` point at the same values (`--sl-color-white` is the text ink,
@@ -197,99 +199,80 @@ Starlight's `--sl-color-*` point at the same values (`--sl-color-white` is the t
 
 | Variable | Role |
 |---|---|
-| `--sx-agent` (signal) | What is current: the agent and its route, "now", the current page or heading, the focus ring. Rare on purpose |
-| `--sx-structure` | Walls, axes, connectors, the short bar on a rule, list markers, section indices |
-| `--sx-spike` | Rare emphasis: the gate the line is waiting on, cautions |
-| `--sx-muted`, `--sx-hairline` | Secondary text; decorative rules |
+| `--sx-agent` (signal mint) | Stage 1, the agent and its route, what is current: "now", the focus ring |
+| `--sx-structure` (map blue) | Stage 2 and structure: walls, axes, links in prose, the primary action |
+| `--sx-violet` | The project as a whole and the stages still to come |
+| `--sx-spike` (amber) | Rare emphasis: today, the gate the line is waiting on, cautions |
+| `--sx-stage` | The hue of the page's own stage: violet on the project's pages, mint on stage 1 pages, blue on stage 2 pages |
+| `--sx-surface`, `--sx-surface-2` | A block on the canvas; a block raised or inset one step further, each told by its edge |
+| `--sx-arena`, `.sx-arena` | The flat night plate the maze and the battery's drawings sit in, dark in both themes: the class sets the dark tokens on itself |
+| `--sx-muted`, `--sx-hairline` | Secondary text; rules and edges |
 | `--sx-rule-strong` | The edge of a control, the mark of a state: 3:1 against canvas and surfaces (WCAG 1.4.11) |
-| `--sx-lab-size`, `--sx-lab-track` | The one mono label: 10.5px, 0.13em, uppercase |
+| `--sx-grid` | The faint drafting grid behind the hero's mark |
+| `--sx-r-xs` to `--sx-r-l`, `--sx-r-pill` | Corners: 2px everywhere, so a control does not cut the hand and nothing is a pill |
+| `--sx-space-section`, `--sx-pad-panel`, `--sx-pad-card` | Space between the landing page's sections, inside a block and inside a smaller block |
+| `--sx-lab-font`, `--sx-lab-weight`, `--sx-lab-case`, `--sx-lab-size`, `--sx-lab-track` | The label: sentence case in the reading face at weight 600 |
 | `--sx-dur`, `--sx-dur-bar`, `--sx-dur-line`, `--sx-ease` | Durations of chrome state changes; the curve |
 
-`--sx-surface`, `--sx-surface-2` (the few fills), `--sx-grid` and `--sx-gutter` complete the set. A
-colour change must also reach the copies of values: `CODE_INKS` in `astro.config.mjs`, `THEME_COLOR` in
-`src/lib/seo.ts`, `public/site.webmanifest`, `scripts/og-card.html` and `brand/`.
+`--sx-gutter` completes the set. A colour change must also reach the copies of values: `CODE_INKS` in
+`astro.config.mjs`, `THEME_COLOR` in `src/lib/seo.ts` and `public/site.webmanifest`. The brand's own
+files (`brand/`, the PNG icons and `scripts/og-card.html`) keep the brand canvas, `#05070d`, and the
+mark's bowls are never recoloured.
 
 ### Type (`src/styles/fonts.css`, `docs.css`)
 
 Three self-hosted variable faces from Fontsource: **Unbounded** for display (weights 200 to 400),
-**Instrument Sans** for reading and the interface, **Martian Mono** for labels, code and data.
-`fonts.css` gives each a stand-in (a local Arial or Courier New scaled to the web font's metrics)
-so the swap moves nothing; measure again, and update the table at its head, if a face changes. Faces
-are not preloaded (see `src/routeData.ts`). Docs body text is 1.0625rem in a 33rem
-measure, in `rem` and not `ch` because Instrument Sans has a wide zero.
+**Instrument Sans** for reading, the interface and labels, **Martian Mono** for data (an id, a day, a
+count) and code. `fonts.css` gives each a stand-in (a local Arial or Courier New scaled to the web
+font's metrics) so the swap moves nothing; measure again, and update the table at its head, if a face
+changes. Faces are not preloaded (see `src/routeData.ts`). Docs body text is 1.0625rem at a line height
+of 1.7 in a 35rem measure, in `rem` and not `ch` because Instrument Sans has a wide zero.
 
-### Rules, corners, links (`global.css`, `docs.css`)
+### Blocks, labels, links (`global.css`, `docs.css`)
 
-- **Short bar**: 28px by 2px in the structure colour at the start of a rule (title strip, previous and
-  next, code captions, the 404 rows, the landing's ruled rows).
-- **Registration corners** (`.sx-reg`): four 14px hairline L shapes in the structure colour over a
-  sheet's corners, never a full frame. Used by the search dialog, footer block, 404 sheet, framed
-  readouts, the timeline, the brick board and `Figure.astro`; `.sx-diagram` repeats the recipe in
-  `docs.css` because `stage.py` writes its markup, and the battery and maze sheets draw the same marks
-  with elements of their own.
-- **Links** in prose: ink over a 1px underline in the strong rule, signal on hover and focus. **Focus**
-  is a 2px signal outline everywhere. **Asides** are a rule down the start edge and a mono label, with
-  no card, fill or icon. The sidebar's current page puts a 2px signal bar on its rail.
+- **Blocks**: a surface fill and a hairline edge with square corners; a block that stands for a stage or
+  a state carries a rule in its hue along its top edge. Lists are rows on rules. The landing page sets
+  some sections on full-bleed bands of the raised surface and its battery section in the arena.
+- **Labels** are legend entries: a square swatch in the hue, then the words. A state's marker keeps
+  its shape (a ring, a disc or a square), so colour is never the only cue. An id (P0, Gate A, T1) is
+  mono data.
+- **Buttons**: the primary action is a solid map-blue rectangle; the others are outlined.
+- **Links** in prose: the map blue over a 1.5px underline that takes the stage hue on hover and focus.
+  **Focus** is a 2px signal outline everywhere. **Asides** are a 4px bar in the aside's hue (note blue,
+  tip mint, caution and danger amber) with a coloured title; a danger adds a full-strength edge, so
+  colour is not the only difference. The sidebar's group headings carry a square in their stage's hue,
+  and the current page a bar in the stage hue.
 
-### Title strip and footer title block
+### Title block and footer title block
 
-`chrome/PageTitle.astro` draws a ruled strip above each title (`.sx-pt`, `docs.css`): the stage, section
-and the stage's state from the ledger, or the sidebar's group number and name, or "Error 404".
-`chrome/Footer.astro` draws the title block (`.sx-foot`, `global.css`): the sheet's title and number, its
-stage and state, on stage 2 pages the next gate, then repository links and the page's date. Both read
-the sidebar, ledger and plan through `src/lib/pageChrome.ts`, type nothing per page, leave out a cell
-with no data, and are excluded from search.
+`chrome/PageTitle.astro` draws the strip above each title (`.sx-pt`, `docs.css`): the stage, section and
+the stage's state from the ledger, or the sidebar's group name, or "Error 404", as legend entries. It
+sets `data-stage` (1, 2 or 0) from the page's section, which gives the page its hue; three Start here
+pages that show one stage's work (the timeline, the battery, the substrate's status) take that stage's.
+A 3px rule in the stage's hue runs over the strip and the title, and a hairline closes the block.
+`chrome/Footer.astro` draws the title block (`.sx-foot`, `global.css`): a block with the page's facts
+as cells (its stage and state, on stage 2 pages the next gate), then the repository's links and the
+page's date. Both read the sidebar, ledger and plan through
+`src/lib/pageChrome.ts`, type nothing per page, leave out a cell with no data, and are excluded from
+search.
 
 ### Tables, code, diagrams, figures
 
-- **Tables** (`docs.css`): a hairline above the header, the header a mono label over a stronger rule, a
-  hairline under each row. `scripts/table-region.mjs` wraps every Markdown table in
+- **Tables** (`docs.css`): a block on the surface, the header row on `--sx-surface-2` in the label
+  recipe, a hairline between rows. `scripts/table-region.mjs` wraps every Markdown table in
   `<div class="sx-table" role="region" tabindex="0" aria-label="Table: ...">`, named by its caption or
   nearest heading, so a table that scrolls can be scrolled by keyboard (WCAG 2.1.1);
   `chrome/TableRegions.astro` removes role, name and tab stop from a region whose table fits. A 2px
   structure bar at the edge with more content is the cue that it scrolls. **Write tables in Markdown:**
   a raw HTML table is not wrapped, so it is unstyled and unreachable by keyboard.
-- **Code frames** (`docs.css`, `codeTheme` in `astro.config.mjs`): hairline frame, a caption line with
-  the title or "Terminal" as a mono label, an always-visible square copy button. Syntax uses three inks
-  (comments muted; commands, keywords and functions structure; the rest ink).
-- **Diagrams** are staged SVG with geometry and classes but no colour, inside `.sx-diagram` (corners, a
-  scroll box); the page's tokens paint them, so one file serves both themes. A timeline draws a thin bar
-  per phase (outline planned, structure colour done, signal in progress) and a square gate mark.
+- **Code frames** (`docs.css`, `codeTheme` in `astro.config.mjs`): a block on the surface, a caption
+  strip with the title or "Terminal", an always-visible copy button. Syntax uses three inks (comments
+  muted; commands, keywords and functions structure; the rest ink).
+- **Diagrams** are staged SVG with geometry and classes but no colour, inside `.sx-diagram` (a block
+  and a scroll box); the page's tokens paint them, so one file serves both themes.
 - **Figures** under docs titles are `components/docs/` components mapped to routes in `visuals.ts`,
-  framed by `Figure.astro` and styled by `docs-visuals.css`. A figure lays out by its own width
-  (container `sx-dv`), not the window's, and does not move.
-
-### Cascade and other stylesheets
-
-`global.css` opens with `@layer base, starlight, theme, components, utilities;` and is first in
-`customCss`; every stylesheet that a page or component imports repeats the statement. `docs.css` and
-`fonts.css` load through `customCss` after `global.css` and do not need to. Starlight's styles sit in
-`starlight` and the site's in `components`, so the site restyles Starlight by layer order at low
-specificity; token blocks are unlayered and win. Classes and nearly all custom properties use the prefix
-`sx-`; the docs figures keep `--dv-*` and the diagram frame `--dg-*`. The other files: `plan.css`
-(timeline, gates, now readout), `readout.css`, `status.css`, `hero.css`, `landing.css` with
-`landing/*.css`, `battery.css`, `notfound.css`. `.sx-landing` and `.sx-wide` switch the docs rules off
-for the whole page. A page that leaves Starlight's column in another way (`.sx-bat`, `.sx-nf`) carries
-`.not-content` on its wrapper. The docs rules have zero specificity
-(`:where(body:not(:has(.sx-landing, .sx-wide)) .sl-markdown-content ...)`) and skip elements with a
-class or inside `.not-content`: give a component placed in Markdown content both.
-
-### Motion, forced colours, light and dark
-
-- **Motion.** The three `--sx-dur*` tokens are `0s` under `prefers-reduced-motion: reduce`. Every page
-  ships its finished frame in the server markup; motion is added only with script and without reduced
-  motion: the hero draws, landing blocks below the fold rise once (a focused block shows at once;
-  printing shows all), the maze figure and battery routes draw once, `plan.css` draws timeline bars by
-  CSS scroll-driven animation. A battery sheet steps every three seconds while at least half in view;
-  hover pauses it, a click or focus inside stops it until Play, and a Pause and Play control is shown
-  whenever it can move. It is the only motion that keeps running on its own.
-- **Forced colours.** A transparent border is drawn and a background-only mark is repainted as the
-  canvas, so a current row's bar is a border switching between `Canvas` and `Highlight`, a background
-  bar or glyph gets a system colour with `forced-color-adjust: none`, and diagram marks take system
-  colours. The `@media (forced-colors: active)` blocks are in `global.css`, `docs.css`,
-  `docs-visuals.css`, `plan.css`, `battery.css`, `hero.css`, `landing/caliper.css` and `notfound.css`.
-- **Light and dark**: tokens for each, a `color-scheme` meta and two `theme-color` metas, a wordmark and
-  a code ink set per theme, colourless diagrams. The social card and PNG icons are dark only.
+  framed by `Figure.astro` as a block and styled by `docs-visuals.css`. A figure lays out by its
+  own width (container `sx-dv`), not the window's, and does not move.
 
 ## Component inventory
 
