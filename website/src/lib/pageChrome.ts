@@ -206,7 +206,7 @@ export function nextGateText(plan: Plan): string | null {
 export interface BlockCell {
   label: string;
   text: string;
-  /** A second, quieter figure beside the text: the sheet number. */
+  /** A second, quieter figure beside the text. */
   note?: string;
   /**
    * The next gate's letter and date and the plan's time zone, for the footer's script, which reads the
@@ -223,10 +223,11 @@ export function keepDays(text: string): string {
 }
 
 /**
- * The cells of the title block at the foot of a page: the sheet (the page's title and its number among
- * the sidebar's pages), the stage it belongs to and its state, and, on a page of stage 2, the next
- * gate. A cell is left out when its data is absent: the landing page and the 404 page are not sheets,
- * and a page outside a stage has no stage.
+ * The cells of the title block at the foot of a page: the stage it belongs to and its state, and, on a
+ * page of stage 2, the next gate. A cell is left out when its data is absent, so a page outside a stage
+ * (the landing page, the 404 page and the Start here pages among them) has no cells. The page's own
+ * title and its place among the sidebar's pages are not repeated here: the title band above the page
+ * names it, and a place in the sidebar's order is not a sequence the reader steps through.
  */
 export function titleBlock(input: {
   id: string;
@@ -235,12 +236,8 @@ export function titleBlock(input: {
   ledger: Pick<PublicLedger, 'program'>;
   plan: Plan;
 }): BlockCell[] {
-  const { id, title, sidebar, ledger, plan } = input;
+  const { id, ledger, plan } = input;
   const cells: BlockCell[] = [];
-  if (id !== '' && id !== NOT_FOUND.route) {
-    const sheet = sheetOf(sidebar);
-    if (sheet && title) cells.push({ label: 'Sheet', text: title, note: sheet.text });
-  }
   const stage = stageLine(id, ledger);
   if (stage) {
     cells.push({ label: 'Stage', text: keepDays(`${stage.stage} · ${stage.since ? `${stage.state} since ${stage.since.label}` : stage.state}`) });

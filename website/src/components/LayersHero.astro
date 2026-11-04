@@ -1,18 +1,19 @@
 ---
 // The landing hero: the Psyche mark taken apart, as four thin sheets in CSS 3D (a stem and three
-// nested bowls) beside the project's statement, its lead, its actions and a row that leads to the newest
-// blog post. The sheets fan out,
-// are drawn in build order, then close into the logo; a stage list (real text, read from the
-// public ledger) sits on the mark's top edge. The figure is decoration and hidden from assistive
-// technology; the stage list says the same in words. The server markup is the finished frame.
+// nested bowls) beside the project's statement, its lead, its actions and a ruled link to the
+// newest blog post. The sheets fan out, are drawn in build order, then close into the logo; a stage
+// list (three entries of real text, read from the public ledger) stands beside it. The figure is
+// decoration and hidden from assistive technology; the stage list says the same in words. The
+// server markup is the finished frame.
 // The intro is CSS (src/styles/hero.css); the script below splits the copy into lines, starts the
 // intro once the fonts are in, keeps the stroke two pixels wide and tilts the figure towards a
 // fine pointer once the intro is over. Catalog sources are credited in hero.css.
 //
 // The stages grow outward (brand/README.md): the inner bowl is stage 1, the middle bowl stage 2,
 // and the outer bowl, open at the stem, is what later stages will wrap around. The key to the bowls
-// (the intro's legend and the stage list) is a short stroke in each bowl's own colour, which is the
-// mark's and not a state, followed by words in muted type: signal green is kept for what is active.
+// (the intro's legend) is a short stroke in each bowl's own colour, which is the
+// mark's and not a state, followed by words in muted type. The stage entries take the stage's own hue
+// (mint, blue, violet), which is not the bowl's colour.
 import PMark from './brand/PMark.astro';
 import blog from '@/data/blog.json';
 import ledger from '@/data/ledger.public.json';

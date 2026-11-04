@@ -1,5 +1,5 @@
 ---
-// The substrate's bricks (stage 1) as a ruled sheet: a key to the two axes, then one row per brick
+// The substrate's bricks (stage 1) as a box: a key to the two axes, then one row per brick
 // with its id, its name, its build status and its meaning verdict, the last two in columns of their
 // own because they are separate axes (CONTRIBUTING rule 3). Read from the staged public projection
 // of tools/ledger.json through lib/status.ts; nothing here is typed by hand: names, statuses and
@@ -45,7 +45,7 @@ const plural = (n: number) => (n === 1 ? 'brick' : 'bricks');
 ---
 
 <div class="sx-bricks not-content">
-  <div class="sx-bricks__sheet sx-reg">
+  <div class="sx-bricks__sheet">
     <div class="sx-key">
       <section class="sx-key__col" aria-labelledby="sx-key-build">
         <h3 class="sx-key__head" id="sx-key-build">Build status</h3>

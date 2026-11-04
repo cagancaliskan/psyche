@@ -1,13 +1,13 @@
 /*
  * Fig. 1 on the landing (components/landing/MazeFigure.astro): the latent-learning illustration as
- * a drafting sheet. Thin structure-blue walls on room centre lines, a ruler on each axis, hairline
- * registration corners, the agent's reward-free trail in ink and one signal route. It carries the
- * hero's language: sharp sheets, mono labels, hairline-ruled rows, tokens only.
+ * a drawn sheet. Thin structure-blue walls on room centre lines, a ruler on each axis, the agent's
+ * reward-free trail in ink and one signal route. The sheet is an inset of the arena it sits in (the
+ * night panel of the battery section, so every token here reads as on the dark page): a flat
+ * square-cornered panel with a hairline edge, one step above the arena, in place of the
+ * registration corners it was drawn with; the drawing and its motion are untouched.
  *
- * Catalog sources (21st.dev), rewritten in plain CSS: the corner marks after "Corner Frame" by
- * kevingirelli (bracket marks with their size, thickness and inset as properties), the stroke draw
- * after the hero's "Animated Signature" by dqnamo (a pathLength 1 dash reveal on a near-linear pen
- * curve).
+ * Catalog source (21st.dev), rewritten in plain CSS: the stroke draw after the hero's "Animated
+ * Signature" by dqnamo (a pathLength 1 dash reveal on a near-linear pen curve).
  *
  * The finished picture is the default. Only with script and without reduced motion is it blanked
  * and then played once, by the "go" class that the figure's script adds when the sheet first
@@ -39,40 +39,13 @@
     grid-template-rows: 1.5rem auto;
     gap: 6px;
     padding: 0.9rem 1.1rem 1.1rem 0.8rem;
-    background: color-mix(in oklab, var(--sx-surface) 70%, transparent);
+    border: 1px solid var(--sx-hairline);
+    border-radius: var(--sx-r-m);
+    background: var(--sx-surface);
   }
-  /* Registration corners: hairline L shapes on the sheet's box, never a full frame. */
+  /* The registration corners the markup still carries are not drawn: the panel's edge frames it. */
   .sx-mz__cm {
-    --size: 14px;
-    position: absolute;
-    width: var(--size);
-    height: var(--size);
-    border: 0 solid var(--sx-structure);
-    pointer-events: none;
-  }
-  .sx-mz__cm.tl {
-    left: 0;
-    top: 0;
-    border-left-width: 1px;
-    border-top-width: 1px;
-  }
-  .sx-mz__cm.tr {
-    right: 0;
-    top: 0;
-    border-right-width: 1px;
-    border-top-width: 1px;
-  }
-  .sx-mz__cm.bl {
-    left: 0;
-    bottom: 0;
-    border-left-width: 1px;
-    border-bottom-width: 1px;
-  }
-  .sx-mz__cm.br {
-    right: 0;
-    bottom: 0;
-    border-right-width: 1px;
-    border-bottom-width: 1px;
+    display: none;
   }
 
   /* Rulers in arena cells: numerals at the room walls, a tick at every cell. The ticks are SVG
@@ -287,13 +260,12 @@
     text-wrap: pretty;
   }
   .sx-mz__fig {
-    font: 400 var(--sx-lab-size)/1 var(--font-mono);
+    font: var(--sx-lab-weight) var(--sx-lab-size)/1 var(--sx-lab-font);
     letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
     color: var(--sl-color-white);
   }
-  /* The separator is drawn here, with room on both sides, so the tracked label does not leave it
-     attached to the sentence. */
+  /* The separator is drawn here, with room on both sides, so the label does not leave it attached
+     to the sentence. */
   .sx-mz__fig::after {
     content: '\00b7';
     margin-inline: 0.9em 0.5em;

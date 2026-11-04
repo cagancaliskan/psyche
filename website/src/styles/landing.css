@@ -1,8 +1,9 @@
 /*
  * The landing page below the hero (src/pages/index.astro and src/components/landing/): the frame
  * every section sits in. Each section brings its own stylesheet (src/styles/landing/); this file
- * holds what they share: the sheet's width and gutters, the vertical rhythm, the page's one inline
- * link and the scroll reveal.
+ * holds what they share: the sheet's width and gutters, the vertical rhythm, the full-bleed bands that
+ * break the long column into blocks, the arena of the battery section, the page's one inline link and
+ * the scroll reveal.
  *
  * Site tokens only, so light and dark switch through the variables. The layer statement repeats
  * global.css's order, so the order holds whichever stylesheet the browser reads first. Catalog
@@ -29,12 +30,27 @@
   /* ---------- Rhythm: the space above a section, the space under its header ---------- */
 
   .sx-lp-section {
-    margin-top: clamp(4rem, 1.5rem + 6vw, 7.5rem);
+    margin-top: var(--sx-space-section);
   }
   /* Blocks that follow a header or each other inside one section (the battery's figure and rows). */
   .sx-lp-stack {
     display: grid;
     gap: clamp(2rem, 1.5rem + 1.5vw, 3rem);
+  }
+
+  /* ---------- Bands: a full-bleed block behind a section ----------
+     Every other section (the roadmap, the disclosure, the blog) sits on the raised surface, which runs
+     to both edges of the window: the sheet's gutters are taken back as negative margin and given again
+     as padding. The band's own padding replaces the section's margin, so the space between two
+     sections stays what it was. */
+  .sx-lp-section:has(:is(#sx-roadmap-title, #sx-public-title, #sx-blog-title)) {
+    margin-inline: calc(var(--sx-gutter) * -1);
+    padding: calc(var(--sx-space-section) * 0.6) var(--sx-gutter);
+    border-block: 1px solid var(--sx-hairline);
+  }
+  /* The battery section is the night panel: the arena, with the panel's padding. */
+  .sx-lp-arena {
+    padding: var(--sx-pad-panel);
   }
 
   /* Links in landing copy: a hairline underline that turns to the signal colour on hover. The

@@ -1,40 +1,39 @@
 /*
  * The status page's own pieces (pages/status.astro, components/BrickBoard.astro): the facts of the
- * captured run, drawn as ruled rows under the readout inside its sheet, and the brick board, a key
- * to the two axes over one ruled row per brick. A drafting sheet, like the rest of the site:
- * hairline rules, mono labels, registration corners (the shared .sx-reg recipe in global.css),
- * square markers, no cards, no pills, no glow, no shadow and no fill. The signal colour is not used:
- * nothing here is what is current. Every colour is a token.
+ * captured run as label and value rows under the readout's stat tiles, in the same panel, and the
+ * brick board, a box with a key to the two axes in two blocks over one row per brick. A state is a
+ * legend entry whose hue says what it is (mint for what is verified or earned,
+ * blue for what is built, violet for what is only designed, amber for what was stopped, neutral for
+ * what has no verdict), and whose marker's shape says it as the word does, so colour is never the
+ * only cue: a filled square (verified), a square in a square (built), a dashed square (designed), a
+ * struck square (no-go), a dash (no verdict earned). The markers are drawn with borders, so they
+ * survive forced colours. Hairlines remain only between the rows of a list or a table.
  *
- * A state is a mono label with a small square marker, and the marker's shape says it as the word
- * does, so colour is never the only cue: a filled square (verified), a square in a square (built), a
- * dashed square (designed), a struck square (no-go), a dash (no verdict earned). The markers are
- * drawn with borders, so they survive forced colours.
+ * The readout's tiles and their panel are in readout.css, which the landing and the substrate
+ * overview share.
  *
  * Catalog sources (21st.dev), rewritten in plain CSS with none of their code or dependencies: the
  * label column and value column of a definition list, stacked when narrow, after "Key Value List" by
- * corr; the row that leads with a state mark, after "Health Checks" by astralyxdev; the mono
- * identifier column and the marker-and-word state cell, after "Audit Log Table" by arihantcodes; the
- * ruled rows that stack on a narrow screen, after "Spec Sheet" by isaiahbjork. The layout follows the
- * width of the board, not of the window (container queries), because the page's column is not the
- * window. The layer statement repeats the one in global.css, so the order holds whichever stylesheet
- * the browser reads first.
+ * corr; the row that leads with a state
+ * mark, after "Health Checks" by astralyxdev; the mono identifier column and the marker-and-word
+ * state cell, after "Audit Log Table" by arihantcodes; the rows that stack on a narrow screen, after
+ * "Spec Sheet" by isaiahbjork. The layout follows the width of the board, not of the window
+ * (container queries), because the page's column is not the window. The layer statement repeats the
+ * one in global.css, so the order holds whichever stylesheet the browser reads first.
  */
 @layer base, starlight, theme, components, utilities;
 
 @layer components {
-  /* The first section of the page sits under the title strip, not four rem below it, and its sheet
-     is followed by the page's note with room between. */
+  /* The first section of the page sits under the title strip, not a section's space below it, and its
+     tiles are followed by the page's note with room between. */
   .sx-status > .sx-section:first-child {
-    margin-block: 0 2.25rem;
+    margin-block: 0 var(--sx-pad-panel);
   }
-  /* A sheet that follows a section heading stands a line clear of it, as the brick board does, so
-     the heading and the frame's registration corners do not touch. */
   .sx-status .sx-section > h2 + .sx-readout-wrap {
     margin-block-start: 1.5rem;
   }
 
-  /* ---------- Facts of the captured run: label and value, ruled ---------- */
+  /* ---------- Facts of the captured run: label and value rows in the readout's panel ---------- */
 
   .sx-facts {
     margin: 0;
@@ -46,23 +45,26 @@
     grid-template-columns: minmax(0, 1fr);
     gap: 0.3rem;
     margin: 0;
-    padding: 0.8rem var(--ro-pad, 1rem);
+    padding: 0.9rem var(--ro-pad, var(--sx-pad-card));
     border-top: 1px solid var(--sx-hairline);
   }
   .sx-facts__row:first-child {
     border-top: 0;
   }
   .sx-facts__label {
-    font: 500 var(--sx-lab-size) / 1.4 var(--font-mono);
+    font-family: var(--sx-lab-font);
+    font-size: var(--sx-lab-size);
+    font-weight: var(--sx-lab-weight);
+    line-height: 1.4;
     letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    text-transform: var(--sx-lab-case);
     color: var(--sx-muted);
   }
   .sx-facts__value {
     margin: 0;
     font-size: 0.9375rem;
     line-height: 1.5;
-    color: var(--sl-color-gray-1);
+    color: var(--sl-color-white);
     font-variant-numeric: tabular-nums;
   }
   @container sx-readout (min-width: 34rem) {
@@ -73,26 +75,35 @@
     }
   }
 
-  /* ---------- A state: a mono label with a small square marker ---------- */
+  /* ---------- A state: a small square marker and a word ---------- */
 
   .sx-st {
     --m: var(--sx-muted);
+    --w: var(--sx-surface-2);
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--sx-muted);
-    font: 400 var(--sx-lab-size) / 1.3 var(--font-mono);
+    padding: 0;
+    border-radius: var(--sx-r-pill);
+    color: var(--sl-color-white);
+    font-family: var(--sx-lab-font);
+    font-size: var(--sx-lab-size);
+    font-weight: var(--sx-lab-weight);
+    line-height: 1.3;
     letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    text-transform: var(--sx-lab-case);
   }
-  .sx-st:is([data-state='verified'], [data-state='built'], [data-state='earned']) {
+  .sx-st:is([data-state='verified'], [data-state='earned']) {
+    --m: var(--sx-agent);
+  }
+  .sx-st[data-state='built'] {
     --m: var(--sx-structure);
-    color: var(--sl-color-gray-1);
+  }
+  .sx-st:is([data-state='designed'], [data-state='horizon'], [data-state='other']) {
+    --m: var(--sx-violet);
   }
   .sx-st[data-state='no-go'] {
-    --m: var(--sl-color-white);
-    color: var(--sl-color-white);
-    font-weight: 500;
+    --m: var(--sx-spike);
   }
   .sx-st__mark {
     position: relative;
@@ -133,48 +144,42 @@
     border-width: 1.5px 0 0;
   }
 
-  /* ---------- The brick board: a key, then one ruled row per brick ---------- */
+  /* ---------- The brick board: a box with a key, then one row per brick ---------- */
 
   .sx-bricks {
     container: sx-bricks / inline-size;
     margin-top: 1.5rem;
   }
   .sx-bricks__sheet {
-    --ro-pad: 1rem;
+    padding: var(--sx-pad-panel);
     border: 1px solid var(--sx-hairline);
-  }
-  @container sx-bricks (min-width: 30rem) {
-    .sx-bricks__sheet {
-      --ro-pad: 1.25rem;
-    }
+    border-radius: var(--sx-r-l);
+    background: var(--sx-surface);
   }
 
-  /* The key: the two axes, each with the question it asks and the states it knows. */
+  /* The key: the two axes, each a block with the question it asks and the states it knows. */
   .sx-key {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
   }
   .sx-key__col {
     min-width: 0;
-    padding: 1.15rem var(--ro-pad) 1.3rem;
-  }
-  .sx-key__col + .sx-key__col {
-    border-top: 1px solid var(--sx-hairline);
+    padding: 0.75rem 0 0;
+    border-block-start: 2px solid var(--sx-hairline);
   }
   @container sx-bricks (min-width: 44rem) {
     .sx-key {
       grid-template-columns: repeat(2, minmax(0, 1fr));
     }
-    .sx-key__col + .sx-key__col {
-      border-top: 0;
-      border-left: 1px solid var(--sx-hairline);
-    }
   }
   .sx-key__head {
     margin: 0 0 0.4rem;
-    font: 500 var(--sx-lab-size) / 1.3 var(--font-mono);
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    font-family: var(--sx-lab-font);
+    font-size: 1rem;
+    font-weight: 600;
+    line-height: 1.3;
     color: var(--sl-color-white);
   }
   .sx-key__ask {
@@ -189,6 +194,7 @@
     list-style: none;
   }
   .sx-key__row {
+    justify-items: start;
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
@@ -227,7 +233,7 @@
   .sx-brk {
     /* The height of the first line of a row: the name's line, which the id and each state sit in the
        middle of, so a row's cells line up whether or not their type is the same size. */
-    --brk-line: 1.3125rem;
+    --brk-line: 1.75rem;
     display: block;
     width: 100%;
     margin: 0;
@@ -238,15 +244,15 @@
   }
   .sx-brk tr {
     display: grid;
-    grid-template-columns: 3.25rem minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-columns: 4rem minmax(0, 1fr) minmax(0, 1fr);
     grid-template-areas:
       'id name name'
       '. build meaning';
     column-gap: 1rem;
-    row-gap: 0.45rem;
+    row-gap: 0.5rem;
     align-items: start;
     margin: 0;
-    padding: 0.8rem var(--ro-pad);
+    padding: 0.8rem 0;
     border: 0;
     border-top: 1px solid var(--sx-hairline);
     background: none;
@@ -263,30 +269,31 @@
   }
   .sx-brk__id {
     grid-area: id;
-    font: 500 0.75rem / var(--brk-line) var(--font-mono);
-    color: var(--sx-structure);
+    line-height: var(--brk-line);
   }
+  /* A brick's id is data, so it is set in the mono face. */
   .sx-brk__id code {
+    display: inline-block;
     padding: 0;
     border: 0;
-    background: none;
-    font: inherit;
-    color: inherit;
+    border-radius: var(--sx-r-pill);
+    background: transparent;
+    font: 500 0.75rem / 1.2 var(--font-mono);
+    color: var(--sl-color-white);
+    white-space: nowrap;
   }
   .sx-brk__name {
     grid-area: name;
     font-size: 0.9375rem;
     line-height: var(--brk-line);
-    color: var(--sl-color-gray-1);
+    color: var(--sl-color-white);
     text-wrap: pretty;
   }
   .sx-brk .sx-brk__cell {
     display: flex;
     flex-direction: column;
+    align-items: flex-start;
     gap: 0.25rem;
-  }
-  .sx-brk .sx-st {
-    min-height: var(--brk-line);
   }
   .sx-brk__cell[data-axis='build'] {
     grid-area: build;
@@ -297,9 +304,12 @@
   .sx-brk__cell::before {
     content: attr(data-label);
     content: attr(data-label) / '';
-    font: 400 var(--sx-lab-size) / 1.2 var(--font-mono);
+    font-family: var(--sx-lab-font);
+    font-size: var(--sx-lab-size);
+    font-weight: var(--sx-lab-weight);
+    line-height: 1.2;
     letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    text-transform: var(--sx-lab-case);
     color: var(--sx-muted);
   }
   /* A narrow board, or large text (the rem grows with it): the two axes stack under the name in
@@ -307,7 +317,7 @@
      leaves the name a few characters wide, the id has a line of its own as well. */
   @container sx-bricks (max-width: 20rem) {
     .sx-brk tr {
-      grid-template-columns: 3rem minmax(0, 1fr);
+      grid-template-columns: 3.5rem minmax(0, 1fr);
       grid-template-areas:
         'id name'
         '. build'
@@ -339,15 +349,18 @@
     clip-path: inset(50%);
   }
   .sx-brk__cols th {
-    font: 500 var(--sx-lab-size) / 1.3 var(--font-mono);
+    font-family: var(--sx-lab-font);
+    font-size: var(--sx-lab-size);
+    font-weight: var(--sx-lab-weight);
+    line-height: 1.3;
     letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    text-transform: var(--sx-lab-case);
     color: var(--sx-muted);
   }
   @container sx-bricks (min-width: 40rem) {
     .sx-brk tr,
     .sx-brk__cols tr {
-      grid-template-columns: 4.25rem minmax(0, 1fr) 9.5rem 9.5rem;
+      grid-template-columns: 4.5rem minmax(0, 1fr) 9.5rem 9.5rem;
       grid-template-areas: 'id name build meaning';
       column-gap: 1.25rem;
       row-gap: 0;
@@ -373,15 +386,13 @@
     }
   }
 
-  /* The designed bricks, folded away: a native disclosure whose summary is plan.css's. The summary
-     is the label alone, set in from the frame, so that its focus ring wraps the label and stays clear
-     of the frame's rule. */
+  /* The designed bricks, folded away: a native disclosure whose summary is plan.css's text link with a chevron. */
   .sx-bricks__more {
+    margin-top: 0.5rem;
+    padding-top: 0.9rem;
     border-top: 1px solid var(--sx-hairline);
   }
-  .sx-disclosure.sx-bricks__more > summary {
-    display: flex;
-    width: fit-content;
-    margin: 0.9rem var(--ro-pad);
+  .sx-bricks__more > .sx-brk {
+    margin-top: 0.5rem;
   }
 }

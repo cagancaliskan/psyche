@@ -235,7 +235,7 @@ test('a docs page of the Start here group borrows no stage: no stage line and no
   for (const id of ['guide', 'faq', 'progress', 'governance']) assert.equal(stageLine(id, LEDGER), null, id);
   for (const [id, current] of START_PAGES) {
     const cells = titleBlock({ id, title: 'A page', sidebar: sidebar(current), ledger: LEDGER, plan: PLAN });
-    assert.deepEqual(cells.map((c) => c.label), ['Sheet'], id);
+    assert.deepEqual(cells.map((c) => c.label), [], id);
   }
   // a stage's state is never read from the group's name either: it comes from the route alone
   assert.equal(stageLine('start-here', LEDGER), null);
@@ -280,21 +280,19 @@ test('the next gate is read from the plan: its date, or pending once the date ha
   assert.equal(nextGateText({ ...PLAN, gates: [PLAN.gates[2]] }), null);
 });
 
-test('the title block holds the sheet, the stage and, on a stage 2 page, the next gate', () => {
+test('the title block holds the stage and, on a stage 2 page, the next gate', () => {
   const block = (id: string, title: string, current: string) => titleBlock({ id, title, sidebar: sidebar(current), ledger: LEDGER, plan: PLAN });
   // a day is kept on one line (no-break spaces), and the gate cell carries what the browser's clock reads
   assert.deepEqual(block('research/gates', 'Decision gates', 'Gates'), [
-    { label: 'Sheet', text: 'Decision gates', note: '6 / 7' },
     { label: 'Stage', text: '2 · active' },
     { label: 'Next gate', text: 'Gate A, 15\u00a0November\u00a02026', clock: { gate: 'A', date: '2026-11-15', tz: PLAN.timezone } },
   ]);
   // the substrate is another line: its state and since when, and no gate
   assert.deepEqual(block('substrate/overview', 'The substrate', 'Substrate'), [
-    { label: 'Sheet', text: 'The substrate', note: '7 / 7' },
     { label: 'Stage', text: '1 · paused since 23\u00a0October\u00a02026' },
   ]);
-  // a page outside the stages is a sheet and nothing more
-  assert.deepEqual(block('battery', 'Step through the paradigms', 'Battery'), [{ label: 'Sheet', text: 'Step through the paradigms', note: '4 / 7' }]);
+  // a page outside the stages has no cells: its title is in its title band, and no page number is kept
+  assert.deepEqual(block('battery', 'Step through the paradigms', 'Battery'), []);
 });
 
 test('a day in words is kept on one line, and nothing else is touched', () => {
@@ -304,12 +302,12 @@ test('a day in words is kept on one line, and nothing else is touched', () => {
   assert.equal(keepDays('2 · active'), '2 · active');
 });
 
-test('the landing page and the 404 page are not sheets; a page not in the sidebar has no sheet', () => {
+test('the landing page, the 404 page and a page not in the sidebar have no cells', () => {
   const none = (id: string, title: string, current: string) => titleBlock({ id, title, sidebar: sidebar(current), ledger: LEDGER, plan: PLAN });
   assert.deepEqual(none('', 'Psyche', 'Home'), []);
   assert.deepEqual(none('404', 'Page not found', 'Nowhere'), []);
   assert.deepEqual(none('battery', 'Elsewhere', 'Nowhere'), []);
-  // a page with no title is not a sheet either
+  // nor does a page with no title
   assert.deepEqual(none('battery', '', 'Battery'), []);
 });
 

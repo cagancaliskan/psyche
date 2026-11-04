@@ -1,15 +1,15 @@
 ---
-// What is public and what is not yet, as a two-column ledger of ruled rows. Each row carries a
-// small bowl from the Psyche mark in place of a tick or a lock: a closed bowl (it returns to the
-// stem) for what is published here, an open bowl (it curves away and does not return to the stem)
-// for what is still private. The right column states a state, not a promise: whether and when
-// anything moves is set by the disclosure policy alone. The ruled rhythm follows "Spec Sheet" by
-// isaiahbjork (21st.dev); the links are in styles/landing/links.css. The glyphs are decoration;
-// each column's heading says the same in words.
+// What is public and what is not yet, as two contrasting boxes: what is published here edged in mint,
+// what is not public yet edged in amber. Each row carries a small bowl from the Psyche mark in place
+// of a tick or a lock: a closed bowl (it returns to the stem) for what is published
+// here, an open bowl (it curves away and does not return to the stem) for what is still private.
+// The second box states a state, not a promise: whether and when anything moves is set by the
+// disclosure policy alone. The list rhythm follows "Spec Sheet" by isaiahbjork (21st.dev); the
+// styles are in styles/landing/rows.css. The glyphs are decoration; each box's heading says the
+// same in words.
 import { withBase } from '@/lib/url.ts';
 import SectionHeader from './SectionHeader.astro';
 import '@/styles/landing/rows.css';
-import '@/styles/landing/links.css';
 
 const bowls = {
   closed: 'M2 0.75V13.25M2 2H10A3.5 3.5 0 0 1 10 9H2',
@@ -53,8 +53,8 @@ const columns = [
 ];
 ---
 
-<section class="sx-lp-section not-content" aria-labelledby="sx-public-title" data-caliper="05 Disclosure">
-  <SectionHeader id="sx-public-title" title="What is public, and what is not yet" index="05" kicker="Disclosure" />
+<section class="sx-lp-section not-content" aria-labelledby="sx-public-title" data-caliper="Disclosure">
+  <SectionHeader id="sx-public-title" title="What is public, and what is not yet" kicker="Disclosure" />
   <div class="sx-disclose">
     {
       columns.map((col) => (
@@ -64,10 +64,10 @@ const columns = [
             <h3 class="sx-disclose__title">{col.title}</h3>
             <p class="sx-disclose__sub">{col.sub}</p>
           </div>
-          <ul class={col.key === 'later' ? 'sx-ruled sx-ruled--open' : 'sx-ruled'} role="list">
+          <ul class="sx-disclose__list" role="list">
             {
-              col.items.map((text, i) => (
-                <li class="sx-ruled__row sx-ruled__row--bowl" style={`--r:${i}`}>
+              col.items.map((text) => (
+                <li class="sx-disclose__row">
                   <svg class="sx-bowl" viewBox="0 0 16 14" aria-hidden="true" focusable="false">
                     <path d={col.bowl} />
                   </svg>
@@ -78,7 +78,7 @@ const columns = [
           </ul>
           <div class="sx-disclose__foot">
             <p>{col.foot}</p>
-            <a class="sx-lp-link" href={col.link.href}>{col.link.label}</a>
+            <a class="sx-pill" href={col.link.href}>{col.link.label}</a>
           </div>
         </div>
       ))

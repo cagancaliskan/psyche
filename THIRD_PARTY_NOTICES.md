@@ -128,24 +128,23 @@ name and author so that anyone can find the original and read the terms its auth
 | Component | Author | Adapted for | Credited in |
 |---|---|---|---|
 | 404 Did You Mean | ziegfiroyt | The address that was asked for, and the nearest page to it, on the 404 page | `pages/404.astro`, `components/chrome/NearestPage.astro`, `styles/notfound.css` |
-| 404 Search And Popular Links | olewandowski1 | A list whose rows share their rules: the 404 page's places to go and the cells of the footer's title block | `styles/notfound.css`, `pages/404.astro`, `styles/global.css`, `components/chrome/Footer.astro` |
+| 404 Search And Popular Links | olewandowski1 | The 404 page's places to go | `styles/notfound.css`, `pages/404.astro` |
 | 8bit Timeline Horizontal | theorcdev | Square numbered checkpoints on a track that runs across and turns down in a narrow figure (the idea only), in the stage arc and the release flow | `styles/docs-visuals.css` |
-| Admonition | deltacomponents | Asides (notes, tips, cautions) | `styles/global.css` |
+| Alert | shadcn | Asides: a rule and a title in the aside's hue | `styles/global.css` |
 | Animated Sidebar | unlumen | Active marker in the sidebar | `styles/global.css` |
 | Animated Signature | dqnamo | Stroke draw of the hero mark and the maze figure | `styles/hero.css`, `styles/landing/maze-figure.css` |
-| Announcement | haydenbleasel | A tag and a title in one link, drawn square and ruled rather than as a pill: the row under the landing hero's actions that leads to the newest blog post | `styles/hero.css`, `components/LayersHero.astro` |
+| Announcement | haydenbleasel | A tag and a title in one link, between two rules: the row under the landing hero's actions that leads to the newest blog post | `styles/hero.css` |
 | Audit Log Table | arihantcodes | Mono identifier column and the state cell that is a marker and a word, in the brick board | `styles/status.css`, `components/BrickBoard.astro` |
-| Blog Cards | sumonadotwork | The dashed leader that runs from a post's title to its day, in the landing page's latest posts | `styles/landing/posts.css`, `components/landing/LatestPosts.astro` |
+| Blog Cards | sumonadotwork | Post cards, in the landing page's latest posts and on the blog's index | `styles/landing/posts.css`, `components/landing/LatestPosts.astro`, `styles/blog.css` |
 | Blueprint Tiers | arihantcodes_1f7b8c4d | Tiers as ruled rows of hairlines with mono labels, laid out by the figure's own width (the idea only; nothing copied), in the determinism tiers figure | `styles/docs-visuals.css` |
 | Changelog | mohammadshehadeh | The date rail beside each ruled entry of the blog's index (its filter, badges and subscribe form are not used) | `styles/blog.css`, `pages/blog/index.astro` |
 | Changelog Timeline | shadcnui-blocks | A label column beside a rule that carries its marker, in the role lanes (the idea only) | `styles/docs-visuals.css` |
 | Circuit Board | componentry | Traces that leave a box level, turn in the gap and enter the next box level, with an arrowhead where they end (the idea only; no animation, light or code), in the evaluation pipeline figure | `styles/docs-visuals.css`, `components/docs/EvaluationPipeline.astro` |
 | Code Block | 0xuser64bit | The caption line of a code block: the title or a terminal's label as a mono label, a copy button at its end, over the code | `styles/docs.css` |
 | Command Menu | victor-teles | Search dialog: grouped results, the match in ink | `styles/global.css` |
-| Corner Frame | kevingirelli | Registration corner marks on figures, battery sheets, the search dialog, the footer's title block, the 404 page and the frame of the documentation's diagrams and figures (one shared recipe, `.sx-reg`) | `styles/global.css`, `styles/battery.css`, `styles/notfound.css`, `styles/landing/maze-figure.css`, `components/landing/MazeFigure.astro`, `components/chrome/Footer.astro`, `components/BatteryExplorer.tsx`, `styles/docs.css`, `styles/docs-visuals.css`, `components/docs/Figure.astro` |
+| Corner Frame | kevingirelli | Registration corner marks, kept in the markup of the maze figure and of the battery's sheets and hidden on the night panel | `components/landing/MazeFigure.astro`, `components/BatteryExplorer.tsx` |
 | Deployment Pipeline | rmahammad | A state told by a word beside its mark, and a layout that follows the figure's own width, not the window's (the idea only; nothing copied) | `styles/docs-visuals.css` |
-| Footer with Navigation Grid | shadcnui-blocks | A row of links under a divider, in the footer's title block | `styles/global.css`, `components/chrome/Footer.astro` |
-| Frame Button | radiumcoders | Primary action in the hero: a ruled, square-cornered control whose four corner marks step outward on hover | `styles/hero.css` |
+| Footer with Navigation Grid | shadcnui-blocks | The row of links under the facts, in the footer's title block | `components/chrome/Footer.astro` |
 | Gantt Chart | klyv-ui | Month gridlines, today marker and gate marks on the axis of the roadmap timeline | `styles/plan.css`, `components/Timeline.tsx` |
 | Health Checks | astralyxdev | Rows that lead with a state mark and end with its word, and two signals of one item kept apart, in the brick board | `styles/status.css`, `components/BrickBoard.astro` |
 | How It Works Steps | ln-dev7 | Sequence figures in the documentation | `styles/docs-visuals.css` |
@@ -158,21 +157,20 @@ name and author so that anyone can find the original and read the terms its auth
 | Leaderboard Bars | eugeneshilow | A shared scale with its marks labelled in mono and hairline rules (the idea only), in the determinism tiers gauge | `styles/docs-visuals.css`, `components/docs/DeterminismTiers.astro` |
 | Legends | airbnb-visx | The key to the hero's four sheets: a swatch in each sheet's own colour, then its name in neutral type | `styles/hero.css` |
 | Line Draw SVG | pulkitxm | Route draw in the battery pictures | `styles/battery.css` |
-| Link Button | hyperiux | Section-end links | `styles/landing/links.css` |
 | Marks Slider | ai2 | A ruler-style scale of cells and marks named by labels (the idea only; no slider, thumb or motion), in the determinism tiers gauge | `styles/docs-visuals.css`, `components/docs/DeterminismTiers.astro` |
 | Milestone Timeline | olewandowski1 | Dated rows with a status label in the roadmap's phase list | `components/TimelineList.astro`, `styles/plan.css` |
-| NavBar | mohitsapat | A text link beside the GitHub link in the header (the idea only), for the blog | `components/chrome/SocialIcons.astro`, `styles/global.css` |
-| Note | shugar | Asides | `styles/global.css` |
+| NavBar | mohitsapat | A text link beside the GitHub link in the header (the idea only), for the blog | `components/chrome/SocialIcons.astro` |
 | Not Found 404 Page | mohammadshehadeh | The 404 page: a mono label, one sentence and a ruled list of places to go | `pages/404.astro`, `styles/notfound.css` |
-| Numberless Pagination | shadcnui-blocks | Previous and next links | `styles/global.css` |
 | Page Header with Breadcrumbs | olewandowski1 | The ruled strip of stage, section and state above a page title | `styles/docs.css`, `components/chrome/PageTitle.astro` |
-| Reshaped Table | reshaped | The shared outer and column rules of the footer's title block (the idea only; the package is not used) | `styles/global.css`, `components/chrome/Footer.astro` |
+| Pagination with Arrows | sean0205 | Previous and next links, one block for each direction | `styles/global.css` |
+| Reshaped Alert | reshaped | The tone of an aside, told by its colour and its title | `styles/global.css` |
 | Reveal | asanshay | Scroll reveals on the landing page | `styles/landing.css`, `pages/index.astro` |
 | Scroll animated timeline | ibrandify | Scroll-drawn bars of the roadmap timeline and rows of its list | `styles/plan.css` |
 | Scroll Caliper | nikolas-sapa | Measuring rail in the page gutter | `styles/landing/caliper.css`, `components/landing/CaliperRail.astro` |
-| Search Input with Keyboard Shortcut | shadcnspace | Search button | `styles/global.css` |
+| Search Input with Keyboard Shortcut | shadcnspace | Search field | `styles/global.css` |
+| Segmented Control | klyv-ui | The battery page's switch between its paradigms (T1 to T5) | `styles/battery.css` |
 | Sidebar Light | inference-sh | Sidebar rail and rows | `styles/global.css` |
-| Spec Sheet | isaiahbjork | Ruled tables and rows on the landing and battery pages, the header label over a stronger rule of the documentation's tables, the label column and ruled rows of the gate list and of the brick board, the bar on a previous or next rule, on a footer or title rule and on the 404 rows | `styles/global.css`, `styles/docs.css`, `styles/notfound.css`, `styles/battery.css`, `styles/landing/ledger.css`, `styles/landing/rows.css`, `components/landing/StageLedger.astro`, `components/landing/HowBuilt.astro`, `components/landing/PublicWithheld.astro`, `components/landing/SubstrateReadout.astro`, `components/landing/CiteContact.astro`, `styles/readout.css`, `components/BrickBoard.astro`, `styles/status.css`, `components/GateStepper.astro`, `styles/plan.css`, `pages/battery.astro` |
+| Spec Sheet | isaiahbjork | The label and value rows of the landing page's stage cards and of its two disclosure cards, the grid of its method cards, the header label of the documentation's tables, the label column and rows of the gate list and of the brick board, and the battery page's notes | `components/landing/StageLedger.astro`, `styles/landing/ledger.css`, `components/landing/HowBuilt.astro`, `components/landing/PublicWithheld.astro`, `styles/landing/rows.css`, `styles/docs.css`, `components/GateStepper.astro`, `components/BrickBoard.astro`, `styles/status.css`, `pages/battery.astro` |
 | Stats Band | kuratlielia | Label-over-figure cells of the substrate readout | `styles/readout.css`, `components/landing/SubstrateReadout.astro` |
 | Status | diceui | State label with its marker, in the roadmap's timeline, list and gate rows | `styles/plan.css` |
 | Status Badge | serafimcloud | Two-part label and value of the "now" readout | `styles/plan.css`, `components/NowLine.tsx` |
@@ -180,10 +178,10 @@ name and author so that anyone can find the original and read the terms its auth
 | Stepper | kevingirelli | Step rows of the battery, and the connecting rule and square marks of the gate list | `styles/battery.css`, `styles/plan.css`, `components/BatteryExplorer.tsx`, `components/GateStepper.astro` |
 | Table | originui | Ruled tables in the documentation: rules between rows and none round the table | `styles/docs.css` |
 | Table of Contents | appica-dev | Current-heading bar of the contents list | `styles/global.css` |
-| Table of Contents | mohammadshehadeh | Sidebar rail and the battery index | `styles/global.css`, `styles/battery.css`, `components/BatteryExplorer.tsx` |
+| Table of Contents | mohammadshehadeh | The bar beside the current heading in the contents list | `styles/global.css` |
 | Tagline | shadcncraft | Index and kicker of the landing section openings | `components/landing/SectionHeader.astro` |
 | Text Reveal (Mask) | soralabs | Headings that rise out of a clip | `styles/hero.css`, `styles/landing/section-header.css`, `components/landing/SectionHeader.astro` |
-| Underline Link | balick | Underline links, the title of a previous or next link | `styles/global.css`, `styles/hero.css`, `styles/landing/links.css`, `styles/landing/battery-rows.css`, `styles/landing/ledger.css` |
+| Underline Link | balick | The underline of a paradigm's name in the landing page's battery rows | `styles/landing/battery-rows.css` |
 | Vertical Titled Stepper | sean0205 | Numbered titles of the battery steps | `styles/battery.css`, `components/BatteryExplorer.tsx` |
 
 If you are an author listed here and want a credit corrected or an adaptation removed, tell the

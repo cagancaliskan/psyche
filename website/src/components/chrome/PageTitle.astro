@@ -18,7 +18,7 @@ import blog from '../../data/blog.json';
 import ledger from '../../data/ledger.public.json';
 import { isPostRoute, postMeta } from '../../lib/blog.ts';
 import type { PublicLedger } from '../../lib/ledger.ts';
-import { titleStrip } from '../../lib/pageChrome.ts';
+import { STAGE_OF_SECTION, sectionOfRoute, titleStrip } from '../../lib/pageChrome.ts';
 import { routeOf } from '../../lib/seo.ts';
 import { visualFor } from '../docs/visuals.ts';
 
@@ -29,11 +29,19 @@ const here = routeOf(Astro.url.pathname);
 const data = route.entry.data as { date?: string; updated?: string; author?: string; tags?: string[] };
 const post = isPostRoute(here) && data.date ? postMeta({ ...data, date: data.date }, blog.author) : null;
 const strip = post ? null : titleStrip(here, route.sidebar, ledger as unknown as Pick<PublicLedger, 'program'>);
+// The page's stage, for its colour (styles/global.css): 1 on a substrate page, 2 on a cognitive-map
+// page, 0 on the project's own pages and the blog. Three pages of the Start here group show one stage's
+// work and take its colour: the timeline and the battery are stage 2's, the substrate's status stage 1's.
+const STAGE_OF_PAGE: Record<string, number> = { roadmap: 2, battery: 2, status: 1 };
+const section = sectionOfRoute(route.id);
+const stage =
+  STAGE_OF_PAGE[here.replace(/^\/+|\/+$/g, '')] ??
+  (Object.hasOwn(STAGE_OF_SECTION, section) ? STAGE_OF_SECTION[section as keyof typeof STAGE_OF_SECTION].stage : 0);
 ---
 
 {
   post && (
-    <div class="sx-pt not-content" data-pagefind-ignore>
+    <div class="sx-pt not-content" data-stage={stage} data-pagefind-ignore>
       <p class="sx-pt__section">
         <span class="sx-pt__idx">Blog</span> <time datetime={post.published.iso}>{post.published.label}</time>
       </p>
@@ -43,7 +51,7 @@ const strip = post ? null : titleStrip(here, route.sidebar, ledger as unknown as
 }
 {
   strip && (
-    <div class="sx-pt not-content" data-pagefind-ignore>
+    <div class="sx-pt not-content" data-stage={stage} data-pagefind-ignore>
       <p class="sx-pt__section">
         <span class="sx-pt__idx" aria-hidden={strip.start.decorative ? 'true' : undefined}>{strip.start.tag}</span>{' '}
         {strip.start.name}

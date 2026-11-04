@@ -1,9 +1,14 @@
 /*
- * Visual identity: neural cartography.
- * A near-black instrument canvas with a faint coordinate grid. One luminous signal colour marks
- * only the agent (its trail and route) and "now"; a cold map blue draws structure (walls, axes,
- * grid); a warm spike amber is kept for rare emphasis. Unbounded for display, Instrument Sans for
- * reading, Martian Mono for labels and figures. Dark is :root; light is :root[data-theme='light'].
+ * Visual identity: neural cartography, drawn in colour.
+ * A deep blue night (light: a cool paper) set as a drafting sheet: square corners, hairline edges,
+ * flat colour, no gradient, glow or shadow. Four hues each mean one thing wherever they appear: the
+ * signal mint is stage 1, the agent and what is current; the map blue is stage 2 and structure; violet
+ * is the project as a whole and the stages still to come; amber is the rare emphasis. Colour is drawn,
+ * as the illustrations draw it: a rule in a hue, a square swatch before a label (a map's legend), a line,
+ * a solid mark. A docs page takes its stage's hue for the rule over its title, its current sidebar row
+ * and the bar over each heading. The drawings of the agent's world sit in the arena, a flat night plate
+ * in both themes. Unbounded for display, Instrument Sans for reading and for labels (in sentence case),
+ * Martian Mono for data and code. Dark is :root; light is :root[data-theme='light'].
  */
 
 /* Cascade layers: Starlight's own styles sit in `starlight`; the site's components come after it,
@@ -57,36 +62,63 @@
   --sl-font-mono: var(--font-mono);
   --sx-font-display: var(--font-display);
 
-  /* dark (default) */
-  --sl-color-accent-low: #0a2b24;
+  /* dark (default): the arena at night. The canvas is a deep blue night rather than a neutral black,
+     and the greys lean the same way, so panels read as layers of one colour rather than as grey boxes. */
+  --sl-color-accent-low: #0e2a2b;
   --sl-color-accent: #5ef0c4;
   --sl-color-accent-high: #c4fbe9;
   --sl-color-white: #f4f6fb;
-  --sl-color-gray-1: #e9edf5;
-  --sl-color-gray-2: #c3cad8;
-  --sl-color-gray-3: #8f99ad;
-  --sl-color-gray-4: #5c6579;
-  --sl-color-gray-5: #2a3142;
-  --sl-color-gray-6: #121722;
-  --sl-color-black: #05070d;
+  --sl-color-gray-1: #e9edf7;
+  --sl-color-gray-2: #c5cde0;
+  --sl-color-gray-3: #939db5;
+  --sl-color-gray-4: #5f6a86;
+  --sl-color-gray-5: #28324e;
+  --sl-color-gray-6: #121a31;
+  --sl-color-black: #0a0f1e;
 
+  /* The hues. Each one means one thing wherever it appears, as the mark's bowls do (brand/README.md):
+     the signal mint is stage 1, the agent and what is current; the map blue is stage 2 and structure;
+     violet is the project as a whole and the stages still to come; amber is the rare emphasis (today,
+     a warning). */
   --sx-agent: #5ef0c4;
   --sx-structure: #8aa2ff;
+  --sx-violet: #c3a3ff;
   --sx-spike: #ffb45e;
-  --sx-surface: #0b0f18;
-  --sx-surface-2: #111726;
-  --sx-hairline: #1c2333;
+  /* The surfaces: the canvas (--sl-color-black), a panel laid on it, and a panel raised or inset one
+     step further, each told from the page by its edge. The arena is the flat night plate the drawings
+     of the agent's world sit in, in both themes (.sx-arena below). */
+  --sx-surface: #111930;
+  --sx-surface-2: #172039;
+  --sx-arena: #050811;
+  --sx-hairline: #222c47;
   /* The edge of a control, or the mark of a state, where nothing else identifies it: 3:1 or more
      against the canvas and both surfaces (WCAG 1.4.11). Decorative rules stay --sx-hairline. */
-  --sx-rule-strong: #646e84;
-  --sx-muted: #9aa4b8;
+  --sx-rule-strong: #6c7896;
+  --sx-muted: #a3adc2;
   --sx-grid: color-mix(in oklab, var(--sx-structure) 9%, transparent);
   --sx-ease: cubic-bezier(0.2, 0.7, 0.1, 1);
-  /* The one mono label of the site, on the landing page, the battery, the chrome, the roadmap and the
-     status page alike: a field label, a section head or a state label. Heads take weight 500, field
-     labels 400. */
-  --sx-lab-size: 0.65625rem;
-  --sx-lab-track: 0.13em;
+  /* The hue of the page's own stage: violet for the project's pages, mint on a stage 1 page, blue on a
+     stage 2 page. Set from the title strip's data-stage (below), so the rule over a page's title, its
+     current sidebar row and its heading marks all take the stage it belongs to. */
+  --sx-stage: var(--sx-violet);
+  /* Corners are square, as the drawings are: two pixels at most on a control, so a key cap or a button
+     does not cut the hand, and nothing is a pill. The names are kept so every rule reads one scale. */
+  --sx-r-xs: 2px;
+  --sx-r-s: 2px;
+  --sx-r-m: 2px;
+  --sx-r-l: 2px;
+  --sx-r-pill: 2px;
+  /* Space: between the landing page's sections, and inside a panel or a card. */
+  --sx-space-section: clamp(4.5rem, 2rem + 6vw, 8.5rem);
+  --sx-pad-panel: clamp(1.25rem, 0.9rem + 1.6vw, 2.25rem);
+  --sx-pad-card: clamp(1rem, 0.85rem + 0.6vw, 1.5rem);
+  /* The label of the site: a section's kicker, a field's name, a state. Sentence case in the reading
+     face at a heavier weight; the mono face is kept for data (an id, a day, a count) and code. */
+  --sx-lab-font: var(--font-sans);
+  --sx-lab-weight: 600;
+  --sx-lab-case: none;
+  --sx-lab-size: 0.8125rem;
+  --sx-lab-track: 0.01em;
   /* The gutter of the landing page's sheet, and so of the footer beneath it (landing.css, hero.css). */
   --sx-gutter: max(clamp(24px, 6vw, 104px), calc((100vw - 90rem) / 2));
   /* How long a state change takes in the chrome: a colour, a bar that runs a rule, an underline that
@@ -109,7 +141,7 @@
 }
 
 :root[data-theme='light'] {
-  --sl-color-accent-low: #d9f7ee;
+  --sl-color-accent-low: #dff5ec;
   --sl-color-accent: #087a5c;
   --sl-color-accent-high: #04402f;
   --sl-color-white: #0a0d14;
@@ -117,59 +149,110 @@
   --sl-color-gray-2: #2b3346;
   --sl-color-gray-3: #4a5468;
   --sl-color-gray-4: #8a93a6;
-  --sl-color-gray-5: #d5dbe6;
-  --sl-color-gray-6: #e9edf4;
-  --sl-color-gray-7: #f0f3f8;
+  --sl-color-gray-5: #d6dcea;
+  --sl-color-gray-6: #e8edf7;
+  --sl-color-gray-7: #f0f3fa;
   --sl-color-black: #f5f7fb;
 
   --sx-agent: #087a5c;
   --sx-structure: #2f4fd6;
+  --sx-violet: #6a45d9;
   --sx-spike: #9a5300;
   --sx-surface: #ffffff;
-  --sx-surface-2: #eef1f7;
-  --sx-hairline: #dde2ec;
+  --sx-surface-2: #ecf0fa;
+  --sx-hairline: #dfe4f0;
   --sx-rule-strong: #76809a;
   --sx-muted: #4a5468;
   --sx-grid: color-mix(in oklab, var(--sx-structure) 7%, transparent);
+
 }
 
-/* ---------- Site chrome: Starlight's header, search, sidebars, pagination and asides ----------
-   Set as a drafting sheet, in the language of the landing, the battery and the drawn diagrams:
-   hairline rules instead of cards, square corners, mono labels with a little tracking, no fill, no
-   glow and no shadow. The signal colour is kept for what is current or active: the page you are on,
-   the heading you are reading, a row you point at. Hover is an ink colour change.
+/* The page's stage, from the title strip (components/chrome/PageTitle.astro): mint on a stage 1 page,
+   blue on a stage 2 page, the violet default everywhere else. */
+:root:has(.sx-pt[data-stage='1']) {
+  --sx-stage: var(--sx-agent);
+}
+:root:has(.sx-pt[data-stage='2']) {
+  --sx-stage: var(--sx-structure);
+}
+
+/* The arena: the night panel that the drawings of the agent's world sit in (the maze, the battery's
+   paradigms), dark in both themes, so the trail and the walls glow as they were drawn to. It sets the
+   dark theme's tokens on itself, so everything inside it is drawn as on the dark page. */
+.sx-arena {
+  color-scheme: dark;
+  --sl-color-white: #f4f6fb;
+  --sl-color-gray-1: #e9edf7;
+  --sl-color-gray-2: #c5cde0;
+  --sl-color-gray-3: #939db5;
+  --sl-color-gray-4: #5f6a86;
+  --sl-color-gray-5: #28324e;
+  --sl-color-gray-6: #121a31;
+  --sl-color-black: #050811;
+  --sx-agent: #5ef0c4;
+  --sx-structure: #8aa2ff;
+  --sx-violet: #c3a3ff;
+  --sx-spike: #ffb45e;
+  --sx-surface: #0d1427;
+  --sx-surface-2: #141c33;
+  --sx-hairline: #1f2943;
+  --sx-rule-strong: #6c7896;
+  --sx-muted: #a3adc2;
+  --sx-grid: color-mix(in oklab, #8aa2ff 9%, transparent);
+  /* The page's stage hue is worked out on the root with the page's theme; inside the arena it is worked
+     out again with the night's own hues, so a mark stays legible. */
+  --sx-stage: var(--sx-violet);
+}
+/* How the arena looks is in the components layer, so a page can pad or shape its own arena: a flat
+   night plate, one step deeper than the dark page, with its edge drawn in the map blue. */
+@layer components {
+  .sx-arena {
+    color: var(--sl-color-white);
+    background: #050811;
+    border: 1px solid color-mix(in oklab, #8aa2ff 34%, transparent);
+    border-radius: 0;
+  }
+}
+
+/* ---------- Site chrome: Starlight's header, search, sidebars, pagination, asides and footer ----------
+   The frame of every page, drawn flat in the colours of the stages. The header is a bar on the surface
+   with a hairline under it and a 3px strip of three hard-edged segments (mint, blue, violet) along its
+   top edge; its controls (search, Blog, the theme picker) are square boxes with drawn edges. In the
+   sidebar each group heading carries a square swatch in its stage's hue (violet for the project's own
+   pages, blue for stage 2, mint for stage 1) and the current page is a row with a short bar in the
+   stage hue. The contents list marks the heading being read with a rule in the stage hue. Previous and
+   next are two boxes on hairline edges, an aside is a box with a 4px rule down its start edge, and the
+   footer's title block is a hairline-edged box whose links are underlined text.
    Starlight's own CSS sits in the `starlight` layer, so these rules win over it by layer order alone
-   and keep low specificity. State changes take --sx-dur (180ms) on --sx-ease; with
-   prefers-reduced-motion: reduce the durations are 0s, whatever a rule's specificity, so nothing in the
-   chrome moves.
+   and keep low specificity. State changes take --sx-dur on --sx-ease; with prefers-reduced-motion:
+   reduce the durations are 0s, whatever a rule's specificity, so nothing in the chrome moves.
 
    Where a border is the only thing that identifies a control (the search field, the menu button, the
    contents toggle, the search input) it is drawn in --sx-rule-strong, which holds 3:1 against the
-   canvas and both surfaces (WCAG 1.4.11). Every other rule is --sx-hairline: it separates and
-   decorates, and the text beside it says what it is.
+   canvas and both surfaces (WCAG 1.4.11). Every other edge is --sx-hairline: a control with a text
+   label, or a panel, does not depend on it.
 
    Catalog sources (21st.dev), rewritten in plain CSS on Starlight's markup:
-   - the search field after "Kbd Input Group" by uiable and "Input Group with Keyboard Shortcut" by
-     sean0205 (a boxed field with a key cap at its end), "Search Input with Keyboard Shortcut" by
-     shadcnspace, and the key cap after "Kbd" by shadcn;
+   - the search field after "Kbd Input Group" by uiable, "Input Group with Keyboard Shortcut" by
+     sean0205 and "Search Input with Keyboard Shortcut" by shadcnspace (a field with a key cap at its
+     end), and the key cap after "Kbd" by shadcn;
    - the search dialog after "Command Menu" by victor-teles (results grouped under small labels, the
-     match in ink, the active row told by colour and not by a fill), with the corner marks after
-     "Corner Frame" by kevingirelli;
-   - the sidebar after "Sidebar Light" by inference-sh (a rail with plain text rows, the current one
-     in ink) and "Animated Sidebar" by unlumen (the active bar);
+     active row told by colour);
+   - the sidebar after "Sidebar Light" by inference-sh (plain text rows, the current one marked by a bar) and
+     "Animated Sidebar" by unlumen (the active bar);
    - the contents list after "Table of Contents" by appica-dev and by mohammadshehadeh (a bar that
-     rides on the rail beside the current heading, no fill);
-   - previous and next after "Numberless Pagination" by shadcnui-blocks (two joined cells, one for
-     each direction, with no page numbers), the short bar on the rule after "Spec Sheet" by
-     isaiahbjork and the title's underline after "Underline Link" by balick;
-   - asides after "Note" by shugar (a labelled note with no fill) and "Admonition" by deltacomponents. */
+     rides on the rail beside the current heading);
+   - previous and next after "Pagination with Arrows" by sean0205 (one cell for each direction, no page
+     numbers);
+   - asides after "Alert" by shadcn and "Reshaped Alert" by reshaped (a callout whose tone is told
+     by the colour of its rule and by its title). */
 
 @layer components {
-  /* Starlight's surface variables, pointed at the tokens: one canvas behind the header and both
-     sidebars, one hairline for every rule, ink (not a tint) for its default accent text, and no
-     shadow anywhere in its chrome. */
+  /* Starlight's surface variables, pointed at the tokens: the canvas behind both sidebars, the surface
+     behind the header, one hairline for every rule, ink for its default accent
+     text, and no shadow anywhere in its chrome. */
   :root {
-    --sl-color-bg-nav: var(--sl-color-black);
+    --sl-color-bg-nav: var(--sx-surface);
     --sl-color-bg-sidebar: var(--sl-color-black);
     --sl-color-hairline-light: var(--sx-hairline);
     --sl-color-hairline: var(--sx-hairline);
@@ -194,19 +277,25 @@
     outline-offset: -3px;
   }
 
-  /* ---- Header: a nearly solid canvas over a light blur, a hairline under it. Text that scrolls under it
-     is softened, not smeared into a bright patch behind the search field. ---- */
+  /* ---- Header: a bar on the surface over a light blur, with a 3px strip of three hard-edged segments
+     (mint, blue, violet) along its top edge. Text that scrolls under it is softened, not smeared into
+     a bright patch behind the search field. ---- */
   header.header {
     border-block-end: 1px solid var(--sx-hairline);
-    background-color: var(--sl-color-black);
+    background-color: var(--sx-surface);
   }
-  @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-    header.header,
-    mobile-starlight-toc nav {
-      background-color: color-mix(in oklab, var(--sl-color-black) 94%, transparent);
-      -webkit-backdrop-filter: blur(6px);
-      backdrop-filter: blur(6px);
-    }
+  header.header::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    block-size: 3px;
+    background: linear-gradient(90deg, var(--sx-agent) 0 33.333%, var(--sx-structure) 33.333% 66.666%, var(--sx-violet) 66.666% 100%);
+    pointer-events: none;
+  }
+  /* The header and the phone's contents bar are opaque: nothing scrolls through them blurred. */
+  header.header,
+  mobile-starlight-toc nav {
+    background-color: var(--sx-surface);
   }
 
   /* Wordmark. */
@@ -225,8 +314,8 @@
   }
 
   /* ---- Search ----
-     On a phone it is a bare icon. From 50rem it is a ruled field: a square box in the strong rule, a
-     mono label ("Search") for the placeholder and the shortcut as a small key cap at the end. */
+     On a phone it is a bare icon. From 50rem it is a square-cornered field on the surface step, its edge in the
+     strong rule, "Search" in the reading face and the shortcut as a small key cap at the end. */
   button[data-open-modal] {
     color: var(--sx-muted);
     transition:
@@ -237,42 +326,37 @@
     color: var(--sl-color-white);
   }
   button[data-open-modal] > span {
-    font-family: var(--sl-font-mono);
-    font-size: var(--sx-lab-size);
+    font-family: var(--sx-lab-font);
+    font-size: 0.875rem;
     font-weight: 500;
-    letter-spacing: var(--sx-lab-track);
     line-height: 1;
-    text-transform: uppercase;
   }
   @media (min-width: 50rem) {
     button[data-open-modal] {
-      height: 2.25rem;
-      max-width: 20rem;
+      height: 2.375rem;
+      max-width: 22rem;
       gap: 0.75rem;
-      padding-inline: 0.75rem 0.375rem;
+      padding-inline: 0.9rem 0.45rem;
       border: 1px solid var(--sx-rule-strong);
-      border-radius: 0;
-      background-color: transparent;
-      color: var(--sx-muted);
+      border-radius: var(--sx-r-pill);
+      background-color: var(--sx-surface-2);
     }
     button[data-open-modal]:hover {
       border-color: var(--sl-color-white);
-      color: var(--sl-color-white);
     }
   }
-  /* The key cap: one square cap around the modifier and the key. */
+  /* The key cap: one cap around the modifier and the key. */
   button[data-open-modal] > kbd {
     align-items: center;
     gap: 0.3em;
     height: 1.5rem;
     padding-inline: 0.5rem;
     border: 1px solid var(--sx-hairline);
-    border-radius: 0;
-    background: none;
+    border-radius: var(--sx-r-xs);
+    background: var(--sx-surface);
     color: var(--sx-muted);
     font-family: var(--sl-font-mono);
-    font-size: 0.625rem;
-    letter-spacing: 0.06em;
+    font-size: 0.6875rem;
     line-height: 1;
   }
   button[data-open-modal] > kbd kbd {
@@ -286,46 +370,10 @@
     content: attr(data-key);
   }
 
-  /* ---- Registration corners ----
-     Hairline L shapes on the corners of a sheet's box, never a full frame of their own: the one recipe
-     of the search dialog, the footer's title block and the 404 page's sheet (`.sx-reg`). The box keeps
-     its own border, if it has one; the marks sit over it in the structure colour. After "Corner Frame" by
-     kevingirelli. */
-  .sx-reg {
-    position: relative;
-  }
-  .sx-reg::before,
-  site-search dialog::before {
-    --sx-reg: var(--sx-structure);
-    --sx-reg-len: 14px;
-    content: '';
-    position: absolute;
-    inset: 0;
-    z-index: 1;
-    pointer-events: none;
-    background:
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 0 / var(--sx-reg-len) 1px,
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 0 / 1px var(--sx-reg-len),
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 0 / var(--sx-reg-len) 1px,
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 0 / 1px var(--sx-reg-len),
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 100% / var(--sx-reg-len) 1px,
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 0 100% / 1px var(--sx-reg-len),
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 100% / var(--sx-reg-len) 1px,
-      linear-gradient(var(--sx-reg), var(--sx-reg)) 100% 100% / 1px var(--sx-reg-len);
-    background-repeat: no-repeat;
-  }
-  @media (forced-colors: active) {
-    .sx-reg::before,
-    site-search dialog::before {
-      --sx-reg: CanvasText;
-    }
-  }
-
   /* ---- Search dialog ----
-     A sheet on the card surface with a hairline and registration corners on a wide screen, and the
-     whole screen on a phone. The field is a box in the strong rule. A result is a page label in
-     mono, then its sections in a ruled list: a hairline rail that takes a 2px signal bar on the row
-     you point at or focus, as in the sidebar. */
+     A box on the surface with a hairline edge on a wide screen, and the whole screen on a phone. The
+     field has the strong rule as its edge. A result is the page's name as a small label, then its
+     sections as rows: the row you point at or focus takes a 3px signal bar on its start edge. */
   site-search dialog {
     border: 1px solid var(--sx-hairline);
     background-color: var(--sx-surface);
@@ -333,20 +381,14 @@
   }
   @media (min-width: 50rem) {
     site-search dialog {
-      border-radius: 0;
-    }
-  }
-  @media (max-width: 49.99rem) {
-    site-search dialog::before {
-      display: none;
+      border-radius: var(--sx-r-l);
     }
   }
   /* "Cancel", on a phone. */
   button[data-close-modal] {
-    font-family: var(--sl-font-mono);
-    font-size: var(--sx-lab-size);
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    font-family: var(--sx-lab-font);
+    font-size: 0.875rem;
+    font-weight: var(--sx-lab-weight);
     color: var(--sx-muted);
   }
   button[data-close-modal]:hover {
@@ -360,13 +402,12 @@
     --pagefind-ui-background: var(--sx-surface);
     --pagefind-ui-border: var(--sx-rule-strong);
     --pagefind-ui-border-width: 1px;
-    --pagefind-ui-border-radius: 0;
+    --pagefind-ui-border-radius: var(--sx-r-s);
     --pagefind-ui-tag: var(--sx-surface-2);
-    --sl-search-corners: 0;
+    --sl-search-corners: var(--sx-r-s);
   }
   #starlight__search .pagefind-ui__search-input {
-    font-family: var(--sl-font-mono);
-    font-size: 0.875rem;
+    font-size: 1rem;
   }
   #starlight__search .pagefind-ui__search-input::placeholder {
     color: var(--sx-muted);
@@ -381,7 +422,7 @@
     outline-offset: -2px;
   }
   #starlight__search .pagefind-ui__search-clear {
-    border-radius: 0;
+    border-radius: var(--sx-r-s);
   }
   #starlight__search .pagefind-ui__search-clear:focus {
     outline: 0;
@@ -390,27 +431,24 @@
     outline: 2px solid var(--sx-agent);
     outline-offset: -4px;
   }
-  /* The count line, as a mono readout. */
+  /* The count line, as a small label. */
   #starlight__search .pagefind-ui__message {
     height: auto;
     padding: 0 0 0.75rem;
     color: var(--sx-muted);
-    font-family: var(--sl-font-mono);
+    font-family: var(--sx-lab-font);
     font-size: var(--sx-lab-size);
-    font-weight: 500;
-    letter-spacing: var(--sx-lab-track);
+    font-weight: var(--sx-lab-weight);
     line-height: 1.4;
-    text-transform: uppercase;
   }
-  /* The empty sheet says what to do instead of showing a blank panel: one mono line under the field,
-     gone as soon as there is a query (Pagefind hides its drawer while the field is empty). */
+  /* The empty panel says what to do instead of showing a blank one: one line under the field, gone as
+     soon as there is a query (Pagefind hides its drawer while the field is empty). */
   #starlight__search .pagefind-ui__form:has(.pagefind-ui__drawer.pagefind-ui__hidden)::after {
     content: 'Type to search.';
     display: block;
     padding-block-start: 1rem;
     color: var(--sx-muted);
-    font-family: var(--sl-font-mono);
-    font-size: 0.6875rem;
+    font-size: 0.8125rem;
     line-height: 1.5;
   }
   @media (hover: hover) and (pointer: fine) {
@@ -418,25 +456,19 @@
       content: 'Type to search. Esc closes.';
     }
   }
-  /* Room under the last result or the "Load more" button, so the sheet's corner marks do not sit on it. */
   #starlight__search .pagefind-ui__results-area {
-    padding-block-end: 1.5rem;
+    padding-block-end: 0.5rem;
   }
   #starlight__search .pagefind-ui__results > * + * {
-    margin-top: 0;
+    margin-top: 0.75rem;
   }
-  #starlight__search .pagefind-ui__result + .pagefind-ui__result {
-    margin-top: 0.5rem;
-    padding-top: 0.5rem;
-    border-top: 1px solid var(--sx-hairline);
-  }
-  /* The page: a mono label above its sections, no icon and no fill. */
+  /* The page: its name as a small label above its sections, no icon and no fill. */
   #starlight__search .pagefind-ui__result-title:not(:where(.pagefind-ui__result-nested *)),
   #starlight__search .pagefind-ui__result-nested {
     background-color: transparent;
   }
   #starlight__search .pagefind-ui__result-inner > .pagefind-ui__result-title {
-    padding: 0.375rem 0;
+    padding: 0.375rem 0.75rem;
   }
   #starlight__search .pagefind-ui__result-inner > .pagefind-ui__result-title::before,
   #starlight__search .pagefind-ui__result-nested::before {
@@ -444,26 +476,21 @@
   }
   #starlight__search .pagefind-ui__result-inner > .pagefind-ui__result-title .pagefind-ui__result-link {
     color: var(--sx-muted);
-    font-family: var(--sl-font-mono);
     font-size: var(--sx-lab-size);
-    font-weight: 500;
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    font-weight: var(--sx-lab-weight);
     transition: color var(--sx-dur) var(--sx-ease);
   }
   #starlight__search .pagefind-ui__result-inner > .pagefind-ui__result-title:is(:hover, :focus-within) .pagefind-ui__result-link {
     color: var(--sl-color-white);
   }
-  /* A section: on a hairline rail, with the bar on the one you point at. */
+  /* A section: a row; the one you point at takes the bar. */
   #starlight__search .pagefind-ui__result-nested {
-    margin-inline-start: 0.125rem;
-    padding: 0.5rem 0.5rem 0.5rem 1rem;
-    border-inline-start: 2px solid transparent;
-    background-image: linear-gradient(var(--sx-hairline), var(--sx-hairline));
-    background-repeat: no-repeat;
-    background-size: 1px 100%;
-    background-origin: border-box;
-    transition: border-color var(--sx-dur) var(--sx-ease);
+    padding: 0.625rem 0.75rem;
+    border-inline-start: 3px solid transparent;
+    border-radius: var(--sx-r-s);
+    transition:
+      background-color var(--sx-dur) var(--sx-ease),
+      border-color var(--sx-dur) var(--sx-ease);
   }
   #starlight__search .pagefind-ui__result-nested .pagefind-ui__result-link {
     color: var(--sl-color-white);
@@ -494,51 +521,48 @@
     text-underline-offset: 0.2em;
   }
   #starlight__search .pagefind-ui__button {
-    border-radius: 0;
-    font-family: var(--sl-font-mono);
-    font-size: var(--sx-lab-size);
-    font-weight: 500;
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    border-radius: var(--sx-r-pill);
+    font-family: var(--sx-lab-font);
+    font-size: 0.875rem;
+    font-weight: var(--sx-lab-weight);
     transition:
       color var(--sx-dur) var(--sx-ease),
       border-color var(--sx-dur) var(--sx-ease);
   }
 
-  /* Right-hand group: the blog, GitHub and the theme picker, muted until hovered. */
+  /* ---- Right-hand group: Blog, GitHub and the theme picker ---- */
+  /* No divider: the boxes and the icon separate themselves. */
   .social-icons::after {
-    border-inline-end-color: var(--sx-hairline);
+    display: none;
   }
-  /* The blog link (components/chrome/SocialIcons.astro): a square box in the strong rule with a mono
-     label, the same recipe as the search field beside it, so it reads as a control of the header and
-     not as an icon. Its label is in ink, where the search field's placeholder is muted, so it is the
-     first thing the right of the header offers. On the blog its rule is the structure colour, the mark
-     the sidebar gives the current page. */
+  /* The blog link (components/chrome/SocialIcons.astro): a box with an edge in violet, the project's
+     own hue, and its name in ink. On hover its edge takes the full hue over a faint violet fill, and on
+     the blog the fill is a little stronger, the mark the sidebar gives the current page. */
   .social-icons a.sx-navlink {
     display: inline-flex;
     align-items: center;
-    height: 2.25rem;
-    padding-inline: 0.85rem;
+    height: 2.375rem;
+    padding-inline: 1.1rem;
     border: 1px solid var(--sx-rule-strong);
+    border-radius: var(--sx-r-pill);
     color: var(--sl-color-white);
-    font-family: var(--sl-font-mono);
-    font-size: var(--sx-lab-size);
-    font-weight: 500;
-    letter-spacing: var(--sx-lab-track);
+    font-family: var(--sx-lab-font);
+    font-size: 0.875rem;
+    font-weight: var(--sx-lab-weight);
     line-height: 1;
     text-decoration: none;
-    text-transform: uppercase;
     transition: border-color var(--sx-dur) var(--sx-ease);
   }
   .social-icons a.sx-navlink:hover {
     color: var(--sl-color-white);
-    border-color: var(--sl-color-white);
+    border-color: var(--sx-violet);
   }
   .social-icons a.sx-navlink[data-current] {
-    border-color: var(--sx-structure);
+    border-color: var(--sx-violet);
+    box-shadow: inset 0 -2px 0 var(--sx-violet);
   }
   .social-icons a.sx-navlink:focus-visible {
-    outline: 2px solid var(--sx-structure);
+    outline: 2px solid var(--sx-violet);
     outline-offset: 3px;
   }
   @media (forced-colors: active) {
@@ -554,21 +578,30 @@
   starlight-theme-select label:hover {
     color: var(--sl-color-white);
   }
-  /* The theme picker reads as the other labels of the header do: mono, small, uppercase. Starlight sizes
-     the box in em of the select's own type, so the width is set here for the smaller face. */
+  /* The theme picker is an outlined box, its edge in the strong rule like every control. Starlight sizes the
+     select in em of its own type and lays the icon and the caret over its padding, so the box is the
+     select itself. */
   starlight-theme-select select {
-    width: 6.5rem;
-    font-family: var(--sl-font-mono);
-    font-size: var(--sx-lab-size);
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    width: 7.25rem;
+    height: 2.375rem;
+    padding-block: 0;
+    border: 1px solid var(--sx-rule-strong);
+    border-radius: var(--sx-r-pill);
+    background-color: transparent;
+    font-family: var(--sx-lab-font);
+    font-size: 0.875rem;
+    font-weight: var(--sx-lab-weight);
+    transition: border-color var(--sx-dur) var(--sx-ease);
+  }
+  starlight-theme-select select:hover {
+    border-color: var(--sx-structure);
   }
 
-  /* Mobile menu button: a square in the strong rule, on no fill. */
+  /* Mobile menu button: a square-cornered button in the strong rule on the surface step. */
   .sl-menu-button {
     border: 1px solid var(--sx-rule-strong);
-    border-radius: 0;
-    background-color: transparent;
+    border-radius: var(--sx-r-pill);
+    background-color: var(--sx-surface-2);
     color: var(--sx-muted);
     box-shadow: none;
     transition:
@@ -578,53 +611,50 @@
   .sl-menu-button:hover,
   .sl-menu-button:has(~ :popover-open) {
     border-color: var(--sl-color-white);
-    background-color: transparent;
+    background-color: var(--sx-surface-2);
     color: var(--sl-color-white);
   }
 
   /* ---- Sidebar ----
-     Group labels set as instrument readouts: mono, uppercase, indexed 01, 02, 03 by a counter.
-     Items hang off a hairline rail; the current page puts a 2px signal bar on the rail and sets its
-     text in ink, with no fill. Hover only changes the colour of the text. */
+     A group heading is a label with a dot in its stage's hue: violet for "Start here" (the project's
+     own pages), blue for "Cognitive maps" (stage 2), mint for "Substrate" (stage 1), the order the
+     sidebar is built in. The swatch is decoration; the words say the group. Rows have square corners,
+     a pointed row takes the surface fill, and the current page is a row with no fill and a short bar
+     in the stage hue. */
   .sidebar-content {
     padding-block-start: 1.5rem;
   }
-  .sidebar-content .top-level {
-    counter-reset: sx-group;
-  }
   .sidebar-content .top-level > li + li {
-    margin-top: 1.5rem;
+    margin-top: 1.25rem;
+  }
+  .sidebar-content .top-level > li:nth-child(2) {
+    --sx-dot: var(--sx-structure);
+  }
+  .sidebar-content .top-level > li:nth-child(3) {
+    --sx-dot: var(--sx-agent);
   }
   .sidebar-content .top-level summary {
-    padding: 0.375rem 0.5rem;
-    border-radius: 0;
+    padding: 0.375rem 0.75rem;
+    border-radius: var(--sx-r-s);
     line-height: 1.3;
   }
   .sidebar-content .group-label {
     display: inline-flex;
-    align-items: baseline;
+    align-items: center;
+    gap: 0.625rem;
+  }
+  .sidebar-content .group-label::before {
+    content: '';
+    flex: none;
+    inline-size: 0.625rem;
+    block-size: 0.625rem;
+    border-radius: 0;
+    background-color: var(--sx-dot, var(--sx-violet));
   }
   .sidebar-content .top-level summary .large {
-    font-family: var(--sl-font-mono);
-    font-size: var(--sx-lab-size);
-    font-weight: 500;
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
-    color: var(--sx-muted);
-    transition: color var(--sx-dur) var(--sx-ease);
-  }
-  .sidebar-content .top-level > li > details > summary .group-label::before {
-    counter-increment: sx-group;
-    content: counter(sx-group, decimal-leading-zero);
-    content: counter(sx-group, decimal-leading-zero) / '';
-    margin-inline-end: 0.875em;
-    font-family: var(--sl-font-mono);
-    font-size: var(--sx-lab-size);
-    font-weight: 500;
-    letter-spacing: var(--sx-lab-track);
-    color: var(--sx-structure);
-  }
-  .sidebar-content .top-level summary:hover .large {
+    font-family: var(--sx-lab-font);
+    font-size: 0.875rem;
+    font-weight: var(--sx-lab-weight);
     color: var(--sl-color-white);
   }
   .sidebar-content .top-level .caret {
@@ -634,9 +664,8 @@
   }
 
   .sidebar-content .top-level ul {
-    margin-block-start: 0.375rem;
-    margin-inline-start: 0.5rem;
-    border-inline-start: 1px solid var(--sx-hairline);
+    margin-block-start: 0.25rem;
+    margin-inline-start: 0;
   }
   .sidebar-content .top-level ul li {
     margin-inline-start: 0;
@@ -647,27 +676,35 @@
     margin-top: 0.125rem;
   }
   .sidebar-content .top-level a {
-    border-inline-start: 2px solid transparent;
-    border-radius: 0;
-    padding: 0.3125rem 0.75rem;
+    position: relative;
+    padding: 0.375rem 0.75rem 0.375rem 1.125rem;
+    border-radius: var(--sx-r-s);
     color: var(--sl-color-gray-2);
     font-size: 0.875rem;
     font-weight: 400;
     line-height: 1.4;
-    transition: color var(--sx-dur) var(--sx-ease);
-  }
-  .sidebar-content .top-level ul a {
-    margin-inline-start: -1px;
+    transition:
+      color var(--sx-dur) var(--sx-ease),
+      background-color var(--sx-dur) var(--sx-ease);
   }
   .sidebar-content .top-level a:is(:hover, :focus) {
+    background-color: var(--sx-surface-2);
     color: var(--sl-color-white);
   }
   .sidebar-content .top-level a[aria-current='page'],
   .sidebar-content .top-level a[aria-current='page']:is(:hover, :focus) {
-    border-inline-start-color: var(--sx-agent);
     background-color: transparent;
     color: var(--sl-color-white);
-    font-weight: 500;
+    font-weight: 600;
+  }
+  .sidebar-content .top-level a[aria-current='page']::before {
+    content: '';
+    position: absolute;
+    inset-block: 0.5rem;
+    inset-inline-start: 0.4rem;
+    inline-size: 3px;
+    border-radius: 2px;
+    background-color: var(--sx-stage);
   }
   @media (max-width: 49.99rem) {
     .sidebar-content .top-level a {
@@ -675,31 +712,26 @@
       font-size: 1rem;
     }
   }
-  /* Forced colours repaint a transparent border as a bar in the link colour, on every row, and leave
-     the current page told only by its text. Rows rest on the canvas colour; the current one takes the
-     highlight. */
+  /* Forced colours repaint a background-only mark as the canvas, and leave the current page told only by
+     its text and weight: the bar keeps a system colour. */
   @media (forced-colors: active) {
-    .sidebar-content .top-level a,
-    .sidebar-content .top-level ul {
-      border-inline-start-color: Canvas;
-    }
-    .sidebar-content .top-level a[aria-current='page'] {
-      border-inline-start-color: Highlight;
+    .sidebar-content .top-level a[aria-current='page']::before {
+      background-color: Highlight;
+      forced-color-adjust: none;
     }
   }
 
-  /* ---- Contents (right): a hairline rail, mono entries, a signal bar on the current one ---- */
+  /* ---- Contents (right): the reading face, a hairline rail, the stage's bar on the heading being read ---- */
   .right-sidebar-panel {
     padding-block: 1.5rem;
   }
   .right-sidebar-panel h2 {
-    margin-bottom: 0.875rem;
-    font-family: var(--sl-font-mono);
+    margin-bottom: 0.75rem;
+    font-family: var(--sx-lab-font);
     font-size: var(--sx-lab-size);
-    font-weight: 500;
+    font-weight: var(--sx-lab-weight);
     letter-spacing: var(--sx-lab-track);
     line-height: 1.4;
-    text-transform: uppercase;
     color: var(--sx-muted);
   }
   starlight-toc nav > ul {
@@ -708,20 +740,18 @@
   starlight-toc a {
     margin-inline-start: -1px;
     border-inline-start: 2px solid transparent;
-    border-radius: 0;
     padding-block: 0.3125rem;
     padding-inline: calc(0.875rem + 0.75rem * var(--depth, 0)) 0.25rem;
     color: var(--sl-color-gray-3);
-    font-family: var(--sl-font-mono);
-    font-size: 0.6875rem;
-    line-height: 1.5;
+    font-size: 0.8125rem;
+    line-height: 1.45;
     transition: color var(--sx-dur) var(--sx-ease);
   }
   starlight-toc a:hover {
     color: var(--sl-color-white);
   }
   starlight-toc a[aria-current='true'] {
-    border-inline-start-color: var(--sx-agent);
+    border-inline-start-color: var(--sx-stage);
     color: var(--sl-color-white);
   }
   @media (forced-colors: active) {
@@ -733,9 +763,9 @@
     }
   }
 
-  /* ---- Contents on narrow screens: the bar under the header. The toggle is a square in the strong
-     rule; the list is ruled rows, and the current heading takes the same bar as the sidebar in
-     place of Starlight's check mark. ---- */
+  /* ---- Contents on narrow screens: the bar under the header. The toggle is a box in the strong rule;
+     the list is rows, and the current heading takes the stage bar in place of Starlight's check
+     mark. ---- */
   mobile-starlight-toc nav {
     border-top-color: var(--sx-hairline);
   }
@@ -748,13 +778,12 @@
     flex-shrink: 1;
     min-inline-size: 0;
     border-color: var(--sx-rule-strong);
-    border-radius: 0;
-    background-color: transparent;
+    border-radius: var(--sx-r-pill);
+    background-color: var(--sx-surface-2);
     color: var(--sx-muted);
-    font-family: var(--sl-font-mono);
+    font-family: var(--sx-lab-font);
     font-size: var(--sx-lab-size);
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    font-weight: var(--sx-lab-weight);
     transition:
       color var(--sx-dur) var(--sx-ease),
       border-color var(--sx-dur) var(--sx-ease);
@@ -769,13 +798,14 @@
   }
   mobile-starlight-toc .dropdown {
     border-color: var(--sx-hairline);
-    background-color: var(--sl-color-black);
+    border-radius: 0 0 var(--sx-r-m) var(--sx-r-m);
+    background-color: var(--sx-surface);
     box-shadow: none;
   }
   mobile-starlight-toc .isMobile a {
     border-top-color: var(--sx-hairline);
-    border-inline-start: 2px solid transparent;
-    padding-inline-start: calc(1rem - 2px);
+    border-inline-start: 3px solid transparent;
+    padding-inline-start: calc(1rem - 3px);
     color: var(--sl-color-gray-2);
     transition: color var(--sx-dur) var(--sx-ease);
   }
@@ -783,7 +813,7 @@
     color: var(--sl-color-white);
   }
   mobile-starlight-toc .isMobile a[aria-current='true'] {
-    border-inline-start-color: var(--sx-agent);
+    border-inline-start-color: var(--sx-stage);
     color: var(--sl-color-white);
     font-weight: 500;
   }
@@ -805,94 +835,69 @@
     }
   }
 
-  /* ---- Previous / next: ruled rows, the same on every page ----
-     A hairline above each row and one under the pair, a mono "Previous" or "Next" over the page
-     title in the reading face, and an arrow. A short bar sits on the top rule and runs the row's
-     width, in the signal colour, when the row is pointed at or focused; the title draws the hero's
-     Underline Link (after "Underline Link" by balick). */
+  /* ---- Previous / next: two boxes, the same on every page ----
+     A box on the surface for each direction: "Previous" or "Next" as a small label over the page
+     title, and an arrow. A 4px band in the stage hue runs along the top edge, short at rest and the
+     box's whole width when the box is pointed at or focused, and the box then takes an edge in the
+     stage hue and no fill. */
   .pagination-links {
-    gap: 0;
+    gap: var(--sx-pad-card);
   }
-  /* A page with neither (the landing, the 404) still gets Starlight's empty box: it draws nothing. The
-     pair is closed by the top rule of the title block beneath it, so there is one rule, not two. */
+  /* A page with neither (the landing, the 404) still gets Starlight's empty box: it draws nothing. */
   .pagination-links:not(:has(a)) {
     display: none;
-  }
-  .pagination-links:has(a) + .sx-foot {
-    margin-block-start: -1.5rem;
   }
   .pagination-links a {
     position: relative;
     gap: 1rem;
-    padding: 1.25rem 0;
-    border: 0;
-    border-block-start: 1px solid var(--sx-hairline);
-    border-radius: 0;
-    background: none;
-    box-shadow: none;
+    padding: var(--sx-pad-card);
+    overflow: hidden;
+    border: 1px solid var(--sx-hairline);
+    border-radius: var(--sx-r-m);
+    background-color: var(--sx-surface);
     color: var(--sx-muted);
-    font-family: var(--sl-font-mono);
     font-size: var(--sx-lab-size);
+    font-weight: var(--sx-lab-weight);
     letter-spacing: var(--sx-lab-track);
     line-height: 1.5;
-    text-transform: uppercase;
+    transition:
+      background-color var(--sx-dur) var(--sx-ease),
+      border-color var(--sx-dur) var(--sx-ease);
   }
   .pagination-links a::before {
     content: '';
     position: absolute;
-    top: -1px;
+    inset-block-start: 0;
     inset-inline-start: 0;
-    width: 28px;
-    height: 2px;
-    background: var(--sx-structure);
-    transition:
-      width var(--sx-dur-bar) var(--sx-ease),
-      background-color var(--sx-dur-bar) var(--sx-ease);
+    inline-size: 3rem;
+    block-size: 4px;
+    background-color: var(--sx-stage);
+    transition: inline-size var(--sx-dur-bar) var(--sx-ease);
   }
   .pagination-links [rel='next']::before {
     inset-inline-start: auto;
     inset-inline-end: 0;
   }
+  .pagination-links a:is(:hover, :focus-visible) {
+    border-color: color-mix(in oklab, var(--sx-stage) 40%, transparent);
+    background-color: transparent;
+  }
   .pagination-links a:is(:hover, :focus-visible)::before {
-    width: 100%;
-    background: var(--sx-agent);
+    inline-size: 100%;
   }
   .pagination-links .link-title {
-    --open: 0;
     display: inline-block;
     margin-top: 0.25rem;
-    padding-block: 3px;
     color: var(--sl-color-white);
-    font-family: var(--sl-font);
-    font-size: 1.0625rem;
-    font-weight: 500;
+    font-size: 1.125rem;
+    font-weight: 600;
     letter-spacing: -0.005em;
     line-height: 1.35;
-    text-transform: none;
-    background-image:
-      linear-gradient(currentColor, currentColor),
-      linear-gradient(color-mix(in oklab, currentColor 22%, transparent), color-mix(in oklab, currentColor 22%, transparent));
-    background-repeat: no-repeat;
-    background-size:
-      calc(var(--open) * 100%) 1px,
-      100% 1px;
-    background-position:
-      calc((1 - var(--open)) * 100%) 100%,
-      0 100%;
-    transition: background-size var(--sx-dur-line) var(--sx-ease);
-  }
-  .pagination-links a:is(:hover, :focus-visible) .link-title {
-    --open: 1;
   }
   .pagination-links svg {
     font-size: 1.25rem;
-    color: var(--sx-muted);
-    transition:
-      transform var(--sx-dur) var(--sx-ease),
-      color var(--sx-dur) var(--sx-ease);
-  }
-  .pagination-links a:is(:hover, :focus-visible) svg {
-    color: var(--sl-color-white);
+    color: var(--sx-stage);
+    transition: transform var(--sx-dur) var(--sx-ease);
   }
   .pagination-links [rel='prev']:is(:hover, :focus-visible) svg {
     transform: translateX(-3px);
@@ -900,7 +905,7 @@
   .pagination-links [rel='next']:is(:hover, :focus-visible) svg {
     transform: translateX(3px);
   }
-  /* Windows High Contrast repaints a background-only mark as the canvas; the bar keeps a system colour. */
+  /* Windows High Contrast repaints a background-only mark as the canvas; the band keeps a system colour. */
   @media (forced-colors: active) {
     .pagination-links a::before {
       background: Highlight;
@@ -908,188 +913,159 @@
     }
   }
 
-  /* Footer meta (the edit link) as a quiet mono label. */
+  /* Footer meta (the edit link and the date) as a quiet line. */
   .main-pane footer .meta {
-    font-family: var(--sl-font-mono);
-    font-size: var(--sx-lab-size);
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
+    font-size: 0.875rem;
     color: var(--sx-muted);
   }
   .main-pane footer .meta a:hover {
     color: var(--sl-color-white);
   }
 
-  /* ---- Footer: the title block of the sheet (components/chrome/Footer.astro) ----
-     A hairline frame with registration corners (`.sx-reg`) whose cells share their rules: one row of
-     the sheet's own facts (its title and number, its stage, the next gate) and, under a shared rule, a
-     quieter row of the repository's links and the page's date in mono. No logo, no fill, no icon. On a
-     phone the cells stack, label beside value, and a value with no room beside its label (large text on
-     a narrow phone) moves under it; from 40rem they sit side by side under their labels. A
-     link rests on an underline in the strong rule (3:1) and turns signal on hover and focus. On the
-     landing page the block runs on the landing's own gutter, so it sits on the grid of the sections
-     above it. After the outer and column borders of "Reshaped Table" by reshaped, the ruled list of
-     "404 Search And Popular Links" by olewandowski1 and the bottom row of "Footer with Navigation
-     Grid" by shadcnui-blocks (21st.dev). */
+  /* ---- Footer: the title block (components/chrome/Footer.astro) ----
+     A box on the surface with a hairline edge. Its first row is the page's own facts as tiles on the
+     next surface step (its title and number, its stage, the next gate); the page's own tile has no
+     fill. Under them the repository's links are underlined text, each saying what it does, and the
+     page's date sits at the end of the row. The tiles stack on a phone and sit side by side from
+     40rem. On the landing page the box runs on the landing's own gutter, so it sits on the grid of
+     the sections above it. */
   .sx-foot {
+    display: grid;
+    gap: 1.25rem;
+    padding: var(--sx-pad-panel);
     border: 1px solid var(--sx-hairline);
+    border-radius: var(--sx-r-l);
+    background-color: var(--sx-surface);
+  }
+  /* A page with no facts (the Start here pages, the landing page, the 404 page) has no box: its links
+     sit under a hairline. */
+  .sx-foot:not(:has(.sx-foot__cells)) {
+    padding: 1rem 0 0;
+    border: 0;
+    border-block-start: 1px solid var(--sx-hairline);
+    background: none;
   }
   .sx-foot__cells {
     display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(11rem, 100%), 1fr));
+    gap: 0.75rem;
     margin: 0;
   }
   .sx-foot__c {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.25rem 0.75rem;
-    align-items: baseline;
-    padding: 0.75rem 1rem;
-    border-block-start: 1px solid var(--sx-hairline);
-  }
-  .sx-foot__c > dt {
-    flex: 0 0 6rem;
-  }
-  .sx-foot__c > dd {
-    flex: 1 1 8rem;
     min-inline-size: 0;
+    padding: 0.75rem 0 0;
+    border-block-start: 2px solid var(--sx-hairline);
   }
   .sx-foot__c:first-child {
-    border-block-start: 0;
-  }
-  @media (min-width: 40rem) {
-    .sx-foot__cells {
-      display: flex;
-    }
-    .sx-foot__c {
-      display: block;
-      flex: 1 1 0;
-      min-inline-size: 0;
-      padding: 0.875rem 1rem 1rem;
-      border-block-start: 0;
-      border-inline-start: 1px solid var(--sx-hairline);
-    }
-    .sx-foot__c:first-child {
-      flex-grow: 1.6;
-      border-inline-start: 0;
-    }
+    border-block-start-color: var(--sx-stage);
   }
   .sx-foot dt {
     color: var(--sx-muted);
-    font-family: var(--sl-font-mono);
+    font-family: var(--sx-lab-font);
     font-size: var(--sx-lab-size);
+    font-weight: var(--sx-lab-weight);
     letter-spacing: var(--sx-lab-track);
     line-height: 1.4;
-    text-transform: uppercase;
   }
   .sx-foot dd {
-    margin: 0;
+    margin: 0.375rem 0 0;
     color: var(--sl-color-white);
-    font-size: 0.875rem;
-    line-height: 1.45;
+    font-size: 1rem;
+    font-weight: 500;
+    line-height: 1.4;
     overflow-wrap: anywhere;
     text-wrap: pretty;
-  }
-  @media (min-width: 40rem) {
-    .sx-foot dd {
-      margin-block-start: 0.375rem;
-    }
   }
   .sx-foot__n {
     margin-inline-start: 0.375rem;
     color: var(--sx-muted);
     font-family: var(--sl-font-mono);
     font-size: var(--sx-lab-size);
-    letter-spacing: 0.04em;
+    font-weight: 400;
     white-space: nowrap;
     font-variant-numeric: tabular-nums;
   }
   .sx-foot__links {
     display: flex;
     flex-wrap: wrap;
-    gap: 0 1.5rem;
+    align-items: center;
+    gap: 0.5rem;
     margin: 0;
-    padding: 0.5rem 1rem;
+    padding: 0;
     list-style: none;
     color: var(--sx-muted);
-    font-family: var(--sl-font-mono);
-    font-size: 0.6875rem;
-    line-height: 1.6;
-  }
-  .sx-foot__cells + .sx-foot__links {
-    border-block-start: 1px solid var(--sx-hairline);
+    font-size: 0.8125rem;
+    font-weight: var(--sx-lab-weight);
+    line-height: 1.4;
   }
   .sx-foot__links li {
     margin: 0;
     padding: 0;
   }
-  /* Two classes, so that the reset of the row's items above does not undo it: the date's text sits on the
-     links' line, which their own padding sets. */
-  .sx-foot__links .sx-foot__upd {
-    padding-block: 0.25rem;
-  }
-  /* A link is 24px tall at least (WCAG 2.5.8): 17.6px of line and 4px above and below. */
+  /* A link in the row is underlined text in ink; the underline turns blue when it is pointed at or focused. */
   .sx-foot__links a {
-    display: inline-block;
-    padding-block: 0.25rem;
+    display: inline-flex;
+    align-items: center;
     color: var(--sl-color-white);
     text-decoration: underline;
     text-decoration-color: var(--sx-rule-strong);
-    text-underline-offset: 3px;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
     transition: text-decoration-color var(--sx-dur) var(--sx-ease);
   }
   .sx-foot__links a:is(:hover, :focus-visible) {
-    text-decoration-color: var(--sx-agent);
+    text-decoration-color: var(--sx-structure);
   }
   @media (min-width: 40rem) {
     .sx-foot__links .sx-foot__upd {
       margin-inline-start: auto;
     }
   }
-  /* On the landing page the block leaves Starlight's 1080px column for the gutter of the sections above
+  /* On the landing page the box leaves Starlight's 1080px column for the gutter of the sections above
      it (--sx-gutter, the same as landing.css's), so its edges meet theirs. */
   body:has(.sx-landing) .sx-foot {
     box-sizing: border-box;
     inline-size: calc(100vw - 2 * var(--sx-gutter));
     margin-inline: calc(50% - 50vw + var(--sx-gutter));
   }
-  /* ---- Asides: a rule down the start edge in the aside's colour, a mono label above the text and
-     nothing else: no card, no fill, no icon. The label says the kind (Note, Tip, Caution, Danger, or
-     the title the page gives), so colour is never the only difference; a danger also takes a doubled
-     rule. Notes take the structure colour, tips ink, cautions and dangers the spike colour. The
-     signal colour is not used: an aside is not what is current. ---- */
+
+  /* ---- Asides: a box with a 4px rule down its start edge in the aside's hue and a title in the same
+     hue, on no fill. Notes take the blue rule, tips the mint, cautions and dangers the amber. The
+     title says the kind (Note, Tip, Caution, Danger, or the title the page gives), so colour is never
+     the only difference; a danger also takes a full edge in its hue, where the others have a faint
+     one. ---- */
   .starlight-aside {
     --sx-aside: var(--sx-structure);
     --sl-color-asides-border: var(--sx-aside);
     --sl-color-asides-text-accent: var(--sx-aside);
-    max-inline-size: calc(var(--sx-measure, 36rem) + 1.25rem + 2px);
-    padding: 0.125rem 0 0.125rem 1.25rem;
-    border: 0;
-    border-inline-start: 2px solid var(--sx-aside);
-    border-radius: 0;
-    background: none;
+    max-inline-size: calc(var(--sx-measure, 36rem) + 2.5rem + 4px);
+    padding: 1rem 1.25rem;
+    border: 1px solid color-mix(in oklab, var(--sx-aside) 24%, transparent);
+    border-inline-start: 4px solid var(--sx-aside);
+    border-radius: var(--sx-r-m);
+    background: transparent;
     box-shadow: none;
-    color: var(--sl-color-gray-1);
+    color: var(--sl-color-white);
   }
   .starlight-aside--tip {
-    --sx-aside: var(--sl-color-gray-2);
+    --sx-aside: var(--sx-agent);
   }
   .starlight-aside--caution,
   .starlight-aside--danger {
     --sx-aside: var(--sx-spike);
   }
   .starlight-aside--danger {
-    padding-inline-start: calc(1.25rem - 2px);
-    border-inline-start: 4px double var(--sx-aside);
+    border-color: var(--sx-aside);
+    border-inline-start-width: 4px;
   }
   .starlight-aside__title {
     gap: 0;
     color: var(--sx-aside);
-    font-family: var(--sl-font-mono);
-    font-size: var(--sx-lab-size);
-    font-weight: 500;
+    font-family: var(--sx-lab-font);
+    font-size: 0.875rem;
+    font-weight: var(--sx-lab-weight);
     letter-spacing: var(--sx-lab-track);
     line-height: 1.4;
-    text-transform: uppercase;
   }
   .starlight-aside__icon {
     display: none;

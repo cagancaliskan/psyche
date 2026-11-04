@@ -1,75 +1,80 @@
 /*
- * Figures and shared pieces of the documentation pages, drawn as a drafting sheet like the rest of
- * the site: hairline rules, mono labels (--sx-lab-size, --sx-lab-track), the shared registration
- * corners (.sx-reg in global.css), square marks, ruled columns and rows in place of cards, and no
- * fill, no glow, no shadow and no motion. Structure (connectors, rails, leaders) is drawn in the
- * structure colour; the signal colour marks only what is current. Every colour is a token. The
- * layer statement repeats global.css, so the order holds whichever stylesheet the browser reads
- * first.
+ * Figures and shared pieces of the documentation pages, drawn as flat boxes like the rest of the
+ * site: a figure is a hairline box on the surface with a raised caption strip, a node is a small box one
+ * step above it, a marker is a small square, and labels are in the label recipe (sentence case, the reading
+ * face, --sx-lab-*). Structure (connectors, rails, leaders) is drawn in the structure colour; the signal
+ * colour marks only what is current. Every colour is a token. The layer statement repeats global.css, so
+ * the order holds whichever stylesheet the browser reads first.
  *
  * Catalog sources (21st.dev), rewritten in plain CSS with none of their code or dependencies (each
  * credit is on one line, so that it can be searched for):
  *   - "Stepper" by corr: columns sized by a step count, each step a marker with its rule to the next
  *     marker (the stage arc and the release flow);
- *   - "8bit Timeline Horizontal" by theorcdev: square numbered checkpoints on a track that runs across
- *     and turns down when the figure is narrow;
+ *   - "8bit Timeline Horizontal" by theorcdev: checkpoints on a track that runs across and turns down
+ *     when the figure is narrow;
  *   - "Changelog Timeline" by shadcnui-blocks: the label column beside a rule that carries its marker
  *     (the role lanes);
  *   - "Deployment Pipeline" by rmahammad: a state told by a word beside its mark, and a layout that
  *     follows the figure's own width, not the window's;
  *   - "How It Works Steps" by ln-dev7: the sequences' first form, markers on a rail with text under each;
- *   - "Corner Frame" by kevingirelli: the corners of the figure's frame (global.css holds the recipe);
  *   - "Circuit Board" by componentry: the evaluation pipeline's traces, which leave a box level, turn in
  *     the gap and enter the next one level;
  *   - "Blueprint Tiers" by arihantcodes_1f7b8c4d: the determinism tiers' ruled rows of hairlines and
- *     mono labels;
+ *     labels;
  *   - "Marks Slider" by ai2 and "Leaderboard Bars" by eugeneshilow: the tiers' three-cell gauge, a scale
- *     with its marks labelled in mono.
+ *     with its marks labelled.
  * The layer stack's elevation (bands, leaders, the loop bracket) is drawn from the brief: the catalog's
  * layer diagrams are isometric, which this sheet does not use.
  */
 @layer base, starlight, theme, components, utilities;
 
 @layer components {
-  /* ---------- Kicker: the site's mono label above a heading or a figure ---------- */
+  /* ---------- Kicker and the small labels of a figure ---------- */
+  /* One label recipe for the kicker and for the figures' state, hand-off and tier labels: sentence case in
+     the reading face at 600. A kicker is muted unless a rule below colours it by meaning. */
+  .sx-kicker,
+  .sx-seq__via,
+  .sx-seq__state,
+  .sx-stack__tier {
+    font-family: var(--sx-lab-font);
+    font-weight: var(--sx-lab-weight);
+    text-transform: var(--sx-lab-case);
+    font-size: var(--sx-lab-size);
+    letter-spacing: var(--sx-lab-track);
+    line-height: 1.4;
+  }
   .sx-kicker {
     display: inline-flex;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.2rem 0.6rem;
     margin: 0;
-    font-family: var(--font-mono, ui-monospace, monospace);
-    font-size: var(--sx-lab-size);
-    font-weight: 500;
-    line-height: 1.4;
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
     color: var(--sx-muted);
   }
-  .sx-kicker__index {
-    color: var(--sx-structure);
-    font-variant-numeric: tabular-nums;
-  }
 
-  /* ---------- Figure frame: a drafting figure ---------- */
-  /* A hairline frame with the registration corners (.sx-reg, added by Figure.astro), no fill, no
-     grid, no radius and no shadow. The caption is the figure's label and one line of lead, ruled
-     off from the drawing across the whole width of the frame. --dv-pad is the frame's padding, so
-     the caption and a closing note can run edge to edge with a negative margin of the same size.
-     The frame is a container named sx-dv, which the figures' layouts read: the figure's own
-     width decides, not the window's. A bare figure holds a sheet that has a frame and rules of
-     its own, so it draws none and keeps only the caption above it. */
+  /* ---------- Figure frame: a hairline box ---------- */
+  /* A box on the surface with a raised caption strip: the figure's label, in the stage colour, and one
+     line of lead, ruled off from the drawing across the whole width of the frame. --dv-pad is the frame's
+     padding, so the caption and a closing note can run edge to edge with a negative margin of the same
+     size; their corners follow the frame's. The frame is a container named sx-dv, which the figures'
+     layouts read: the figure's own width decides, not the window's. A bare figure holds a sheet that has
+     a frame and rules of its own, so it draws none and keeps only the caption above it. */
   .sx-dv {
-    --dv-pad: 1.25rem;
+    --dv-pad: var(--sx-pad-card);
     container: sx-dv / inline-size;
     isolation: isolate;
     margin: 0;
     padding: var(--dv-pad);
     border: 1px solid var(--sx-hairline);
+    border-radius: var(--sx-r-m);
+    background: var(--sx-surface);
   }
   .sx-dv--bare {
     --dv-pad: 0px;
     border: 0;
+    border-radius: 0;
+    background: none;
+    box-shadow: none;
   }
   .sx-dv__cap {
     display: flex;
@@ -78,11 +83,19 @@
     margin: calc(-1 * var(--dv-pad)) calc(-1 * var(--dv-pad)) var(--dv-pad);
     padding: 0.9rem var(--dv-pad) 1rem;
     border-block-end: 1px solid var(--sx-hairline);
+    border-start-start-radius: calc(var(--sx-r-m) - 1px);
+    border-start-end-radius: calc(var(--sx-r-m) - 1px);
+    background: none;
+  }
+  .sx-dv__cap > .sx-kicker {
+    color: var(--sx-stage);
   }
   .sx-dv--bare > .sx-dv__cap {
     margin: 0 0 1.25rem;
     padding: 0;
     border-block-end: 0;
+    border-radius: 0;
+    background: none;
   }
   .sx-dv__lead {
     margin: 0;
@@ -96,8 +109,8 @@
     margin-top: 1.25rem;
   }
 
-  /* ---------- A node of a drawing: a hairline box ---------- */
-  /* Square, no fill beyond the sheet, a line in the strong rule so that the box reads as an object.
+  /* ---------- A node of a drawing: a box ---------- */
+  /* A box, one step above the figure's surface, a line in the strong rule so that the box reads as an object.
      What is private is drawn with a dashed outline and said in words. Words wrap anywhere, so a
      long word cannot push a box past a narrow screen at a large text size. */
   .sx-node {
@@ -107,7 +120,8 @@
     margin: 0;
     padding: 0.5rem 0.6rem 0.55rem;
     border: 1px solid var(--sx-rule-strong);
-    background: var(--sl-color-black);
+    border-radius: var(--sx-r-s);
+    background: var(--sx-surface);
     font-size: 0.8125rem;
     line-height: 1.3;
     color: var(--sl-color-white);
@@ -166,13 +180,14 @@
   .sx-pipe__group {
     padding: 1.1rem 0.75rem 0.75rem;
     border: 1px solid var(--sx-rule-strong);
+    border-radius: var(--sx-r-s);
   }
   .sx-pipe__glabel {
     position: absolute;
     top: 0;
     left: 0.6rem;
     padding-inline: 0.4rem;
-    background: var(--sl-color-black);
+    background: var(--sx-surface);
     transform: translateY(-50%);
   }
   .sx-pipe__group > ul {
@@ -277,6 +292,7 @@
       left: -0.5rem;
       right: -0.5rem;
       border: 1px solid var(--sx-rule-strong);
+      border-radius: var(--sx-r-s);
       pointer-events: none;
     }
     .sx-pipe__glabel {
@@ -299,14 +315,14 @@
   }
 
   /* ---------- Sequences: stage arc, release flow, role lanes ---------- */
-  /* A numbered square for each step on a hairline rail, its words beside or under it, the steps
-     ruled off from one another: no cards, no fills, no glow. Narrow, the steps stack and the rail
+  /* A numbered round marker for each step on a hairline rail, its words beside or under it, the steps
+     ruled off from one another: no boxes, no glow. Narrow, the steps stack and the rail
      runs down from marker to marker. From 40rem of figure width the stage arc and the release flow
      become ruled columns, one per step, the rail running across and each column's rule dropping
      from its marker; the role lanes become ruled rows, the rail still running down. A marker is a
-     bordered square, so it survives forced colours, and its state is told by its shape as well as
+     bordered circle, so it survives forced colours, and its state is told by its shape as well as
      its colour: dashed (not here: private, or later), a second heavier line (the current stage), a
-     square in a square (where the flow ends). Words wrap anywhere, so a long word cannot push the
+     circle in a circle (where the flow ends). Words wrap anywhere, so a long word cannot push the
      figure wider than a narrow screen at a large text size. */
   .sx-seq {
     --mk: 2rem;
@@ -356,7 +372,8 @@
     inline-size: var(--mk);
     block-size: var(--mk);
     border: 1px solid var(--sx-rule-strong);
-    background: var(--sl-color-black);
+    border-radius: 0;
+    background: var(--sx-surface);
     font: 500 var(--sx-lab-size) / 1 var(--font-mono, ui-monospace, monospace);
     letter-spacing: 0.04em;
     font-variant-numeric: tabular-nums;
@@ -379,6 +396,7 @@
     position: absolute;
     inset: 3px;
     border: 1px solid var(--sx-rule-strong);
+    border-radius: 0;
   }
 
   /* The words of a step: a mono label, a title and a line in the reading face. */
@@ -416,9 +434,6 @@
     min-width: 0;
     margin: -0.5rem 0 0;
     padding-block-end: 1.5rem;
-    font: 400 var(--sx-lab-size) / 1.4 var(--font-mono, ui-monospace, monospace);
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
     color: var(--sx-structure);
     overflow-wrap: anywhere;
   }
@@ -433,7 +448,7 @@
   .sx-seq__item[data-rail='dashed'] > .sx-seq__via::before {
     border-style: dashed;
   }
-  /* A stage's state: a mono label and a small square, filled when the stage is active, an outline
+  /* A stage's state: a label and a small square, filled when the stage is active, an outline
      when it is paused, dashed when it is not specified yet, as the title strip draws a stage's
      state. The word says it too. */
   .sx-seq__state {
@@ -441,9 +456,6 @@
     align-items: flex-start;
     gap: 0.5rem;
     margin: 0.85rem 0 0;
-    font: 400 var(--sx-lab-size) / 1.4 var(--font-mono, ui-monospace, monospace);
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
     color: var(--sx-muted);
   }
   .sx-seq__state > span {
@@ -458,6 +470,7 @@
     block-size: 0.5rem;
     margin-block-start: 0.32em;
     border: 1px solid currentColor;
+    border-radius: 0;
   }
   /* A day is never split, unless the figure is narrower than the day (a phone at a large text size). */
   @container sx-dv (min-width: 16rem) {
@@ -522,8 +535,8 @@
     }
   }
 
-  /* The stop under the release flow: a ruled band across the foot of the frame, its label with the
-     struck square the status page uses for a stop. */
+  /* The stop under the release flow: a band across the foot of the frame, its label with the struck
+     square the status page uses for a stop. */
   .sx-flow__stop {
     display: flex;
     flex-wrap: wrap;
@@ -532,6 +545,9 @@
     margin: 1.5rem calc(-1 * var(--dv-pad)) calc(-1 * var(--dv-pad));
     padding: 0.9rem var(--dv-pad) 1rem;
     border-block-start: 1px solid var(--sx-hairline);
+    border-end-start-radius: calc(var(--sx-r-m) - 1px);
+    border-end-end-radius: calc(var(--sx-r-m) - 1px);
+    background: var(--sx-surface);
     font-size: 0.875rem;
     line-height: 1.5;
     color: var(--sl-color-gray-2);
@@ -553,6 +569,7 @@
     inline-size: 0.5625rem;
     block-size: 0.5625rem;
     border: 1.5px solid currentColor;
+    border-radius: 0;
   }
   .sx-flow__mark::after {
     content: '';
@@ -709,6 +726,7 @@
     inline-size: 100%;
     block-size: 0.5625rem;
     border: 1px solid var(--sx-rule-strong);
+    border-radius: var(--sx-r-pill);
   }
   .sx-gauge > span[data-l]::after {
     content: attr(data-l);
@@ -778,12 +796,12 @@
 
   /* ---------- Layer stack (substrate) ---------- */
   /* An elevation: the layers are ruled bands one on top of the other, the store at the bottom,
-     each band labelled with its module in mono; a leader runs from each band to its name, its line
+     each band labelled with its module in mono (a name in the code); a leader runs from each band to its name, its line
      and its state; a bracket on the left leaves the top band and enters the bottom one (the loop
      the last line describes). The bands share their edges. The list keeps reading order from the
      bottom up. Narrow, the bands and the bracket are left out and a layer is a ruled row: its name,
-     its module under it, its line and its state. A state is a mono label with the square the
-     status page draws for it: filled for what is verified, a square in a square for a mechanism the
+     its module under it, its line and its state. A state is a label with the dot the
+     status page draws for it: filled for what is verified, a circle in a circle for a mechanism the
      tester verified. */
   .sx-elev {
     --loop: 1.5rem;
@@ -824,7 +842,8 @@
     max-inline-size: 100%;
     padding: 0.15rem 0.45rem;
     border: 1px solid var(--sx-hairline);
-    background: none;
+    border-radius: var(--sx-r-xs);
+    background: var(--sx-surface);
     font: 400 0.6875rem / 1.4 var(--font-mono, ui-monospace, monospace);
     color: var(--sx-muted);
     overflow-wrap: anywhere;
@@ -843,9 +862,6 @@
     inline-size: fit-content;
     max-inline-size: 100%;
     margin-block-start: 0.15rem;
-    font: 400 var(--sx-lab-size) / 1.4 var(--font-mono, ui-monospace, monospace);
-    letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
     color: var(--sx-muted);
     overflow-wrap: anywhere;
   }
@@ -857,6 +873,7 @@
     block-size: 0.5625rem;
     margin-block-start: 0.28em;
     border: 1.5px solid var(--sx-structure);
+    border-radius: 0;
   }
   [data-tier='proven'] > .sx-stack__tier {
     color: var(--sl-color-gray-1);
@@ -871,6 +888,7 @@
     inset: 1px;
     box-sizing: border-box;
     border: 1.5px solid var(--sx-structure);
+    border-radius: 0;
   }
   .sx-stack__loop {
     display: flex;
@@ -913,7 +931,8 @@
       padding: 0.5rem 0.25rem;
       border: 1px solid var(--sx-rule-strong);
       border-block-start-width: 0;
-      background: var(--sl-color-black);
+      border-radius: 0;
+      background: var(--sx-surface);
       font-size: 0.6875rem;
       line-height: 1.4;
       text-align: center;

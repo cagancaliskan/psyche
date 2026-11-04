@@ -1,9 +1,11 @@
 /*
- * The cite and contact rows at the foot of the landing page (components/landing/CiteContact.astro).
- * The rules, their draw-in and the row padding are styles/landing/rows.css; this file only lays a
- * row out: a mono label (the site's label tokens) and its value, one over the other on a phone and
- * side by side from 48rem, on the columns of the method rows, so that a value starts where a method
- * row's title does. The definition-list structure follows "Key Value List" by corr (21st.dev).
+ * The cite and contact panel at the foot of the landing page (components/landing/CiteContact.astro):
+ * one flat panel with a violet edge, the hue of the project as a whole, holding two parts. Cite is
+ * the reference and its DOI as an outlined button; contact stands in a box of its own with a hairline
+ * edge and the primary button. The outlined button is in styles/landing/rows.css and the primary
+ * button's fill is the colour rule below; this file lays the panel out: the parts one over the
+ * other on a phone and side by side from 48rem, the citation taking the wider column. The
+ * definition-list structure follows "Key Value List" by corr (21st.dev).
  *
  * Site tokens only, so light and dark switch through the variables. Nothing here moves.
  */
@@ -12,45 +14,74 @@
 @layer base, starlight, theme, components, utilities;
 
 @layer components {
-  .sx-ruled--cite .sx-ruled__row {
+  .sx-cite {
     display: grid;
-    row-gap: 0.6rem;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--sx-pad-card);
+    margin: 0;
+    padding: var(--sx-pad-card);
+    border: 1px solid color-mix(in oklab, var(--sx-violet) 24%, transparent);
+    border-radius: var(--sx-r-m);
+  }
+  .sx-cite__part {
+    min-width: 0;
+    padding: var(--sx-pad-card);
+  }
+  .sx-cite__part--contact {
+    border: 1px solid var(--sx-hairline);
+    border-radius: var(--sx-r-s);
+    background: var(--sx-surface);
   }
   .sx-cite__k {
-    font: 500 var(--sx-lab-size)/1 var(--font-mono);
+    margin: 0 0 0.75rem;
+    font: var(--sx-lab-weight) var(--sx-lab-size) / 1.3 var(--sx-lab-font);
     letter-spacing: var(--sx-lab-track);
-    text-transform: uppercase;
     color: var(--sx-muted);
   }
   .sx-cite__v {
-    min-width: 0;
     margin: 0;
   }
   .sx-cite__v p {
     max-width: 62ch;
-    margin: 0;
+    margin: 0 0 0.65rem;
     font-size: 0.9375rem;
     line-height: 1.6;
-    color: var(--sl-color-gray-1);
+    color: var(--sl-color-white);
     overflow-wrap: anywhere;
     text-wrap: pretty;
   }
-  .sx-cite__v p + p {
-    margin-top: 0.65rem;
-  }
   .sx-cite__v .sx-cite__note {
+    margin-bottom: 1.1rem;
     font-size: 0.875rem;
     color: var(--sx-muted);
   }
-  .sx-cite__v .sx-lp-link {
-    margin-top: 0.35rem;
+  .sx-cite__part--contact .sx-cite__lead {
+    margin-bottom: 1.1rem;
+  }
+  /* The primary button's colours, after the site's recipe: the canvas colour on the map blue, which
+     reads 6:1 or more in both themes. */
+  /* The DOI is one long identifier: on a narrow screen its type shrinks so it stays on one line. */
+  .sx-cite a.sx-pill:not(.sx-pill--primary) {
+    overflow-wrap: normal;
+    font-size: clamp(0.75rem, 3.2vw, 0.9375rem);
+  }
+  a.sx-pill.sx-pill--primary {
+    border-color: transparent;
+    background: var(--sx-structure);
+    color: var(--sl-color-black);
+  }
+  a.sx-pill.sx-pill--primary::after {
+    color: inherit;
+  }
+  @media (hover: hover) {
+    a.sx-pill.sx-pill--primary:hover {
+      background: color-mix(in oklab, var(--sx-structure) 86%, var(--sl-color-white));
+    }
   }
   @media (min-width: 48rem) {
-    .sx-ruled--cite .sx-ruled__row {
-      grid-template-columns: 4rem minmax(0, 1fr);
-      column-gap: clamp(1.25rem, 3vw, 2.75rem);
-      align-items: baseline;
-      row-gap: 0;
+    .sx-cite {
+      grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+      align-items: start;
     }
   }
 }

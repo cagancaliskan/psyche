@@ -6,8 +6,8 @@
   "start_url": "/psyche/",
   "scope": "/psyche/",
   "display": "browser",
-  "background_color": "#05070d",
-  "theme_color": "#05070d",
+  "background_color": "#0a0f1e",
+  "theme_color": "#0a0f1e",
   "icons": [
     { "src": "/psyche/icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "/psyche/icon-512.png", "sizes": "512x512", "type": "image/png" },

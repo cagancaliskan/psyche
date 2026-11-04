@@ -52,7 +52,7 @@ function stagedSidebar() {
 // --sx-muted and --sx-structure of src/styles/global.css, dark first, and change with them. The rest of the
 // theme (frames, buttons, markers) is Starlight's, set to the tokens in src/styles/docs.css.
 const CODE_INKS = {
-  dark: { ink: '#f4f6fb', muted: '#9aa4b8', structure: '#8aa2ff' },
+  dark: { ink: '#f4f6fb', muted: '#a3adc2', structure: '#8aa2ff' },
   light: { ink: '#0a0d14', muted: '#4a5468', structure: '#2f4fd6' },
 };
 function codeTheme(theme) {
