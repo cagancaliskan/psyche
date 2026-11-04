@@ -133,6 +133,7 @@ name and author so that anyone can find the original and read the terms its auth
 | Admonition | deltacomponents | Asides (notes, tips, cautions) | `styles/global.css` |
 | Animated Sidebar | unlumen | Active marker in the sidebar | `styles/global.css` |
 | Animated Signature | dqnamo | Stroke draw of the hero mark and the maze figure | `styles/hero.css`, `styles/landing/maze-figure.css` |
+| Announcement | haydenbleasel | A tag and a title in one link, drawn square and ruled rather than as a pill: the row under the landing hero's actions that leads to the newest blog post | `styles/hero.css`, `components/LayersHero.astro` |
 | Audit Log Table | arihantcodes | Mono identifier column and the state cell that is a marker and a word, in the brick board | `styles/status.css`, `components/BrickBoard.astro` |
 | Blog Cards | sumonadotwork | The dashed leader that runs from a post's title to its day, in the landing page's latest posts | `styles/landing/posts.css`, `components/landing/LatestPosts.astro` |
 | Blueprint Tiers | arihantcodes_1f7b8c4d | Tiers as ruled rows of hairlines with mono labels, laid out by the figure's own width (the idea only; nothing copied), in the determinism tiers figure | `styles/docs-visuals.css` |
@@ -160,6 +161,7 @@ name and author so that anyone can find the original and read the terms its auth
 | Link Button | hyperiux | Section-end links | `styles/landing/links.css` |
 | Marks Slider | ai2 | A ruler-style scale of cells and marks named by labels (the idea only; no slider, thumb or motion), in the determinism tiers gauge | `styles/docs-visuals.css`, `components/docs/DeterminismTiers.astro` |
 | Milestone Timeline | olewandowski1 | Dated rows with a status label in the roadmap's phase list | `components/TimelineList.astro`, `styles/plan.css` |
+| NavBar | mohitsapat | A text link beside the GitHub link in the header (the idea only), for the blog | `components/chrome/SocialIcons.astro`, `styles/global.css` |
 | Note | shugar | Asides | `styles/global.css` |
 | Not Found 404 Page | mohammadshehadeh | The 404 page: a mono label, one sentence and a ruled list of places to go | `pages/404.astro`, `styles/notfound.css` |
 | Numberless Pagination | shadcnui-blocks | Previous and next links | `styles/global.css` |

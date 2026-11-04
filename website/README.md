@@ -52,8 +52,9 @@ reads a count, a date or a status. It never types one.
 
 - Folders: `public/` (icons, `og.png`, manifest, `robots.txt`), `scripts/` (checks and drawing tools),
   `src/diagrams/` (committed drawings), `src/assets/brand/` (copies of the two wordmarks in `brand/`).
-- `astro.config.mjs` sets `base: '/psyche'`, `trailingSlash: 'always'`, the Starlight options and three
-  component overrides (`PageTitle`, `Footer`, `Search`). `src/routeData.ts` adds per-page head entries
+- `astro.config.mjs` sets `base: '/psyche'`, `trailingSlash: 'always'`, the Starlight options and four
+  component overrides (`PageTitle`, `Footer`, `Search`, and `SocialIcons`, which puts the blog link
+  before the GitHub link in the header and the phone menu). `src/routeData.ts` adds per-page head entries
   from `src/lib/seo.ts`. Starlight's own 404 route is off; the sidebar is the staged `sidebar.json`.
 - The base is also written in `src/lib/seo.ts`, `scripts/check-budget.mjs`, `scripts/check-a11y.mjs`,
   `public/site.webmanifest`, `public/robots.txt` and `docs/publish.json` (`site_base`), and the address

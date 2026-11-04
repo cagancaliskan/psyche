@@ -322,13 +322,16 @@ test('the footer date is the day of the commit, in UTC, or nothing', () => {
   assert.equal(footerDate('not a date'), null);
 });
 
-test('the footer links say what they do, and lead to the repository, its licence, discussions, citation file and security policy', () => {
+test('the footer links say what they do, and lead to the blog, the repository, its licence, discussions, citation file and security policy', () => {
   const links = footerLinks();
   assert.deepEqual(
     links.map((l) => l.text),
-    ['MIT licence', 'Source code', 'Discussions', 'Cite this repository', 'Report a vulnerability'],
+    ['Blog', 'MIT licence', 'Source code', 'Discussions', 'Cite this repository', 'Report a vulnerability'],
   );
   const byText = Object.fromEntries(links.map((l) => [l.text, l]));
+  // the blog is the one page of the site among them, below the base, so every page links to it
+  assert.equal(byText.Blog.href, '/psyche/blog/');
+  assert.equal(footerLinks(REPO_URL, '/').find((l) => l.text === 'Blog')?.href, '/blog/');
   assert.equal(byText['MIT licence'].href, `${REPO_URL}/blob/main/LICENSE`);
   assert.equal(byText['Source code'].href, REPO_URL);
   assert.equal(byText.Discussions.href, 'https://github.com/cagancaliskan/psyche/discussions');
