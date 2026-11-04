@@ -586,16 +586,30 @@ _HTML_ATTR = r"""[ \t]+([A-Za-z_:][A-Za-z0-9_.:-]*)(?:[ \t]*=[ \t]*(?:"([^"]*)"|
 _HTML_ATTR_RE = re.compile(_HTML_ATTR)
 _HTML_OPEN_RE = re.compile(r"<([A-Za-z][A-Za-z0-9-]*)((?:" + _HTML_ATTR + r")*)[ \t]*/?>")
 _HTML_CLOSE_RE = re.compile(r"</([A-Za-z][A-Za-z0-9-]*)[ \t]*>")
-# A comment on one line, holding no "--" and not opening with ">" or "->": every reader, the
-# browser included, then ends it at the same "-->" (a browser also ends one at "--!>", and reads
-# "<!-->" and "<!--->" as whole comments).
-_HTML_SIMPLE_COMMENT = re.compile(r"<!--(?!-?>)(?:(?!--).)*-->")
 _HTML_URI_AUTOLINK = re.compile(r"<([A-Za-z][A-Za-z0-9+.-]{1,31}):[^<>\x00-\x20]*>")
 _HTML_EMAIL_AUTOLINK = re.compile(
     r"<[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?"
     r"(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*>")
 _HTML_CONTROL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
 _URL_SCHEME = re.compile(r"([A-Za-z][A-Za-z0-9+.-]*):")
+
+
+def _simple_comment_end(rest: str) -> Optional[int]:
+    """The index just past the comment that opens `rest` (which starts with "<!--"), or None
+    when it is not a simple one: on this line, holding no "--", not ending in "-", and not
+    opening with ">" or "->". Every reader, the browser included, ends such a comment at its
+    first "-->"; a browser also ends one at "--!>", and reads "<!-->" and "<!--->" as whole
+    comments, so anything else is refused. Plain string search, not a regular expression:
+    the line is the whole input, and a comment that does not close on it is refused."""
+    if rest.startswith(("<!-->", "<!--->")):
+        return None
+    end = rest.find("-->", 4)
+    if end < 0:
+        return None
+    inside = rest[4:end]
+    if "--" in inside or inside.endswith("-"):
+        return None
+    return end + 3
 
 
 def _snip(text: str) -> str:
@@ -629,11 +643,11 @@ def _html_line_problem(ln: str) -> Optional[str]:
         i = m.start()
         rest = ln[i:]
         if rest.startswith("<!--"):
-            c = _HTML_SIMPLE_COMMENT.match(rest)
-            if not c:
+            end = _simple_comment_end(rest)
+            if end is None:
                 return (f"an HTML comment that does not close on its own line, or holds '--' "
                         f"({_snip(rest)}); write it on one line as <!-- text --> or leave it out")
-            pos = i + c.end()
+            pos = i + end
             continue
         if rest[1] in "!?":
             return f"an HTML declaration or processing instruction ({_snip(rest)}); leave it out"
