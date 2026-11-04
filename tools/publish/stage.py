@@ -14,17 +14,28 @@ if either file on disk differs from it. So one commit id names everything a buil
 Output (both directories are gitignored, and CI fails if a staged copy is ever tracked):
 
     website/src/content/docs/<slug>.md   or  <slug>/index.md when other pages nest under it
+    website/src/content/docs/blog/<slug>/index.md   a blog post, with its pictures beside it
     website/src/data/plan.json           tools/research_plan.json, validated
     website/src/data/ledger.public.json  core.ledger_public
     website/src/data/sidebar.json        Starlight sidebar: one first group, "Start here", then the manifest
     website/src/data/progress.json       the plan's public events and the author, for the Atom feed
-    website/src/data/stage.json          which commit was staged
+    website/src/data/blog.json           the published posts, newest first, and the author
+    website/src/data/stage.json          which commit was staged, and how many pages and posts
 
 The sidebar's first group is "Start here": Home, then the pages of the manifest section of that
 title, then the other hand-written pages (build_sidebar). The events in progress.json come from
 render_plan.progress_events, the one place that derives them, and the author from CITATION.cff;
 website/src/pages/progress.xml.ts writes the feed from that file with a serialiser of its own
 (website/src/lib/feed.ts), and the feed's dates are the events' days, never the build time.
+
+The blog's posts are not in the manifest. Each folder docs/blog/<slug>/ of the commit that holds an
+index.md which is not a draft is a post (blog.py: layout, front matter, pictures, order). A post is
+read through the same guard as a page, staged with a front matter of its own (title, date, author,
+tags and its neighbours in date order, besides the description) and the GENERATED line, and its
+pictures are copied beside it byte for byte from the commit. A relative link or image in a post that
+names a picture of the same post becomes ./<file>; a link from a post or from a page to another post
+becomes /psyche/blog/<slug>/, through the same mapping that core.rewrite_links uses for pages. The
+sidebar gains a Blog item right after the page `progress` of the Start here group.
 
 Each staged page starts with `<!-- ledger:ignore-file -->`, so a local ledger_check does not
 report the copy a second time (the governed source is still checked), and a GENERATED line
@@ -51,6 +62,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Set, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import blog  # noqa: E402
 import core  # noqa: E402
 import diagrams  # noqa: E402
 import render_plan  # noqa: E402
@@ -75,6 +87,12 @@ CUSTOM_PAGES: List[Tuple[str, str]] = [
 # website/src/lib/pageChrome.ts reads the group as it stands: a page in it opens with the group's
 # number and name and has no stage.
 START_GROUP = "Start here"
+
+# The blog's index page (website/src/pages), listed in the first group right after the page whose slug is
+# BLOG_AFTER_SLUG, or after the group's manifest pages if there is none. Like the labels above, it may be
+# neither a document's title nor contain one (test_core.py checks this).
+BLOG_PAGE: Tuple[str, str] = ("Blog", "blog/")
+BLOG_AFTER_SLUG = "progress"
 
 
 def split_title(text: str, src: str) -> Tuple[str, str]:
@@ -137,7 +155,11 @@ def build_sidebar(manifest: dict, titles: Dict[str, str]) -> List[dict]:
     custom = [{"label": label, "link": "/" + path} for label, path in CUSTOM_PAGES]
     docs = ([{"label": titles[p["slug"]], "slug": p["slug"]} for p in start["pages"]]
             if start is not None else [])
-    sidebar: List[dict] = [{"label": START_GROUP, "items": custom[:1] + docs + custom[1:]}]
+    items = custom[:1] + docs + custom[1:]
+    after = next((i for i, it in enumerate(items) if it.get("slug") == BLOG_AFTER_SLUG), None)
+    at = (after + 1) if after is not None else 1 + len(docs)
+    items.insert(at, {"label": BLOG_PAGE[0], "link": "/" + BLOG_PAGE[1]})
+    sidebar: List[dict] = [{"label": START_GROUP, "items": items}]
     for section in manifest["sections"]:
         if section is start:
             continue
@@ -175,6 +197,10 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
     events = render_plan.progress_events(plan)
     author = core.citation_author(core.committed_text(root, sha, core.CITATION_REL.as_posix()))
     mapping = core.link_mapping(manifest, "site")
+    # the posts are read before anything is emptied: a post the guard or a rule refuses stops
+    # staging with the staged site as it was. Their routes join the mapping, so a page can link to one.
+    posts = blog.discover(root, sha, manifest=manifest, ledger=ledger, author=author)
+    mapping.update(blog.link_mapping(manifest, posts))
     tracked = core.git_tracked(root, rev=sha)
     repo = manifest["repo"]
     pages = core.manifest_pages(manifest)
@@ -225,6 +251,19 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
         target.parent.mkdir(parents=True, exist_ok=True)
         target.write_text(front + body, encoding="utf-8")
 
+    for i, post in enumerate(posts):
+        prev, nxt = blog.neighbours(posts, i)
+        body = core.rewrite_links(post.body, post.src, {**mapping, **blog.link_mapping(manifest, posts, post)},
+                                  sha, repo, root=root, tracked=tracked)
+        body, keys = diagrams.inline_fences(body, post.src, renderer, drawing, {})
+        used_keys.update(keys)
+        out_dir = docs_dir / "blog" / post.slug
+        out_dir.mkdir(parents=True, exist_ok=True)
+        (out_dir / "index.md").write_text(
+            blog.staged_front_matter(manifest, post, prev, nxt, sha) + body.lstrip("\n"), encoding="utf-8")
+        for name, data in post.media:
+            (out_dir / name).write_bytes(data)
+
     unused = diagrams.orphans(root, sha, used_keys)
     if unused:
         raise core.PublishError(
@@ -243,8 +282,9 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
     dump("sidebar.json", sidebar)
     dump("progress.json", {"as_of": plan["as_of"], "timezone": plan["timezone"], "author": author,
                            "events": events})
-    dump("stage.json", {"commit": sha, "repo": repo, "pages": len(pages)})
-    return {"commit": sha, "pages": len(pages), "diagrams": len(used_keys), "events": len(events)}
+    dump("blog.json", blog.blog_json(manifest, posts, author))
+    dump("stage.json", {"commit": sha, "repo": repo, "pages": len(pages), "posts": len(posts)})
+    return {"commit": sha, "pages": len(pages), "posts": len(posts), "diagrams": len(used_keys), "events": len(events)}
 
 
 def main(argv=None) -> int:
@@ -258,7 +298,7 @@ def main(argv=None) -> int:
     except core.PublishError as e:
         print(f"stage: {e}", file=sys.stderr)
         return 1
-    print(f"stage: {res['pages']} page(s), {res['diagrams']} diagram(s), {res['events']} progress "
+    print(f"stage: {res['pages']} page(s), {res['posts']} post(s), {res['diagrams']} diagram(s), {res['events']} progress "
           f"event(s) and the site data staged from {res['commit'][:12]}")
     return 0
 

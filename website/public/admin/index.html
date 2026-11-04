@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Psyche blog editor</title>
+
+    <!-- Keep this page out of search indexes and out of link previews. -->
+    <meta name="robots" content="noindex, nofollow" />
+
+    <!-- Send no Referer header at all. The editor only talks to GitHub's API and
+         to the pinned CDN path below, and neither needs to know where it runs. -->
+    <meta name="referrer" content="no-referrer" />
+
+    <!--
+      Content Security Policy. GitHub Pages cannot set HTTP headers, so the policy
+      is a meta element. A meta policy cannot carry frame-ancestors, report-uri or
+      sandbox, so this page cannot forbid being framed by another site.
+
+      default-src 'none'
+        Everything not listed below is refused.
+      script-src https://unpkg.com/@sveltia/cms@0.258.1/
+        Scripts load only from the version-pinned package path. No 'self', no
+        'unsafe-inline', no 'unsafe-eval', no wildcard, no other path on the CDN.
+        The main bundle carries an SRI hash (script tag below). Its lazily loaded
+        chunks come from the same path, which is why the path is allowed as a
+        prefix instead of a single file. A CSP source with a path matches that path
+        and everything below it.
+      style-src 'self' 'unsafe-inline'
+        The editor sets style attributes and injects style elements at run time
+        (Svelte), which Sveltia's own CSP guide permits. 'unsafe-inline' is for
+        styles only, never scripts. No stylesheet is loaded from another host.
+      font-src https://cdn.jsdelivr.net
+        The interface font (Source Sans 3), the icon font (Material Symbols
+        Outlined) and the monospace font (Noto Mono) are Fontsource files on
+        jsDelivr. Without this host the buttons would show icon names as text.
+      img-src 'self' blob: data: https://*.githubusercontent.com
+        'self' for the logo; blob: and data: for image previews built in the
+        browser; GitHub's content hosts for avatars and repository images.
+      connect-src 'self' blob: data: https://api.github.com ...
+        'self' reads config.yml. api.github.com is the REST and GraphQL API the
+        GitHub backend uses (this is where the access token is sent). The pinned
+        locales/ path serves the interface translations for non-English browser
+        languages (JSON data, never executed). The single package.json URL lets
+        the editor check whether a newer release exists. The githubstatus.com
+        URL is read only to explain an API failure.
+      media-src blob:, frame-src blob:, manifest-src blob:
+        Previews are blob documents inside sandboxed frames; no remote media.
+      object-src 'none', base-uri 'none', form-action 'none'
+        No plugins, no rewritten relative URLs, no form posts.
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'none'; script-src https://unpkg.com/@sveltia/cms@0.258.1/; style-src 'self' 'unsafe-inline'; font-src https://cdn.jsdelivr.net; img-src 'self' blob: data: https://*.githubusercontent.com; connect-src 'self' blob: data: https://api.github.com https://unpkg.com/@sveltia/cms@0.258.1/locales/ https://unpkg.com/@sveltia/cms/package.json https://www.githubstatus.com/api/v2/status.json; media-src blob:; frame-src blob:; manifest-src blob:; object-src 'none'; base-uri 'none'; form-action 'none'"
+    />
+
+    <link rel="icon" type="image/svg+xml" href="/psyche/favicon.svg" />
+    <link rel="cms-config-url" type="text/yaml" href="config.yml" />
+  </head>
+  <body>
+    <!--
+      Sveltia CMS 0.258.1, pinned to this exact version. Do not use a floating
+      URL such as @sveltia/cms or @latest.
+      integrity is the SHA-384 of dist/sveltia-cms.js from the npm tarball, and it
+      was checked to be identical to the bytes unpkg serves at this URL. The
+      browser refuses the file if a single byte differs. crossorigin="anonymous"
+      makes the request a CORS request without cookies, which SRI requires.
+      To upgrade: change the version here and in the Content-Security-Policy
+      above, and recompute the hash.
+    -->
+    <script
+      src="https://unpkg.com/@sveltia/cms@0.258.1/dist/sveltia-cms.js"
+      integrity="sha384-de/3M+uPwFt49OFqCPX3PaI93kBil3RI4m0yXHFuvBIBQcAWDnH3FDZu6P8y7vEL"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>

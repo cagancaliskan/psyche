@@ -44,6 +44,10 @@ reads a count, a date or a status. It never types one.
 | `/status/` | `src/pages/status.astro` | The substrate's captured test run and its bricks |
 | `404.html` | `src/pages/404.astro` | The page for an address that does not exist |
 | `/progress.xml` | `src/pages/progress.xml.ts` | Atom feed of the progress page |
+| `/blog/` | `src/pages/blog/index.astro` | The blog's index: every published post, newest first |
+| `/blog/<slug>/` | `docs/blog/<slug>/index.md` | A post, staged into `src/content/docs/blog/` with its images |
+| `/blog.xml` | `src/pages/blog.xml.ts` | Atom feed of the blog |
+| `/admin/` | `public/admin/` | The blog's editor (Sveltia CMS, loaded pinned from unpkg); not a page of the site |
 | every other route | `docs/publish.json` | A governed Markdown document, staged into `src/content/docs/` |
 
 - Folders: `public/` (icons, `og.png`, manifest, `robots.txt`), `scripts/` (checks and drawing tools),
@@ -138,6 +142,23 @@ that does otherwise: the drawings stay valid and the labels no longer fit. It in
   every page's head. A decided gate shows its date and next step only, never a verdict or a criterion
   (D-034). Feed ids are tag URIs built from the host, the year and the path below the base, so they are
   the same on every build and change if the host or the base path ever does.
+- **Blog.** A post is a folder of `docs/blog/` (the format and the two ways to publish are in
+  [`docs/blog/README.md`](../docs/blog/README.md)). `tools/publish/blog.py` reads each one from the
+  commit being staged, holds its front matter to a strict allowlist (title, day, a description of 120
+  to 160 characters, tags from one list, author, revision day, draft) and its folder to images only,
+  refuses an SVG that could run code, and passes the post through the same guard as a docs page.
+  `stage.py` writes it to `src/content/docs/blog/<slug>/` with its images and with `prev` and `next`
+  set to the neighbouring posts, and writes the published posts, newest first, to
+  `src/data/blog.json`, which the index, the landing page's latest posts and `src/pages/blog.xml.ts`
+  (through `src/lib/blog.ts`) read. A draft is never staged. The feed is dated by the posts' own days.
+  Each post's head carries its days, author and tags and a BlogPosting (`src/lib/seo.ts`).
+- **Editor.** `public/admin/` holds the editor's page and its configuration. It never writes to
+  `main`: every save is a branch `cms/posts/<slug>` and a pull request, and it shows no publish
+  control, so a post is published by merging that pull request on GitHub once the required checks
+  pass. Its page is noindex, sends no referrer, carries a content security policy whose only script
+  source is the pinned version of the editor, and loads that version's one script with an integrity
+  hash; `scripts/check-seo.mjs` fails the build if any of that goes, and the accessibility,
+  budget and sitemap checks leave the editor out, since it is not a page of the site.
 - **Dates.** The sitemap's `<lastmod>` and the footer's "Last updated" are the date of the last commit
   that touched the files a page is made from (`scripts/sitemap-lastmod.mjs`): a docs page's source, or a
   hand-written page's file, imports and data. With no history, or a shallow clone, no date is written;
@@ -357,13 +378,20 @@ commit; a new page that needs more gets its own measured line.
 on: other than one title, canonical address and description (120 to 160 characters, unique); `og:` or
 `twitter:` tags that differ from the page's; an image that is not a PNG of its stated size; a missing
 theme colour, icon or manifest; a `robots` meta anywhere but the 404 page (which must be `noindex`, with
-its own title, description and address); structured data off the landing page; and a link written with
+its own title, description and address); structured data off the landing page and the blog posts; and a link written with
 the site's whole address (which the link validator treats as external) that leads to nothing or to a
 missing id. For the site: a `robots.txt` that does not allow everything and name the sitemap; a bad
 manifest; a sitemap that omits a page, lists a non-page or repeats an address, or a `<lastmod>` that is
-missing (with history), unreadable or in the future. For the feed: not named once in every head, not
-Atom 1.0, an `updated` other than the newest event's day, an author other than `CITATION.cff`'s, or
-entries that are not one per plan event, newest first.
+missing (with history), unreadable or in the future. For the feeds: either one not named once in every
+head; for the progress feed, not Atom 1.0, an `updated` other than the newest event's day, an author
+other than `CITATION.cff`'s, or entries that are not one per plan event, newest first; for the blog's,
+not Atom 1.0, an `updated` other than the latest day a post was published or revised, or entries that
+are not one per built post, newest first. A blog post must carry its `article:` tags and one
+BlogPosting that matches its head; no other page but the landing page carries structured data. The
+editor (`dist/admin/`) is left out of the page rules and must be noindex, send no referrer, and carry
+one content security policy (`default-src`, `object-src`, `base-uri` and `form-action` set to
+`'none'`, and a `script-src` that is exactly the pinned editor path) and one script of that same
+version with an integrity hash.
 
 ### Accessibility check
 

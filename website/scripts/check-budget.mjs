@@ -145,12 +145,18 @@ function closure(roots, problems, page) {
   return seen;
 }
 
+// The blog's editor (public/admin/, copied to dist/admin/) is not a page a reader loads: it is the
+// editor's own application, fetched from a version-pinned address by the person who signs in, so it has no
+// budget here. scripts/check-seo.mjs holds it to its own rules.
+const EDITOR = 'admin';
+
 function htmlFiles(dir) {
   const out = [];
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     if (statSync(p).isDirectory()) {
       if (name === 'pagefind' || name === '_astro') continue;
+      if (dir === DIST && name === EDITOR) continue;
       out.push(...htmlFiles(p));
     } else if (name.endsWith('.html')) out.push(p);
   }

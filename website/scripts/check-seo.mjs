@@ -14,7 +14,11 @@
 //   robots    noindex on the 404 page and on no other
 //   404 page  its own title ("Page not found", a name and not a status code), the description in
 //             lib/seo.ts NOT_FOUND, and its own canonical address; every other page keeps the rules above
-//   JSON-LD   on the landing page only: parses, and holds a WebSite and a ResearchProject
+//   JSON-LD   on the landing page: parses, and holds a WebSite and a ResearchProject; on a blog post: one
+//             BlogPosting whose headline, address, day and author are the page's own (og:title, og:url,
+//             article:published_time, article:author); on no other page
+//   article   a blog post (blog/<slug>/) has one article:published_time and one article:author, and no
+//             other page has either
 //   own links every link in a page's body that is written with the site's whole address (a docs page
 //             reaches the hand-written pages, which have no Markdown source to link, that way) leads to a
 //             built page or file, and to an id that is on that page when it names one. The link validator
@@ -22,10 +26,21 @@
 // The site:
 //   robots.txt             allows everything and names the sitemap
 //   site.webmanifest       parses; start_url inside scope; its icons exist at their sizes, one maskable
-//   sitemap                every page but the 404 page is in it and nothing else is (the feed is not); each
+//   sitemap                every page but the 404 page is in it and nothing else is (the feeds are not); each
 //                          entry has a lastmod (the date of the last commit) when git history is available here
-//   progress feed          every page's head names it (one <link rel="alternate" type="application/atom+xml">
-//                          that reaches dist/progress.xml); the file parses as XML (Python's expat, since Node
+//   the editor             dist/admin/ (public/admin/, the blog's editor) is no page of the site: it is left out
+//                          of every rule above and of the sitemap, and must instead be noindex, send no
+//                          referrer, carry one Content-Security-Policy with default-src, object-src, base-uri
+//                          and form-action 'none' and a script-src that is exactly the version-pinned editor
+//                          path, and load its one script, of that same version, with an integrity hash
+//   feeds                  every page's head names both (two <link rel="alternate" type="application/atom+xml">,
+//                          one reaching dist/progress.xml and one dist/blog.xml, each with a title)
+//   blog feed              parses as Atom 1.0 (Python's expat), has an id, a title, the author CITATION.cff names, a
+//                          self link at its own address, an alternate link to the blog's index, an updated that is
+//                          the latest day a post was published or revised (never the build's), and one entry for
+//                          each built post, newest first, each with an id, a title, a published, an updated, a
+//                          summary and an alternate link to its built page
+//   progress feed          the file parses as XML (Python's expat, since Node
 //                          has no parser), is Atom 1.0, has an id, a title, an updated that is the newest
 //                          event's day (never the build's), a self link at its own address, an alternate link
 //                          to the progress page, the author CITATION.cff names, and one entry for each event of
@@ -42,6 +57,10 @@ const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const REPO = fileURLToPath(new URL('../../', import.meta.url));
 const DESCRIPTION = { min: 120, max: 160 };
 const FEED = { file: 'progress.xml', page: 'progress/', type: 'application/atom+xml' };
+const BLOG_FEED = { file: 'blog.xml', page: 'blog/' };
+// The blog's editor (public/admin/): an application shell, not a page of the site.
+const EDITOR = 'admin';
+const isPost = (route) => /^blog\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(route) && route !== 'blog/index';
 // Starlight writes `<title>` as the page's title, a bar and the site's title.
 const TITLE_SUFFIX = ' | Psyche';
 
@@ -94,6 +113,7 @@ function pages(dir = DIST, out = []) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     if (name === 'pagefind' || name === '_astro') continue;
+    if (dir === DIST && name === EDITOR) continue;
     if (statSync(p).isDirectory()) pages(p, out);
     else if (name.endsWith('.html')) out.push(p);
   }
@@ -198,10 +218,11 @@ for (const file of pages().sort()) {
   else if (!existsSync(fileOf(manifest.href) ?? '')) bad(where, `manifest ${manifest.href} is not a file of the site`);
   if (!h.links.some((l) => /(^|\s)(shortcut )?icon(\s|$)/.test(l.rel ?? '') && l.type === 'image/svg+xml')) bad(where, 'the SVG icon link is missing');
   const feeds = h.links.filter((l) => l.rel === 'alternate' && l.type === FEED.type);
-  if (feeds.length !== 1) bad(where, `${feeds.length} <link rel="alternate" type="${FEED.type}"> tags, expected one (the progress feed)`);
-  else {
-    if (fileOf(feeds[0].href ?? '') !== join(DIST, FEED.file)) bad(where, `the feed link ${feeds[0].href} does not lead to /${FEED.file}`);
-    if (!feeds[0].title) bad(where, 'the feed link has no title for a feed reader to show');
+  if (feeds.length !== 2) bad(where, `${feeds.length} <link rel="alternate" type="${FEED.type}"> tags, expected two (the progress feed and the blog's)`);
+  for (const file of [FEED.file, BLOG_FEED.file]) {
+    const found = feeds.filter((l) => fileOf(l.href ?? '') === join(DIST, file));
+    if (found.length !== 1) bad(where, `${found.length} feed links lead to /${file}, expected one`);
+    else if (!found[0].title) bad(where, `the feed link to /${file} has no title for a feed reader to show`);
   }
 
   const robots = meta('name', 'robots');
@@ -209,7 +230,30 @@ for (const file of pages().sort()) {
   if (!is404 && robots.length) bad(where, `has a robots meta (${robots.map((r) => r.content).join(', ')}), and only the 404 page may`);
 
   const ld = h.scripts.filter((s) => s.attrs.type === 'application/ld+json');
-  if (route !== '' && ld.length) bad(where, 'structured data belongs on the landing page only');
+  const published = meta('property', 'article:published_time');
+  const authors = meta('property', 'article:author');
+  if (isPost(route)) {
+    const day = one('property', 'article:published_time');
+    const author = one('property', 'article:author');
+    if (day !== undefined && !/^\d{4}-\d{2}-\d{2}$/.test(day)) bad(where, `article:published_time ${day} is not a day`);
+    if (ld.length !== 1) bad(where, `${ld.length} JSON-LD scripts, expected one BlogPosting`);
+    for (const s of ld) {
+      try {
+        const post = JSON.parse(s.body);
+        if (post['@type'] !== 'BlogPosting') bad(where, `JSON-LD is a ${post['@type']}, expected a BlogPosting`);
+        if (post.headline !== ogTitle) bad(where, 'the BlogPosting headline is not og:title');
+        if (post.url !== url) bad(where, 'the BlogPosting url is not og:url');
+        if (post.datePublished !== day) bad(where, 'the BlogPosting datePublished is not article:published_time');
+        if (post.author?.name !== author) bad(where, 'the BlogPosting author is not article:author');
+        if (post.description !== description) bad(where, 'the BlogPosting description is not the page description');
+      } catch (e) {
+        bad(where, `the JSON-LD does not parse: ${e.message}`);
+      }
+    }
+  } else {
+    if (published.length || authors.length) bad(where, 'article:published_time and article:author belong on blog posts only');
+    if (route !== '' && ld.length) bad(where, 'structured data belongs on the landing page and on blog posts only');
+  }
   if (route === '') {
     if (ld.length !== 1) bad(where, `${ld.length} JSON-LD scripts, expected one`);
     for (const s of ld) {
@@ -227,6 +271,73 @@ for (const file of pages().sort()) {
   }
 }
 if (!routes.includes('') || !routes.includes('404')) bad('dist', 'no landing page or no 404 page was built');
+if (!routes.includes('blog')) bad('dist', "the blog's index was not built");
+
+// ---- the editor
+// public/admin/ is copied into dist/admin/ as it is. It is an application that runs in the browser of the
+// person who signs in, not a page for a reader, so it is noindex and outside the sitemap, and the rules
+// that make it safe to host are checked here, directive by directive: nothing is loaded that the policy
+// does not name (default-src 'none'), scripts come from exactly one place, the version-pinned path of the
+// editor, and from nowhere else, no plugin, base address or form post is allowed, the one script tag loads
+// the pinned file of that same version under an integrity hash, the translations it fetches come from the
+// same version, and the page sends no referrer.
+{
+  const file = join(DIST, EDITOR, 'index.html');
+  const where = `/${EDITOR}/`;
+  const PIN = /^https:\/\/unpkg\.com\/@sveltia\/cms@(\d+\.\d+\.\d+)\/$/;
+  const SCRIPT = /^https:\/\/unpkg\.com\/@sveltia\/cms@(\d+\.\d+\.\d+)\/dist\/sveltia-cms\.js$/;
+  const LOCALES = /^https:\/\/unpkg\.com\/@sveltia\/cms@(\d+\.\d+\.\d+)\/locales\/$/;
+  if (!existsSync(file)) bad(where, 'the editor was not copied into dist');
+  else {
+    const html = readFileSync(file, 'utf8');
+    const h = head(html);
+    const metaNamed = (name) => h.metas.filter((m) => m.name === name);
+    const robots = metaNamed('robots');
+    if (robots.length !== 1 || !/\bnoindex\b/.test(robots[0].content ?? '')) bad(where, 'the editor must be noindex');
+    const referrer = metaNamed('referrer');
+    if (referrer.length !== 1 || referrer[0].content !== 'no-referrer') bad(where, 'the editor must send no referrer (<meta name="referrer" content="no-referrer">)');
+    const csp = h.metas.filter((m) => (m['http-equiv'] ?? '').toLowerCase() === 'content-security-policy');
+    let pinned = null;
+    if (csp.length !== 1) bad(where, `${csp.length} Content-Security-Policy meta elements, expected one`);
+    else {
+      const directives = new Map();
+      for (const part of (csp[0].content ?? '').split(';')) {
+        const [name, ...sources] = part.trim().split(/\s+/).filter(Boolean);
+        if (!name) continue;
+        if (directives.has(name.toLowerCase())) bad(where, `the policy names ${name} twice`);
+        directives.set(name.toLowerCase(), sources);
+      }
+      const only = (name, want) => {
+        const got = directives.get(name);
+        if (!got || got.length !== 1 || got[0] !== want) bad(where, `the policy's ${name} must be exactly ${want}, not ${got ? got.join(' ') || '(empty)' : '(missing)'}`);
+      };
+      only('default-src', "'none'");
+      only('object-src', "'none'");
+      only('base-uri', "'none'");
+      only('form-action', "'none'");
+      const scripts = directives.get('script-src') ?? [];
+      if (scripts.length !== 1 || !PIN.test(scripts[0])) bad(where, `the policy's script-src must be exactly one source, the version-pinned editor path, not ${scripts.join(' ') || '(missing)'}`);
+      else pinned = scripts[0].match(PIN)[1];
+      for (const name of ['script-src-elem', 'script-src-attr', 'worker-src', 'child-src']) {
+        if (directives.has(name)) bad(where, `the policy names ${name}, which would widen what may run beside script-src`);
+      }
+      const connect = directives.get('connect-src') ?? [];
+      for (const src of connect) {
+        const m = src.match(LOCALES);
+        if (src.includes('@sveltia/cms@') && !(m && m[1] === pinned)) bad(where, `connect-src ${src} is not the locales path of the pinned version`);
+      }
+    }
+    const scripts = [...html.matchAll(/<script\b([^>]*)>/gi)].map((m) => attributes(`<script${m[1]}>`));
+    if (scripts.length !== 1) bad(where, `${scripts.length} script elements, expected one`);
+    for (const a of scripts) {
+      const m = (a.src ?? '').match(SCRIPT);
+      if (!m) bad(where, `the script ${a.src} is not the version-pinned editor`);
+      else if (pinned && m[1] !== pinned) bad(where, `the script loads version ${m[1]} but the policy pins ${pinned}`);
+      if (!/^sha(384|512)-[A-Za-z0-9+/]{43,}={0,2}$/.test(a.integrity ?? '')) bad(where, 'the script has no integrity hash');
+      if (a.crossorigin !== 'anonymous') bad(where, 'the script needs crossorigin="anonymous" for its integrity hash to be checked');
+    }
+  }
+}
 
 // ---- the links written with the site's whole address
 // A page may link another page of the site by its absolute address, and the link validator then calls the
@@ -424,6 +535,87 @@ else {
       else if (link && !existsSync(join(fileOf(link.href) ?? DIST, 'index.html'))) bad(here, `its link ${link.href} is not a built page`);
     });
     if (problems.length === problemsBeforeFeed) console.log(`check-seo: the progress feed is Atom with ${f.entries.length} entr${f.entries.length === 1 ? 'y' : 'ies'}, one for each event of the plan, dated ${f.updated}`);
+  }
+}
+
+// ---- the blog feed
+const BLOG_PROBE = `
+import json, sys
+import xml.etree.ElementTree as ET
+repo = sys.argv[2]
+sys.path.insert(0, repo + '/tools/publish')
+import core
+A = '{http://www.w3.org/2005/Atom}'
+def text(el, name):
+    child = el.find(A + name)
+    return None if child is None or child.text is None else child.text.strip()
+def links(el):
+    return [{'rel': l.get('rel'), 'type': l.get('type'), 'href': l.get('href')} for l in el.findall(A + 'link')]
+root = ET.parse(sys.argv[1]).getroot()
+author = root.find(A + 'author')
+print(json.dumps({
+    'root': root.tag,
+    'lang': root.get('{http://www.w3.org/XML/1998/namespace}lang'),
+    'id': text(root, 'id'), 'title': text(root, 'title'), 'updated': text(root, 'updated'),
+    'author': None if author is None else text(author, 'name'),
+    'links': links(root),
+    'entries': [{'id': text(e, 'id'), 'title': text(e, 'title'), 'published': text(e, 'published'),
+                 'updated': text(e, 'updated'), 'summary': text(e, 'summary'), 'links': links(e)}
+                for e in root.findall(A + 'entry')],
+    'citation': core.citation_author(open(repo + '/CITATION.cff', encoding='utf-8').read()),
+}))
+`;
+{
+  const w = `/${BLOG_FEED.file}`;
+  const file = join(DIST, BLOG_FEED.file);
+  const before = problems.length;
+  if (!existsSync(file)) bad(w, 'missing');
+  else {
+    let f;
+    try {
+      f = JSON.parse(execFileSync('python3', ['-B', '-I', '-c', BLOG_PROBE, file, REPO.replace(/\/$/, '')], { encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }));
+    } catch (e) {
+      bad(w, `cannot be read as XML: ${String(e.stderr || e.message).trim().split('\n').pop()}`);
+    }
+    if (f) {
+      const rfc3339 = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d+)?(Z|[+-]\d{2}:\d{2})$/;
+      const stampOk = (t) => typeof t === 'string' && rfc3339.test(t) && !Number.isNaN(Date.parse(t));
+      const iri = /^[A-Za-z][A-Za-z0-9+.-]*:\S+$/;
+      if (f.root !== '{http://www.w3.org/2005/Atom}feed') bad(w, `the root is ${f.root}, not an Atom 1.0 feed`);
+      if (f.lang !== 'en') bad(w, 'the feed has no xml:lang="en"');
+      if (!iri.test(f.id ?? '')) bad(w, `the feed id ${JSON.stringify(f.id)} is not an IRI`);
+      if (!f.title) bad(w, 'the feed has no title');
+      if (f.author !== f.citation) bad(w, `the author is ${JSON.stringify(f.author)}, but CITATION.cff names ${JSON.stringify(f.citation)}`);
+      const only = (list, rel, label) => {
+        const found = list.filter((l) => l.rel === rel);
+        if (found.length !== 1) bad(w, `${label}: ${found.length} <link rel="${rel}"> elements, expected one`);
+        return found[0];
+      };
+      const self = only(f.links, 'self', 'the feed');
+      if (self && (self.href !== `${SITE_URL}${BLOG_FEED.file}` || self.type !== FEED.type)) bad(w, `the self link is ${self.href} (${self.type}), expected ${SITE_URL}${BLOG_FEED.file}`);
+      const alternate = only(f.links, 'alternate', 'the feed');
+      if (alternate && alternate.href !== `${SITE_URL}${BLOG_FEED.page}`) bad(w, `the alternate link is ${alternate.href}, expected ${SITE_URL}${BLOG_FEED.page}`);
+      const posts = routes.filter(isPost).map((r) => `${SITE_URL}${r}/`);
+      const linked = [];
+      let newest = null;
+      f.entries.forEach((entry, n) => {
+        const here = `${w} entry ${n + 1}`;
+        if (!iri.test(entry.id ?? '')) bad(here, `the id ${JSON.stringify(entry.id)} is not an IRI`);
+        if (!entry.title) bad(here, 'no title');
+        if (!entry.summary) bad(here, 'no summary');
+        for (const k of ['published', 'updated']) if (!stampOk(entry[k])) bad(here, `${k} ${JSON.stringify(entry[k])} is not an RFC 3339 date and time`);
+        if (stampOk(entry.published) && stampOk(entry.updated) && Date.parse(entry.updated) < Date.parse(entry.published)) bad(here, 'is updated before it was published');
+        if (n > 0 && stampOk(entry.published) && stampOk(f.entries[n - 1].published) && Date.parse(entry.published) > Date.parse(f.entries[n - 1].published)) bad(here, 'was published after the entry before it; the feed is newest first');
+        if (stampOk(entry.updated) && (newest === null || entry.updated > newest)) newest = entry.updated;
+        const link = only(entry.links, 'alternate', here);
+        if (link) linked.push(link.href);
+        if (link && !posts.includes(link.href)) bad(here, `its link ${link.href} is not a built post`);
+      });
+      for (const p of posts) if (!linked.includes(p)) bad(w, `the built post ${p} has no entry`);
+      if (!stampOk(f.updated)) bad(w, `updated ${JSON.stringify(f.updated)} is not an RFC 3339 date and time`);
+      else if (newest !== null && f.updated !== newest) bad(w, `updated is ${f.updated}, not the latest day a post was published or revised (${newest}); a feed is dated by its posts, never by the build`);
+      if (problems.length === before) console.log(`check-seo: the blog feed is Atom with ${f.entries.length} entr${f.entries.length === 1 ? 'y' : 'ies'}, one for each built post, dated ${f.updated}`);
+    }
   }
 }
 

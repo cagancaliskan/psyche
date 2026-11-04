@@ -23,6 +23,11 @@ Surfaces and the rules applied to each:
     docs/assets/*.svg, website/src/**/*.svg,
       website/public/**/*.svg  (text nodes, plus
       aria-label / alt / title attributes)          x      x      x         x       x
+    website/public/admin/*.yml, *.html (the CMS
+      page and its configuration, read as text:
+      the collection and field labels and hints
+      an author sees)                               x      x      x         x       x
+    docs/blog/**/*.svg (the pictures of posts)      x      x      x         x       x
     every string value in tools/research_plan.json  x      x      x         x       x
     every string value in docs/publish.json         x      x      x         x       x
       (tools/publish/stage.py makes each section title a site sidebar label and each page
@@ -40,6 +45,10 @@ Surfaces and the rules applied to each:
     README.md, MOC.md, docs/research/**/*.md,
     cogmap/**/*.md, website/**/*.md (not the
     staged copies, node_modules or dist)            *      *      x         x       x
+    docs/blog/**/*.md: the authoring guide and
+      every post, drafts included (posts are
+      published by tools/publish/stage.py under
+      the same guard, outside the manifest)         *      *      x         x       x
     every page src in docs/publish.json not
       listed above (read through
       core.load_manifest), in the section
@@ -251,7 +260,7 @@ CODE_SUFFIXES = {".astro", ".tsx", ".ts", ".jsx", ".mdx", ".js", ".mjs", ".cjs",
                  ".mmd"}
 # read through check_disclosure.markup_forms (tags stripped, entities decoded); kept here so
 # the set of surfaces read as markup is visible, and checked against CD's set in main()
-MARKUP_SUFFIXES = {".astro", ".tsx", ".jsx", ".mdx", ".md", ".mmd"}
+MARKUP_SUFFIXES = {".astro", ".tsx", ".jsx", ".mdx", ".md", ".mmd", ".html"}
 MARKDOWN_SUFFIXES = {".mdx", ".md"}
 SITE_CONFIGS = ("astro.config.mjs", "astro.config.ts", "astro.config.js", "astro.config.cjs",
                 "astro.config.mts")
@@ -1009,14 +1018,18 @@ def surfaces(root: Path) -> Tuple[List[Path], List[Path], List[Path]]:
             if not (p.suffix.lower() == ".json" and p.name.startswith("package"))]
     code += [root / "website" / name for name in SITE_CONFIGS
              if (root / "website" / name).is_file() or (root / "website" / name).is_symlink()]
+    # the CMS's page and configuration: text an author reads, not part of website/src
+    code += _walk(root, "website/public/admin", {".yml", ".html"})
     # docs/diagrams/*.mmd is not read: archived report figures (see the module docstring)
     svgs = _glob(root, "docs/assets", ".svg")
     svgs += _walk(root, "website/src", {".svg"}, exclude_prefix=STAGED_REL)
     svgs += _walk(root, "website/public", {".svg"})
+    svgs += _walk(root, "docs/blog", {".svg"})
     prose = [root / name for name in ("README.md", "MOC.md")
              if (root / name).is_file() or (root / name).is_symlink()]
     prose += _walk(root, "docs/research", {".md"})
     prose += _walk(root, "cogmap", {".md"})
+    prose += _walk(root, "docs/blog", {".md"})
     prose += _walk(root, "website", {".md"}, exclude_prefix=STAGED_REL)
 
     def uniq(ps: List[Path]) -> List[Path]:

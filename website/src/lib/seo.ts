@@ -6,9 +6,10 @@
  * Starlight already writes the title, the canonical address, og:title, og:description,
  * og:url, og:site_name, og:type (article), twitter:card and the description. What it does not write,
  * and this module adds: og:type "website" on the landing page, twitter:title and twitter:description
- * from the page, noindex on the 404 page, and the landing page's structured data (schema.org JSON-LD).
- * The head entries that are the same on every page (theme colour, icons, manifest, the card's alt
- * text) are in astro.config.mjs.
+ * from the page, noindex on the 404 page, the landing page's structured data (schema.org JSON-LD), and
+ * on a blog post its days, author and tags (article:published_time, article:modified_time,
+ * article:author, article:tag) with a BlogPosting of its own. The head entries that are the same on
+ * every page (theme colour, icons, manifest, the card's alt text, the two feeds) are in astro.config.mjs.
  */
 
 export const ORIGIN = 'https://cagancaliskan.github.io';
@@ -116,11 +117,48 @@ const meta = (key: 'name' | 'property', value: string, content: string): HeadEnt
   attrs: { [key]: value, content },
 });
 
+/** What a blog post's head says about it beyond its title and description: its front matter's facts. */
+export interface ArticleFacts {
+  /** The day it was published, YYYY-MM-DD. */
+  published: string;
+  /** The day it was last revised, YYYY-MM-DD, when there is one. */
+  modified?: string | null;
+  author: string;
+  tags: readonly string[];
+}
+
 /**
- * The head of one page as Starlight built it, with this module's per-page entries applied. Returns a
- * new array; the entries of the one it was given are not changed.
+ * The structured data of a blog post: a BlogPosting in the site, written by the post's author, with
+ * the post's own title, description, days and tags and nothing else. Its address is the canonical one
+ * Starlight wrote (og:url), so the two never differ.
  */
-export function seoHead(head: HeadEntry[], route: string): HeadEntry[] {
+export function postJsonLd(input: { url: string; title: string; description: string; article: ArticleFacts }): Record<string, unknown> {
+  const { url, title, description, article } = input;
+  return {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    '@id': `${url}#post`,
+    headline: title,
+    description,
+    url,
+    mainEntityOfPage: url,
+    datePublished: article.published,
+    dateModified: article.modified && article.modified > article.published ? article.modified : article.published,
+    inLanguage: 'en',
+    author: { '@type': 'Person', name: article.author },
+    image: `${SITE_URL}og.png`,
+    isPartOf: { '@id': WEBSITE_ID },
+    about: { '@id': PROJECT_ID },
+    ...(article.tags.length ? { keywords: [...article.tags] } : {}),
+  };
+}
+
+/**
+ * The head of one page as Starlight built it, with this module's per-page entries applied. `article`
+ * is given for a blog post only (src/routeData.ts reads it from the post's front matter). Returns a new
+ * array; the entries of the one it was given are not changed.
+ */
+export function seoHead(head: HeadEntry[], route: string, article?: ArticleFacts): HeadEntry[] {
   const out: HeadEntry[] = head.map((e) => (e.attrs ? { ...e, attrs: { ...e.attrs } } : { ...e }));
 
   const type = find(out, 'property', 'og:type');
@@ -140,6 +178,17 @@ export function seoHead(head: HeadEntry[], route: string): HeadEntry[] {
 
   if (route === '') {
     out.push({ tag: 'script', attrs: { type: 'application/ld+json' }, content: jsonLdScript(projectJsonLd()) });
+  }
+
+  if (article && route !== '' && route !== '404') {
+    out.push(meta('property', 'article:published_time', article.published));
+    if (article.modified && article.modified > article.published) out.push(meta('property', 'article:modified_time', article.modified));
+    out.push(meta('property', 'article:author', article.author));
+    for (const tag of article.tags) out.push(meta('property', 'article:tag', tag));
+    const url = find(out, 'property', 'og:url')?.attrs?.content;
+    if (typeof url === 'string' && typeof title === 'string' && typeof description === 'string') {
+      out.push({ tag: 'script', attrs: { type: 'application/ld+json' }, content: jsonLdScript(postJsonLd({ url, title, description, article })) });
+    }
   }
   return out;
 }

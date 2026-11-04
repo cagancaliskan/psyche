@@ -78,6 +78,44 @@
   .sx-pt + h1#_top {
     margin-block-start: 1.25rem;
   }
+  /* Under a blog post's title: the day it was revised and its tags, as mono labels with the square
+     marker of the strip's state, never a pill (components/chrome/PageTitle.astro). */
+  .sx-post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 1.5rem;
+    margin-block-start: 0.75rem;
+    font: 500 var(--sx-lab-size) / 1.4 var(--font-mono);
+    letter-spacing: var(--sx-lab-track);
+    text-transform: uppercase;
+    color: var(--sx-muted);
+  }
+  .sx-post-meta > p {
+    margin: 0;
+  }
+  .sx-post-meta__tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .sx-post-meta__tags > li {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin: 0;
+  }
+  .sx-post-meta__tags > li::before {
+    content: '';
+    flex: none;
+    align-self: center;
+    inline-size: 6px;
+    block-size: 6px;
+    border: 1px solid currentColor;
+  }
   .sx-pt__idx {
     margin-inline-end: 0.5em;
     color: var(--sx-structure);

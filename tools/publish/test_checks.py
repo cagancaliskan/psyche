@@ -2373,6 +2373,33 @@ def test_decode_denylist(tmp: Path) -> None:
           "a wrong number of arguments is exit 2, with nothing written")
 
 
+def test_check_copy_blog(tmp: Path) -> None:
+    section("check_copy: blog posts, their SVG pictures and the CMS files are copy surfaces")
+    tr = chr(0xE7)
+    r = make_repo(tmp, files={
+        "docs/blog/README.md": "# Guide\n\nA guide with a stray letter " + tr + ".\n",
+        "docs/blog/a-post/index.md": "---\ntitle: \"T\"\n---\n\nThe model " + RESEARCH_TERM + ".\n",
+        "docs/blog/a-draft/index.md": "---\ndraft: true\n---\n\nThe model " + RESEARCH_TERM + ".\n",
+        "docs/blog/ok/index.md": "---\ntitle: \"T\"\n---\n\nNo claim that the model " + RESEARCH_TERM + ".\n",
+        "docs/blog/a-post/fig.svg":
+            "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>It " + CLAIM + "</text></svg>\n",
+        "website/public/admin/config.yml": "collections:\n  - label: \"It " + CLAIM + "\"\n",
+        "website/public/admin/index.html": "<!doctype html>\n<p>Edit " + tr + " posts</p>\n",
+        "website/public/admin/notes.txt": "It " + CLAIM + "\n",
+    })
+    f = copy_findings(r)
+    check("LANGUAGE" in rules_at(f, "docs/blog/README.md", 3), "the authoring guide is read, with LANGUAGE")
+    check(rules_at(f, "docs/blog/a-post/index.md", 5) == ["RESEARCH"],
+          "a research term asserted in a post is a RESEARCH finding")
+    check(rules_at(f, "docs/blog/a-draft/index.md", 5) == ["RESEARCH"], "a draft is read too")
+    check(rules_at(f, "docs/blog/ok/index.md") == [], "a negated term in a post passes")
+    check(rules_at(f, "docs/blog/a-post/fig.svg") == ["CLAIM"], "the text of a post's SVG is read")
+    check(rules_at(f, "website/public/admin/config.yml", 2) == ["CLAIM"], "the CMS configuration is read as text")
+    check(rules_at(f, "website/public/admin/index.html", 2) == ["LANGUAGE"], "the CMS page is read as text")
+    check(rules_at(f, "website/public/admin/notes.txt") == [], "only .yml and .html of the CMS folder are read")
+    check(copy_findings(make_repo(tmp)) == [], "a repository with no blog and no CMS is clean")
+
+
 def main() -> int:
     print("=" * 70)
     print("  PUBLISH CHECKS — TEST SUITE")
@@ -2395,6 +2422,7 @@ def main() -> int:
         test_leak_check_round5(tmp)
         test_check_copy_round5(tmp)
         test_check_copy_comment_pragma(tmp)
+        test_check_copy_blog(tmp)
         test_check_disclosure_round5(tmp)
         test_decode_denylist(tmp)
     finally:

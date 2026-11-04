@@ -21,6 +21,8 @@ file copied under another name is caught.
     python3 tools/publish/diagrams.py --list           the fences as JSON (what the render
                                                        script draws); reads the working tree
 
+Blog posts that are not drafts (blog.sources) are pages for this purpose too.
+
 Used by stage.py (inline_fences, orphans, svg_problems) and by the render script (--list).
 A fence is replaced only when it stands at the left margin of the page, closed, and every
 reading of Markdown agrees it is a fence; any other Mermaid fence in a published page stops
@@ -37,9 +39,10 @@ import json
 import re
 import sys
 from pathlib import Path
-from typing import Callable, Dict, List, NamedTuple, Optional, Set, Tuple
+from typing import Callable, Dict, List, NamedTuple, Optional, Sequence, Set, Tuple
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import blog  # noqa: E402
 import core  # noqa: E402
 
 DIR_REL = "website/src/diagrams"
@@ -252,13 +255,17 @@ def figure(svg: str) -> str:
 # what the pages need, and the check
 # ─────────────────────────────────────────────────────────────────────────────
 
-def needed(root: Path, manifest: dict, renderer: str, read: Callable[[dict], str]
-           ) -> Dict[str, List[str]]:
-    """key -> where the fence stands ("src:line"), for every fence of every published page."""
+def needed(root: Path, manifest: dict, renderer: str, read: Callable[[dict], str],
+           posts: Sequence[Tuple[str, str]] = ()) -> Dict[str, List[str]]:
+    """key -> where the fence stands ("src:line"), for every fence of every published page and,
+    through `posts` ((src, text) pairs, see blog.sources), of every published blog post."""
     out: Dict[str, List[str]] = {}
     for page in core.manifest_pages(manifest):
         for f in fences(read(page), page["src"]):
             out.setdefault(diagram_key(renderer, f.source), []).append(f"{page['src']}:{f.line}")
+    for src, text in posts:
+        for f in fences(text, src):
+            out.setdefault(diagram_key(renderer, f.source), []).append(f"{src}:{f.line}")
     return out
 
 
@@ -280,7 +287,7 @@ def check(root: Path, rev: Optional[str] = None) -> List[str]:
                 raise core.PublishError(f"{page['src']}: listed in the manifest but not found")
             return data.decode("utf-8")
 
-        want = needed(root, manifest, renderer, read)
+        want = needed(root, manifest, renderer, read, blog.sources(root, rev))
     except core.PublishError as e:
         return [str(e)]
     for key, places in sorted(want.items()):
@@ -299,7 +306,7 @@ def check(root: Path, rev: Optional[str] = None) -> List[str]:
 
 
 def listing(root: Path) -> dict:
-    """What the render script draws: every fence of every published page, from the working
+    """What the render script draws: every fence of every published page and blog post, from the working
     tree, with the key the stager will look for."""
     root = Path(root).resolve()
     manifest = core.load_manifest(root)
@@ -311,6 +318,11 @@ def listing(root: Path) -> dict:
             key = diagram_key(renderer, f.source)
             item = items.setdefault(key, {"key": key, "source": f.source, "where": []})
             item["where"].append(f"{page['src']}:{f.line}")
+    for src, text in blog.sources(root, None):
+        for f in fences(text, src):
+            key = diagram_key(renderer, f.source)
+            item = items.setdefault(key, {"key": key, "source": f.source, "where": []})
+            item["where"].append(f"{src}:{f.line}")
     return {"directory": DIR_REL, "renderer": renderer, "diagrams": list(items.values())}
 
 

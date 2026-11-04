@@ -11,7 +11,7 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
-const PAGES = ['index.html', 'roadmap/index.html', 'battery/index.html', 'status/index.html'];
+const PAGES = ['index.html', 'roadmap/index.html', 'battery/index.html', 'status/index.html', 'blog/index.html'];
 
 const RAW_RULES = [
   [/[A-Za-z0-9,.;:]<(a|code|strong|em|span|time)[\s>]/g, 'text glued to the start of an inline element'],

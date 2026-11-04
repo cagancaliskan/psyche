@@ -41,9 +41,9 @@ Ask in a Discussion before a large change, and before anything the list below do
   and the frozen pre-registrations in `docs/experiments/` are records (D-012, D-030), and
   `docs/TEST_OUTPUT.txt` is written by `make capture`. None of them is edited by hand, a typo
   included.
-- **Small fixes.** A wrong sentence, a typo or a broken link in the prose of `README.md` or of a
-  page listed in `docs/publish.json`, or a fix to the docs site in `website/`, read against rule 1
-  and the disclosure policy. A figure or a plan date is never typed: counts come from
+- **Small fixes.** A wrong sentence, a typo or a broken link in the prose of `README.md`, of a
+  page listed in `docs/publish.json` or of a post in `docs/blog/`, or a fix to the docs site in
+  `website/`, read against rule 1 and the disclosure policy. A figure or a plan date is never typed: counts come from
   `tools/ledger.json`, and plan dates from `render_plan.py --write`. Nothing inside a generated
   block is edited by hand.
 - **Ask first.**
@@ -59,6 +59,8 @@ Ask in a Discussion before a large change, and before anything the list below do
   - A change to what the research plan (`tools/research_plan.json`), the claims discipline or the
     disclosure policy says, as opposed to a typo or a broken link in them. They set the project's
     direction.
+  - A new blog post. The project lead decides what the blog publishes; the format and the checks a
+    post passes are in [`docs/blog/README.md`](docs/blog/README.md).
 
 ### Set up
 

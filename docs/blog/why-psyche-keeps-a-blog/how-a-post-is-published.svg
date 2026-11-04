@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 828 152" width="828" height="152" role="img" aria-label="How a post is published: write it in docs/blog, check it in a pull request, merge it on GitHub, then stage it from the commit and publish it.">
+  <title>How a post is published</title>
+  <style>
+    .sheet { fill: #f5f7fb; stroke: #c9cfdb; }
+    .box { fill: none; stroke: #8b93a5; }
+    .tick { stroke: #2f4fd6; stroke-width: 2; }
+    .arrow { fill: none; stroke: #4a5468; stroke-width: 1.25; stroke-linecap: round; stroke-linejoin: round; }
+    .idx { fill: #2f4fd6; font: 500 11px ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.08em; }
+    .name { fill: #0a0d14; font: 600 17px system-ui, -apple-system, "Segoe UI", sans-serif; }
+    .sub { fill: #4a5468; font: 400 12.5px system-ui, -apple-system, "Segoe UI", sans-serif; }
+    @media (prefers-color-scheme: dark) {
+      .sheet { fill: #05070d; stroke: #2a3142; }
+      .box { stroke: #5d667a; }
+      .tick, .idx { stroke: #8aa2ff; }
+      .idx { fill: #8aa2ff; stroke: none; }
+      .arrow { stroke: #9aa4b8; }
+      .name { fill: #f4f6fb; }
+      .sub { fill: #9aa4b8; }
+    }
+  </style>
+  <rect class="sheet" x="0.5" y="0.5" width="827" height="151"/>
+  <g transform="translate(20 28)">
+    <rect class="box" x="0.5" y="0.5" width="169" height="95"/>
+    <path class="tick" d="M0.5 0.5h18"/>
+    <text class="idx" x="14" y="26">01</text>
+    <text class="name" x="14" y="54">Write</text>
+    <text class="sub" x="14" y="78">docs/blog/&lt;slug&gt;/</text>
+  </g>
+  <path class="arrow" d="M196 76.0h22m-6 -5l6 5l-6 5"/>
+  <g transform="translate(226 28)">
+    <rect class="box" x="0.5" y="0.5" width="169" height="95"/>
+    <path class="tick" d="M0.5 0.5h18"/>
+    <text class="idx" x="14" y="26">02</text>
+    <text class="name" x="14" y="54">Check</text>
+    <text class="sub" x="14" y="78">governance, build, tests</text>
+  </g>
+  <path class="arrow" d="M402 76.0h22m-6 -5l6 5l-6 5"/>
+  <g transform="translate(432 28)">
+    <rect class="box" x="0.5" y="0.5" width="169" height="95"/>
+    <path class="tick" d="M0.5 0.5h18"/>
+    <text class="idx" x="14" y="26">03</text>
+    <text class="name" x="14" y="54">Review</text>
+    <text class="sub" x="14" y="78">merged on GitHub</text>
+  </g>
+  <path class="arrow" d="M608 76.0h22m-6 -5l6 5l-6 5"/>
+  <g transform="translate(638 28)">
+    <rect class="box" x="0.5" y="0.5" width="169" height="95"/>
+    <path class="tick" d="M0.5 0.5h18"/>
+    <text class="idx" x="14" y="26">04</text>
+    <text class="name" x="14" y="54">Publish</text>
+    <text class="sub" x="14" y="78">staged from the commit</text>
+  </g>
+</svg>
