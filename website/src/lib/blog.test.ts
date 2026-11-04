@@ -48,9 +48,14 @@ test('the tags are one list: the labels here, tools/publish/blog.py TAGS and the
   assert.deepEqual([...fromPython].sort(), Object.keys(TAG_LABELS).sort());
 
   const config = readFileSync(new URL('../../public/admin/config.yml', import.meta.url), 'utf8');
-  const field = config.match(/- name: tags\n(?:[ \t]+.*\n)*?[ \t]+options:\s*\[([^\]]*)\]/);
-  assert.ok(field, 'public/admin/config.yml has no options list for the tags field');
-  const fromEditor = field[1].split(',').map((t) => t.trim().replace(/^["']|["']$/g, ''));
+  // the tags field's options line: the first `options: [...]` after `- name: tags`, read line by line
+  const lines = config.split('\n');
+  const at = lines.findIndex((l) => l.trim() === '- name: tags');
+  assert.ok(at >= 0, 'public/admin/config.yml has no tags field');
+  const optionsLine = lines.slice(at + 1).find((l) => l.trimStart().startsWith('options:'));
+  assert.ok(optionsLine, 'public/admin/config.yml has no options list for the tags field');
+  const list = optionsLine.slice(optionsLine.indexOf('[') + 1, optionsLine.lastIndexOf(']'));
+  const fromEditor = list.split(',').map((t) => t.trim().replace(/^["']|["']$/g, ''));
   assert.deepEqual([...fromEditor].sort(), Object.keys(TAG_LABELS).sort());
   // and the editor's tag filters name the same tags
   const filters = [...config.matchAll(/field: tags, pattern: ([a-z-]+)/g)].map((x) => x[1]);
