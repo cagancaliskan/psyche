@@ -533,6 +533,12 @@
       padding: 0.9rem 0.75rem 0.25rem 0.75rem;
       border-inline-start: 1px solid var(--sx-hairline);
     }
+    /* A column is about 200px wide. There `pretty`, which lengthens a short last line, can only do it
+       by pulling a word down early and leaving a short line inside the paragraph, which reads as a
+       break in the sentence. The lines are filled in order instead. */
+    .sx-seq:not(.sx-lanes) .sx-seq__text {
+      text-wrap: wrap;
+    }
   }
 
   /* The stop under the release flow: a band across the foot of the frame, its label with the struck

@@ -40,7 +40,11 @@
 // it), a gate is a small square with four ticks beyond its sides in place of a rotated, rounded square,
 // the bands behind the phases are one rule across the figure at the top of each phase and one for the
 // axis, and whatever the plan leaves undated (marked * in its name by render_plan.py) is told by the
-// class `open` on its bar or gate, so that docs.css can draw it differently. Nothing it draws adds,
+// class `open` on its bar or gate, so that docs.css can draw it differently. A group's title stands on
+// the top line of its frame near the left corner, as a drawn figure's frames are labelled, on a ground
+// that breaks the line, wherever no connection passes. And the rows of a label are set 1.5em apart
+// (Mermaid's own 1.1em runs one row of the Mono face into the next); that is done in Mermaid's code
+// before the layout (spaceRows), so every box is measured round the spaced rows. Nothing it draws adds,
 // removes or changes a word.
 //
 // This is a development tool and nothing the site ships. Its two packages are not in
@@ -100,7 +104,24 @@ function ensureTools() {
     );
   }
   const req = createRequire(join(dir, 'noop.js'));
-  return { puppeteer: req('puppeteer-core'), mermaidSource: readFileSync(req.resolve('mermaid/dist/mermaid.min.js'), 'utf8') };
+  return { puppeteer: req('puppeteer-core'), mermaidSource: spaceRows(readFileSync(req.resolve('mermaid/dist/mermaid.min.js'), 'utf8')) };
+}
+
+// Mermaid sets the rows of a label 1.1em apart, which in the Mono face runs one row's descenders into
+// the next row's capitals and leaves a box of three rows looking crushed. Its row helper places row t
+// at y = t * 1.1 - 0.1 em, then moves it down by 1.1em; here the rows are placed ROW_EM apart instead,
+// and the first row keeps its place. It is changed in Mermaid's code, before anything is laid out, so
+// each box is measured round the spaced rows and the layout makes room for them. The code is the pinned
+// version's (TOOLS); the place is required to be found exactly once, so a Mermaid that moved it stops
+// the render here instead of drawing cramped labels.
+const ROW_EM = 1.5;
+function spaceRows(source) {
+  const from = '.attr("y",t*r-.1+"em")';
+  const found = source.split(from).length - 1;
+  if (found !== 1) {
+    throw new Error(`the row placement of a label was found ${found} times in mermaid@${TOOLS.mermaid}, not once; update spaceRows()`);
+  }
+  return source.replace(from, `.attr("y",t*${ROW_EM}-.1+"em")`);
 }
 
 function findChrome() {
@@ -463,13 +484,91 @@ async function drawInPage({ key, source: given, font, ganttWidth }) {
   // A group's title is painted last, so a connection that runs under it does not strike through it
   // (edges are drawn after the group boxes, and the title is part of its box). The box and the title
   // have no transform between them and the root group, so the title keeps its place.
+  const titled = [];
   for (const label of [...root.querySelectorAll('g.cluster-label')]) {
+    const frame = label.parentElement?.querySelector(':scope > rect');
     const target = label.closest('g.root');
     let plainPath = Boolean(target);
     for (let n = label.parentElement; plainPath && n && n !== target; n = n.parentElement) {
       if (n.hasAttribute('transform')) plainPath = false;
     }
-    if (plainPath) target.append(label);
+    if (plainPath) {
+      target.append(label);
+      if (frame) titled.push({ label, frame });
+    }
+  }
+  // The title then stands on its frame, as the frames of a drawn figure are labelled (the figure under
+  // the title of the research overview): centred on the top line, its left end INSET in from the
+  // corner, on a ground that breaks the line behind it (class `ground`, which docs.css paints in the
+  // colour of the panel). Mermaid sets it inside the frame against the top line, where a connection into
+  // the middle of the group runs through it; here it takes the first place along the line, from the
+  // left, where its ground stands CLEAR or more from every connection and meets no node, connection
+  // label or other title, so the word never reads as touching a line that crosses the frame; it stays
+  // where Mermaid put it if there is none. It is measured in the Mono face at the drawing's size, as
+  // the reader sees it (Mermaid's style sheet, which set the face, is gone by now).
+  if (titled.length) {
+    const G = titled[0].label.parentElement;
+    const INSET = 6;
+    const PAD = 3;
+    const CLEAR = 8;
+    root.style.fontFamily = font;
+    root.style.fontSize = '12px';
+    const toG = G.getCTM().inverse();
+    const boxOf = (el) => {
+      const bb = el.getBBox();
+      const m = toG.multiply(el.getCTM());
+      const pts = [[bb.x, bb.y], [bb.x + bb.width, bb.y], [bb.x, bb.y + bb.height], [bb.x + bb.width, bb.y + bb.height]]
+        .map(([x, y]) => new DOMPoint(x, y).matrixTransform(m));
+      const xs = pts.map((p) => p.x);
+      const ys = pts.map((p) => p.y);
+      return { x0: Math.min(...xs), x1: Math.max(...xs), y0: Math.min(...ys), y1: Math.max(...ys) };
+    };
+    const points = [];
+    for (const path of root.querySelectorAll('path.flowchart-link')) {
+      const m = toG.multiply(path.getCTM());
+      const length = path.getTotalLength();
+      for (let s = 0; s <= length; s += 1) {
+        const p = path.getPointAtLength(s);
+        points.push(new DOMPoint(p.x, p.y).matrixTransform(m));
+      }
+    }
+    const blocks = [...root.querySelectorAll('g.node, g.edgeLabel')].map(boxOf);
+    const hit = (a, b) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+    const placed = [];
+    for (const { label, frame } of titled) {
+      const f = boxOf(frame);
+      const t = boxOf(label);
+      const [w, h] = [t.x1 - t.x0, t.y1 - t.y0];
+      const top = f.y0 - h / 2;
+      const groundAt = (x) => ({ x0: x - PAD, x1: x + w + PAD, y0: top, y1: top + h });
+      const clear = (g) =>
+        !points.some((p) => p.x >= g.x0 - CLEAR && p.x <= g.x1 + CLEAR && p.y >= g.y0 - 1 && p.y <= g.y1 + 1) &&
+        !blocks.some((b) => hit(b, g)) &&
+        !placed.some((b) => hit(b, g));
+      let x = null;
+      for (let c = f.x0 + INSET + PAD; c + w + PAD <= f.x1 - INSET; c += 2) {
+        if (clear(groundAt(c))) {
+          x = c;
+          break;
+        }
+      }
+      if (x === null) continue;
+      const [dx, dy] = [x - t.x0, top - t.y0];
+      const tr = /^translate\(\s*(-?[\d.]+(?:e-?\d+)?)[\s,]+(-?[\d.]+(?:e-?\d+)?)\s*\)$/.exec(label.getAttribute('transform') || '');
+      if (tr) label.setAttribute('transform', `translate(${num3(Number(tr[1]) + dx)}, ${num3(Number(tr[2]) + dy)})`);
+      else label.setAttribute('transform', `translate(${num3(dx)}, ${num3(dy)}) ${label.getAttribute('transform') || ''}`.trim());
+      const lb = label.getBBox();
+      const ground = document.createElementNS(NS, 'rect');
+      ground.setAttribute('class', 'ground');
+      ground.setAttribute('x', num3(lb.x - PAD));
+      ground.setAttribute('y', num3(lb.y));
+      ground.setAttribute('width', num3(lb.width + 2 * PAD));
+      ground.setAttribute('height', num3(lb.height));
+      label.prepend(ground);
+      placed.push(groundAt(x));
+    }
+    root.style.removeProperty('font-family');
+    root.style.removeProperty('font-size');
   }
   root.querySelectorAll('.grid').forEach((el) => el.setAttribute('fill', 'none'));
   root.querySelectorAll('.grid .domain').forEach((el) => el.remove());

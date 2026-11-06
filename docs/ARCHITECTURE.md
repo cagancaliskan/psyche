@@ -24,15 +24,25 @@ times and refused three times before any graded number existed; the meaning bar 
 ## Layering
 
 ```
-text ─► perceive() ─► cluster_sources() ─► build_activation_field() ─► form_coalitions_from_field()
-                            │                       │                          │
-   psyche_perceive.py         │  psyche_source_         │   psyche_field.py          │  psyche_coalitions.py
-                            │  clustering.py         ▼                          ▼
-                            │              spread_activation()  ◄── reads ──  SubstrateStore
-                            │              psyche_activation.py                 psyche_store.py
-                            ▼                                                       ▲
-                     select_winner() ─► prune ─► broadcast()  ── single bounded write ──┘
-                     psyche_workspace.py                          (biases the next cycle; closes the loop)
+text
+ ↓
+perceive()                       psyche_perceive.py
+ ↓
+cluster_sources()                psyche_source_clustering.py
+ ↓
+build_activation_field()         psyche_field.py
+ |   ↓
+ |  spread_activation()          psyche_activation.py
+ |   ↑ reads
+ |  SubstrateStore <-----------+ psyche_store.py
+ ↓     ↓ reads                 |
+form_coalitions_from_field()   | psyche_coalitions.py
+ ↓                             |
+select_winner() -> prune       | psyche_workspace.py
+                     ↓         |
+                 broadcast() --+ single bounded write
+                                 (optional; biases the next
+                                 cycle; closes the loop)
 ```
 
 - **`psyche_store.py`: SubstrateStore (Layer 1):** Holds the graph; the only component that

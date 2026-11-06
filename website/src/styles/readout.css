@@ -9,9 +9,11 @@
  * kuratlielia (21st.dev).
  *
  * The layout follows the width of the readout, not of the window, because the same figures sit in
- * a 1200px landing section, a 900px docs column and a 700px one: one column below 20rem, two to a
- * row to 34rem, three to a row to 52rem, and all in one row from 52rem. A last tile that would
- * stand alone in its row takes the room of the missing ones. The figure scales with the width too.
+ * a 1200px landing section, a 900px docs column and a 700px one. Below 20rem the tiles stack, each
+ * its full width. From 20rem to 34rem each tile is a row of its own, its figure beside its label, so
+ * no tile stands half empty next to a taller one. From 34rem the tiles stand three to a row on six
+ * tracks, a last row of two sharing the width in halves; from 52rem they are all in one row. The
+ * figure scales with the width too.
  * Nothing counts up and nothing moves: the server writes the final figures.
  *
  * Site tokens only, so light and dark switch through the variables.
@@ -87,29 +89,47 @@
     text-wrap: balance;
   }
 
-  /* Two to a row; a last tile on its own takes the whole row. */
-  @container sx-readout (min-width: 20rem) {
+  /* Narrow: a tile to a row, the figure beside its label. The figures share one column and stand to
+     its right, as numbers do in a table, so every figure is the same distance from its label; each
+     label stands on its figure's baseline, and a detail sits under its label. Below 20rem there is
+     no room for both side by side, and the tiles stack. */
+  @container sx-readout (20rem <= width < 34rem) {
     .sx-readout {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 0.5rem;
     }
-    .sx-readout__cell:last-child:nth-child(odd) {
-      grid-column: span 2;
+    .sx-readout__cell {
+      grid-column: 1 / -1;
+      grid-template-columns: subgrid;
+      grid-template-areas:
+        'value label'
+        '. detail';
+      align-items: baseline;
+      column-gap: 1.25rem;
+      row-gap: 0.2rem;
+      padding: 0.9rem 1.25rem;
+    }
+    .sx-readout__value {
+      justify-self: end;
+      margin: 0;
     }
   }
 
-  /* Three to a row; the last tile takes the room of the missing ones. */
+  /* Three to a row, on six tracks: a last row of two shares the width in halves, and a last tile on
+     its own takes the whole row. */
   @container sx-readout (min-width: 34rem) {
     .sx-readout {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(6, minmax(0, 1fr));
     }
-    .sx-readout__cell:last-child:nth-child(odd) {
-      grid-column: auto;
-    }
-    .sx-readout__cell:last-child:nth-child(3n + 2) {
+    .sx-readout__cell {
       grid-column: span 2;
     }
-    .sx-readout__cell:last-child:nth-child(3n + 1) {
+    .sx-readout__cell:nth-last-child(2):nth-child(3n + 1),
+    .sx-readout__cell:last-child:nth-child(3n + 2) {
       grid-column: span 3;
+    }
+    .sx-readout__cell:last-child:nth-child(3n + 1) {
+      grid-column: span 6;
     }
   }
 
@@ -118,7 +138,7 @@
     .sx-readout {
       grid-template-columns: repeat(var(--cells, 5), minmax(0, 1fr));
     }
-    .sx-readout__cell:last-child:nth-child(n) {
+    .sx-readout > .sx-readout__cell:nth-child(n):nth-last-child(n) {
       grid-column: auto;
     }
   }
