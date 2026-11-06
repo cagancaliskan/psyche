@@ -54,10 +54,13 @@
 }
 
 :root {
-  /* Each web font is followed by its stand-in (styles/fonts.css), then the system's. */
+  /* Each web font is followed by its stand-in (styles/fonts.css), then the system's. In the mono
+     stack, Psyche Lines (styles/fonts.css) comes between the two: it draws the box-drawing lines and
+     arrows that Martian Mono's Latin file lacks, at Martian Mono's width, so a text diagram keeps its
+     columns. */
   --font-sans: 'Instrument Sans Variable', 'Instrument Sans Fallback', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --font-display: 'Unbounded Variable', 'Unbounded Fallback', 'Instrument Sans Variable', 'Instrument Sans Fallback', system-ui, sans-serif;
-  --font-mono: 'Martian Mono Variable', 'Martian Mono Fallback', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  --font-mono: 'Martian Mono Variable', 'Martian Mono Fallback', 'Psyche Lines', ui-monospace, 'SFMono-Regular', Menlo, monospace;
   --sl-font: var(--font-sans);
   --sl-font-mono: var(--font-mono);
   --sx-font-display: var(--font-display);

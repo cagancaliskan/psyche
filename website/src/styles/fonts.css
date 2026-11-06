@@ -18,8 +18,9 @@
  *   Martian Mono      Courier New   1.165              1.000   0.200    0
  *
  * Each stand-in claims exactly the characters its web font's Latin file draws (read from the
- * font's own character map), no more. A character the web font does not have, such as a prime or a
- * box-drawing line, is drawn by the same system font as before and not by a scaled stand-in.
+ * font's own character map), no more. A character the web font does not have, such as a prime, is
+ * drawn by the same system font as before and not by a scaled stand-in. The box-drawing lines, which
+ * Martian Mono's Latin file lacks, have a web face of their own at the end of this file.
  *
  * Arial, Courier New and their metric-identical open twins (Liberation, Arimo, Cousine) cover
  * Windows, macOS, ChromeOS and most Linux desktops. Where none is installed the face is skipped
@@ -95,4 +96,31 @@
     U+0020-007E, U+00A0-00FF, U+0131, U+0152-0153, U+02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308,
     U+2002, U+2013-2014, U+2018-201A, U+201C-201E, U+2022, U+2026, U+2039-203A, U+2044, U+20AC,
     U+2122, U+2191, U+2193, U+2212;
+}
+
+/*
+ * Psyche Lines draws what Martian Mono's Latin file does not: the box-drawing lines (U+2500 to
+ * U+257F), four triangles (U+25B2, U+25BA, U+25BC, U+25C4) and the leftwards and rightwards arrows
+ * (U+2190, U+2192). Without it a code block takes them from a system face, and Menlo's are 0.602 em
+ * wide where every Martian Mono glyph is 0.7 em, so a text diagram that mixes them with letters
+ * drifts out of column: in the file tree on /substrate/overview/ a description sat 1.37 px further
+ * left (at 14 px) for each such character before it. Every glyph of this face is 0.7 em wide, so a
+ * diagram keeps the columns it was typed in, and a code block's vertical lines run unbroken from one
+ * line to the next.
+ *
+ * It follows the Martian Mono faces in the mono stack (--font-mono, styles/global.css). It is drawn,
+ * not borrowed from another font, by scripts/make-lines-font.mjs (`npm run lines`), which says how
+ * its lines are built; the unicode-range below must list exactly the characters the font covers, and
+ * scripts/make-lines-font.test.mjs fails when it does not. A browser fetches the file only for a page
+ * that shows one of those characters. One face stands for every weight, so bold text does not get a
+ * synthesised bold of it. ?no-inline keeps the build from writing the file, which is smaller than
+ * Vite's inline limit, into the stylesheet that every page loads.
+ */
+@font-face {
+  font-family: 'Psyche Lines';
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url('../assets/fonts/psyche-lines.woff2?no-inline') format('woff2');
+  unicode-range: U+2190, U+2192, U+2500-257F, U+25B2, U+25BA, U+25BC, U+25C4;
 }

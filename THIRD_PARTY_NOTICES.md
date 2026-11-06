@@ -109,6 +109,14 @@ FROM, OUT OF THE USE OR INABILITY TO USE THE FONT SOFTWARE OR FROM
 OTHER DEALINGS IN THE FONT SOFTWARE.
 ```
 
+The site serves one more face that is not from a package: **Psyche Lines**
+(`website/src/assets/fonts/psyche-lines.woff2`). Martian Mono's Latin file, the one the site serves,
+draws no box-drawing character, no triangle pointer and no leftwards or rightwards arrow, so Psyche
+Lines holds them, at Martian Mono's width, and a text diagram in a code block keeps its columns. It is
+drawn by `website/scripts/make-lines-font.mjs` from rectangles, arcs and triangles. No outline in it
+comes from Martian Mono or from any other font, so it carries no third-party licence: it is released
+under the project's own, the MIT licence ([LICENSE](LICENSE)).
+
 ## 2. Components adapted from the 21st.dev catalog
 
 Several layouts and effects on the site were adapted from components in the 21st.dev catalog. None
