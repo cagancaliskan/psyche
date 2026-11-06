@@ -297,13 +297,13 @@ psyche/
 │   └── psyche_credit.py              temporal credit assignment + depression path (2f-i, 2g)
 ├── tests/                  ← the test suites (built-in harness; run as scripts)
 │   ├── test_psyche_*.py              builder suites (one per module)
-│   └── test_tester_*.py            independent tester-authored adversarial suites
+│   └── test_tester_*.py              independent tester-authored adversarial suites
 ├── experiments/            ← Tier 3 disciplined-exploratory scaffolding (its data-free mechanism suites are in run_tests.py; the data-dependent result scripts are not)
 └── docs/
     ├── ARCHITECTURE.md         as-built technical reference
     ├── METHODOLOGY.md          the adversarial-testing development history
     ├── TEST_OUTPUT.txt         verbatim captured test run (the source of the numbers above)
-    ├── psyche_roadmap.md         the living roadmap (current state, tiers, next step)
+    ├── psyche_roadmap.md       the living roadmap (current state, tiers, next step)
     ├── specs/                  ADRs / specs the architect writes for the builder
     ├── design/                 the original *aspirational* vision docs (see its README)
     └── diagrams/               Mermaid (.mmd) diagrams

@@ -178,6 +178,7 @@ Run in `website/` after `npm ci`. From the repository root, `make site` runs `np
 | `npm run preview` | `astro preview` over `dist/`; build first. Search works here |
 | `npm test` | Node's test runner over the unit tests in `src/lib/` and `scripts/` |
 | `npm run diagrams`, `icons`, `og` | Draw the diagrams, the PNG icons, the social card (Chrome) |
+| `npm run lines` | Draw the box-drawing face, `src/assets/fonts/psyche-lines.woff2`; `-- --check` fails if the committed file differs (no browser, no download) |
 | `npm run check:og`, `check:spacing`, `check:refs`, `check:budget`, `check:seo` | One check each, as `build` runs them; all but the first read `dist/` (see Checks) |
 | `npm run check:diagrams` | `diagrams.py --check` |
 | `npm run check:a11y` | axe-core at WCAG 2.2 AA over `dist/` (Chrome; not part of `build`) |
@@ -227,6 +228,18 @@ count) and code. `fonts.css` gives each a stand-in (a local Arial or Courier New
 font's metrics) so the swap moves nothing; measure again, and update the table at its head, if a face
 changes. Faces are not preloaded (see `src/routeData.ts`). Docs body text is 1.0625rem at a line height
 of 1.7 in a 35rem measure, in `rem` and not `ch` because Instrument Sans has a wide zero.
+
+A fourth face, **Psyche Lines**, follows Martian Mono in `--font-mono`. Martian Mono's Latin file has
+no box-drawing character (U+2500 to U+257F), no triangle pointer and no leftwards or rightwards arrow, and
+a code block took those from a system face at another width (Menlo's are 0.602 em against Martian Mono's
+0.7), so a text diagram drifted out of column. Psyche Lines is drawn by `scripts/make-lines-font.mjs`
+(`npm run lines`; `-- --check` fails if the committed `src/assets/fonts/psyche-lines.woff2` is not what the
+script draws) with every glyph 0.7 em wide, and it is fetched only by a page that shows one of its
+characters. A character that neither face has still falls to a system face and shifts the columns of its
+line: draw that diagram in ASCII, or add the character to the script and to the `unicode-range` in
+`fonts.css`, which `scripts/make-lines-font.test.mjs` keeps in step with the font. Its vertical lines run
+the whole of a code block's line (1.75 em, Starlight's `--sl-line-height`), so a tree's rails join from
+one line to the next; the script says what changes if that line height does.
 
 ### Blocks, labels, links (`global.css`, `docs.css`)
 
@@ -465,8 +478,8 @@ major alone, TypeScript held on its current major because `astro check` does not
 ## Credits
 
 [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) is the one list to keep current: the three
-typefaces and their licence, the components adapted from the 21st.dev catalog, and the npm packages,
-with the two copied Starlight files under their MIT notice.
+typefaces and their licence, the one face the project draws itself, the components adapted from the
+21st.dev catalog, and the npm packages, with the two copied Starlight files under their MIT notice.
 
 To credit a catalog component you adapted:
 
