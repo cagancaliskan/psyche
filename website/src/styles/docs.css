@@ -644,8 +644,9 @@
      table), with no grid or glow. Flowchart nodes are boxes one step above the surface with an
      outline in the structure colour and labels in ink (a terminal node has a second box inside the first,
      a decision keeps its rhombus); connections and arrowheads are hairlines (the head an open chevron);
-     a group is a solid hairline frame (a dash means "not yet" or "private", never a group, as in the
-     figure under the title of the research overview). The timeline reads in the notation of the roadmap's
+     a group is a solid hairline frame with its title standing on the top line near the left corner (a
+     dash means "not yet" or "private", never a group, as in the figure under the title of the research
+     overview). The timeline reads in the notation of the roadmap's
      (styles/plan.css): one ruled row per phase, a thin bar for the phase (an outline when planned, filled
      in the structure colour when done, the signal colour when it is in progress, dashed where its end is
      not fixed) and a gate as a mark with its crosshair. The signal colour marks only what is current.
@@ -730,8 +731,14 @@
     stroke-width: 1px;
     stroke-dasharray: none;
   }
-  /* A group's title is drawn after the connections (render-diagrams.mjs), and a halo in the colour of
-     the panel keeps a connection that passes under it from showing through the letters. */
+  /* A group's title stands on the top line of its frame (render-diagrams.mjs puts it where no connection
+     passes) on a ground in the colour of the panel, which breaks the line behind it. It is drawn after
+     the connections, and a halo in the same colour keeps any line that still reaches it from showing
+     through the letters. */
+  .sx-diagram svg .cluster-label > rect {
+    fill: var(--sx-surface);
+    stroke: none;
+  }
   .sx-diagram svg .cluster-label text {
     fill: var(--sx-muted);
     paint-order: stroke;
@@ -856,7 +863,8 @@
     .sx-diagram svg :is(.active0, .active1, .active2, .active3):is(rect, polygon) {
       fill: Highlight !important;
     }
-    .sx-diagram svg .edgeLabel rect {
+    .sx-diagram svg .edgeLabel rect,
+    .sx-diagram svg .cluster-label > rect {
       fill: Canvas !important;
       stroke: none !important;
     }

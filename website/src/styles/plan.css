@@ -80,9 +80,10 @@
   /* ---------- State labels and ids ---------- */
 
   /* A state is a legend entry: a small marker, then the word, and the marker's shape says it as the
-     word does: a phase is a ring (planned), a disc in mint (active) or a filled disc (done); a gate is a
-     square, hollow (upcoming), filled (decided) or in amber (pending). "Next" is the word in amber
-     after a right-pointing amber mark. */
+     word does. A phase is a short bar, as the timeline draws one: an outline (planned), filled (done),
+     or mint and a little thicker (active). A gate is a square, as the timeline's gate marks are:
+     hollow (upcoming), filled (decided) or in amber (pending). "Next" is the word in amber after a
+     right-pointing amber mark. */
   .sx-chip {
     --c: var(--sx-structure);
     display: inline-flex;
@@ -105,10 +106,10 @@
   .sx-chip::before {
     content: '';
     flex: none;
-    width: 0.5em;
-    height: 0.5em;
-    border: 1.5px solid var(--c);
-    border-radius: 50%;
+    box-sizing: border-box;
+    width: 1.1em;
+    height: 0.42em;
+    border: 1px solid var(--c);
   }
   .sx-chip[data-tone='done']::before,
   .sx-chip[data-tone='decided']::before {
@@ -118,10 +119,13 @@
     --c: var(--sx-agent);
   }
   .sx-chip[data-tone='now']::before {
+    height: 0.6em;
     background: var(--c);
   }
   .sx-chip:is([data-tone='upcoming'], [data-tone='pending'], [data-tone='decided'])::before {
-    border-radius: 0;
+    width: 0.55em;
+    height: 0.55em;
+    border-width: 1.5px;
   }
   .sx-chip[data-tone='upcoming'] {
     --w: var(--sx-surface-2);
@@ -296,11 +300,12 @@
     text-transform: var(--sx-lab-case);
     white-space: nowrap;
   }
-  .sx-pair__dot {
+  /* The "Now" key: the active phase's bar, as the timeline draws it (the "Next gate" key beside it
+     has the gate's square). */
+  .sx-pair__bar {
     flex: none;
-    width: 0.5rem;
-    height: 0.5rem;
-    border-radius: 50%;
+    width: 1.1em;
+    height: 0.6em;
     background: var(--c);
   }
   .sx-pair__key .sx-gmark {
@@ -963,11 +968,14 @@
     .sx-gmark[data-next][data-gate-state='pending'] {
       background: Highlight;
     }
-    .sx-chip:is([data-tone='done'], [data-tone='decided'], [data-tone='pending'])::before,
-    .sx-pair__dot {
+    .sx-chip:is([data-tone='done'], [data-tone='decided'], [data-tone='pending'])::before {
       background: CanvasText;
     }
     .sx-chip[data-tone='now']::before {
+      border-color: Highlight;
+      background: Highlight;
+    }
+    .sx-pair__bar {
       background: Highlight;
     }
     .sx-tl__today {

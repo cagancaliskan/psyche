@@ -36,7 +36,7 @@ export default function NowLine({ plan, label = 'Now' }: Props) {
         {phase && (
           <p className="sx-pair" data-tone="now">
             <span className="sx-pair__key">
-              <span className="sx-pair__dot" aria-hidden="true" />
+              <span className="sx-pair__bar" aria-hidden="true" />
               <span>{label}</span>
               <span className="sr-only">: </span>
             </span>{' '}
