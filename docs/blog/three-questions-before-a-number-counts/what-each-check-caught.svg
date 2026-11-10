@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 400" width="760" height="400" role="img" aria-labelledby="title desc" font-family="ui-monospace, monospace">
+  <title id="title">What each of the three checks caught</title>
+  <desc id="desc">Three rows, one per experiment, across three stages: input, mechanism and signal. For semantic priming the check fires at the input, because the external norm is the edge weight. The fan effect passes the input and its check fires at the mechanism, because every out-road receives the full source activation. Interoception passes the input and the mechanism and its check fires at the signal, because friction stays near zero on CPU-bound work. No graded number exists for any row.</desc>
+  <rect x="0" y="0" width="760" height="400" fill="#ffffff"/>
+
+  <!-- column heads -->
+  <text x="250" y="34" font-size="13" fill="#1a1a1a" text-anchor="middle">INPUT</text>
+  <text x="250" y="51" font-size="11" fill="#555555" text-anchor="middle">external yardstick enters</text>
+  <text x="450" y="34" font-size="13" fill="#1a1a1a" text-anchor="middle">MECHANISM</text>
+  <text x="450" y="51" font-size="11" fill="#555555" text-anchor="middle">engine and closed loop</text>
+  <text x="650" y="34" font-size="13" fill="#1a1a1a" text-anchor="middle">SIGNAL</text>
+  <text x="650" y="51" font-size="11" fill="#555555" text-anchor="middle">what a graded test reads</text>
+
+  <!-- hairline column rules -->
+  <line x1="150" y1="64" x2="150" y2="352" stroke="#999999" stroke-width="1"/>
+  <line x1="350" y1="64" x2="350" y2="352" stroke="#999999" stroke-width="1"/>
+  <line x1="550" y1="64" x2="550" y2="352" stroke="#999999" stroke-width="1"/>
+  <line x1="750" y1="64" x2="750" y2="352" stroke="#999999" stroke-width="1"/>
+  <line x1="10" y1="64" x2="750" y2="64" stroke="#1a1a1a" stroke-width="1"/>
+  <line x1="10" y1="160" x2="750" y2="160" stroke="#999999" stroke-width="1"/>
+  <line x1="10" y1="256" x2="750" y2="256" stroke="#999999" stroke-width="1"/>
+  <line x1="10" y1="352" x2="750" y2="352" stroke="#1a1a1a" stroke-width="1"/>
+
+  <!-- row 1: semantic priming, stops at input -->
+  <text x="18" y="96" font-size="13" fill="#1a1a1a">1e</text>
+  <text x="18" y="114" font-size="11" fill="#555555">semantic</text>
+  <text x="18" y="129" font-size="11" fill="#555555">priming</text>
+  <line x1="160" y1="100" x2="244" y2="100" stroke="#2f5d7c" stroke-width="2"/>
+  <rect x="244" y="94" width="12" height="12" fill="#b5452b"/>
+  <line x1="256" y1="100" x2="740" y2="100" stroke="#bbbbbb" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="160" y="128" font-size="11" fill="#b5452b">CIRCULAR: norm = weight</text>
+  <text x="160" y="143" font-size="11" fill="#b5452b">W = min(10, 1+floor(100s))</text>
+
+  <!-- row 2: fan effect, stops at mechanism -->
+  <text x="18" y="192" font-size="13" fill="#1a1a1a">1e′</text>
+  <text x="18" y="210" font-size="11" fill="#555555">fan effect</text>
+  <line x1="160" y1="196" x2="444" y2="196" stroke="#2f5d7c" stroke-width="2"/>
+  <rect x="444" y="190" width="12" height="12" fill="#b5452b"/>
+  <line x1="456" y1="196" x2="740" y2="196" stroke="#bbbbbb" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="160" y="220" font-size="11" fill="#555555">published direction</text>
+  <text x="360" y="220" font-size="11" fill="#b5452b">MECHANISM ABSENT:</text>
+  <text x="360" y="234" font-size="11" fill="#b5452b">each out-road gets the</text>
+  <text x="360" y="248" font-size="11" fill="#b5452b">full source activation</text>
+
+  <!-- row 3: interoception, stops at signal -->
+  <text x="18" y="288" font-size="13" fill="#1a1a1a">2c</text>
+  <text x="18" y="306" font-size="11" fill="#555555">interoception</text>
+  <line x1="160" y1="292" x2="644" y2="292" stroke="#2f5d7c" stroke-width="2"/>
+  <rect x="644" y="286" width="12" height="12" fill="#b5452b"/>
+  <line x1="656" y1="292" x2="740" y2="292" stroke="#bbbbbb" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="160" y="320" font-size="11" fill="#555555">OS timers, not authored</text>
+  <text x="360" y="320" font-size="11" fill="#555555">sensor and hook verified</text>
+  <text x="560" y="320" font-size="11" fill="#b5452b">SIGNAL FLAT:</text>
+  <text x="560" y="335" font-size="11" fill="#b5452b">friction near 0</text>
+
+  <!-- legend -->
+  <line x1="18" y1="378" x2="48" y2="378" stroke="#2f5d7c" stroke-width="2"/>
+  <text x="56" y="382" font-size="11" fill="#1a1a1a">stage passed</text>
+  <rect x="166" y="372" width="12" height="12" fill="#b5452b"/>
+  <text x="186" y="382" font-size="11" fill="#1a1a1a">where the check fired</text>
+  <line x1="392" y1="378" x2="422" y2="378" stroke="#bbbbbb" stroke-width="1" stroke-dasharray="4 4"/>
+  <text x="430" y="382" font-size="11" fill="#1a1a1a">never reached: no graded number</text>
+</svg>
