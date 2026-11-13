@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 350" width="800" height="350" role="img" aria-labelledby="title desc" font-family="ui-monospace, monospace">
+  <title id="title">The first sanity check of the evaluation harness</title>
+  <desc id="desc">Share of cases each reference player succeeded in, over 5 seeds and 50 test environments. The all-knowing reference succeeded in 100% of cases, as expected. The random player had been assumed to score close to zero and succeeded in 22% of cases on average. In 2 of the 50 test environments it crossed the limit written down before the run, so the check failed its pre-set criterion, and the failure stays on record.</desc>
+  <style>
+    .bg { fill: #ffffff; }
+    .ink { fill: #1a1a1a; }
+    .muted { fill: #555555; }
+    .rule { stroke: #1a1a1a; }
+    .axis { stroke: #999999; }
+    .grid { stroke: #dddddd; }
+    .ref { fill: #2f5d7c; }
+    .fail { fill: #b5452b; }
+    @media (prefers-color-scheme: dark) {
+      .bg { fill: #0a0f1e; }
+      .ink { fill: #f4f6fb; }
+      .muted { fill: #a3adc2; }
+      .rule { stroke: #c5cde0; }
+      .axis { stroke: #6c7896; }
+      .grid { stroke: #222c47; }
+      .ref { fill: #8aa2ff; }
+      .fail { fill: #ff8f73; }
+    }
+  </style>
+  <rect class="bg" x="0" y="0" width="800" height="350"/>
+
+  <!-- heading -->
+  <text class="ink" x="18" y="30" font-size="13">SHARE OF CASES SOLVED</text>
+  <text class="muted" x="18" y="47" font-size="11">5 seeds, 50 test environments</text>
+  <line class="rule" x1="10" y1="60" x2="790" y2="60" stroke-width="1"/>
+
+  <!-- vertical hairlines at the scale ticks -->
+  <line class="axis" x1="220" y1="70" x2="220" y2="214" stroke-width="1"/>
+  <line class="grid" x1="340" y1="70" x2="340" y2="214" stroke-width="1"/>
+  <line class="grid" x1="460" y1="70" x2="460" y2="214" stroke-width="1"/>
+  <line class="grid" x1="580" y1="70" x2="580" y2="214" stroke-width="1"/>
+  <line class="grid" x1="700" y1="70" x2="700" y2="214" stroke-width="1"/>
+
+  <!-- row 1: all-knowing reference -->
+  <text class="ink" x="18" y="96" font-size="13">all-knowing reference</text>
+  <text class="muted" x="18" y="112" font-size="11">should always succeed</text>
+  <rect class="ref" x="220" y="88" width="480" height="20"/>
+  <text class="ink" x="708" y="102" font-size="12">100%</text>
+
+  <!-- row 2: random player -->
+  <text class="ink" x="18" y="160" font-size="13">random player</text>
+  <text class="muted" x="18" y="176" font-size="11">should almost never succeed</text>
+  <rect class="fail" x="220" y="152" width="105.6" height="20"/>
+  <text class="fail" x="334" y="166" font-size="12">22% on average</text>
+  <line class="rule" x1="220" y1="176" x2="220" y2="200" stroke-width="1" stroke-dasharray="3 3"/>
+  <line class="rule" x1="220" y1="200" x2="232" y2="200" stroke-width="1"/>
+  <text class="muted" x="238" y="204" font-size="11">assumed before the run: close to zero</text>
+
+  <!-- scale -->
+  <line class="rule" x1="220" y1="214" x2="700" y2="214" stroke-width="1"/>
+  <line class="rule" x1="220" y1="214" x2="220" y2="220" stroke-width="1"/>
+  <line class="rule" x1="340" y1="214" x2="340" y2="220" stroke-width="1"/>
+  <line class="rule" x1="460" y1="214" x2="460" y2="220" stroke-width="1"/>
+  <line class="rule" x1="580" y1="214" x2="580" y2="220" stroke-width="1"/>
+  <line class="rule" x1="700" y1="214" x2="700" y2="220" stroke-width="1"/>
+  <text class="muted" x="220" y="234" font-size="11" text-anchor="middle">0%</text>
+  <text class="muted" x="340" y="234" font-size="11" text-anchor="middle">25%</text>
+  <text class="muted" x="460" y="234" font-size="11" text-anchor="middle">50%</text>
+  <text class="muted" x="580" y="234" font-size="11" text-anchor="middle">75%</text>
+  <text class="muted" x="700" y="234" font-size="11" text-anchor="middle">100%</text>
+
+  <!-- outcome note -->
+  <line class="rule" x1="10" y1="254" x2="790" y2="254" stroke-width="1"/>
+  <rect class="fail" x="18" y="270" width="12" height="12"/>
+  <text class="fail" x="40" y="281" font-size="13">DID NOT MEET ITS PRE-SET CRITERION</text>
+  <text class="ink" x="40" y="302" font-size="11">In 2 of the 50 test environments the random player crossed the limit</text>
+  <text class="ink" x="40" y="318" font-size="11">written down before the run. The criterion was not changed afterwards,</text>
+  <text class="ink" x="40" y="334" font-size="11">and the result stays on record as a failure.</text>
+</svg>
