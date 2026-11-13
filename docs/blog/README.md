@@ -108,12 +108,16 @@ A post is public text and is held to the same rules as every page:
 - [Rule 1](../../CONTRIBUTING.md#the-ten-non-negotiable-rules) of the contributing guide. Nothing is
   described as more than it has been shown to be; AGI is named only as the long-term aim; no
   priority claim; energy appears only as an analytic estimate.
-- The [disclosure policy](../research/disclosure-policy.md). The current state of stage 2 is private,
-  so a post covers what is already public or has been released, never how the work is going from
-  day to day. When unsure whether something is private, it is.
+- The [disclosure policy](../research/disclosure-policy.md). The current state of stage 2 is private.
+  A post about it covers what is already public or has been released, or it is a
+  [progress note](../research/disclosure-policy.md#progress-notes): it reports outcomes (a
+  milestone, a count, whether a check met the criterion fixed for it, a failure) and never how the
+  work is done. When unsure whether something is private, it is.
 - No figure typed by hand. A count comes from `tools/ledger.json` and a plan date from
   `tools/research_plan.json`, and a post that needs one links to the page that shows it (the
-  [progress page](../progress.md), the status page) instead of copying it.
+  [progress page](../progress.md), the status page) instead of copying it. The one exception is a
+  number in a progress note, which reports an outcome of stage 2 and is stated no more precisely
+  than it was measured.
 - English only, in the plain tone the contributing guide asks for.
 
 The commit gate reads every post (`ledger_check.py`, `ci_c2.py`, `check_copy.py`): it catches a
