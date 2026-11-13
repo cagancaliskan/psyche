@@ -24,6 +24,7 @@ follows from that.
 | Terms and background reading | [Glossary](glossary.md), [Reading list](reading-list.md) |
 | The substrate, stage 1: its code, tests and published record, and how it led to this line | [PSYCHE.md](../PSYCHE.md), [Origins](origins.md) |
 | Pre-registration commitments: a date and a hash for each frozen file | [Below](#pre-registration-without-disclosure) |
+| Progress notes: outcomes of the work, such as a milestone, a count or whether a check met the criterion fixed for it | The [blog](https://cagancaliskan.github.io/psyche/blog/), under the rule [below](#progress-notes) |
 
 No code of this line is public yet. When it is released, it appears under
 [`cogmap/`](../../cogmap/README.md) at the repository root, by release only. Nobody edits that
@@ -41,7 +42,8 @@ would itself be a hint, so this page goes no further than the list.
 - The experiment plan: which experiments are run, in what order and in what combinations.
 - The model: how it works, and its code.
 - The analysis of related work and how the line is positioned against it.
-- Results, logs and other working records.
+- Results, logs and other working records, apart from the outcomes a
+  [progress note](#progress-notes) reports.
 - The paper draft.
 
 ## The release rule
@@ -161,6 +163,34 @@ this policy, because an early verdict would tell a reader how far the work has c
 also lifts no claim rule: a term that the [claims discipline](claims-and-scope.md) forbids before
 a gate stays forbidden until release, whatever the outcome. A phase's status says what is being
 worked on, not how well it is going. [Gates](gates.md) describes each gate and its fallback.
+
+## Progress notes
+
+A progress note is a post on the blog, or a short text or chart that goes with one, that reports
+what the line has achieved. It is a second and narrower channel beside a release: a release moves
+material, and a progress note reports outcomes ([D-036](../../DECISIONS.md)).
+
+A progress note may state:
+
+- a milestone reached or an experiment run;
+- whether a check or an experiment met the criterion fixed for it in advance;
+- counts and outcome numbers, no more precisely than they were measured, with no new number
+  derived from them;
+- a failure, a correction or an open problem, which is reported where it exists and is not left
+  out;
+- what comes next, in general terms.
+
+It never states how. A progress note holds no mechanism, design choice, setting, threshold,
+formula or procedure, no code or configuration, no internal name or identifier, and nothing about
+how the line is positioned against related work beyond counts. Everything listed under
+[What is withheld](#what-is-withheld) stays withheld in a progress note as well, with the single
+exception of the outcomes above. The test for each sentence and each figure is whether it would
+tell a reader what to build or how to build it.
+
+A progress note lifts no claim rule of the [claims discipline](claims-and-scope.md). A check of
+the test equipment is reported as that, never as evidence about a model. The status of a decision
+gate stays as [Gate status without verdicts](#gate-status-without-verdicts) sets out, and no
+material leaves the private companion through a progress note.
 
 ## Double-blind review
 

@@ -171,8 +171,9 @@ roadmap, gates, battery overview, claims discipline, engineering standards and v
 Hypotheses beyond the research questions, pre-registered criteria and thresholds, the experiment
 plan, the spiking model and its code, the analysis of related work, results and working records,
 and the paper draft live in a private companion repository that is never named here. Material
-moves here only under [`docs/research/disclosure-policy.md`](docs/research/disclosure-policy.md).
-When unsure whether something is private, it is.
+moves here only under [`docs/research/disclosure-policy.md`](docs/research/disclosure-policy.md),
+which also sets out what a progress note on the blog may report: outcomes, never how the work is
+done (D-036). When unsure whether something is private, it is.
 
 **Everything in this repository is English.**
 

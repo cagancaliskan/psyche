@@ -1,6 +1,7 @@
 ---
 title: "Why Psyche keeps a blog"
 date: "2026-11-04"
+updated: "2026-11-13"
 description: "Why Psyche keeps a dated public blog: what its posts will cover, what they will not, and how each post is checked before it reaches the site."
 tags:
   - "project"
@@ -36,10 +37,12 @@ The posts stay inside what is already public:
 Stage 2, spiking cognitive maps, is active, and its current state is private. The
 [disclosure policy](../../research/disclosure-policy.md) withholds its hypotheses beyond the
 research questions, its pre-registered criteria, its experiment plan, the model and its code, its
-results and its working records, and a post is bound by that policy like every other page. A
-decided gate shows only the day it was decided and what follows it. So the posts do not report how
-the work is going from day to day. They report what has been released, and explain what is already
-on these pages.
+working records and, apart from the outcomes a progress note reports, its results. A post is bound
+by that policy like every other page. A decided gate shows only the day it was decided and what
+follows it. So a post about this stage is one of two things. It reports what has been released and
+explains what is already on these pages, or it is a progress note: it reports what was achieved (a
+milestone, a count, whether a check met the criterion fixed for it, a failure) and never how the
+work is done.
 
 The posts also keep to the project's [claims discipline](../../research/claims-and-scope.md): no
 component is described as more than it has been shown to be, and AGI is named only as the aim.

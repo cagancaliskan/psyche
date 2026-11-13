@@ -2078,3 +2078,54 @@ The ruling ties the return of "original" to Gate A deciding novelty. Under D-034
 shows only a date and a next step, and the word returning after Gate A would itself show the
 outcome. Until the lead confirms otherwise, the word stays out until release and then only with
 evidence, as `docs/research/claims-and-scope.md` already says.
+
+## D-036 — The blog may report what the cognitive-map line achieved, never how
+
+**Date:** 2026-11-13 · **Decided by:** Cagan · **Lane:** architect-pm (documents) · **Status:**
+decided
+
+### 1. Context
+
+D-031 made the current state of the cognitive-map line private, and the disclosure policy listed
+its results among the withheld material. The blog guide followed: a post covered what was already
+public or released, never how the work was going. That left the blog able to explain the public
+pages and nothing else, while the line was producing outcomes that can be told without giving
+away how they were reached.
+
+### 2. The decision
+
+1. **Progress notes.** A blog post, and a short text or chart that goes with one, may report what
+   the line has achieved: a milestone reached, an experiment run, whether a check or an experiment
+   met the criterion fixed for it in advance, counts and outcome numbers, a failure, a correction,
+   an open problem, and what comes next in general terms.
+2. **Never how.** A progress note states no mechanism, design choice, setting, threshold, formula
+   or procedure, no code or configuration, no internal name or identifier, and nothing about how
+   the line is positioned against related work beyond counts. Everything else the disclosure
+   policy withholds stays withheld. The test for a sentence or a figure is whether it would tell a
+   reader what to build or how to build it.
+3. **Numbers as measured.** A progress note states a number no more precisely than it was
+   measured and derives no new number from the ones it reports.
+4. **Failures travel with the outcome.** A failure, a limit or an open item that belongs to a
+   reported outcome is reported with it and is not left out.
+5. **No claim rule is lifted.** The claims discipline applies unchanged. A check of the test
+   equipment is reported as that, never as evidence about a model.
+6. **Releases are unchanged.** The release rule, the release groups and the pre-registration
+   commitments stand as written. A progress note moves no material: no code, no document and no
+   record leaves the private companion through it.
+7. **Gates stay as D-034 left them.** A progress note does not state the outcome of a decision
+   gate. A decided gate is public as a date and a next step, and nothing more.
+
+### 3. Options considered
+
+- Keep the blog to public and released material only, as before.
+- Publish working records with the methods removed. Rejected: a redacted record still shows its
+  shape, and nothing is stripped automatically to make a release pass.
+- Progress notes limited to outcomes. Chosen.
+
+### 4. Cost
+
+`docs/research/disclosure-policy.md` gains a section on progress notes, a row in "What is public
+now" and an exception in "What is withheld". `docs/blog/README.md`, `docs/faq.md`, the
+"Public summary, private detail" paragraph of `CONTRIBUTING.md` and the post that introduced the
+blog are reworded to match. No tool, check or plan file changes: a progress note passes the same
+commit gate and disclosure scan as every other post.

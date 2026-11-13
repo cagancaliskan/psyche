@@ -56,7 +56,10 @@ reshape the test it is judged by. And a public version must never hold the code,
 documents that would let a reader catch up with the current state of the work. The
 [disclosure policy](research/disclosure-policy.md) applies both: hypotheses beyond the research
 questions, pass criteria and thresholds, the reasoning behind a decided gate, the experiment plan,
-the model and its code, and results stay private until a release.
+the model and its code, and results stay private until a release. The blog's
+[progress notes](research/disclosure-policy.md#progress-notes) are the one exception: they report
+outcomes, such as a milestone or whether a check met the criterion fixed for it, and never how the
+work is done.
 
 A release is a complete, working, older version, never the current state. Pre-registered criteria
 are published unchanged at submission. Until then the date they were fixed is public as a hash
