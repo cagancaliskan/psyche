@@ -1,4 +1,4 @@
-# Sveltia CMS configuration for the Psyche blog editor (served at /psyche/admin/).
+# Sveltia CMS configuration for the Psyche blog editor (served at /admin/).
 #
 # Safety model in short:
 #   * Every save lands on a branch named cms/posts/<slug> and opens a pull request.
@@ -77,7 +77,7 @@ media_libraries:
           format: webp
           quality: 92
 
-# Slugs become folder names and URLs: /psyche/blog/<slug>/
+# Slugs become folder names and URLs: /blog/<slug>/
 slug:
   encoding: ascii
   clean_accents: true
@@ -95,11 +95,11 @@ output:
     indent_size: 2
     indent_sequences: true
 
-site_url: https://cagancaliskan.github.io/psyche/
-display_url: https://cagancaliskan.github.io/psyche/blog/
+site_url: https://psyche.cagancaliskan.com/
+display_url: https://psyche.cagancaliskan.com/blog/
 app_title: Psyche blog editor
 logo:
-  src: /psyche/favicon.svg
+  src: /favicon.svg
   show_in_header: true
 
 collections:

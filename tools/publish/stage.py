@@ -34,7 +34,7 @@ read through the same guard as a page, staged with a front matter of its own (ti
 tags and its neighbours in date order, besides the description) and the GENERATED line, and its
 pictures are copied beside it byte for byte from the commit. A relative link or image in a post that
 names a picture of the same post becomes ./<file>; a link from a post or from a page to another post
-becomes /psyche/blog/<slug>/, through the same mapping that core.rewrite_links uses for pages. The
+becomes /blog/<slug>/, through the same mapping that core.rewrite_links uses for pages. The
 sidebar gains a Blog item right after the page `progress` of the Start here group.
 
 Each staged page starts with `<!-- ledger:ignore-file -->`, so a local ledger_check does not
@@ -148,7 +148,7 @@ def build_sidebar(manifest: dict, titles: Dict[str, str]) -> List[dict]:
     hand-written pages. Every other manifest section follows as a group of its own, in manifest
     order. Starlight prefixes the site base onto every link that has no protocol
     (utils/navigation.js makeSidebarLink -> formatPath -> pathWithBase), so these links are
-    site-relative and carry no base; adding it here would produce /psyche/psyche/..."""
+    site-relative and carry no base; adding it here would write the base twice."""
     if not CUSTOM_PAGES or CUSTOM_PAGES[0] != ("Home", ""):
         raise core.PublishError("stage.py: CUSTOM_PAGES must start with Home")
     start = start_section(manifest)

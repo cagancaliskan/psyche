@@ -2,7 +2,7 @@
 """blog.py — the posts of the docs site's blog: found in a commit, read, validated and ordered.
 
 A post is a folder under docs/blog/ of the repository: docs/blog/<slug>/index.md, with its
-pictures beside it. The folder name is the post's address, /psyche/blog/<slug>/. docs/blog/README.md
+pictures beside it. The folder name is the post's address, /blog/<slug>/. docs/blog/README.md
 is the authoring guide and is not a post. tools/publish/stage.py stages the posts that are not
 drafts, the way it stages the pages of docs/publish.json: read from a COMMIT through
 core.published_text, so the same guard applies (never_publish, the quarantine lists, the

@@ -238,7 +238,7 @@ SOFTWARE.
 
 ## 4. The blog's editor
 
-The blog's editor at `/psyche/admin/` (`website/public/admin/`) is Sveltia CMS
+The blog's editor at `/admin/` (`website/public/admin/`) is Sveltia CMS
 (<https://github.com/sveltia/sveltia-cms>), by Kohei Yoshino, under the MIT licence. It is neither
 installed nor copied: the page loads one version-pinned file of the `@sveltia/cms` npm package from
 unpkg, with an integrity hash, in the browser of the person who signs in, and that package loads the

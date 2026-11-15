@@ -255,7 +255,7 @@ record.
 - **The mechanisms were not found broken.** The missing division was a design choice of the engine,
   verified and documented. The interoception sensor and its hook passed their verification. Build
   status and meaning verdict are separate axes, read from the ledger and shown on the
-  [substrate status page](https://cagancaliskan.github.io/psyche/status/).
+  [substrate status page](https://psyche.cagancaliskan.com/status/).
 - **The timing numbers are machine-specific.** The recorded band comes from one machine and one
   capture. The stall-fraction arithmetic does not depend on it. The statement that garbage
   collection counts as CPU time rests on the record's reasoning, and no test measures it.

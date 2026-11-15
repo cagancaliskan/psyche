@@ -148,7 +148,7 @@ test('the feed is valid Atom 1.0 in shape: id, title, updated, self and alternat
   assert.ok(xml.startsWith('<?xml version="1.0" encoding="utf-8"?>\n<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">\n'));
   assert.ok(xml.endsWith('</feed>\n'));
   const head = xml.slice(0, xml.indexOf('<entry>'));
-  assert.match(head, /<id>tag:example\.org,\d{4}:psyche\/progress\.xml<\/id>/);
+  assert.match(head, /<id>tag:cagancaliskan\.github\.io,\d{4}:psyche\/progress\.xml<\/id>/);
   assert.ok(head.includes(`<title type="text">${FEED_TITLE}</title>`));
   assert.ok(head.includes('<updated>2026-11-14T12:00:00Z</updated>'), 'updated is the newest event, not the build');
   assert.ok(head.includes(`<link rel="self" type="${FEED_MEDIA_TYPE}" href="https://example.org/psyche/${FEED_FILE}"/>`));
@@ -161,7 +161,7 @@ test('the feed is valid Atom 1.0 in shape: id, title, updated, self and alternat
   entries.forEach((entry, n) => {
     const e = EVENTS[n];
     const id = /<id>([^<]+)<\/id>/.exec(entry)?.[1] ?? '';
-    assert.match(id, /^tag:example\.org,\d{4}:psyche\/progress\/[A-Za-z0-9\/_.-]+$/);
+    assert.match(id, /^tag:cagancaliskan\.github\.io,\d{4}:psyche\/progress\/[A-Za-z0-9\/_.-]+$/);
     assert.ok(id.endsWith(`/${e.id}`), `${id} ends with the event's id`);
     ids.add(id);
     assert.ok(entry.includes(`<title type="text">${e.headline}</title>`));
@@ -204,8 +204,12 @@ test('a plan with no event gives a valid feed with no entry, dated by the plan',
 });
 
 test('addresses are absolute from the site address given, which must end in a slash', () => {
-  const xml = atomFeed(DATA, 'https://cagancaliskan.github.io/psyche/');
-  for (const href of [...xml.matchAll(/href="([^"]*)"/g)].map((m) => m[1])) assert.match(href, /^https:\/\/cagancaliskan\.github\.io\/psyche\//, href);
+  const xml = atomFeed(DATA, 'https://psyche.cagancaliskan.com/');
+  for (const href of [...xml.matchAll(/href="([^"]*)"/g)].map((m) => m[1])) assert.match(href, /^https:\/\/psyche\.cagancaliskan\.com\//, href);
+  // the ids are made from the address the feed began at, so they are the same wherever the site is served
+  const ids = (x: string) => [...x.matchAll(/<id>([^<]+)<\/id>/g)].map((m) => m[1]);
+  assert.deepEqual(ids(xml), ids(atomFeed(DATA, SITE)));
+  assert.ok(ids(xml).every((id) => id.startsWith('tag:cagancaliskan.github.io,2026:psyche/')));
   assert.throws(() => atomFeed(DATA, 'https://example.org/psyche'), /closing slash|end in a slash/);
   assert.throws(() => atomFeed({ ...DATA, events: [event({ date: '2026-02-30' })] }, SITE), /not a calendar day/);
 });

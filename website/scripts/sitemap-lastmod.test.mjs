@@ -56,6 +56,10 @@ test('routeOfUrl reads the route below the base', () => {
   assert.equal(routeOfUrl(url(''), BASE), '');
   assert.equal(routeOfUrl(url('research/gates'), BASE), 'research/gates');
   assert.equal(routeOfUrl('https://example.invalid/other/', BASE), null);
+  // a site served at the root of its host, as this one is
+  assert.equal(routeOfUrl('https://example.invalid/', '/'), '');
+  assert.equal(routeOfUrl('https://example.invalid/research/gates/', '/'), 'research/gates');
+  assert.equal(routeOfUrl('https://example.invalid/blog/first-post/', '/'), 'blog/first-post');
 });
 
 test('sourcesByRoute lists the site pages and every docs page of the manifest', () => {

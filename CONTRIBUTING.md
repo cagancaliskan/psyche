@@ -84,7 +84,7 @@ example, run the plain command beside each target.
 | `make test` | The substrate's suites. | `python3 run_tests.py` |
 | `make check` | The commit gate, the plan and diagram checks and the tool suites. | The commands under "What a pull request must pass" |
 | `make capture` | For maintainers: sweeps every interpreter, writes `docs/TEST_OUTPUT.txt` and syncs the ledger. | `python3 tools/capture_run.py` |
-| `make site` | The docs site on your machine: `npm ci`, then `npm run dev` in `website/`. Open the address it prints, which ends in `/psyche/`. | `npm ci`, then `npm run dev`, in `website/` |
+| `make site` | The docs site on your machine: `npm ci`, then `npm run dev` in `website/`. Open the address it prints. | `npm ci`, then `npm run dev`, in `website/` |
 
 Run `make setup` before `make test`, unless the interpreters are already on your PATH. Several
 suites run their determinism checks on every `python3.X` they find, and CI installs every minor from

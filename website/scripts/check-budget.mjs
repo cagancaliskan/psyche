@@ -32,7 +32,7 @@ import { fileURLToPath } from 'node:url';
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 // Must equal `base` in astro.config.mjs, without the trailing slash handling done below.
-const BASE = '/psyche/';
+const BASE = '/';
 
 // Bytes, gzipped. The comment on each line is what was measured when the budget was set (JavaScript,
 // then CSS). Last set when the site chrome was redrawn: the title strip, the footer's title block, the
@@ -90,7 +90,7 @@ function read(file) {
   return cache.get(file);
 }
 
-// A page URL such as /psyche/_astro/x.js becomes the file in dist/.
+// A page URL such as /_astro/x.js becomes the file in dist/.
 function toFile(url, from) {
   if (/^[a-z][a-z0-9+.-]*:|^\/\//i.test(url)) return { external: url };
   const clean = url.split('#')[0].split('?')[0];

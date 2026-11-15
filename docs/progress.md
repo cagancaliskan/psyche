@@ -45,8 +45,8 @@ revealed at the time shown. How a commitment is made and checked is set out in t
 
 - The [roadmap](research/roadmap.md) sets out the phases and how their dates change.
 - The [decision gates](research/gates.md) page sets out each gate, its question and its fallback.
-- [Explore the timeline](https://cagancaliskan.github.io/psyche/roadmap/) draws the same plan on a
+- [Explore the timeline](https://psyche.cagancaliskan.com/roadmap/) draws the same plan on a
   calendar, with the gates marked.
 - The log is also an Atom feed, at
-  [https://cagancaliskan.github.io/psyche/progress.xml](https://cagancaliskan.github.io/psyche/progress.xml).
+  [https://psyche.cagancaliskan.com/progress.xml](https://psyche.cagancaliskan.com/progress.xml).
   Each entry is one row of the log.

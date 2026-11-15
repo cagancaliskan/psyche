@@ -6,7 +6,7 @@ authors:
   - family-names: Caliskan
     given-names: Cagan
 repository-code: "https://github.com/cagancaliskan/psyche"
-url: "https://cagancaliskan.github.io/psyche/"
+url: "https://psyche.cagancaliskan.com/"
 license: MIT
 abstract: >-
   Psyche is an open research project that builds brain-inspired components in stages, with

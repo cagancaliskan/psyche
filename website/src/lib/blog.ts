@@ -13,7 +13,7 @@
  * stamps and tag URIs it reuses: the same posts give the same bytes on any day and any machine, and every
  * date in it is a post's own day, never the build's.
  */
-import { escapeXml, FEED_MEDIA_TYPE, stamp, tagId } from './feed.ts';
+import { escapeXml, FEED_MEDIA_TYPE, stamp, TAG_SITE, tagId } from './feed.ts';
 import { formatDay } from './plan.ts';
 
 /** One published post, as tools/publish/stage.py writes it to src/data/blog.json. */
@@ -157,7 +157,7 @@ export function blogFeed(data: BlogData, siteUrl: string): string {
   const lines: string[] = [
     '<?xml version="1.0" encoding="utf-8"?>',
     '<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">',
-    leaf('id', tagId(siteUrl, BLOG_FEED_FILE), '  '),
+    leaf('id', tagId(TAG_SITE, BLOG_FEED_FILE), '  '),
     leaf('title', BLOG_FEED_TITLE, '  ', TEXT),
     leaf('subtitle', BLOG_FEED_SUBTITLE, '  ', TEXT),
     leaf('updated', stamp(blogFeedDay(data.posts)), '  '),
@@ -168,7 +168,7 @@ export function blogFeed(data: BlogData, siteUrl: string): string {
   for (const post of data.posts) {
     lines.push(
       '  <entry>',
-      leaf('id', tagId(siteUrl, post.route), '    '),
+      leaf('id', tagId(TAG_SITE, post.route), '    '),
       leaf('title', post.title, '    ', TEXT),
       leaf('published', stamp(post.date), '    '),
       leaf('updated', stamp(lastChanged(post)), '    '),

@@ -1,6 +1,6 @@
 # Docs site (D-031). Builds website/ from the governed documents of ONE commit
 # (tools/publish/stage.py reads every page and data file from HEAD, never from a dirty disk)
-# and deploys it to GitHub Pages under /psyche/. The governance workflow runs first: the site
+# and deploys it to GitHub Pages, which serves it at psyche.cagancaliskan.com. The governance workflow runs first: the site
 # never deploys from a tree that fails it. Pull requests build but never deploy.
 #
 # The private denylist reaches CI only as DISCLOSURE_DENYLIST_B64: one line of base64, so

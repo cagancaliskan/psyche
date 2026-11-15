@@ -54,7 +54,7 @@ const MIN_RULES_RUN = 20;
 
 const DIST = resolve(fileURLToPath(new URL('../dist/', import.meta.url)));
 // Must equal `base` in astro.config.mjs.
-const BASE = '/psyche/';
+const BASE = '/';
 // Every page of the site: each folder of dist/ with an index.html (the home page included), then the
 // 404 page, which the host serves for a missing address (the file itself is opened here, so its script
 // has run as it does for a reader). Found, not listed, so a page added later is audited without anyone

@@ -1,6 +1,6 @@
 # Psyche docs site
 
-The documentation site of Psyche, live at <https://cagancaliskan.github.io/psyche/>. This file is for a
+The documentation site of Psyche, live at <https://psyche.cagancaliskan.com/>. This file is for a
 contributor who needs to change it.
 
 Read [CONTRIBUTING.md](../CONTRIBUTING.md) first. Site work is builder work under it, and every sentence
@@ -24,7 +24,7 @@ the step that copies governed sources into the site's input. The two are unrelat
 
 Astro with Starlight is the documentation shell. React runs three interactive pieces (the "now"
 readout, the timeline, the battery explorer); everything else is static Astro and CSS. The build writes
-plain HTML to `dist/`, which GitHub Pages serves under `/psyche/`. Every dependency is pinned to an
+plain HTML to `dist/`, which GitHub Pages serves at the root of `psyche.cagancaliskan.com`. Every dependency is pinned to an
 exact version in `package.json`, which is where the versions of Astro, Starlight and React are; ask the
 project lead before adding one.
 
@@ -52,12 +52,21 @@ reads a count, a date or a status. It never types one.
 
 - Folders: `public/` (icons, `og.png`, manifest, `robots.txt`), `scripts/` (checks and drawing tools),
   `src/diagrams/` (committed drawings), `src/assets/brand/` (copies of the two wordmarks in `brand/`).
-- `astro.config.mjs` sets `base: '/psyche'`, `trailingSlash: 'always'`, the Starlight options and four
+- `astro.config.mjs` takes `site` and `base` from `src/lib/seo.ts` and sets `trailingSlash: 'always'`, the Starlight options and four
   component overrides (`PageTitle`, `Footer`, `Search`, and `SocialIcons`, which puts the blog link
   before the GitHub link in the header and the phone menu). `src/routeData.ts` adds per-page head entries
   from `src/lib/seo.ts`. Starlight's own 404 route is off; the sidebar is the staged `sidebar.json`.
-- The base is also written in `src/lib/seo.ts`, `scripts/check-budget.mjs`, `scripts/check-a11y.mjs`,
-  `public/site.webmanifest`, `public/robots.txt` and `docs/publish.json` (`site_base`), and the address
+- **Where the site is served.** GitHub Pages serves it at `psyche.cagancaliskan.com` because of two
+  things outside this repository: a DNS record (`psyche` as a CNAME to `cagancaliskan.github.io`) and
+  the custom domain in the repository's Pages settings, with HTTPS enforced. The deploy is the
+  workflow's artifact, so a `CNAME` file here would do nothing. While the custom domain is set,
+  GitHub redirects the project address the site used before, `cagancaliskan.github.io/psyche/`.
+- The address and the base are defined in `src/lib/seo.ts` (`ORIGIN`, `BASE`). The base is also written
+  in `scripts/check-budget.mjs`, `scripts/check-a11y.mjs`, `public/site.webmanifest`,
+  `public/robots.txt`, `public/admin/index.html` (the icon), `public/admin/config.yml` (the logo) and
+  `docs/publish.json` (`site_base`). The address is also written in `public/admin/config.yml`,
+  `.github/workflows/links.yml`, the issue templates, `CITATION.cff`, `SECURITY.md`, the root
+  `README.md` and the governed pages that link to the site, and it
   is printed on the social card (`URL_TEXT` in `tools/publish/og.py`; run `npm run og` and commit the
   three files it writes). Change them together: nothing checks that the address drawn on the card matches,
   so a stale card passes the build. Search is Starlight's Pagefind index, built by `astro build`; there is
@@ -141,8 +150,9 @@ that does otherwise: the drawings stay valid and the labels no longer fit. It in
   table and `src/pages/progress.xml.ts` (Atom 1.0, through `src/lib/feed.ts`) both come from that list.
   The feed is dated by the events' days, never the build, is not in the sitemap, and is linked from
   every page's head. A decided gate shows its date and next step only, never a verdict or a criterion
-  (D-034). Feed ids are tag URIs built from the host, the year and the path below the base, so they are
-  the same on every build and change if the host or the base path ever does.
+  (D-034). Feed ids are tag URIs built from a host, the year and a path, so they are the same on every
+  build. They are made from the address the feeds began at (`TAG_SITE` in `src/lib/feed.ts`), not from
+  the site's current one, so they did not change when the site moved to its own domain.
 - **Blog.** A post is a folder of `docs/blog/` (the format and the two ways to publish are in
   [`docs/blog/README.md`](../docs/blog/README.md)). `tools/publish/blog.py` reads each one from the
   commit being staged, holds its front matter to a strict allowlist (title, day, a description of 120

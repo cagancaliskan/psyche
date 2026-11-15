@@ -24,7 +24,7 @@ only as an aim ([Reader's guide](guide.md)).
 Each section below also gives the external yardstick and what the attempt left behind. The build
 status and the meaning verdict of each brick are not repeated here. They are read from the ledger
 and shown, on two separate axes, on the
-[substrate status page](https://cagancaliskan.github.io/psyche/status/).
+[substrate status page](https://psyche.cagancaliskan.com/status/).
 
 ## Semantic priming (brick 1e): circular
 
@@ -176,7 +176,7 @@ Each wall is a frozen record in the repository.
   [the specification](specs/SPEC-2c-interoception.md) and decision [D-005](../DECISIONS.md).
   The [architecture reference](ARCHITECTURE.md) describes the sensor and its modulation hook.
 - Facts: [`tools/ledger.json`](../tools/ledger.json) holds every count and status, and the
-  [substrate status page](https://cagancaliskan.github.io/psyche/status/) shows them.
+  [substrate status page](https://psyche.cagancaliskan.com/status/) shows them.
 
 ## Works named on this page
 

@@ -30,7 +30,7 @@ body:
     attributes:
       label: Page address or file path
       description: The URL of the page, or the path of the file, and the line or section if you have one.
-      placeholder: "https://cagancaliskan.github.io/psyche/..."
+      placeholder: "https://psyche.cagancaliskan.com/..."
     validations:
       required: true
   - type: textarea

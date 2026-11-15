@@ -90,7 +90,7 @@ stand on its own as a real, citable artifact. Today that means:
 
 A line of work can be paused without being abandoned. Which line is active is the program state in
 the ledger, shown on the
-[substrate status page](https://cagancaliskan.github.io/psyche/status/). While the substrate is
+[substrate status page](https://psyche.cagancaliskan.com/status/). While the substrate is
 paused, no new brick starts and no default changes, and its suites, ledger, checker and
 determinism sweep stay maintained. Resuming it takes a new entry in the decision record from the
 project lead.

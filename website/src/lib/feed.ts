@@ -78,10 +78,17 @@ export function escapeXml(text: string): string {
 export const TAG_YEAR = '2026';
 
 /**
- * A tag URI (RFC 4151) for the feed or an entry: the site's host name, the year the feed began in and a
- * path below the site's base. It names an entry and not a place to fetch it, so it is the same on every
- * build and a reader never takes an entry for a new one when the site is rebuilt. It is made from the site's
- * address, so it does change if the host or the base path does: moving the site would make every entry new.
+ * The address the feeds began at. Every id is a tag URI made from this address, never from the site's
+ * current one, so no entry became a new one when the site moved from here to its own domain. A tag URI
+ * names an entry and is never fetched; RFC 4151 asks only that the host was the project's in TAG_YEAR.
+ */
+export const TAG_SITE = 'https://cagancaliskan.github.io/psyche/';
+
+/**
+ * A tag URI (RFC 4151) for the feed or an entry: a host name, the year the feed began in and a path
+ * below the base of the address given. It names an entry and not a place to fetch it, so it is the same
+ * on every build and a reader never takes an entry for a new one when the site is rebuilt. It changes
+ * with the address it is made from, which is why the feeds make theirs from TAG_SITE.
  */
 export function tagId(siteUrl: string, path: string): string {
   const { hostname, pathname } = new URL(siteUrl);
@@ -119,7 +126,7 @@ export function atomFeed(data: ProgressData, siteUrl: string): string {
   const lines: string[] = [
     '<?xml version="1.0" encoding="utf-8"?>',
     '<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">',
-    leaf('id', tagId(siteUrl, FEED_FILE)),
+    leaf('id', tagId(TAG_SITE, FEED_FILE)),
     leaf('title', FEED_TITLE, '  ', TEXT),
     leaf('subtitle', FEED_SUBTITLE, '  ', TEXT),
     leaf('updated', stamp(feedDay(data))),
@@ -130,7 +137,7 @@ export function atomFeed(data: ProgressData, siteUrl: string): string {
   for (const e of data.events) {
     lines.push(
       '  <entry>',
-      leaf('id', tagId(siteUrl, `${PROGRESS_PAGE}${e.id}`), '    '),
+      leaf('id', tagId(TAG_SITE, `${PROGRESS_PAGE}${e.id}`), '    '),
       leaf('title', e.headline, '    ', TEXT),
       leaf('updated', stamp(e.date), '    '),
       `    <link rel="alternate" type="text/html" href="${escapeXml(page)}"/>`,

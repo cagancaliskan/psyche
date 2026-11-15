@@ -35,7 +35,7 @@ reproduces anything that comes from its source.
 ## What is in scope
 
 - **The documentation site.** The source in `website/` and the pages built from it, published
-  at <https://cagancaliskan.github.io/psyche/>. For example: script injection through site code
+  at <https://psyche.cagancaliskan.com/>. For example: script injection through site code
   or staged content, a build step that ships something other than what the source says, a
   secret or a private path in the built output.
 - **The Python substrate.** `src/psyche_*.py`. It uses the standard library only, opens no files

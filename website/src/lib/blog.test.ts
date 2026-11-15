@@ -126,7 +126,9 @@ test('the blog feed is Atom with one entry per post, newest first, and escapes w
   assert.ok(xml.includes('<updated>2027-01-10T12:00:00Z</updated>'));
   const entries = [...xml.matchAll(/<entry>([\s\S]*?)<\/entry>/g)].map((m) => m[1]);
   assert.equal(entries.length, 3);
-  assert.ok(entries[0].includes('<id>tag:example.invalid,2026:psyche/blog/third/</id>'));
+  assert.ok(entries[0].includes('<id>tag:cagancaliskan.github.io,2026:psyche/blog/third/</id>'));
+  // an id is made from the address the feed began at, not from the address the site is served at
+  assert.ok(blogFeed(DATA, 'https://example.invalid/').includes('<id>tag:cagancaliskan.github.io,2026:psyche/blog/third/</id>'));
   assert.ok(entries[0].includes('<category term="methods" label="Methods"/>'));
   assert.ok(entries[1].includes('<published>2026-12-20T12:00:00Z</published>'));
   assert.ok(entries[1].includes('<updated>2027-01-10T12:00:00Z</updated>'));

@@ -1,4 +1,4 @@
-// The Atom feed of the blog, built to /psyche/blog.xml.
+// The Atom feed of the blog, built to /blog.xml.
 //
 // The posts are the published posts of docs/blog/, checked and staged by `npm run stage`
 // (tools/publish/stage.py) as src/data/blog.json, newest first; lib/blog.ts only writes them as Atom.
