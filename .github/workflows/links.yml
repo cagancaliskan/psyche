@@ -11,7 +11,7 @@
 #   site       the pages the docs site is built from. They exist only after tools/publish/stage.py
 #              has staged them into website/src/content (gitignored, hence --no-ignore), and
 #              their links are already rewritten: a link to a page of the site is the site's own
-#              root-relative route (/psyche/research/gates/), and a link to any other file is a
+#              root-relative route (/research/gates/), and a link to any other file is a
 #              GitHub link pinned to the staged commit. lychee cannot resolve a root-relative
 #              link in a local file without a base: it reports an error for each one, and
 #              --scheme does not help, because the link fails before the scheme is looked at. So
@@ -107,7 +107,7 @@ jobs:
           failIfEmpty: true
           args: >-
             --no-progress --no-ignore --scheme https
-            --base-url https://cagancaliskan.github.io/psyche/
+            --base-url https://psyche.cagancaliskan.com/
             --max-retries 3 --retry-wait-time 10 --timeout 30 --max-concurrency 8
             --accept '200..=299,403,429'
             --exclude-loopback

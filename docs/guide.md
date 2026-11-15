@@ -30,8 +30,8 @@ The story is told in [Origins](research/origins.md), and the three stops are set
 
 | Stage | What it is |
 |---|---|
-| 1. The substrate | A dependency-free Python memory-and-activation substrate, the project's foundation. Its lower layers are verified correct and deterministic. No cognitive claim is made for it. Its state is on the [substrate status page](https://cagancaliskan.github.io/psyche/status/) and its record is in [The substrate](PSYCHE.md). |
-| 2. Spiking cognitive maps | A test of whether a spiking network that learns only through local synaptic plasticity shows, on classic cognitive-map tests, the behaviours that an internal map would explain and memorised responses would not. Its plan is in the [overview](research/README.md) and on the [timeline](https://cagancaliskan.github.io/psyche/roadmap/). |
+| 1. The substrate | A dependency-free Python memory-and-activation substrate, the project's foundation. Its lower layers are verified correct and deterministic. No cognitive claim is made for it. Its state is on the [substrate status page](https://psyche.cagancaliskan.com/status/) and its record is in [The substrate](PSYCHE.md). |
+| 2. Spiking cognitive maps | A test of whether a spiking network that learns only through local synaptic plasticity shows, on classic cognitive-map tests, the behaviours that an internal map would explain and memorised responses would not. Its plan is in the [overview](research/README.md) and on the [timeline](https://psyche.cagancaliskan.com/roadmap/). |
 | Later stages | They build toward the long-term aim on the same discipline. They are not specified publicly yet. |
 
 The state of each stage is read from the project's ledger and plan and is not typed on this page.
@@ -124,9 +124,9 @@ reads that file and offers it through the "Cite this repository" link on the rep
 
 ### If you are visiting
 
-- [Home](https://cagancaliskan.github.io/psyche/): the project on one page.
-- [Explore the timeline](https://cagancaliskan.github.io/psyche/roadmap/): the phases and gates of
+- [Home](https://psyche.cagancaliskan.com/): the project on one page.
+- [Explore the timeline](https://psyche.cagancaliskan.com/roadmap/): the phases and gates of
   stage 2 on one timeline.
-- [Step through the paradigms](https://cagancaliskan.github.io/psyche/battery/): the classic tests
+- [Step through the paradigms](https://psyche.cagancaliskan.com/battery/): the classic tests
   behind the battery, one step at a time.
 - [Questions and answers](faq.md): short answers to what newcomers ask first.

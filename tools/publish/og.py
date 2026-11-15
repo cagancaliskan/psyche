@@ -49,7 +49,7 @@ GENERATOR_REL = "website/scripts/make-og.mjs"
 CARD_SIZE = (1200, 630)
 
 DOT = "·"
-URL_TEXT = "cagancaliskan.github.io/psyche"
+URL_TEXT = "psyche.cagancaliskan.com"
 # The line under the wordmark: the project, in the words CONTRIBUTING.md gives, with its aim named
 # as an aim.
 TAGLINE = ("An open research project that builds brain-inspired components in stages, with "

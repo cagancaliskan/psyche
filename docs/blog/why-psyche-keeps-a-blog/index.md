@@ -61,8 +61,8 @@ such as its tone, is for the review before it is merged. The steps for writing o
 
 ## Following it
 
-Every post is listed on the [blog's index](https://cagancaliskan.github.io/psyche/blog/), and the
-[blog feed](https://cagancaliskan.github.io/psyche/blog.xml) carries each one from the day it is
+Every post is listed on the [blog's index](https://psyche.cagancaliskan.com/blog/), and the
+[blog feed](https://psyche.cagancaliskan.com/blog.xml) carries each one from the day it is
 published. Questions about a post go to
 [GitHub Discussions](https://github.com/cagancaliskan/psyche/discussions); a wrong claim or a
 broken link goes to the [bug report form](https://github.com/cagancaliskan/psyche/issues/new/choose).

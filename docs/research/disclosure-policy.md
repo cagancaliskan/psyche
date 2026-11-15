@@ -24,7 +24,7 @@ follows from that.
 | Terms and background reading | [Glossary](glossary.md), [Reading list](reading-list.md) |
 | The substrate, stage 1: its code, tests and published record, and how it led to this line | [PSYCHE.md](../PSYCHE.md), [Origins](origins.md) |
 | Pre-registration commitments: a date and a hash for each frozen file | [Below](#pre-registration-without-disclosure) |
-| Progress notes: outcomes of the work, such as a milestone, a count or whether a check met the criterion fixed for it | The [blog](https://cagancaliskan.github.io/psyche/blog/), under the rule [below](#progress-notes) |
+| Progress notes: outcomes of the work, such as a milestone, a count or whether a check met the criterion fixed for it | The [blog](https://psyche.cagancaliskan.com/blog/), under the rule [below](#progress-notes) |
 
 No code of this line is public yet. When it is released, it appears under
 [`cogmap/`](../../cogmap/README.md) at the repository root, by release only. Nobody edits that

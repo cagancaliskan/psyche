@@ -1,4 +1,4 @@
-// The Atom feed of the progress page, built to /psyche/progress.xml.
+// The Atom feed of the progress page, built to /progress.xml.
 //
 // The events are the plan's public events, derived once in Python (tools/publish/render_plan.py
 // progress_events) and staged by `npm run stage` as src/data/progress.json; lib/feed.ts only writes

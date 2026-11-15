@@ -12,9 +12,9 @@
  * every page (theme colour, icons, manifest, the card's alt text, the two feeds) are in astro.config.mjs.
  */
 
-export const ORIGIN = 'https://cagancaliskan.github.io';
-/** The base path of the site, with the trailing slash (astro.config.mjs `base` without it). */
-export const BASE = '/psyche/';
+export const ORIGIN = 'https://psyche.cagancaliskan.com';
+/** The base path of the site, with the trailing slash. astro.config.mjs takes its `base` from here. */
+export const BASE = '/';
 export const SITE_URL = ORIGIN + BASE;
 /** The project's public repository, where the footer's links and the structured data point. */
 export const REPO_URL = 'https://github.com/cagancaliskan/psyche';

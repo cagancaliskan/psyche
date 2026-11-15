@@ -1,6 +1,6 @@
 # Writing for the blog
 
-This folder holds the posts of the [blog](https://cagancaliskan.github.io/psyche/blog/), one folder
+This folder holds the posts of the [blog](https://psyche.cagancaliskan.com/blog/), one folder
 per post. A post reaches the site the way a docs page does: `tools/publish/stage.py` reads it from a
 reviewed commit, checks it and stages it, and the build checks it again. This page sets out the
 format, what a post may say, and the two ways to publish one. It is the guide for posts, not a post
@@ -9,7 +9,7 @@ itself, and it is never published as one.
 ## A post
 
 A post is a folder whose name is the post's address: `docs/blog/<slug>/index.md` is published at
-`/psyche/blog/<slug>/`. The name uses lowercase letters, digits and single hyphens, at most 80
+`/blog/<slug>/`. The name uses lowercase letters, digits and single hyphens, at most 80
 characters, is never `index` (the blog's own index) nor `build`, `dist` or `venv` (directory names
 the publishing guard skips), and does not change once the post is published, because readers and
 the feed link to it.
@@ -137,7 +137,7 @@ those rules are kept by the author and the reviewer.
 
 ## Publishing from the editor
 
-The editor at [/psyche/admin/](https://cagancaliskan.github.io/psyche/admin/) writes the same files
+The editor at [/admin/](https://psyche.cagancaliskan.com/admin/) writes the same files
 through the GitHub API, so a post written there goes through the same checks as one written in a
 clone. Saving a post never writes to `main`, and the editor offers no way to publish (its Asset
 Library page does try to commit to `main`, which the ruleset refuses, see below):
@@ -180,7 +180,7 @@ What protects the editor, and what does not:
   the storage of a framed page apart from that of the same page opened directly, so a framing
   page meets a signed-out editor.
 - The token stays in the browser's local storage while you are signed in, and every page of
-  `cagancaliskan.github.io` shares that storage: a script on any of them could read it. Today that
+  `psyche.cagancaliskan.com` shares that storage: a script on any of them could read it. That
   origin serves only this site, which loads no script from another host, and staging holds a post's
   HTML and SVG to lists of inert elements. A script on that origin would reach the token, so both
   have to stay true.

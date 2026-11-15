@@ -27,12 +27,14 @@ const attrOf = (head: HeadEntry[], key: string, value: string) =>
   head.find((e) => e.tag === 'meta' && e.attrs?.[key] === value)?.attrs?.content;
 
 test('routeOf names a page below the base', () => {
-  assert.equal(routeOf('/psyche/'), '');
-  assert.equal(routeOf('/psyche/404/'), '404');
-  assert.equal(routeOf('/psyche/404'), '404');
-  assert.equal(routeOf('/psyche/research/gates/'), 'research/gates');
-  assert.equal(routeOf('/psyche/battery/index.html'), 'battery');
-  assert.equal(routeOf('/research/gates/', '/'), 'research/gates');
+  assert.equal(routeOf('/'), '');
+  assert.equal(routeOf('/404/'), '404');
+  assert.equal(routeOf('/404'), '404');
+  assert.equal(routeOf('/research/gates/'), 'research/gates');
+  assert.equal(routeOf('/battery/index.html'), 'battery');
+  // a site served below a base names its pages the same way
+  assert.equal(routeOf('/psyche/', '/psyche/'), '');
+  assert.equal(routeOf('/psyche/research/gates/', '/psyche/'), 'research/gates');
 });
 
 test('the landing page is a website, every other page an article', () => {

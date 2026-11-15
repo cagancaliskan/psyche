@@ -328,8 +328,8 @@ test('the footer links say what they do, and lead to the blog, the repository, i
   );
   const byText = Object.fromEntries(links.map((l) => [l.text, l]));
   // the blog is the one page of the site among them, below the base, so every page links to it
-  assert.equal(byText.Blog.href, '/psyche/blog/');
-  assert.equal(footerLinks(REPO_URL, '/').find((l) => l.text === 'Blog')?.href, '/blog/');
+  assert.equal(byText.Blog.href, '/blog/');
+  assert.equal(footerLinks(REPO_URL, '/psyche/').find((l) => l.text === 'Blog')?.href, '/psyche/blog/');
   assert.equal(byText['MIT licence'].href, `${REPO_URL}/blob/main/LICENSE`);
   assert.equal(byText['Source code'].href, REPO_URL);
   assert.equal(byText.Discussions.href, 'https://github.com/cagancaliskan/psyche/discussions');

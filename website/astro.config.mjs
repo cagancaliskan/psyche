@@ -13,12 +13,10 @@ import sitemap from '@astrojs/sitemap';
 import starlightLinksValidator from 'starlight-links-validator';
 import { BLOG_FEED_FILE, BLOG_FEED_TITLE } from './src/lib/blog.ts';
 import { FEED_FILE, FEED_MEDIA_TYPE, FEED_TITLE } from './src/lib/feed.ts';
-import { ORIGIN, PROJECT_DESCRIPTION, THEME_COLOR } from './src/lib/seo.ts';
+import { BASE, ORIGIN, PROJECT_DESCRIPTION, SITE_URL, THEME_COLOR } from './src/lib/seo.ts';
 import { makeSerialize } from './scripts/sitemap-lastmod.mjs';
 import { tableRegionIntegration } from './scripts/table-region.mjs';
 
-const BASE = '/psyche';
-const SITE = ORIGIN + BASE + '/';
 const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
 
 // What the social card says, for people who cannot see it. The card is drawn by scripts/make-og.mjs,
@@ -133,20 +131,20 @@ export default defineConfig({
         { tag: 'meta', attrs: { name: 'color-scheme', content: 'light dark' } },
         { tag: 'meta', attrs: { name: 'theme-color', content: THEME_COLOR.light, media: '(prefers-color-scheme: light)' } },
         { tag: 'meta', attrs: { name: 'theme-color', content: THEME_COLOR.dark, media: '(prefers-color-scheme: dark)' } },
-        { tag: 'link', attrs: { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${BASE}/favicon-32.png` } },
-        { tag: 'link', attrs: { rel: 'apple-touch-icon', sizes: '180x180', href: `${BASE}/apple-touch-icon.png` } },
-        { tag: 'link', attrs: { rel: 'manifest', href: `${BASE}/site.webmanifest` } },
+        { tag: 'link', attrs: { rel: 'icon', type: 'image/png', sizes: '32x32', href: `${BASE}favicon-32.png` } },
+        { tag: 'link', attrs: { rel: 'apple-touch-icon', sizes: '180x180', href: `${BASE}apple-touch-icon.png` } },
+        { tag: 'link', attrs: { rel: 'manifest', href: `${BASE}site.webmanifest` } },
         // The two feeds, so a feed reader finds them from any page: the progress feed
         // (src/pages/progress.xml.ts) and the blog's (src/pages/blog.xml.ts).
-        { tag: 'link', attrs: { rel: 'alternate', type: FEED_MEDIA_TYPE, title: FEED_TITLE, href: `${BASE}/${FEED_FILE}` } },
-        { tag: 'link', attrs: { rel: 'alternate', type: FEED_MEDIA_TYPE, title: BLOG_FEED_TITLE, href: `${BASE}/${BLOG_FEED_FILE}` } },
-        { tag: 'meta', attrs: { property: 'og:image', content: `${SITE}og.png` } },
+        { tag: 'link', attrs: { rel: 'alternate', type: FEED_MEDIA_TYPE, title: FEED_TITLE, href: `${BASE}${FEED_FILE}` } },
+        { tag: 'link', attrs: { rel: 'alternate', type: FEED_MEDIA_TYPE, title: BLOG_FEED_TITLE, href: `${BASE}${BLOG_FEED_FILE}` } },
+        { tag: 'meta', attrs: { property: 'og:image', content: `${SITE_URL}og.png` } },
         { tag: 'meta', attrs: { property: 'og:image:type', content: 'image/png' } },
         { tag: 'meta', attrs: { property: 'og:image:width', content: '1200' } },
         { tag: 'meta', attrs: { property: 'og:image:height', content: '630' } },
         { tag: 'meta', attrs: { property: 'og:image:alt', content: socialCardAlt() } },
         { tag: 'meta', attrs: { name: 'twitter:card', content: 'summary_large_image' } },
-        { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE}og.png` } },
+        { tag: 'meta', attrs: { name: 'twitter:image', content: `${SITE_URL}og.png` } },
         { tag: 'meta', attrs: { name: 'twitter:image:alt', content: socialCardAlt() } },
       ],
     }),

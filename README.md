@@ -28,7 +28,7 @@ phases and gates:
 
 No stage 2 results are reported yet. Its pages describe a plan and put questions, not answers.
 
-- **Read:** the documentation site, <https://cagancaliskan.github.io/psyche/>, or the
+- **Read:** the documentation site, <https://psyche.cagancaliskan.com/>, or the
   [Reader's guide](docs/guide.md) for a first pass; [MOC.md](MOC.md) is the map of content, and
   [how the project is run](docs/governance.md) and the
   [engineering standards](docs/research/engineering.md) say how the work is kept honest.
@@ -83,7 +83,7 @@ than on newer versions, up to a few minutes. The plain command behind each targe
 | `make test` | Runs every registered suite of the substrate | `python3 run_tests.py` |
 | `make check` | Runs the checks listed after this table | the commands below |
 | `make setup` | Optional: downloads the interpreters CI uses, with uv (no sudo, no change to your shell profile), then reports which `python3.X` your PATH finds and whether `python3` is recent enough; without uv it prints how to install it and stops | `uv python install 3.10 3.11 3.12 3.13 3.14`, then put the directory that `uv python dir --bin` prints on your PATH; or `bash tools/setup_python.sh`, which needs bash and not make |
-| `make site` | Serves the docs site on your machine; open the address it prints, which ends in `/psyche/` | `cd website`, `npm ci`, then `npm run dev` |
+| `make site` | Serves the docs site on your machine; open the address it prints | `cd website`, `npm ci`, then `npm run dev` |
 | `make capture` | Maintainers only, see [Running the tests](#running-the-tests) | `python3 tools/capture_run.py` |
 
 `make check` runs these, and stops at the first one that fails:
