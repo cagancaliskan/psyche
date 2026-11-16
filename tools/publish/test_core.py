@@ -2227,7 +2227,14 @@ def test_render_documents(tmp: Path) -> None:
           f"without --annotations the same finding is plain text ({rc})")
     r18 = new_root(tmp)
     _doc_fixture(r18, plan(as_of="2999-01-01"))
-    rc, out, _ = capture(RP.main, ["--root", str(r18), "--past-due", "--annotations"])
+    # --past-due reads the real day, and the fixture's gates carry calendar dates, so this case pins
+    # the day to one before the first of them: it must hold on whatever day the suite runs.
+    real_today = RP.today_in_zone
+    RP.today_in_zone = lambda tz: (date(2026, 10, 24), tz)
+    try:
+        rc, out, _ = capture(RP.main, ["--root", str(r18), "--past-due", "--annotations"])
+    finally:
+        RP.today_in_zone = real_today
     check(rc == 0 and "::" not in out and "no gate is past its date" in out,
           f"nothing late: exit 0 and no annotation ({rc}) {out[:80]}")
     write(r18, "tools/research_plan.json", json.dumps(dict(plan(), schema_version=9)))
