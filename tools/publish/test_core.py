@@ -627,7 +627,7 @@ def test_guard(tmp: Path) -> None:
         clash = copy.deepcopy(GUARD_MANIFEST)
         clash["sections"][0]["pages"].append({"src": "docs/clash.md", "slug": slug, "wiki": "Clash-Page"})
         check(has(core.manifest_problems(clash), "is reserved"),
-              f"a manifest page at the reserved route {slug!r} is refused, so it cannot shadow a post or the editor")
+              f"a manifest page at the reserved route {slug!r} is refused, so it cannot share an address with a post or take the removed editor's address")
     near = copy.deepcopy(GUARD_MANIFEST)
     near["sections"][0]["pages"].append({"src": "docs/near.md", "slug": "blogs/x", "wiki": "Near-Page"})
     check(not has(core.manifest_problems(near), "is reserved"), "a slug that only begins with the letters of a reserved route is not refused")
@@ -4664,7 +4664,7 @@ def test_blog_parser() -> None:
     check(BL.layout(["docs/blog/a-post/index.md", "docs/blog/a-post/_dsc1234.jpg", "docs/blog/a-post/diagram~v2.png",
                      "docs/blog/a-post/~tmp.webp"]) == {"a-post": ["_dsc1234.jpg", "diagram~v2.png", "~tmp.webp"]}
           and BL.layout(["docs/blog/index-two/index.md"]) == {"index-two": []},
-          "an editor-slugified name with a leading underscore or a tilde is a picture; index-two is a slug")
+          "a name with a leading underscore or a tilde is a picture; index-two is a slug")
 
 
 def test_blog_media() -> None:
@@ -4878,32 +4878,6 @@ def test_blog_html() -> None:
           and BL.url_problem("mailto:a@b.c", picture=False) is None and BL.url_problem("mailto:a@b.c", picture=True) is not None
           and BL.url_problem("C:/x", picture=False) is not None and BL.url_problem("vbscript:x", picture=False) is not None,
           "url_problem: https or relative pictures; http, https, mailto or relative links; any other scheme is refused")
-
-
-def test_blog_editor_config() -> None:
-    section("blog: the editor's configuration keeps the settings its safety rests on")
-    cfg = (REPO / "website/public/admin/config.yml").read_text(encoding="utf-8")
-    text = "\n".join(ln for ln in cfg.splitlines() if not ln.lstrip().startswith("#"))
-    check(re.search(r"(?m)^backend:\n  name: github\n  repo: cagancaliskan/psyche\n  branch: main$", text) is not None,
-          "the backend is GitHub, this repository, branch main")
-    check(re.search(r"(?m)^  auth_methods: \[token\]$", text) is not None, "sign-in is by access token only")
-    check(re.search(r"(?m)^publish_mode:\n  type: editorial_workflow\n  direct_publish: false$", text) is not None,
-          "every save goes to a branch and a pull request, with no direct publish")
-    collections = re.findall(r"(?m)^  - name: (\S+)$", text)
-    check(collections == ["posts"] and len(re.findall(r"(?m)^    publish: false$", text)) == len(collections)
-          and re.search(r"(?m)^    publish: true", text) is None,
-          f"every collection hides the publish control: {collections}")
-    m = re.search(r"(?m)^    slug:\n(?:      .*\n)*?      pattern: \['([^']*)'", text + "\n")
-    check(m is not None, "the collection's slug has a pattern")
-    if m:
-        rx = re.compile(m.group(1))
-        refused = [s for s in BL.reserved_slugs() + ("a--b", "Ab", "-a", "a-", "a_b", "x" * 81, "") if rx.match(s)]
-        passed = [s for s in ("why-psyche-keeps-a-blog", "x" * 80, "index-two", "dist-notes", "a1") if not rx.match(s)]
-        check(not refused and not passed,
-              f"the editor's slug pattern refuses what staging refuses: let through {refused}, refused {passed}")
-    title = re.search(r"(?m)^      - name: title\n(?:        .*\n)*?        pattern: \['([^']*)'", text + "\n")
-    check(title is not None and not re.match(title.group(1), "A <b> title") and re.match(title.group(1), "A title & more"),
-          "the editor's title field refuses < and >, as staging does")
 
 
 def blog_post(slug: str, title: str, day: str, desc: str, *, updated: str = None, extra: str = "",
@@ -5250,7 +5224,6 @@ def main() -> int:
         test_blog_parser()
         test_blog_media()
         test_blog_html()
-        test_blog_editor_config()
         test_blog_order()
         test_blog_tree(tmp)
         test_blog_stage(tmp)

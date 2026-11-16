@@ -47,7 +47,6 @@ reads a count, a date or a status. It never types one.
 | `/blog/` | `src/pages/blog/index.astro` | The blog's index: every published post, newest first |
 | `/blog/<slug>/` | `docs/blog/<slug>/index.md` | A post, staged into `src/content/docs/blog/` with its images |
 | `/blog.xml` | `src/pages/blog.xml.ts` | Atom feed of the blog |
-| `/admin/` | `public/admin/` | The blog's editor (Sveltia CMS, loaded pinned from unpkg); not a page of the site |
 | every other route | `docs/publish.json` | A governed Markdown document, staged into `src/content/docs/` |
 
 - Folders: `public/` (icons, `og.png`, manifest, `robots.txt`), `scripts/` (checks and drawing tools),
@@ -63,8 +62,7 @@ reads a count, a date or a status. It never types one.
   GitHub redirects the project address the site used before, `cagancaliskan.github.io/psyche/`.
 - The address and the base are defined in `src/lib/seo.ts` (`ORIGIN`, `BASE`). The base is also written
   in `scripts/check-budget.mjs`, `scripts/check-a11y.mjs`, `public/site.webmanifest`,
-  `public/robots.txt`, `public/admin/index.html` (the icon), `public/admin/config.yml` (the logo) and
-  `docs/publish.json` (`site_base`). The address is also written in `public/admin/config.yml`,
+  `public/robots.txt` and `docs/publish.json` (`site_base`). The address is also written in
   `.github/workflows/links.yml`, the issue templates, `CITATION.cff`, `SECURITY.md`, the root
   `README.md` and the governed pages that link to the site, and it
   is printed on the social card (`URL_TEXT` in `tools/publish/og.py`; run `npm run og` and commit the
@@ -153,23 +151,19 @@ that does otherwise: the drawings stay valid and the labels no longer fit. It in
   (D-034). Feed ids are tag URIs built from a host, the year and a path, so they are the same on every
   build. They are made from the address the feeds began at (`TAG_SITE` in `src/lib/feed.ts`), not from
   the site's current one, so they did not change when the site moved to its own domain.
-- **Blog.** A post is a folder of `docs/blog/` (the format and the two ways to publish are in
+- **Blog.** A post is a folder of `docs/blog/` (the format and how to publish are in
   [`docs/blog/README.md`](../docs/blog/README.md)). `tools/publish/blog.py` reads each one from the
   commit being staged, holds its front matter to a strict allowlist (title, day, a description of 120
   to 160 characters, tags from one list, author, revision day, draft) and its folder to images only,
   refuses an SVG that could run code, and passes the post through the same guard as a docs page.
+  A post is text and pictures only, which is why the guard allows a short list of HTML elements and
+  refuses an SVG that could run code: anything that runs on the site is site code, and site code is
+  reviewed in a pull request.
   `stage.py` writes it to `src/content/docs/blog/<slug>/` with its images and with `prev` and `next`
   set to the neighbouring posts, and writes the published posts, newest first, to
   `src/data/blog.json`, which the index, the landing page's latest posts and `src/pages/blog.xml.ts`
   (through `src/lib/blog.ts`) read. A draft is never staged. The feed is dated by the posts' own days.
   Each post's head carries its days, author and tags and a BlogPosting (`src/lib/seo.ts`).
-- **Editor.** `public/admin/` holds the editor's page and its configuration. It never writes to
-  `main`: every save is a branch `cms/posts/<slug>` and a pull request, and it shows no publish
-  control, so a post is published by merging that pull request on GitHub once the required checks
-  pass. Its page is noindex, sends no referrer, carries a content security policy whose only script
-  source is the pinned version of the editor, and loads that version's one script with an integrity
-  hash; `scripts/check-seo.mjs` fails the build if any of that goes, and the accessibility,
-  budget and sitemap checks leave the editor out, since it is not a page of the site.
 - **Dates.** The sitemap's `<lastmod>` and the footer's "Last updated" are the date of the last commit
   that touched the files a page is made from (`scripts/sitemap-lastmod.mjs`): a docs page's source, or a
   hand-written page's file, imports and data. With no history, or a shallow clone, no date is written;
@@ -394,11 +388,7 @@ head; for the progress feed, not Atom 1.0, an `updated` other than the newest ev
 other than `CITATION.cff`'s, or entries that are not one per plan event, newest first; for the blog's,
 not Atom 1.0, an `updated` other than the latest day a post was published or revised, or entries that
 are not one per built post, newest first. A blog post must carry its `article:` tags and one
-BlogPosting that matches its head; no other page but the landing page carries structured data. The
-editor (`dist/admin/`) is left out of the page rules and must be noindex, send no referrer, and carry
-one content security policy (`default-src`, `object-src`, `base-uri` and `form-action` set to
-`'none'`, and a `script-src` that is exactly the pinned editor path) and one script of that same
-version with an integrity hash.
+BlogPosting that matches its head; no other page but the landing page carries structured data.
 
 ### Accessibility check
 

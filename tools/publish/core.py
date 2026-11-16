@@ -529,10 +529,10 @@ DESCRIPTION_MIN = 120
 DESCRIPTION_MAX = 160
 RESERVED_WIKI = {"home", "_sidebar", "_footer"}
 # Site routes that belong to something other than a manifest page: the blog (its index at blog/, and
-# each post at blog/<slug>/, staged by stage.py from docs/blog/) and the blog's editor (admin/, copied
-# from website/public/admin/). A manifest page at one of them, or below one, would be staged to the same
-# place as a post or shadow the editor, and which one the build kept would be up to the filesystem and
-# Astro, so the manifest refuses it.
+# each post at blog/<slug>/, staged by stage.py from docs/blog/), and admin/, where the blog's editor
+# was served until it was removed: the address stays reserved so that no page takes its place. A
+# manifest page at blog/, or below it, would be staged to the same place as a post, and which one the
+# build kept would be up to the filesystem and Astro, so the manifest refuses both roots.
 RESERVED_SLUG_ROOTS = ("blog", "admin")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*$")
 WIKI_RE = re.compile(r"^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$")
@@ -630,7 +630,7 @@ def manifest_problems(m: object) -> List[str]:
                 out.append(f"{pw}.slug must be lowercase words joined by '-' and '/'")
             elif slug.split("/")[0] in RESERVED_SLUG_ROOTS:
                 out.append(f"{pw}.slug {slug!r} is in the site route {slug.split('/')[0]}/, which is reserved "
-                           f"(the blog's index and posts, the blog's editor)")
+                           f"(the blog's index and posts, and admin/, where the removed editor was served)")
             if not (isinstance(wiki, str) and WIKI_RE.match(wiki)):
                 out.append(f"{pw}.wiki must be letters and digits joined by '-'")
             elif wiki.casefold() in RESERVED_WIKI:

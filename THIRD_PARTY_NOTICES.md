@@ -235,12 +235,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
-## 4. The blog's editor
-
-The blog's editor at `/admin/` (`website/public/admin/`) is Sveltia CMS
-(<https://github.com/sveltia/sveltia-cms>), by Kohei Yoshino, under the MIT licence. It is neither
-installed nor copied: the page loads one version-pinned file of the `@sveltia/cms` npm package from
-unpkg, with an integrity hash, in the browser of the person who signs in, and that package loads the
-rest of its own files and its fonts. None of it is bundled into the site, and it remains under the
-licence it ships with.

@@ -14,8 +14,8 @@ Layout. Under docs/blog/ only README.md may stand directly, and every other entr
 named like a slug (lower-case words joined by single hyphens, at most 80 characters). A post
 folder holds index.md and media files, nothing else and no subfolder. A media file has the
 extension png, jpg, jpeg, webp, avif, gif or svg (in any case), a name of letters, digits, dot,
-underscore, tilde and hyphen that starts with a letter, digit, underscore or tilde (the CMS
-slugifies an upload's name and may keep those), and at most 4 MiB. The folder name `index` is
+underscore, tilde and hyphen that starts with a letter, digit, underscore or tilde (so a file such
+as _dsc1234.jpg keeps the name a camera gave it), and at most 4 MiB. The folder name `index` is
 reserved: it would collide with the blog's own index route. So are build, dist and venv, the
 directory names the guard skips (reserved_slugs): a post there would pass every rule here and
 then be refused when staged. A slug and a name are matched whole, so a trailing line break is no
@@ -25,8 +25,8 @@ file would otherwise be staged as, or silently left out of, the site.
 
 Front matter. The file is UTF-8 without a byte-order mark. The block between the first line
 `---` and the next line `---` is read by a parser of its own, because the standard library has
-no YAML reader and a library is not allowed here. The parser accepts exactly the shapes that the
-CMS writes and a person is likely to write, and refuses everything else with the line number, so
+no YAML reader and a library is not allowed here. The parser accepts exactly the shapes that a
+person is likely to write, and refuses everything else with the line number, so
 a post never means two things to two readers:
 
     key: "double quoted"      the escapes \\" \\\\ \\/ \\n \\t and \\uXXXX
@@ -64,7 +64,7 @@ image without alt text: a Markdown image whose alt is empty or an <img> tag with
 code, because the alt is one sentence saying what the picture shows. An alt made only of spaces,
 character references or invisible characters counts as empty.
 
-Raw HTML. A post becomes a page of the site's own origin, which is also the CMS's origin, and the
+Raw HTML. A post becomes a page of the site's own origin, and the
 Markdown renderer passes raw HTML through as written. Outside fenced and indented code (code only
 where every reader agrees it is), html_problem lets a post hold markup only as the elements and
 attributes of HTML_ALLOWED, a link only to an http, https or mailto address or a relative one, an
@@ -77,22 +77,22 @@ and a misreading would be a way through, so HTML source belongs in a fenced code
 link and image destinations are core.rewrite_links's to check: it refuses every scheme but http,
 https and mailto when the post is staged.
 
-SVG pictures are served from that origin too, and the CMS keeps its access token in the browser's
-local storage. An SVG that could run a script there would be a way to that token, so
-svg_problems refuses an SVG with a script, event attribute, foreignObject, iframe, embed, object,
-handler or listener element, a javascript: URL, a DOCTYPE or ENTITY declaration, any processing
-instruction (<?xml-stylesheet?> and so XSLT; the XML declaration is not one), an XML declaration
-of an encoding other than UTF-8, an element or attribute of the XSLT namespace, any other element
-outside the SVG namespace (an XHTML element, or the RDF metadata a drawing program writes), an
-attribute of a namespace other than XLink, an xml: attribute other than xml:lang and xml:space
-(xml:base would move where its links point), a
-root that is not an svg element of the SVG namespace, an animation that sets an href, a src or an
-event attribute, a href, xlink:href or src that is not a #fragment or a data:image/ URL of a
-raster format, or CSS (a <style> element, a style attribute or any attribute value) with
-@import, image-set(), expression() or a url() that is not a #fragment or such a data URL. Names
-are read with namespaces, so a prefix hides nothing, and CSS is read after its comments and
-escapes are undone. A raster picture is not parsed, but raster_problem holds its first bytes to
-the format its extension names, so an SVG or an HTML file cannot pass as a PNG.
+SVG pictures are served from that origin too. A post is text and pictures, never code: anything
+that runs on the site is site code, reviewed in a pull request. An SVG that could run a script
+would be a way around that review, so svg_problems refuses an SVG with a script, event attribute,
+foreignObject, iframe, embed, object, handler or listener element, a javascript: URL, a DOCTYPE or
+ENTITY declaration, any processing instruction (<?xml-stylesheet?> and so XSLT; the XML
+declaration is not one), an XML declaration of an encoding other than UTF-8, an element or
+attribute of the XSLT namespace, any other element outside the SVG namespace (an XHTML element, or
+the RDF metadata a drawing program writes), an attribute of a namespace other than XLink, an xml:
+attribute other than xml:lang and xml:space (xml:base would move where its links point), a root
+that is not an svg element of the SVG namespace, an animation that sets an href, a src or an event
+attribute, a href, xlink:href or src that is not a #fragment or a data:image/ URL of a raster
+format, or CSS (a <style> element, a style attribute or any attribute value) with @import,
+image-set(), expression() or a url() that is not a #fragment or such a data URL. Names are read
+with namespaces, so a prefix hides nothing, and CSS is read after its comments and escapes are
+undone. A raster picture is not parsed, but raster_problem holds its first bytes to the format its
+extension names, so an SVG or an HTML file cannot pass as a PNG.
 
 Order. Newest first: date descending, then `updated` descending (a post without one last), then
 slug ascending. Each post's `prev` is the next older one and its `next` the next newer one.
@@ -122,8 +122,8 @@ BLOG_DIR = "docs/blog"
 README_NAME = "README.md"
 INDEX_NAME = "index.md"
 
-# The topics a post may carry. The CMS configuration lists the same values, and a test holds the
-# two lists equal; this is the one place in code that names them.
+# The topics a post may carry. TAG_LABELS in website/src/lib/blog.ts lists the same values with the
+# words a reader sees, and a test (website/src/lib/blog.test.ts) holds the two lists equal.
 TAGS = ("project", "substrate", "cognitive-maps", "methods", "engineering", "reading", "site")
 MAX_TAGS = 4
 
@@ -1084,7 +1084,7 @@ def discover(root: Path, sha: str, *, manifest: dict, ledger: dict, author: str)
                 problems = svg_problems(data)
                 if problems:
                     raise core.PublishError(f"{rel}: the SVG {'; it '.join(problems)}; the site "
-                                            f"serves it from the same origin as the CMS")
+                                            f"serves it from its own origin, where a script would run")
             else:
                 why = raster_problem(name, data)
                 if why:

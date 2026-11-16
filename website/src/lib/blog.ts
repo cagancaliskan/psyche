@@ -55,8 +55,7 @@ export const BLOG_SINCE = '2026-11-04';
 
 /**
  * The tags a post may carry, with the words a reader sees. The same list is tools/publish/blog.py TAGS,
- * which refuses any other tag, and the options of the editor's tag field (public/admin/config.yml);
- * blog.test.ts holds the three equal.
+ * which refuses any other tag; blog.test.ts holds the two equal.
  */
 export const TAG_LABELS: Readonly<Record<string, string>> = {
   project: 'Project',
