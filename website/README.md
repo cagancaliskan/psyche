@@ -455,11 +455,11 @@ document, the page list's field with words that match no page (Escape clears the
 documentation's home, its filter with words typed; on `/roadmap/` at phone width, the "Pages" list
 (Escape closes it and returns focus to "Pages"); on `/roadmap/`, a gate chosen; on `/battery/`, the
 walk-through stepped; on `/status/`, the designed bricks shown; on a post with designed figures, a figure
-played; on `what-were-building/` and on the home (the film), at phone width, the site's menu (it must
-hold the four links, take focus to the first and hold the theme switch, on the film no switch; Escape
-closes it, focus returns to its button and the page is left as it was); on `about/`, at desktop width,
-the header's theme switch pressed (the page is audited in the other theme, then the switch is pressed
-again; the run fails if the theme does not change and stay chosen or the switch's spoken name does not
+played; on `what-were-building/`, on `research/gates/` and on the home (the film), at phone width, the
+site's menu (it must hold the four links, take focus to the first and hold the theme switch, on the film
+no switch; Escape closes it, focus returns to its button and the page is left as it was); on `about/`
+and on `research/gates/`, at desktop width, the header's theme switch pressed (the page is audited in
+the other theme, then the switch is pressed again; the run fails if the theme does not change and stay chosen or the switch's spoken name does not
 say what it will do). It exits 1 on a serious or critical
 violation and on anything it cannot audit (a page that does not answer 200, a state that will not open,
 a run where axe tested fewer than 15 rules, a state whose page is missing). Lesser findings, and rules axe cannot decide, are listed

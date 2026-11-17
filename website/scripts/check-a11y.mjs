@@ -2,9 +2,9 @@
 // tags wcag2a, wcag2aa, wcag21a, wcag21aa and wcag22aa), and over the interface states a reader opens
 // (on a document: the documentation's page list filtered to nothing; on a page of the documentation: its
 // "Pages" list open on a phone, the timeline with a gate chosen, the walk-through stepped, the status
-// page's designed bricks shown; on a front page and on the film: the site's phone menu; on a front page:
-// the theme switch pressed; on a post with designed figures: a figure after its control is used; on the
-// documentation's home: its filter with words typed). Exits 1 when any serious
+// page's designed bricks shown; on a front page, on a document and on the film: the site's phone menu; on
+// a front page and on a document: the theme switch pressed; on a post with designed figures: a figure
+// after its control is used; on the documentation's home: its filter with words typed). Exits 1 when any serious
 // or critical violation is found, or when a page cannot be audited at all; moderate and minor ones are
 // listed but never fail the run, and neither does what axe cannot decide (its "incomplete" results:
 // today only text contrast over gradients, pseudo-elements and images, which need a human look).
@@ -178,6 +178,30 @@ function siteMenu(name, page, themeSwitch) {
     },
   };
 }
+// The theme switch of the page kit's header, as a state: a drawn icon whose spoken name says what it
+// will do. Pressed, it must switch the theme, keep the choice ('psyche-theme') and change its name; the
+// page is audited in the theme it switched to, then pressed again, and must switch back.
+function themeSwitched(name, page) {
+  const button = '.k-head button[data-k-theme]';
+  return {
+    name,
+    page,
+    viewports: ['desktop'],
+    async open(p) {
+      await p.waitForSelector(button, { visible: true, timeout: 20000 });
+      const before = await themeState(p, button);
+      await p.click(button);
+      await wait(400);
+      expectSwitched(before, await themeState(p, button));
+    },
+    async close(p) {
+      const now = await themeState(p, button);
+      await p.click(button);
+      await wait(400);
+      expectSwitched(now, await themeState(p, button));
+    },
+  };
+}
 const STATES = [
   {
     // The documentation's page list on a document, with words typed into its field that match no page:
@@ -212,30 +236,12 @@ const STATES = [
   // switch (the film is dark only).
   siteMenu('site menu open', 'what-were-building/', true),
   siteMenu('site menu open on the film', '', false),
-  {
-    // The theme switch of the front pages' header: a drawn icon whose spoken name says what it will
-    // do. Pressed, it must switch the theme, keep the choice ('psyche-theme') and change its name;
-    // the page is audited in the theme it switched to, then pressed again, and must switch back.
-    name: 'theme switched',
-    page: 'about/',
-    viewports: ['desktop'],
-    async open(page) {
-      const button = '.k-head button[data-k-theme]';
-      await page.waitForSelector(button, { visible: true, timeout: 20000 });
-      const before = await themeState(page, button);
-      await page.click(button);
-      await wait(400);
-      const after = await themeState(page, button);
-      expectSwitched(before, after);
-    },
-    async close(page) {
-      const button = '.k-head button[data-k-theme]';
-      const now = await themeState(page, button);
-      await page.click(button);
-      await wait(400);
-      expectSwitched(now, await themeState(page, button));
-    },
-  },
+  // A document's phone menu is the same list as a front page's, beside the documentation's own "Pages".
+  siteMenu('site menu open on a document', STATE_PAGE, true),
+  // The header's theme switch, on a front page and on a document (the documentation's frame is on the
+  // same page kit, so its header is the same).
+  themeSwitched('theme switched', 'about/'),
+  themeSwitched('theme switched on a document', STATE_PAGE),
   {
     // The documentation's home (/developers/): its filter, which the server writes hidden and the
     // documentation script shows, with a word typed. Audited filtered: the count's words must change from
