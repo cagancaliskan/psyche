@@ -122,6 +122,8 @@ const BASE = '/';
 // page of the frame too, about 640 bytes of JavaScript and 310 of CSS on each document, which took them
 // over DOC_BUDGET; the front pages and the posts were measured and reset with them in the same build.
 // The home's film was measured and reset too (its header's styles are in its own film.css).
+// The same files compress to as much as 200 B more in the CI build than on a Mac, so a line that only
+// just holds locally can fail there: measure against the CI figures when a line is tight.
 const DOC_BUDGET = { js: 35700, css: 15000 }; // 34745, 14612 on every document
 const DEFAULT_BUDGET = DOC_BUDGET;
 const PAGE_BUDGETS = {
