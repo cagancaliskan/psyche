@@ -296,7 +296,7 @@ without script the page list stands once above the text. The documentation's scr
 `src/kit/docs/docs.js`, only adds behaviour to that markup: it shows the "Search pages" field and the
 home's filter (both written hidden, since they work only with script) and filters the items by their
 `data-k-text`; "/" puts focus in the field and Escape clears it; on a phone it folds the list behind
-"Pages", which Escape closes; it marks the section being read in "On this page"; it gives a code block a
+"Pages", which opens over the text without moving it and which Escape closes; it marks the section being read in "On this page"; it gives a code block a
 tab stop only while it scrolls; and it takes role, name and tab stop off a table's or a diagram's scroll
 box while its content fits. It writes no link, item or text of the list. `scripts/devdocs-hooks.test.mjs`
 fails when `docs.css` or `docs.js` uses a documentation class or `data-k-*` hook that the frame, its parts
@@ -453,7 +453,8 @@ dark"; any other page that fixes its theme fails the run. It also opens what a r
 audits it and closes it again where it closes, failing if it does not close as a reader expects: on a
 document, the page list's field with words that match no page (Escape clears them); on the
 documentation's home, its filter with words typed; on `/roadmap/` at phone width, the "Pages" list
-(Escape closes it and returns focus to "Pages"); on `/roadmap/`, a gate chosen; on `/battery/`, the
+(opened with the page scrolled down, it must not move the page or its text; Escape closes it and
+returns focus to "Pages"); on `/roadmap/`, a gate chosen; on `/battery/`, the
 walk-through stepped; on `/status/`, the designed bricks shown; on a post with designed figures, a figure
 played; on `what-were-building/`, on `research/gates/` and on the home (the film), at phone width, the
 site's menu (it must hold the four links, take focus to the first and hold the theme switch, on the film

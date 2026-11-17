@@ -279,18 +279,26 @@ const STATES = [
   },
   {
     // The documentation's "Pages" list on a phone, on a page of the list (the timeline): the server writes
-    // the list whole; the documentation script folds it behind "Pages". Audited open; then Escape must close
-    // it, mark the button collapsed and return focus to the button.
+    // the list whole; the documentation script folds it behind "Pages". Opened with the page read some way
+    // down, it must lie over the text and take no room: the page keeps its scroll position and its text
+    // does not move. Audited open; then Escape must close it, mark the button collapsed and return focus to
+    // the button.
     name: 'documentation pages open',
     page: 'roadmap/',
     viewports: ['phone'],
     async open(page) {
       await page.waitForSelector('button[data-k-docmenu]', { visible: true, timeout: 20000 });
+      const where = () => page.evaluate(() => ({ y: Math.round(window.scrollY), top: Math.round(document.querySelector('main').getBoundingClientRect().top) }));
+      await page.evaluate(() => window.scrollTo(0, 900));
+      await wait(200);
+      const before = await where();
       await page.click('button[data-k-docmenu]');
       await page.waitForSelector('#k-docnav.is-open', { timeout: 10000 });
       const expanded = await page.$eval('button[data-k-docmenu]', (b) => b.getAttribute('aria-expanded'));
       if (expanded !== 'true') throw new Error(`the list opened but its button says aria-expanded="${expanded}"`);
       await wait(200);
+      const after = await where();
+      if (after.y !== before.y || after.top !== before.top) throw new Error(`opening the list moved the page: scrolled ${before.y} then ${after.y}, its text at ${before.top} then ${after.top}`);
     },
     async close(page) {
       await page.keyboard.press('Escape');

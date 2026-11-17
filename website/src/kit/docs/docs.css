@@ -267,11 +267,16 @@
   /* without script the whole list stands once above the text, in the flow of the page */
   .k-docside { margin: 0 0 16px; }
   .k-docnav { position: static; max-height: none; overflow-y: visible; padding: 4px 0 24px; margin: 0; }
-  /* with script the navigation folds behind "Pages", which stays just under the header; it opens in place,
-     capped to the screen */
+  /* with script the navigation folds behind "Pages", which stays just under the header; it opens over the
+     text from that line, capped to the screen, and takes no room in the page: the text under it does not
+     move and the page keeps its scroll position */
   .k-js .k-docside { position: sticky; top: var(--head-h); z-index: 30; margin: 0 calc(-1 * var(--gutter)) 16px; padding: 0 var(--gutter); background: var(--field); }
   .k-js .k-docmenu { display: inline-block; margin: 0 0 0 -2px; font-size: 16px; color: var(--read); }
-  .k-js .k-docnav { max-height: calc(100vh - var(--head-h) - 52px); overflow-y: auto; }
+  .k-js .k-docnav {
+    position: absolute; top: 100%; left: 0; right: 0; padding: 4px var(--gutter) 24px; background: var(--field);
+    border-bottom: 1px solid var(--rule); /* where the list ends and the text it lies over goes on */
+    max-height: calc(100vh - var(--head-h) - 52px); overflow-y: auto;
+  }
   .k-js .k-docnav:not(.is-open) { display: none; }
   .k-devhome { max-width: none; }
 }
