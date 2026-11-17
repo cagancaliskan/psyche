@@ -151,8 +151,9 @@ is built test-first and kept as a citable artifact.
 - **Later stages** build toward the long-term aim on the same discipline; they are not specified
   publicly yet.
 
-**AGI is the project's long-term aim (D-033).** Name it freely, as an aim. Never write that
-Psyche or any current component is or achieves AGI.
+**AGI is the project's long-term aim (D-033).** Name it freely, as an aim. Do not write that
+Psyche or any current component is or achieves AGI until that is shown, with evidence the project
+can show (D-037).
 
 **Program state** is a third axis, orthogonal to the build axis (`bricks[*].status`) and the
 meaning axis (`meaning_bar`). Read it from `program` in `tools/ledger.json`: it says which line
@@ -227,10 +228,9 @@ assertion total; that is why `tools/ledger_check.py` exists and why it runs in C
 These are the disciplines the project has already paid for in bugs.
 
 1. **Never overclaim.** Psyche, or any of its components, is not called "a mind,"
-   "conscious," "sentient," or "a validated cognitive model" — not in code, comments,
+   "conscious," "sentient," "a validated cognitive model" or AGI — not in code, comments,
    docstrings, docs, or commit messages — until that is shown, with evidence the project can
-   show (D-037). No text says that it is or achieves AGI; AGI may be named as the project's
-   long-term aim (D-033). A claim about energy or ability that is backed by a measurement is
+   show (D-037). AGI may be named as the project's long-term aim at any time (D-033). A claim about energy or ability that is backed by a measurement is
    allowed, stated with what was measured and under what conditions; a claim with no measurement
    behind it is written as an aim (D-037). Biological *inspiration* may be described; biological
    *fidelity* may not be asserted, and cognitive achievement may not be asserted without a

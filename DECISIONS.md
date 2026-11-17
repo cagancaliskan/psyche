@@ -2141,7 +2141,8 @@ decided
 The site's front pages (home, What we're building, The five experiments, About, the blog) were
 rebuilt for a company audience. Their words outran rule 1 of the project rules as written: rule 1
 said that Psyche and its parts are never called a mind, conscious, sentient or a validated
-cognitive model, that energy appears only as an analytic estimate, and the tone rule barred
+cognitive model, that no text says they are or achieve AGI, that energy appears only as an
+analytic estimate, and the tone rule barred
 marketing language in all documents. The public description still called Psyche "an open research
 project". A rule that says "never" also blocks the day the work earns the word, and it blocks a
 claim backed by a measurement in the same way as one with nothing behind it.
@@ -2169,11 +2170,11 @@ The one sentence that describes Psyche wherever the repository said "open resear
 
 What follows from it:
 
-- Rule 1's "never" for a mind, conscious, sentient and a validated cognitive model becomes "not
-  until shown, with evidence the project can show". This supersedes D-033 item 3 in that respect;
-  D-033 stays as written because this file is append-only. The AGI rule of D-033 is unchanged:
-  AGI is named freely as the aim, and no text says that Psyche or any current component is or
-  achieves it.
+- Rule 1's "never" for a mind, conscious, sentient, a validated cognitive model and AGI becomes
+  "not until shown, with evidence the project can show". No word stays on a permanent list: what
+  the work proves, it may say. AGI is still named freely as the aim (D-033, item 1). This
+  supersedes D-033 items 2 and 3 in that respect; D-033 stays as written because this file is
+  append-only.
 - What does not change: every number still traces to a captured source; no text says that a
   current component has an ability or a measured property it lacks; no priority claim before
   release (D-034); "the brain does it this way" stays out; a planned result is never written as

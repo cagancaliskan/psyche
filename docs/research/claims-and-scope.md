@@ -42,8 +42,7 @@ Each line below applies to every public text about the cognitive-map line.
 - Not until shown, with evidence the project can show ([D-037](../../DECISIONS.md)): do not
   say the model "understands" or "thinks", or use "consciousness" about it.
 - Not until shown, with evidence the project can show ([D-037](../../DECISIONS.md)): do not
-  call it a mind, sentient, aware or a validated cognitive model.
-- Never: call it general intelligence ([D-033](../../DECISIONS.md)).
+  call it a mind, sentient, aware, general intelligence or a validated cognitive model.
 - Never: "the brain does it this way". Say "brain-inspired" or "biologically plausible".
 - Never: a general claim that spiking networks are more efficient than conventional networks.
 - Never: a priority claim, such as "the first" or "first model to", before release. A decided

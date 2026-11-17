@@ -152,7 +152,7 @@ actively rewards grandiosity. The rule that keeps it safe is already written:
 > validated cognitive model."
 
 (Rule 1 as it read when this was written. D-037 later changed "never" to "not until shown, with
-evidence the project can show" for every term in it except AGI.)
+evidence the project can show" for every term in it.)
 
 **Keep it. Forever.** The indicator list is how the project makes real progress toward the
 question while never once needing to break that rule. "The architecture satisfies GWT-2 and AE-1,
