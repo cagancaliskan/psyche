@@ -1,6 +1,7 @@
 // The <lastmod> of each sitemap entry, from git: the date of the last commit that touched the files a
 // page is made from. Used by astro.config.mjs as the `serialize` option of @astrojs/sitemap, and by the
-// footer of every page (src/lib/lastUpdated.ts) for its "Last updated", so the two always agree.
+// edit line of the documentation's pages (src/lib/lastUpdated.ts) for its "Last updated", so the two
+// always agree.
 //
 //   a docs page            its governed source, as docs/publish.json lists it (docs/research/gates.md)
 //   a blog post            its folder under docs/blog/, the post and its images (docs/blog/<slug>):

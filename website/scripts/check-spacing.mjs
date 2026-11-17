@@ -40,11 +40,11 @@ function main(html) {
   return (m ? m[0] : html).replace(/<(script|style|svg)\b[\s\S]*?<\/\1>/g, '');
 }
 
-// Every page of dist/: each folder with an index.html (the search index and the bundles are not pages).
+// Every page of dist/: each folder with an index.html (the bundles are not pages).
 function allPages(dir = DIST, rel = '') {
   const found = existsSync(join(dir, 'index.html')) ? [`${rel}index.html`] : [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.isDirectory() && !['_astro', 'pagefind'].includes(entry.name)) found.push(...allPages(join(dir, entry.name), `${rel}${entry.name}/`));
+    if (entry.isDirectory() && entry.name !== '_astro') found.push(...allPages(join(dir, entry.name), `${rel}${entry.name}/`));
   }
   return found;
 }

@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { brotliDecompressSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { ADVANCE, ARMS, COVERED, DASHES, DESIGN, OUTPUT, UPM, buildFont, buildGlyphs, checksum, readWoff2, toWoff2, unionRects } from './make-lines-font.mjs';
@@ -124,9 +124,6 @@ test('it covers all of U+2500 to U+257F, the four triangles and the two arrows, 
 
 test('the mono stack puts the face right after the Martian Mono faces, ahead of every system face', () => {
   assert.match(KIT_CSS, /--mono:\s*"Martian Mono Variable",\s*"Martian Mono Fallback",\s*"Psyche Lines",\s*ui-monospace/);
-  // the stylesheet of the pages Starlight still renders, while it is there
-  const global = new URL('../src/styles/global.css', import.meta.url);
-  if (existsSync(global)) assert.match(readFileSync(global, 'utf8'), /--font-mono:\s*'Martian Mono Variable',\s*'Martian Mono Fallback',\s*'Psyche Lines',\s*ui-monospace/);
 });
 
 // ---- the grid ------------------------------------------------------------------------------------
@@ -162,7 +159,7 @@ test('a vertical line fills a code block\'s line, so the rails of a tree are unb
   assert.ok(yMax >= DESIGN.LINE_TOP, 'it reaches the top of a 1.75 em line');
   assert.ok(yMin <= DESIGN.LINE_BOTTOM, 'and its bottom');
   assert.deepEqual([yMin, yMax], [DESIGN.BOTTOM, DESIGN.TOP]);
-  // The line is 1.75 em, Starlight's --sl-line-height, which the code blocks use.
+  // The line is 1.75 em, the line height of the documentation's code blocks (src/kit/docs/docs.css).
   assert.equal(DESIGN.LINE_TOP - DESIGN.LINE_BOTTOM, 1750);
 });
 

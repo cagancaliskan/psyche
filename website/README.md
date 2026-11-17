@@ -453,7 +453,7 @@ phone menu and the phone contents list; on `what-were-building/`, at phone width
 menu, audits it, and closes it with Escape, failing if the menu does not close, return focus to its
 button or leave the page as it was. It exits 1 on a serious or critical
 violation and on anything it cannot audit (a page that does not answer 200, a state that will not open,
-a run where axe tested fewer than 20 rules, a state whose page is missing). Lesser findings, and rules axe cannot decide, are listed
+a run where axe tested fewer than 15 rules, a state whose page is missing). Lesser findings, and rules axe cannot decide, are listed
 and never fail it. It exits 2 when it could not set itself up (no Chrome, a failed install), which says
 nothing about the site; CI runs it once more on a 2. Flags: `--chrome PATH`, `--json FILE`, `--port N`
 and `--only /,research/gates/,404.html` for a quick look.

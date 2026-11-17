@@ -171,7 +171,7 @@ jobs:
 
       # tools/publish/stage.py stages the site build's input into two directories, both
       # gitignored: the pages into website/src/content/docs, and the plan, the public ledger
-      # figures, the sidebar and the stage record into website/src/data. A tracked copy in
+      # figures, the documentation list and the stage record into website/src/data. A tracked copy in
       # either would be a second, ungoverned source of the same text or the same figures
       # (website/src/data/ledger.public.json repeats numbers whose only source is
       # tools/ledger.json). .gitignore does not stop a forced add; this step does. No

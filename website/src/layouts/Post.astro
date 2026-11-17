@@ -144,21 +144,6 @@ const pageScript = scriptKey ? scripts[scriptKey] : undefined;
   /* long names in running text may break, so a phone never scrolls sideways */
   .post-read :not(pre) > code { overflow-wrap: anywhere; }
   .post-read img { height: auto; margin: 2em 0; }
-  /* The Markdown's headings carry an anchor link for the documentation's pages; a post's parts are
-     reached from the rail, so the link is not shown here (and leaves the tab order with it), in the
-     reading column and in a designed post's chapter headings alike. */
-  .post-body .sl-anchor-link { display: none; }
-  /* Code blocks: the documentation's code renderer draws them (the site's code colours, which follow
-     the theme), and the kit's .k-read pre sets their place, rule and type. Its copy button takes its
-     colours from the documentation's theme, which these pages do not load, so here it would be an
-     invisible control: it is not shown, as the post's page design has none. */
-  .post-body .expressive-code .copy { display: none; }
-  /* code may run wider than the text, to the right: the code renderer's frame runs wide, and the code
-     inside it fills the frame (a design's rule that widens the bare <pre> is for its own pages) */
-  @media (min-width: 1120px) {
-    .post-body .k-read .expressive-code { margin-right: -220px; }
-    .post-body .k-read .expressive-code pre { margin-right: 0; }
-  }
 
   /* ---------- The close ---------- */
   .post-end { margin-top: 120px; }

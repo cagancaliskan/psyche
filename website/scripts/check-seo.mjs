@@ -55,7 +55,7 @@ const DESCRIPTION = { min: 120, max: 160 };
 const FEED = { file: 'progress.xml', page: 'progress/', type: 'application/atom+xml' };
 const BLOG_FEED = { file: 'blog.xml', page: 'blog/' };
 const isPost = (route) => /^blog\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(route) && route !== 'blog/index';
-// Starlight writes `<title>` as the page's title, a bar and the site's title.
+// Every page's `<title>` is its title, a bar and the site's title (src/lib/head.ts).
 const TITLE_SUFFIX = ' | Psyche';
 
 const problems = [];
@@ -106,7 +106,7 @@ function pngSize(file) {
 function pages(dir = DIST, out = []) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
-    if (name === 'pagefind' || name === '_astro') continue;
+    if (name === '_astro') continue;
     if (statSync(p).isDirectory()) pages(p, out);
     else if (name.endsWith('.html')) out.push(p);
   }

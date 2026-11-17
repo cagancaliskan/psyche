@@ -1,13 +1,12 @@
 /**
- * The <head> of the pages that are not Starlight pages: the home page, What we're building, Experiments,
- * About, the blog's index, the blog's posts, the documentation's home (/developers/), the timeline, the
- * walk-through and the status page, and the 404 page. Starlight writes the head of every docs page
- * itself (with astro.config.mjs `head` and src/routeData.ts); these pages have no Starlight, so this
- * module writes the same entries: the ones Starlight wrote (title, canonical, sitemap link, SVG icon,
- * og:* and description), the ones astro.config.mjs gives every docs page (theme colour, icons, manifest,
- * the two feeds, the social card), then lib/seo.ts seoHead() for what differs by page (og:type,
- * twitter:title and twitter:description, noindex on the 404 page, the structured data, a post's article
- * tags). scripts/check-seo.mjs reads the built pages and holds them to exactly these rules.
+ * The <head> of every page of the site: the home page, What we're building, Experiments, About, the
+ * blog's index, the blog's posts, the documentation's home (/developers/), every document, the timeline,
+ * the walk-through and the status page, and the 404 page. It writes the title, canonical address,
+ * sitemap link, SVG icon, og:* and description, the entries that are the same on every page (theme
+ * colour, icons, manifest, the two feeds, the social card), then lib/seo.ts seoHead() for what differs
+ * by page (og:type, twitter:title and twitter:description, noindex on the 404 page, the structured
+ * data, a post's article tags). scripts/check-seo.mjs reads the built pages and holds them to exactly
+ * these rules.
  *
  * The values come from the modules that already define them (seo.ts, feed.ts, blog.ts, the social card's
  * own description in brand/psyche-social.json); nothing here restates one. Pure functions with no
@@ -104,7 +103,7 @@ export const PAGES = {
 export interface PageHeadInput extends PageFacts {
   /** A blog post's days, author and tags (articleFacts); given on a post and on no other page. */
   article?: ArticleFacts;
-  /** Astro.generator, written where Starlight writes it. */
+  /** Astro.generator, written after the description. */
   generator?: string;
 }
 
@@ -120,7 +119,7 @@ export function titleOf(route: string, title: string): string {
 
 /**
  * A post's article facts from its front matter, the author falling back to the blog's (src/data/blog.json
- * `author`), as src/routeData.ts does for the Starlight posts.
+ * `author`).
  */
 export function articleFacts(
   data: { date: string; updated?: string | null; author?: string; tags?: readonly string[] },
@@ -130,7 +129,7 @@ export function articleFacts(
 }
 
 /**
- * Every head entry of one page, in the order Starlight writes them. Throws, so the build stops, on what
+ * Every head entry of one page, in a fixed order. Throws, so the build stops, on what
  * check-seo would fail later or not see at all: a description out of length, a route with a slash at
  * either end, a post without its article facts, or article facts on a page that is not a post.
  */

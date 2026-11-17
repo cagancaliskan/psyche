@@ -284,7 +284,7 @@ test('pageHead refuses what check-seo would fail or never see', () => {
   assert.throws(() => pageHead({ ...PAGES.blog, article: POST_ARTICLE }), /blog post only/);
   assert.throws(() => pageHead({ ...PAGES.home, article: POST_ARTICLE }), /blog post only/);
   assert.throws(() => pageHead({ ...PAGES.notFound, article: POST_ARTICLE }), /blog post only/);
-  // the generator is written where Starlight writes it, when it is given
+  // the generator is written when it is given, and only then
   assert.deepEqual(metas(pageHead({ ...ok, generator: 'Astro v0' }), 'name', 'generator'), ['Astro v0']);
   assert.deepEqual(metas(pageHead(ok), 'name', 'generator'), []);
 });

@@ -18,12 +18,12 @@ import { fileURLToPath } from 'node:url';
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 
-// Every built page: each .html file outside the bundles and the search index.
+// Every built page: each .html file outside the bundles.
 function pages(dir = DIST, rel = '') {
   const found = [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
     if (entry.isDirectory()) {
-      if (!['_astro', 'pagefind'].includes(entry.name)) found.push(...pages(join(dir, entry.name), `${rel}${entry.name}/`));
+      if (entry.name !== '_astro') found.push(...pages(join(dir, entry.name), `${rel}${entry.name}/`));
     } else if (entry.name.endsWith('.html')) found.push(`${rel}${entry.name}`);
   }
   return found.sort();

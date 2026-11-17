@@ -78,7 +78,7 @@ jobs:
         working-directory: website
         run: npm ci
 
-      - name: Unit tests (plan, maze, battery, search-engine head, head builder, progress feed, sitemap dates, page chrome, search override, kit links, documentation list and hooks, post figures, table regions, a11y tool lock)
+      - name: Unit tests (plan, maze, battery, search-engine head, head builder, progress feed, sitemap dates, page chrome, kit links, documentation list and hooks, post figures, table regions, a11y tool lock)
         working-directory: website
         run: npm test
 
@@ -101,9 +101,8 @@ jobs:
       # three walls page, the progress feed, which carries the plan's text to feed readers, and the
       # blog (its index, its posts and its feed). Not included on purpose: the rest of
       # dist/substrate/ (the substrate's own pre-existing record, which uses some denylisted words in
-      # the substrate's sense), dist/pagefind/
-      # (the search index of every page) and dist/_astro/ (library bundles, whose code
-      # legitimately contains common words). The research sources and docs/PSYCHE.md are
+      # the substrate's sense) and dist/_astro/ (library bundles, whose code legitimately
+      # contains common words). The research sources and docs/PSYCHE.md are
       # disclosure-scanned by the governance workflow; docs/ARCHITECTURE.md and
       # docs/METHODOLOGY.md are deliberately not, and only the pull request leak check reads
       # changes to them.
@@ -141,11 +140,11 @@ jobs:
       # Accessibility of the built pages: website/scripts/check-a11y.mjs serves website/dist on a free
       # local port, drives the runner's Chrome and runs axe-core at WCAG 2.2 AA over every page of the
       # site (found in dist, the 404 page included) and over the interface states a reader opens (the
-      # search dialog with results, the phone menu, the phone contents list on a docs page; the site's
+      # documentation's page list filtered to nothing on a document, which Escape must clear; the site's
       # phone menu on a front page, which must also close again; the documentation home's filter, which
       # Escape must clear; the documentation's "Pages" list on a phone, which Escape must close; a gate
       # chosen on the timeline, the walk-through stepped, the status page's designed bricks opened and
-      # closed), light and dark, desktop and phone width. The theme of each load is set and checked, since the front pages ignore the system's
+      # closed), light and dark, desktop and phone width. The theme of each load is set and checked, since the pages ignore the system's
       # colour scheme; the home page, dark by design, is audited dark once per width. The step fails
       # on any serious or critical violation, and on a page or state it cannot audit; moderate and
       # minor ones are listed, and what axe cannot decide (text contrast over gradients,

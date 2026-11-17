@@ -1,7 +1,7 @@
 ---
 // The blog's posts, at /blog/<slug>/: each staged post of the `posts` collection (src/content.config.ts),
-// its Markdown rendered as it is, on the page kit (layouts/Post.astro). Starlight renders none of them:
-// its `docs` collection leaves blog/ out. A post with a page design of its own has its Markdown laid out
+// its Markdown rendered as it is, on the page kit (layouts/Post.astro). The documents' route
+// (src/pages/[...slug].astro) renders none of them: its `docs` collection leaves blog/ out. A post with a page design of its own has its Markdown laid out
 // in the design's reading columns, with its figures between them, while it is rendered
 // (scripts/post-figures.mjs); its words are the Markdown's.
 import { getCollection, render } from 'astro:content';

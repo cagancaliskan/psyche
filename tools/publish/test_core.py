@@ -640,10 +640,13 @@ def test_guard(tmp: Path) -> None:
         check(not has(core.manifest_problems(near), "is reserved"),
               f"the slug {slug!r}, which only begins with or holds the letters of a reserved route, is not refused")
     # every route a page of website/src/pages serves at the top of the site is reserved, so no manifest page
-    # can take it; developers/ is reserved ahead of its page, the documentation's home
+    # can take it; developers/ is reserved ahead of its page, the documentation's home. The documents' own
+    # route ([...slug].astro) serves the manifest's slugs, so it names no route of its own.
     pages_dir = REPO / "website" / "src" / "pages"
     served = sorted({f.stem if f.is_file() else f.name for f in pages_dir.iterdir()
-                     if (f.is_file() and f.suffix == ".astro" and f.stem != "index") or f.is_dir()})
+                     if not f.name.startswith("[")
+                     and ((f.is_file() and f.suffix == ".astro" and f.stem != "index") or f.is_dir())})
+    check((pages_dir / "[...slug].astro").is_file(), "the documents are served by the site's own route, [...slug].astro")
     check(len(served) >= 7 and all(r in core.RESERVED_SLUG_ROOTS for r in served),
           f"every hand-written top-level route of the site is reserved: {served}")
     check("developers" in core.RESERVED_SLUG_ROOTS and len(set(core.RESERVED_SLUG_ROOTS)) == len(core.RESERVED_SLUG_ROOTS)
@@ -3250,10 +3253,10 @@ def test_stage_diagrams(tmp: Path) -> None:
     check(rc == 1 and "event-handler" in err, "a committed drawing with an event handler is refused at staging")
 
 
-def test_stage_sidebar_labels() -> None:
-    section("stage: the hand-written pages' sidebar labels say what each page is, and are not a document's title")
-    custom = [(label, path) for label, path in stage.CUSTOM_PAGES if path] + [stage.BLOG_PAGE]
-    labels = [label for label, _ in stage.CUSTOM_PAGES] + [stage.BLOG_PAGE[0]]
+def test_stage_page_labels() -> None:
+    section("stage: the hand-written pages' labels say what each page is, and are not a document's title")
+    custom = list(stage.CUSTOM_PAGES) + [stage.BLOG_PAGE]
+    labels = [label for label, _ in custom]
     check(len({x.casefold() for x in labels}) == len(labels), "no two hand-written pages share a label")
 
     # the titles of the staged documents, as the stager takes them: the manifest's override or the first heading
@@ -3267,10 +3270,10 @@ def test_stage_sidebar_labels() -> None:
         low = label.casefold()
         clash = [t for t in titles if t.casefold() in low or low in t.casefold()]
         check(clash == [], f"the label {label!r} is not, and does not contain, a document title (found {clash})")
-    check(all(label.casefold() != "home" or not path for label, path in stage.CUSTOM_PAGES),
-          "only the home page is labelled Home")
+    check(all(path and label.casefold() != "home" for label, path in custom),
+          "no hand-written page of the list is the home page or is labelled Home")
 
-    # a page's own title is its sidebar label: the front matter of website/src/pages/<name>.astro says the same
+    # a page's own title is its label: the front matter of website/src/pages/<name>.astro says the same
     for label, path in custom:
         page_file = REPO / "website" / "src" / "pages" / (path.strip("/") + ".astro")
         if not page_file.is_file() and (label, path) == stage.BLOG_PAGE:
@@ -3280,7 +3283,7 @@ def test_stage_sidebar_labels() -> None:
         text = page_file.read_text(encoding="utf-8")
         found = re.search(r"^\s*title: '([^'\n]*)',?$", text, re.M)
         check(found is not None and found.group(1) == label,
-              f"{page_file.name} has the title {label!r} that its sidebar label shows")
+              f"{page_file.name} has the title {label!r} that its label in the list shows")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -4354,7 +4357,7 @@ def test_front_door(tmp: Path) -> None:
           "the anchor reader follows GitHub: lower case, punctuation dropped, a repeat numbered, code skipped")
 
 
-def sidebar_titles(manifest: dict) -> dict:
+def staged_titles(manifest: dict) -> dict:
     """slug -> title as the stager takes it: the manifest's override or the first heading."""
     titles = {}
     for page in core.manifest_pages(manifest):
@@ -4363,70 +4366,10 @@ def sidebar_titles(manifest: dict) -> dict:
     return titles
 
 
-def test_stage_sidebar() -> None:
-    section("sidebar: one first group, Start here, with the manifest's section of that title after Home")
-    manifest = core.load_manifest(REPO)
-    titles = sidebar_titles(manifest)
-    sidebar = stage.build_sidebar(manifest, titles)
-    labels = [g["label"] for g in sidebar]
-    start = next(s for s in manifest["sections"] if s["title"] == stage.START_GROUP)
-    others = [s["title"] for s in manifest["sections"] if s is not start]
-    check(labels == [stage.START_GROUP] + others and sum(x.casefold() == "start here" for x in labels) == 1,
-          f"the first group is Start here, the others follow in manifest order, and none repeats it: {labels}")
-    items = sidebar[0]["items"]
-    custom = [{"label": label, "link": "/" + path} for label, path in stage.CUSTOM_PAGES]
-    blog_item = {"label": "Blog", "link": "/blog/"}
-    docs = [{"label": titles[pg["slug"]], "slug": pg["slug"]} for pg in start["pages"]]
-    at = [d["slug"] for d in docs].index("progress") + 1
-    docs_with_blog = docs[:at] + [blog_item] + docs[at:]
-    check(items == custom[:1] + docs_with_blog + custom[1:] and items[0] == {"label": "Home", "link": "/"},
-          "Home first, then the manifest's Start here pages in manifest order with Blog right after progress, then the other hand-written pages")
-    check(len(docs) >= 4 and len({i["label"].casefold() for i in items}) == len(items),
-          "no two entries of the first group share a label")
-    in_groups = [i["slug"] for g in sidebar for i in g["items"] if "slug" in i]
-    check(in_groups == [pg["slug"] for pg in core.manifest_pages(manifest)],
-          "every published page is in the sidebar once, in manifest order")
-    check([i["link"] for g in sidebar for i in g["items"] if "link" in i]
-          == ["/" + path for _, path in stage.CUSTOM_PAGES[:1]] + ["/blog/"] + ["/" + path for _, path in stage.CUSTOM_PAGES[1:]],
-          "the hand-written pages and the Blog are in the sidebar once")
-    check(manifest["sections"][0]["title"] == stage.START_GROUP and stage.START_GROUP == "Start here",
-          "the manifest's first section is the Start here section")
-
-    pg = lambda n: {"src": f"docs/{n}.md", "slug": n, "wiki": n.capitalize()}  # noqa: E731
-    fx = {"sections": [{"title": "Alpha", "pages": [pg("a1"), pg("a2")]},
-                       {"title": "Start here", "pages": [pg("s1"), pg("s2")]},
-                       {"title": "Beta", "pages": [pg("b1")]}]}
-    fx_titles = {n: n.upper() for n in ("a1", "a2", "s1", "s2", "b1")}
-    got = stage.build_sidebar(fx, fx_titles)
-    check([g["label"] for g in got] == ["Start here", "Alpha", "Beta"]
-          and [i["label"] for i in got[0]["items"]][:4] == ["Home", "S1", "S2", "Blog"]
-          and [i["label"] for i in got[1]["items"]] == ["A1", "A2"],
-          "the section is moved to the front wherever the manifest lists it, its pages in their order")
-    none = stage.build_sidebar({"sections": [{"title": "Alpha", "pages": [pg("a1")]}]}, {"a1": "A1"})
-    check([g["label"] for g in none] == ["Start here", "Alpha"]
-          and none[0]["items"] == custom[:1] + [blog_item] + custom[1:],
-          "without such a section the first group is the hand-written pages and the Blog")
-    fx2 = {"sections": [{"title": "Start here", "pages": [pg("s1"), pg("progress"), pg("s2")]}]}
-    got2 = stage.build_sidebar(fx2, {"s1": "S1", "progress": "P", "s2": "S2"})
-    check([i["label"] for i in got2[0]["items"]][:5] == ["Home", "S1", "P", "Blog", "S2"],
-          "Blog stands right after the page whose slug is progress, wherever it is listed")
-    for odd in ("start here", "START HERE", "Start Here"):
-        try:
-            stage.build_sidebar({"sections": [{"title": odd, "pages": [pg("s1")]}]}, {"s1": "S1"})
-            check(False, f"a section titled {odd!r} is refused")
-        except core.PublishError as e:
-            check("differs from" in str(e), f"a section titled {odd!r} is refused: it would be a second group of that name")
-    m = copy.deepcopy(GUARD_MANIFEST)
-    m["sections"].append({"title": "FIXTURE", "pages": [dict(m["sections"][0]["pages"][0], src="docs/o2.md",
-                                                           slug="o2", wiki="O2", description=SECOND_DESCRIPTION)]})
-    check(has(core.manifest_problems(m), "is the title of another section too"),
-          "two sections with one title (in any case) are a manifest problem")
-
-
 def test_stage_docs_index() -> None:
-    section("docs.json: the documentation list, the sidebar's groups without Home and Blog")
+    section("docs.json: the documentation list, Start here first, without Home and Blog")
     manifest = core.load_manifest(REPO)
-    titles = sidebar_titles(manifest)
+    titles = staged_titles(manifest)
     index = stage.build_docs_index(manifest, titles)
     check(list(index) == ["groups"] and all(list(g) == ["title", "items"] for g in index["groups"]),
           "the list is one object with groups, each a title and its items")
@@ -4450,8 +4393,10 @@ def test_stage_docs_index() -> None:
     check(first[len(start["pages"]):] == [{"kind": "page", "route": r, "title": t} for t, r in stage.DOCS_PAGES]
           and [i["route"] for i in pages] == ["roadmap", "battery", "status"],
           "the hand-written pages close the first group: the timeline, the walk-through and the status page")
-    check(stage.DOCS_PAGES == [(t, p.strip("/")) for t, p in stage.CUSTOM_PAGES if p],
-          "the list's pages are the sidebar's hand-written pages but Home, with the same titles")
+    check(stage.DOCS_PAGES == [(t, p.strip("/")) for t, p in stage.CUSTOM_PAGES],
+          "the list's pages are the hand-written pages, with the same titles")
+    check(manifest["sections"][0]["title"] == stage.START_GROUP and stage.START_GROUP == "Start here",
+          "the manifest's first section is the Start here section")
     words = {str(v).casefold() for i in items for v in i.values()}
     check(not ({"home", "blog", "", "blog/"} & words) and not any(i.get("route") in ("", "blog") for i in pages),
           "neither Home nor Blog is in the list")
@@ -4494,11 +4439,16 @@ def test_stage_docs_index() -> None:
             stage.build_docs_index({"sections": [{"title": odd, "pages": [pg("s1")]}]}, {"s1": "S1"})
             check(False, f"a section titled {odd!r} is refused")
         except core.PublishError as e:
-            check("differs from" in str(e), f"a section titled {odd!r} is refused, as the sidebar refuses it")
+            check("differs from" in str(e), f"a section titled {odd!r} is refused: it would be a second group of that name")
+    m = copy.deepcopy(GUARD_MANIFEST)
+    m["sections"].append({"title": "FIXTURE", "pages": [dict(m["sections"][0]["pages"][0], src="docs/o2.md",
+                                                           slug="o2", wiki="O2", description=SECOND_DESCRIPTION)]})
+    check(has(core.manifest_problems(m), "is the title of another section too"),
+          "two sections with one title (in any case) are a manifest problem")
 
 
 def test_stage_progress(tmp: Path) -> None:
-    section("stage: the progress data, the author and the sidebar are staged from the commit")
+    section("stage: the progress data, the author and the documentation list are staged from the commit")
     if not GIT:
         check(False, "git is required for the stage tests and was not found")
         return
@@ -4514,11 +4464,9 @@ def test_stage_progress(tmp: Path) -> None:
     check(progress == {"as_of": p["as_of"], "timezone": p["timezone"], "author": "Ada Example",
                        "events": RP.progress_events(p)} and res["events"] == 7,
           "progress.json holds the events of the committed plan, its day and zone, and the citation file's author")
-    side = json.loads((data / "sidebar.json").read_text(encoding="utf-8"))
-    check([g["label"] for g in side] == ["Start here", "Fixture"]
-          and [i["label"] for i in side[0]["items"]][:3] == ["Home", "The start", "Blog"]
-          and side[0]["items"][1] == {"label": "The start", "slug": "start"},
-          "the staged sidebar has one Start here group, with the manifest's page after Home")
+    check(sorted(f.name for f in data.iterdir())
+          == ["blog.json", "docs.json", "ledger.public.json", "plan.json", "progress.json", "stage.json"],
+          "the data staged is the six files the site reads, and no sidebar")
     docs_index = json.loads((data / "docs.json").read_text(encoding="utf-8"))
     check([g["title"] for g in docs_index["groups"]] == ["Start here", "Fixture"]
           and docs_index["groups"][0]["items"][0] == {"kind": "doc", "slug": "start", "title": "The start",
@@ -5165,10 +5113,7 @@ def test_blog_stage(tmp: Path) -> None:
          "description": BLOG_D1, "tags": ["project", "methods"], "author": "Bea Second"}]},
           "blog.json: newest first, with the contract's fields")
     stage_json = json.loads((root / "website/src/data/stage.json").read_text(encoding="utf-8"))
-    side = json.loads((root / "website/src/data/sidebar.json").read_text(encoding="utf-8"))
-    check(stage_json["posts"] == 2 and stage_json["pages"] == 2 and side[0]["items"][1:3] == [
-        {"label": "Progress", "slug": "progress"}, {"label": "Blog", "link": "/blog/"}],
-          "stage.json counts the posts; the sidebar has Blog right after progress")
+    check(stage_json["posts"] == 2 and stage_json["pages"] == 2, "stage.json counts the pages and the posts")
     docs_index = json.loads((root / "website/src/data/docs.json").read_text(encoding="utf-8"))
     check([i.get("slug", i.get("route")) for g in docs_index["groups"] for i in g["items"]]
           == ["progress"] + [r for _, r in stage.DOCS_PAGES] + ["ok"],
@@ -5369,14 +5314,13 @@ def main() -> int:
         test_diagrams(tmp)
         test_diagrams_repo(tmp)
         test_stage_diagrams(tmp)
-        test_stage_sidebar_labels()
+        test_stage_page_labels()
         test_progress_events()
         test_progress_log()
         test_citation_author()
         test_name_allowance_target()
         test_cited_doi()
         test_front_door(tmp)
-        test_stage_sidebar()
         test_stage_docs_index()
         test_stage_progress(tmp)
         test_blog_parser()

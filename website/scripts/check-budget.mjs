@@ -6,9 +6,7 @@
 //        module of every island, the imports of each of those files (followed to the end), and the
 //        page's inline scripts. An import is static (`import x from './a.js'`) or dynamic with a
 //        literal address (`import('./a.js')`): a dynamic one is a chunk the page loads later, often on
-//        idle, and it is still the reader's download. Starlight's search loads its interface this
-//        way (about 26 KB gzipped) on every page, which is why a docs page counts about 34 KB, not
-//        the 7 KB its first script weighs. Diagrams are drawn ahead of the build and sit in the
+//        idle, and it is still the reader's download. Diagrams are drawn ahead of the build and sit in the
 //        page as inline SVG (tools/publish/diagrams.py), so they add no script; their bytes are
 //        in the HTML, which this check does not count.
 //   Also, whatever the sizes: a file in dist/_astro named for a diagram or maths library (mermaid,
@@ -19,10 +17,10 @@
 // a file used twice on a page counts once. Fonts and images are not counted.
 //
 // Budgets sit 3 percent above the sizes measured when they were set, rounded up to 100 bytes, so
-// that a different zlib build does not trip them but real growth does. A page not listed in
-// PAGE_BUDGETS falls under DEFAULT_BUDGET, which is the largest budget of any docs page, the research
-// roadmap (it hosts the timeline island) excepted. To raise
-// a budget on purpose, change the number here and say why in the commit that does it.
+// that a different zlib build does not trip them but real growth does. Every document of the
+// documentation (each slug of docs/publish.json, read there) falls under DOC_BUDGET; a page listed in
+// PAGE_BUDGETS has its own line; any other page falls under DEFAULT_BUDGET, which is DOC_BUDGET. To
+// raise a budget on purpose, change the number here and say why in the commit that does it.
 //
 // Usage: node scripts/check-budget.mjs
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
@@ -93,39 +91,47 @@ const BASE = '/';
 // small; the JavaScript of /roadmap/ and /battery/ fell from about 108 and 109 KB to about 36 and 33 KB.
 // Their CSS fell from about 35 KB (Starlight's) to the frame's 14.4 KB. /status/ rose by about 1.1 KB of
 // JavaScript over its old line: the page kit's and the documentation's scripts replace Starlight's.
-const DEFAULT_BUDGET = { js: 37100, css: 40200 };
+//
+// The eighteen document lines were replaced by one, DOC_BUDGET, when the documents moved into the same
+// frame (src/pages/[...slug].astro on layouts/Docs.astro): every document now loads exactly what the
+// documentation's home loads (the page kit, the documentation's stylesheet and script, the site's
+// prefetch script), measured at 33107 bytes of JavaScript and 14301 of CSS on each, down from 33.4 to
+// 36.0 KB of JavaScript and 35.0 to 38.9 KB of CSS under the old frame (its search, its stylesheets,
+// and on the research roadmap the timeline island of its header, about 110 KB of JavaScript). The code
+// in documents is plain ink, so no code renderer's styles load. DEFAULT_BUDGET fell with it to the same
+// line. The CSS of /developers/, /roadmap/, /battery/ and /status/ fell by about 100 bytes and that of
+// every front page and post by about 60 (the stand-in face of the old display font left the shared font
+// stylesheet); the one post with code blocks, three-questions, also lost the code renderer's styles and
+// copy script (about 4.0 KB of CSS and 1.2 KB of JavaScript). Those five lines were reset with this change
+// to the measured size plus 3 percent: three-questions, which was 38 percent over its CSS, and the four
+// pages of the frame, whose CSS line had kept the room of their old size. /roadmap/'s JavaScript also
+// fell with this change, from 36328 to 35530 bytes, and its line was reset with them.
+const DOC_BUDGET = { js: 34200, css: 14800 }; // 33107, 14301 on every document
+const DEFAULT_BUDGET = DOC_BUDGET;
 const PAGE_BUDGETS = {
   '/':                          { js: 207100, css:   6200 }, // 201053,   5944
   '/what-were-building/':       { js:  62300, css:  15700 }, //  60449,  15153
   '/experiments/':              { js:  55900, css:  17600 }, //  54219,  17030
   '/about/':                    { js:  43700, css:  12000 }, //  42413,  11602
   '/blog/':                     { js:  34900, css:   9900 }, //  33835,   9554
-  '/blog/three-questions-before-a-number-counts/': { js: 42400, css: 16700 }, // 41146, 16124 (its four figures)
+  '/blog/three-questions-before-a-number-counts/': { js: 41200, css: 12500 }, // 39977, 12082 (its four figures; no code renderer)
   '/blog/testing-the-test-before-the-model/':      { js: 36200, css: 11700 }, // 35070, 11338 (its three figures)
   '/blog/why-psyche-keeps-a-blog/':                { js: 34400, css: 10800 }, // 33358, 10401 (its one figure)
-  '/developers/':               { js:  34100, css:  14900 }, //  33035,  14377 (the documentation's stylesheet and script)
-  '/guide/':                    { js:  34500, css:  36100 }, //  33448,  35024
-  '/faq/':                      { js:  34500, css:  36100 }, //  33448,  35024
-  '/progress/':                 { js:  34500, css:  36100 }, //  33448,  35024
-  '/governance/':               { js:  34500, css:  36100 }, //  33448,  35024
-  '/roadmap/':                  { js:  37500, css:  14900 }, //  36328,  14377 (the timeline, written on the server)
-  '/battery/':                  { js:  34500, css:  14900 }, //  33472,  14377 (the walk-through, written on the server)
-  '/status/':                   { js:  34200, css:  14900 }, //  33194,  14377
-  '/research/':                 { js:  34900, css:  36100 }, //  33852,  35009
-  '/research/origins/':         { js:  34900, css:  36100 }, //  33852,  35009
-  '/research/roadmap/':         { js: 113000, css:  36200 }, // 109615,  35075
-  '/research/gates/':           { js:  37100, css:  36100 }, //  35951,  35009
-  '/research/test-battery/':    { js:  35300, css:  36100 }, //  34175,  35009
-  '/research/claims-and-scope/':{ js:  34900, css:  36100 }, //  33852,  35009
-  '/research/engineering/':     { js:  34900, css:  36100 }, //  33852,  35009
-  '/research/glossary/':        { js:  34900, css:  36100 }, //  33852,  35009
-  '/research/reading-list/':    { js:  34900, css:  36100 }, //  33852,  35009
-  '/research/disclosure-policy/':{ js:  34900, css:  36100 }, //  33852,  35009
-  '/substrate/overview/':       { js:  35700, css:  40200 }, //  34616,  38933
-  '/substrate/architecture/':   { js:  35700, css:  40200 }, //  34616,  38933
-  '/substrate/methodology/':    { js:  34500, css:  36100 }, //  33448,  35009
-  '/substrate/three-walls/':    { js:  34500, css:  36100 }, //  33448,  35024
+  '/developers/':               { js:  34100, css:  14800 }, //  33107,  14301 (the documentation's stylesheet and script)
+  '/roadmap/':                  { js:  36600, css:  14800 }, //  35530,  14301 (the timeline, written on the server)
+  '/battery/':                  { js:  34500, css:  14800 }, //  33544,  14301 (the walk-through, written on the server)
+  '/status/':                   { js:  34200, css:  14800 }, //  33266,  14301
 };
+
+// Every document's route, from the manifest (a source, so the list is the commit's, not a build's).
+const MANIFEST = JSON.parse(readFileSync(fileURLToPath(new URL('../../docs/publish.json', import.meta.url)), 'utf8'));
+for (const section of MANIFEST.sections) {
+  for (const { slug } of section.pages) {
+    const route = `/${slug}/`;
+    if (PAGE_BUDGETS[route]) throw new Error(`check-budget: ${route} is a document and has a line of its own; documents fall under DOC_BUDGET`);
+    PAGE_BUDGETS[route] = DOC_BUDGET;
+  }
+}
 
 const gz = (buf) => gzipSync(buf, { level: 9 }).length;
 
@@ -195,7 +201,7 @@ function htmlFiles(dir) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     if (statSync(p).isDirectory()) {
-      if (name === 'pagefind' || name === '_astro') continue;
+      if (name === '_astro') continue;
       out.push(...htmlFiles(p));
     } else if (name.endsWith('.html')) out.push(p);
   }

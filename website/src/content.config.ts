@@ -1,16 +1,17 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
-import { docsSchema } from '@astrojs/starlight/schema';
 
 const DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 // Both collections are filled only by `npm run stage`; see astro.config.mjs.
 //
-// docs: every staged page but the blog's posts, rendered by Starlight. Its loader is Starlight's own
-// (@astrojs/starlight/loaders docsLoader: Astro's glob over src/content/docs/ for Markdown and MDX files
-// whose name does not start with `_`, with no generateId, so each page keeps its id and its address),
-// with one pattern more: the posts under blog/ are left out.
+// docs: every staged document, the blog's posts left out (src/content/docs/<slug>.md, or
+// <slug>/index.md when other pages nest under it). src/pages/[...slug].astro renders them in the
+// documentation frame (layouts/Docs.astro) at /<slug>/. The id is the document's slug in
+// docs/publish.json: the file's path without `.md` and without a closing `/index`, so research/index.md
+// is `research`. The schema is exactly what stage.py writes for a document: its title, its description
+// and its source on GitHub.
 //
 // posts: the blog's posts, which tools/publish/stage.py writes to src/content/docs/blog/<slug>/index.md
 // (beside each post's own figures). src/pages/blog/[slug].astro renders them on the page kit
@@ -24,9 +25,16 @@ export const collections = {
   docs: defineCollection({
     loader: glob({
       base: './src/content/docs',
-      pattern: ['**/[^_]*.{markdown,mdown,mkdn,mkd,mdwn,md,mdx}', '!blog/**'],
+      pattern: ['**/*.md', '!blog/**'],
+      generateId: ({ entry }) => entry.replace(/\.md$/, '').replace(/(^|\/)index$/, ''),
     }),
-    schema: docsSchema(),
+    schema: z
+      .object({
+        title: z.string().min(1),
+        description: z.string().min(1),
+        editUrl: z.string().url(),
+      })
+      .strict(),
   }),
   posts: defineCollection({
     loader: glob({

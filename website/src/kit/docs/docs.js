@@ -206,11 +206,15 @@
       note.textContent = 'Scrolls sideways';
       note.hidden = true;
       box.insertAdjacentElement('beforebegin', note);
-      var role = box.getAttribute('role') || 'group', placed = false;
+      // a box that fits gives up its role, its name and its tab stop (a plain box may carry no name), and
+      // takes them back the moment it scrolls
+      var role = box.getAttribute('role') || 'group', named = box.getAttribute('aria-labelledby'), placed = false;
       watch(box, function (settled) {
         var over = overflows(box);
-        if (over) { box.tabIndex = 0; box.setAttribute('role', role); }
-        else { box.removeAttribute('tabindex'); box.removeAttribute('role'); }
+        if (over) {
+          box.tabIndex = 0; box.setAttribute('role', role);
+          if (named) box.setAttribute('aria-labelledby', named);
+        } else { box.removeAttribute('tabindex'); box.removeAttribute('role'); box.removeAttribute('aria-labelledby'); }
         note.hidden = !over;
         if (!over) { placed = false; return; }
         // the start position, once the page's styles and fonts are in, so it is measured on the final layout
