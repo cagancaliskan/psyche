@@ -1,6 +1,7 @@
 // The <lastmod> of each sitemap entry, from git: the date of the last commit that touched the files a
 // page is made from. Used by astro.config.mjs as the `serialize` option of @astrojs/sitemap, and by the
-// footer of every page (src/lib/lastUpdated.ts) for its "Last updated", so the two always agree.
+// edit line of the documentation's pages (src/lib/lastUpdated.ts) for its "Last updated", so the two
+// always agree.
 //
 //   a docs page            its governed source, as docs/publish.json lists it (docs/research/gates.md)
 //   a blog post            its folder under docs/blog/, the post and its images (docs/blog/<slug>):
@@ -10,6 +11,11 @@
 //                          every published post, since a new or revised post changes the list it shows;
 //                          the authoring guide (docs/blog/README.md) and a draft are not read, so a
 //                          change to either moves no date
+//   the documentation's    its page file, the kit page's sources, the documentation's frame and parts,
+//   home (/developers/)    and docs/publish.json, the list of every page it shows with its description
+//   the timeline, the      the same as the documentation's home, plus the modules that read its "Last
+//   walk-through and the   updated", its own modules (the drawing, the paradigms' pictures, the brick
+//   status page            board's reading of the ledger) and the data it is drawn from
 //   a page of the site     its page file, every layout, component and module it imports whose change can
 //                          change what the page says (not stylesheets), the page kit (src/kit, which
 //                          also holds the home page's film, src/kit/film), and the data the page is drawn from
@@ -53,6 +59,24 @@ const KIT_PAGE = [
   `${SRC}/kit`,
   SOCIAL,
 ];
+/** What every page in the documentation's frame is made from besides its own file: the kit page's
+ *  sources, the frame and its parts, and the documentation list, which src/data/docs.json is staged
+ *  from (docs/publish.json: every page's title and description, and their order). */
+const DOCS_PAGE = [
+  ...KIT_PAGE,
+  `${SRC}/layouts/Docs.astro`,
+  `${SRC}/components/devdocs`,
+  `${SRC}/lib/devdocs.ts`,
+  'docs/publish.json',
+];
+
+/** What a page in the documentation's frame that shows its own "Last updated" is made from for it: the
+ *  module that reads the date (src/lib/lastUpdated.ts) and what it reads it with, this file among them. */
+const DATED_PAGE = [
+  `${SRC}/lib/lastUpdated.ts`,
+  `${SRC}/lib/commitDay.ts`,
+  'website/scripts/sitemap-lastmod.mjs',
+];
 
 /** Pages of the site that are not docs pages, by route below the base ('' is the home page). */
 export const SITE_PAGES = {
@@ -74,39 +98,31 @@ export const SITE_PAGES = {
   about: [`${SRC}/pages/about.astro`, ...KIT_PAGE],
   roadmap: [
     `${SRC}/pages/roadmap.astro`,
-    `${SRC}/components/GateStepper.astro`,
-    `${SRC}/components/NowLine.tsx`,
-    `${SRC}/components/Timeline.tsx`,
-    `${SRC}/components/TimelineList.astro`,
-    `${SRC}/components/docs`,
-    `${SRC}/lib/gateClock.ts`,
-    `${SRC}/lib/plan.ts`,
-    `${SRC}/lib/today.ts`,
-    `${SRC}/lib/url.ts`,
+    ...DOCS_PAGE,
+    ...DATED_PAGE,
+    `${SRC}/lib/timeline.ts`,
+    `${SRC}/lib/timelineView.ts`,
     PLAN,
   ],
   battery: [
     `${SRC}/pages/battery.astro`,
-    `${SRC}/components/BatteryExplorer.tsx`,
-    `${SRC}/components/battery`,
+    ...DOCS_PAGE,
+    ...DATED_PAGE,
     `${SRC}/lib/battery.ts`,
     `${SRC}/lib/maze.ts`,
     `${SRC}/lib/sheet.ts`,
-    `${SRC}/lib/url.ts`,
+    `${SRC}/lib/walkthrough.ts`,
   ],
   status: [
     `${SRC}/pages/status.astro`,
-    `${SRC}/components/BrickBoard.astro`,
-    `${SRC}/components/BrickTable.astro`,
-    `${SRC}/components/landing/SubstrateReadout.astro`,
-    `${SRC}/lib/ledger.ts`,
-    `${SRC}/lib/plan.ts`,
+    ...DOCS_PAGE,
+    ...DATED_PAGE,
     `${SRC}/lib/status.ts`,
-    `${SRC}/lib/today.ts`,
-    `${SRC}/lib/url.ts`,
+    `${SRC}/lib/ledger.ts`,
     LEDGER,
   ],
   blog: [`${SRC}/pages/blog/index.astro`, ...KIT_PAGE, BLOG],
+  developers: [`${SRC}/pages/developers.astro`, ...DOCS_PAGE],
 };
 
 /**

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { markdownToHtml } from 'satteri';
-import { isDateCell, regionName, splitDates, tableRegion, tableRegionIntegration } from './table-region.mjs';
+import { cellLabel, isDateCell, regionName, splitDates, tableRegion, tableRegionIntegration } from './table-region.mjs';
 
 // The plugin is tested on the processor Astro uses, with the same table syntax the docs use.
 const render = (md) => markdownToHtml(md, { hastPlugins: [tableRegion()] }).html;
@@ -40,16 +40,44 @@ test('a cell that holds a date is marked to stay on one line, and no other cell 
   const html = render('## Log\n\n| Date | What | Status |\n|---|---|---|\n| 2026-10-23 | Phase P0 started on 2026-10-23 and went on | decided on 2026-11-14 |\n| soon | 2026-13-45x | 12 |\n');
   const cells = [...html.matchAll(/<td([^>]*)>(.*?)<\/td>/g)].map((m) => [m[2], m[1].trim()]);
   assert.deepEqual(cells, [
-    ['2026-10-23', 'data-nowrap=""'],
-    ['Phase P0 started on <span data-nowrap="">2026-10-23</span> and went on', ''],
-    ['decided on 2026-11-14', 'data-nowrap=""'],
-    ['soon', ''],
-    ['2026-13-45x', ''],
-    ['12', ''],
+    ['2026-10-23', 'data-label="Date" data-nowrap=""'],
+    ['Phase P0 started on <span data-nowrap="">2026-10-23</span> and went on', 'data-label="What"'],
+    ['decided on 2026-11-14', 'data-label="Status" data-nowrap=""'],
+    ['soon', 'data-label="Date"'],
+    ['2026-13-45x', 'data-label="What"'],
+    ['12', 'data-label="Status"'],
   ]);
   assert.ok(!/<th[^>]*data-nowrap/.test(html), 'a header cell is never marked');
   assert.ok(!/<td[^>]*class=/.test(html), 'a marked cell has no class, which the table rules would skip');
   assert.match(html, /<div class="sx-table" role="region"/);
+});
+
+test('every body cell is labelled with the words of its column header, in the HTML the server writes', () => {
+  const html = render(
+    '## Gates\n\n| Gate | The `test` *it runs* | Due |\n|:--|---|--:|\n| A | first | 2026-11-15 |\n| B | second |  |\n',
+  );
+  const cells = [...html.matchAll(/<td([^>]*)>/g)].map((m) => /data-label="([^"]*)"/.exec(m[1])?.[1]);
+  assert.deepEqual(cells, ['Gate', 'The test it runs', 'Due', 'Gate', 'The test it runs', 'Due']);
+  assert.ok(!/<th[^>]*data-label/.test(html), 'a header cell is never labelled');
+  assert.match(html, /<td style="text-align: left" data-label="Gate">A<\/td>/);
+});
+
+test('a column with an empty header gives its cells no label, and each table reads its own headers', () => {
+  const html = render(`| A |  | C |\n|---|---|---|\n| 1 | 2 | 3 |\n\n## Next\n\n| X | Y |\n|---|---|\n| 4 | 5 |\n`);
+  const cells = [...html.matchAll(/<td([^>]*)>([^<]*)<\/td>/g)].map((m) => [m[2], /data-label="([^"]*)"/.exec(m[1])?.[1] ?? null]);
+  assert.deepEqual(cells, [['1', 'A'], ['2', null], ['3', 'C'], ['4', 'X'], ['5', 'Y']]);
+});
+
+test('a header with quotes or an ampersand is written as a safe attribute', () => {
+  const html = render('| Say "yes" & go |\n|---|\n| 1 |\n');
+  assert.match(html, /<td data-label="Say &quot;yes&quot; &amp; go">1<\/td>/);
+});
+
+test('cellLabel gives the header words of a column, spaces collapsed, or null', () => {
+  assert.equal(cellLabel(['  Gate\n name '], 0), 'Gate name');
+  assert.equal(cellLabel(['A', '  '], 1), null);
+  assert.equal(cellLabel(['A'], 3), null);
+  assert.equal(cellLabel([], 0), null);
 });
 
 test('a date in running text is kept on one line, and code and other numbers are left alone', () => {

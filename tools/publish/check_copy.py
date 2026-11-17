@@ -16,8 +16,8 @@ Surfaces and the rules applied to each:
       (not website/src/content/docs/, which holds staged copies of governed docs, never
        node_modules, and not package*.json)
     website/astro.config.{mjs,ts,js,cjs,mts}        x      x      x         x       x
-      (the site title and description shown on every page; the sidebar it loads,
-       website/src/data/sidebar.json, is staged from docs/publish.json, is gitignored and
+      (the site's build settings; the documentation list the site reads,
+       website/src/data/docs.json, is staged from docs/publish.json, is gitignored and
        does not exist where governance runs, so its labels are read at their source, the
        manifest, below)
     docs/assets/*.svg, website/src/**/*.svg,
@@ -26,7 +26,8 @@ Surfaces and the rules applied to each:
     docs/blog/**/*.svg (the pictures of posts)      x      x      x         x       x
     every string value in tools/research_plan.json  x      x      x         x       x
     every string value in docs/publish.json         x      x      x         x       x
-      (tools/publish/stage.py makes each section title a site sidebar label and each page
+      (tools/publish/stage.py makes each section title a group label of the site's
+       documentation list and each page
        title, where one is given, a page's title; each page also keeps a wiki page name,
        a leftover of the wiki that is no longer built, which reads with its hyphens as
        spaces. So every value is read as written,

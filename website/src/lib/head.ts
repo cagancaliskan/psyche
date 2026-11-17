@@ -1,12 +1,12 @@
 /**
- * The <head> of the pages that are not Starlight pages: the home page, What we're building, Experiments,
- * About, the blog's index, the blog's posts and the 404 page. Starlight writes the head of every docs page
- * itself (with astro.config.mjs `head` and src/routeData.ts); these pages have no Starlight, so this
- * module writes the same entries: the ones Starlight wrote (title, canonical, sitemap link, SVG icon,
- * og:* and description), the ones astro.config.mjs gives every docs page (theme colour, icons, manifest,
- * the two feeds, the social card), then lib/seo.ts seoHead() for what differs by page (og:type,
- * twitter:title and twitter:description, noindex on the 404 page, the structured data, a post's article
- * tags). scripts/check-seo.mjs reads the built pages and holds them to exactly these rules.
+ * The <head> of every page of the site: the home page, What we're building, Experiments, About, the
+ * blog's index, the blog's posts, the documentation's home (/developers/), every document, the timeline,
+ * the walk-through and the status page, and the 404 page. It writes the title, canonical address,
+ * sitemap link, SVG icon, og:* and description, the entries that are the same on every page (theme
+ * colour, icons, manifest, the two feeds, the social card), then lib/seo.ts seoHead() for what differs
+ * by page (og:type, twitter:title and twitter:description, noindex on the 404 page, the structured
+ * data, a post's article tags). scripts/check-seo.mjs reads the built pages and holds them to exactly
+ * these rules.
  *
  * The values come from the modules that already define them (seo.ts, feed.ts, blog.ts, the social card's
  * own description in brand/psyche-social.json); nothing here restates one. Pure functions with no
@@ -34,10 +34,10 @@ export interface PageFacts {
 }
 
 /**
- * The name and description of each page that is not a Starlight page and not a post (a post's come from
- * its front matter). The descriptions are made only of sentences the project lead chose for these
- * pages; a page takes its entry from here, so no page types its own. The 404 page's are lib/seo.ts
- * NOT_FOUND, which check-seo compares the built page with.
+ * The name and description of each page that is not a document and not a post (a document's come from
+ * docs/publish.json and its first heading, a post's from its front matter). The descriptions are made
+ * only of sentences the project lead chose for these pages; a page takes its entry from here, so no page
+ * types its own. The 404 page's are lib/seo.ts NOT_FOUND, which check-seo compares the built page with.
  */
 export const PAGES = {
   home: {
@@ -71,13 +71,39 @@ export const PAGES = {
     description:
       "Notes from the road to machine cognition. Psyche is building machines on the brain's own principles: neurons that spike, connections that teach themselves.",
   },
+  developers: {
+    route: 'developers',
+    title: 'For developers',
+    description:
+      "The documentation, records and source code behind Psyche: the reader's guide, the roadmap and its gates, the test battery and the rules for claims.",
+  },
+  // The three pages of the documentation list that are pages of the site, not documents: the list
+  // (lib/devdocs.ts) shows their title and description from here.
+  roadmap: {
+    route: 'roadmap',
+    title: 'Explore the timeline',
+    description:
+      'The phases and decision gates of stage 2 of Psyche on one timeline, read from the research plan: where today falls and the date of each gate that has one.',
+  },
+  battery: {
+    route: 'battery',
+    title: 'Step through the paradigms',
+    description:
+      'Step through the classic cognitive-map paradigms behind the stage 2 test battery: what the agent does, what changes after learning and what each test measures.',
+  },
+  status: {
+    route: 'status',
+    title: 'Substrate status',
+    description:
+      'The substrate, stage 1 of Psyche: its captured test run, the build status of each brick, what its tests show, and where its development stands.',
+  },
   notFound: { route: NOT_FOUND.route, title: NOT_FOUND.title, description: NOT_FOUND.description },
 } as const satisfies Record<string, PageFacts>;
 
 export interface PageHeadInput extends PageFacts {
   /** A blog post's days, author and tags (articleFacts); given on a post and on no other page. */
   article?: ArticleFacts;
-  /** Astro.generator, written where Starlight writes it. */
+  /** Astro.generator, written after the description. */
   generator?: string;
 }
 
@@ -93,7 +119,7 @@ export function titleOf(route: string, title: string): string {
 
 /**
  * A post's article facts from its front matter, the author falling back to the blog's (src/data/blog.json
- * `author`), as src/routeData.ts does for the Starlight posts.
+ * `author`).
  */
 export function articleFacts(
   data: { date: string; updated?: string | null; author?: string; tags?: readonly string[] },
@@ -103,7 +129,7 @@ export function articleFacts(
 }
 
 /**
- * Every head entry of one page, in the order Starlight writes them. Throws, so the build stops, on what
+ * Every head entry of one page, in a fixed order. Throws, so the build stops, on what
  * check-seo would fail later or not see at all: a description out of length, a route with a slash at
  * either end, a post without its article facts, or article facts on a page that is not a post.
  */

@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -33,7 +33,7 @@ function fixture() {
   write('website/src/pages/roadmap.astro', 'a');
   write('website/src/pages/battery.astro', 'a');
   write('website/src/pages/status.astro', 'a');
-  write('website/src/components/BatteryExplorer.tsx', 'a');
+  write('website/src/lib/walkthrough.ts', 'a');
   write('website/src/components/landing/Hero.astro', 'a');
   write('tools/research_plan.json', '{}');
   write('tools/ledger.json', '{}');
@@ -44,7 +44,7 @@ function fixture() {
   git(dir, ['commit', '-q', '-a', '-m', 'two'], '2026-03-05T08:30:00Z');
   write('tools/research_plan.json', '{"moved":1}');
   git(dir, ['commit', '-q', '-a', '-m', 'three'], '2026-05-20T17:45:00Z');
-  write('website/src/components/BatteryExplorer.tsx', 'b');
+  write('website/src/lib/walkthrough.ts', 'b');
   git(dir, ['commit', '-q', '-a', '-m', 'four'], '2026-07-01T09:00:00Z');
   return dir;
 }
@@ -69,7 +69,7 @@ test('sourcesByRoute lists the site pages and every docs page of the manifest', 
     assert.deepEqual(s['research/gates'], ['docs/research/gates.md']);
     assert.deepEqual(s['substrate/overview'], ['docs/PSYCHE.md']);
     assert.ok(s[''].includes('website/src/pages/index.astro') && s[''].includes('website/src/kit') && !s[''].includes('tools/ledger.json'));
-    assert.ok(s.battery.includes('website/src/pages/battery.astro') && s.battery.includes('website/src/components/BatteryExplorer.tsx'));
+    assert.ok(s.battery.includes('website/src/pages/battery.astro') && s.battery.includes('website/src/lib/walkthrough.ts'));
     // a post is dated by its own folder, and the index by every post; the home page lists no post
     assert.deepEqual(s['blog/first-post'], ['docs/blog/first-post']);
     // a post with designed figures is also dated by their files in the page kit
@@ -94,9 +94,9 @@ test('each page gets the date of the last commit that touched its own files', ()
     assert.equal(serialize({ url: url('roadmap') }).lastmod, '2026-05-20T17:45:00.000Z');
     assert.equal(serialize({ url: url('') }).lastmod, '2026-01-10T12:00:00.000Z');
     assert.equal(serialize({ url: url('status') }).lastmod, '2026-01-10T12:00:00.000Z');
-    // a component a page is made from moves its date: the explorer is the battery's text, not its page file
+    // a module a page is made from moves its date: the pictures are the battery's text, not its page file
     assert.equal(serialize({ url: url('battery') }).lastmod, '2026-07-01T09:00:00.000Z');
-    // ... while the explorer is no part of the home page, and a file in a listed directory counts
+    // ... while the pictures are no part of the home page, and a file in a listed directory counts
     mkdirSync(join(dir, 'website/src/kit/film'), { recursive: true });
     writeFileSync(join(dir, 'website/src/kit/film/film.js'), 'a');
     git(dir, ['add', '-A']);
@@ -199,6 +199,7 @@ const DERIVED = {
   'website/src/data/plan.json': 'tools/research_plan.json',
   'website/src/data/ledger.public.json': 'tools/ledger.json',
   'website/src/data/blog.json': 'docs/blog',
+  'website/src/data/docs.json': 'docs/publish.json',
 };
 
 /** The modules a page file imports, followed to the end, as repository-relative paths. Imports of
@@ -241,6 +242,7 @@ test('every module a site page imports is in that page\'s source list, so a chan
     battery: 'battery',
     status: 'status',
     blog: 'blog/index',
+    developers: 'developers',
   };
   // Not text of the page: stylesheets. Data the build writes into src/data is covered by its source.
   for (const [route, name] of Object.entries(entries)) {
@@ -254,19 +256,5 @@ test('every module a site page imports is in that page\'s source list, so a chan
       return !covered(DERIVED[rel] ?? rel);
     });
     assert.deepEqual(missing, [], `page "${route}" imports files that are in no part of its lastmod list: add them to SITE_PAGES`);
-  }
-});
-
-test('every file under the landing and battery component folders belongs to a page list', () => {
-  const walk = (dir) =>
-    readdirSync(dir).flatMap((name) => {
-      const p = join(dir, name);
-      return statSync(p).isDirectory() ? walk(p) : [relative(REPO, p)];
-    });
-  const all = Object.values(SITE_PAGES).flat();
-  for (const folder of ['website/src/components/landing', 'website/src/components/battery']) {
-    for (const rel of walk(join(REPO, folder))) {
-      assert.ok(all.some((l) => rel === l || rel.startsWith(`${l}/`)), `${rel} is in no page's lastmod list`);
-    }
   }
 });

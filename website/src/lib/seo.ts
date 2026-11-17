@@ -1,15 +1,14 @@
 /**
- * What every page tells a search engine or a link preview about itself, beyond what Starlight writes.
- * Pure functions with no framework import, so astro.config.mjs, the route middleware (routeData.ts)
- * and `npm test` all use the same code.
+ * What every page tells a search engine or a link preview about itself, beyond its title and address.
+ * Pure functions with no framework import, so astro.config.mjs, lib/head.ts and `npm test` all use the
+ * same code.
  *
- * Starlight already writes the title, the canonical address, og:title, og:description,
- * og:url, og:site_name, og:type (article), twitter:card and the description. What it does not write,
- * and this module adds: og:type "website" on the landing page, twitter:title and twitter:description
+ * lib/head.ts writes the title, the canonical address, og:title, og:description,
+ * og:url, og:site_name, og:type (article), twitter:card and the description. What this module adds: og:type "website" on the landing page, twitter:title and twitter:description
  * from the page, noindex on the 404 page, the landing page's structured data (schema.org JSON-LD), and
  * on a blog post its days, author and tags (article:published_time, article:modified_time,
  * article:author, article:tag) with a BlogPosting of its own. The head entries that are the same on
- * every page (theme colour, icons, manifest, the card's alt text, the two feeds) are in astro.config.mjs.
+ * every page (theme colour, icons, manifest, the card's alt text, the two feeds) are in lib/head.ts.
  */
 
 export const ORIGIN = 'https://psyche.cagancaliskan.com';
@@ -36,7 +35,7 @@ export const NOT_FOUND = {
     "This page doesn't exist. Psyche is building machines on the brain's own principles: neurons that spike, connections that teach themselves.",
 } as const;
 
-/** The site's canvas colours (--sl-color-black in styles/global.css), for the browser's address bar. */
+/** The site's canvas colours, for the browser's address bar. */
 export const THEME_COLOR = { light: '#f5f7fb', dark: '#0a0f1e' } as const;
 
 const PROJECT_ID = `${SITE_URL}#project`;
@@ -130,7 +129,7 @@ export interface ArticleFacts {
 /**
  * The structured data of a blog post: a BlogPosting in the site, written by the post's author, with
  * the post's own title, description, days and tags and nothing else. Its address is the canonical one
- * Starlight wrote (og:url), so the two never differ.
+ * the head gives (og:url), so the two never differ.
  */
 export function postJsonLd(input: { url: string; title: string; description: string; article: ArticleFacts }): Record<string, unknown> {
   const { url, title, description, article } = input;
@@ -154,8 +153,8 @@ export function postJsonLd(input: { url: string; title: string; description: str
 }
 
 /**
- * The head of one page as Starlight built it, with this module's per-page entries applied. `article`
- * is given for a blog post only (src/routeData.ts reads it from the post's front matter). Returns a new
+ * The head of one page as lib/head.ts built it, with this module's per-page entries applied. `article`
+ * is given for a blog post only (read from the post's front matter). Returns a new
  * array; the entries of the one it was given are not changed.
  */
 export function seoHead(head: HeadEntry[], route: string, article?: ArticleFacts): HeadEntry[] {

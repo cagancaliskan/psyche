@@ -1,0 +1,38 @@
+---
+// The documentation's navigation, written whole into the HTML: the link to the home, then every page of
+// the documentation list by group, the current page marked with aria-current="page". Without script it
+// is a plain list of links (on a phone, above the text). The documentation script (src/kit/docs/docs.js)
+// adds behaviour to it and writes nothing into it: it shows the "Search pages" field, which the server
+// writes hidden (it filters only with script), filters the items by their data-k-text, shows the
+// "no page" line when nothing matches, and on a narrow screen folds the list behind "Pages".
+//
+// The home (/developers/) lists every page in its main text and has its own filter, so its navigation
+// has neither the search field nor the "no page" line.
+// The home's address is written out (lib/devdocs.ts DEVELOPERS_ROUTE) so that scripts/kit-links.test.mjs
+// can hold it to a page the site has.
+import { NO_MATCH, type NavGroup } from '@/lib/devdocs.ts';
+import { withBase } from '@/lib/url.ts';
+
+export interface Props {
+  /** The list's groups, the current page marked (lib/devdocs.ts navGroups). */
+  groups: NavGroup[];
+  /** True on the documentation's home. */
+  home?: boolean;
+}
+
+const { groups, home = false } = Astro.props;
+---
+
+<div class="k-docside">
+  <button type="button" class="k-ctl k-docmenu" data-k-docmenu aria-controls="k-docnav" aria-expanded="false">Pages</button>
+  <nav class="k-docnav" id="k-docnav" data-k-docnav aria-label="Documentation">
+    {!home && <div class="k-docnav__search" role="search" hidden><label class="k-vh" for="k-docnav-q">Search the documentation</label><input class="k-docnav__input" id="k-docnav-q" type="search" autocomplete="off" spellcheck="false" placeholder="Search pages" /></div>}
+    <a class="k-docnav__home" href={withBase('developers/')} aria-current={home ? 'page' : undefined}>For developers</a>
+    {groups.map((g) => (
+      <div class="k-docnav__group"><p class="k-docnav__name">{g.title}</p><ul>
+        {g.items.map((item) => <li data-k-text={item.text}><a href={withBase(item.path)} aria-current={item.current ? 'page' : undefined}>{item.title}</a></li>)}
+      </ul></div>
+    ))}
+    {!home && <p class="k-docnav__none" hidden>{NO_MATCH}</p>}
+  </nav>
+</div>

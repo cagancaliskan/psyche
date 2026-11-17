@@ -2,24 +2,30 @@
 //
 //   <div class="sx-table" role="region" tabindex="0" aria-label="Table: Reveal log"><table>...</table></div>
 //
-// A table wider than its column scrolls sideways (styles/docs.css), and a scrolling box that cannot take
+// A table wider than its column scrolls sideways (src/kit/docs/docs.css), and a scrolling box that cannot take
 // focus cannot be scrolled from the keyboard (WCAG 2.1.1; axe: scrollable-region-focusable). The box has
 // to be a tab stop even where it does not scroll, because static markup cannot know the width of the
 // reader's screen; the diagrams' scroll box is the same. The region is named after the table's own
 // caption or else the nearest heading before it, so a reader of a screen reader hears which table it is;
 // two tables under one heading are told apart by a number.
 //
-// The same plugin marks a cell that holds a calendar date with `data-nowrap` (styles/docs.css keeps it on
+// The same plugin marks a cell that holds a calendar date with `data-nowrap` (src/kit/docs/docs.css keeps it on
 // one line). A date is "2026-10-23", and a browser may break a line after either hyphen: in a narrow column
 // of a table that fits a phone, the date then reads "2026-10-" over "23". The cell is marked, not given a
-// class, because the table rules in docs.css leave out any cell that has a class, and the text is left as
+// class, so the table's own cell rules apply to it as to any other cell, and the text is left as
 // it is, so a date is still plain ASCII to copy and to search. A date anywhere else in running text, such
 // as the generated status line, is put in a `<span data-nowrap>` for the same reason; code is left alone.
+//
+// Every body cell also carries the words of its column's header cell as `data-label`. On a narrow screen a
+// table can be drawn as one block per row, each cell under its own name, and the name has to be in the
+// page already: the server writes it, so it is there without script. The header's words are taken as text
+// (markup dropped, spaces collapsed); a column whose header is empty gives its cells no label. The
+// attribute is only data: a page whose styles do not use it shows the table as before.
 //
 // This is the step that markdown.rehypePlugins would be. Astro 7 renders Markdown with Satteri, whose
 // plugins work on the same HTML tree (hast) but are registered on the processor; the legacy rehype
 // option would need @astrojs/markdown-remark, which the site does not install. The plugin is added by a
-// small integration, the way Starlight adds its own to the same list (astro.config.mjs). It uses the
+// small integration in astro.config.mjs. It uses the
 // standard library only.
 
 const HEADINGS = ['h1', 'h2', 'h3', 'h4', 'h5', 'h6'];
@@ -62,21 +68,42 @@ export function regionName(caption, heading) {
   return name ? PREFIX + name : 'Table';
 }
 
+/** A body cell's label: the words of the header cell in its column, or null when there are none. */
+export function cellLabel(headers, column) {
+  return clean(headers[column]) || null;
+}
+
 /**
  * The hast plugin. A factory, so that each document starts with no heading read and no table counted.
  * Visitors are called in document order, so the heading last seen is the nearest one before a table,
- * however deep the table is nested.
+ * however deep the table is nested, and a table's header cells are read before its body cells. A Markdown
+ * table cannot hold another table, so the table last seen is the one a cell is in.
  */
 export function tableRegion() {
   return () => {
     let heading = '';
     const seen = new Map();
+    let headers = []; // the header cells' words of the table last seen, by column
+    let column = 0; // the position of the next cell in its row
     return {
       name: 'psyche-table-region',
       element: {
-        filter: [...HEADINGS, 'table', 'td'],
+        filter: [...HEADINGS, 'table', 'tr', 'th', 'td'],
         visit(node, ctx) {
+          if (node.tagName === 'tr') {
+            column = 0;
+            return;
+          }
+          if (node.tagName === 'th') {
+            const row = ctx.parent(node);
+            if (row && ctx.parent(row)?.tagName === 'thead') headers[column] = ctx.textContent(node);
+            column += 1;
+            return;
+          }
           if (node.tagName === 'td') {
+            const name = cellLabel(headers, column);
+            column += 1;
+            if (name) ctx.setProperty(node, 'dataLabel', name);
             if (isDateCell(ctx.textContent(node))) ctx.setProperty(node, 'dataNowrap', '');
             return;
           }
@@ -84,6 +111,7 @@ export function tableRegion() {
             heading = ctx.textContent(node);
             return;
           }
+          headers = [];
           const caption = (node.children ?? []).find((c) => c.type === 'element' && c.tagName === 'caption');
           let label = regionName(caption ? ctx.textContent(caption) : '', heading);
           const n = (seen.get(label) ?? 0) + 1;

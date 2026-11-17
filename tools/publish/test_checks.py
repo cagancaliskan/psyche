@@ -1939,12 +1939,12 @@ def test_check_copy_round4(tmp: Path) -> None:
     check(manifest_at(copy_findings(r), "/sections/0/title") == ["LANGUAGE"],
           "a quarantined manifest still gets LANGUAGE, and only LANGUAGE")
 
-    section("check_copy: the docstring names where the sidebar labels are read")
+    section("check_copy: the docstring names where the documentation list's labels are read")
     doc = CC.__doc__ or ""
     check("sidebar labels shown on every page" not in doc,
           "astro.config is no longer said to hold the sidebar labels")
-    check("every string value in docs/publish.json" in doc and "sidebar.json" in doc,
-          "the manifest is listed as a surface, and the staged sidebar is explained")
+    check("every string value in docs/publish.json" in doc and "docs.json" in doc and "sidebar.json" not in doc,
+          "the manifest is listed as a surface, and the staged documentation list is explained")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

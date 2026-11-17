@@ -1,0 +1,28 @@
+---
+// The documentation's home, at /developers/: where the footer's "For developers" leads. Its opening
+// sentence and the repository, then the filter over every page, "Where to start" and every page of the
+// documentation list by group, each with its description (components/devdocs/DocsIndex.astro). The list
+// is src/data/docs.json, which tools/publish/stage.py writes from docs/publish.json; nothing is typed
+// here per page.
+import DocsIndex from '@/components/devdocs/DocsIndex.astro';
+import docs from '@/data/docs.json';
+import Docs from '@/layouts/Docs.astro';
+import { DEVELOPERS_LEAD, entriesOf, navGroups, startEntries, type DocsData } from '@/lib/devdocs.ts';
+import { PAGES } from '@/lib/head.ts';
+import { REPO_URL } from '@/lib/seo.ts';
+
+const page = PAGES.developers;
+const data = docs as DocsData;
+const groups = navGroups(data);
+const start = startEntries(entriesOf(data));
+const repoName = new URL(REPO_URL).pathname.replace(/^\/+/, '');
+---
+
+<Docs page={page} skip={{ href: '#pages', text: 'Skip to the pages' }}>
+  <main class="k-devhome" id="pages" tabindex="-1">
+    <h1 class="k-doc__title">{page.title}</h1>
+    <p class="k-devhome__lead">{DEVELOPERS_LEAD}</p>
+    <p class="k-devhome__repo">The source code is on GitHub:{' '}<a href={REPO_URL}>{repoName}</a></p>
+    <DocsIndex groups={groups} start={start} />
+  </main>
+</Docs>

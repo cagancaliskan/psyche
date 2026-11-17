@@ -1,0 +1,21 @@
+---
+// "On this page": the page's h2 and h3 that carry an id, in order, an h3 as a sub-entry (lib/devdocs.ts
+// tocOf). Nothing is written when there are none. The documentation script marks the section being
+// read (aria-current="true" on its link); without script the list is plain links to the headings.
+import { tocOf, type Heading } from '@/lib/devdocs.ts';
+
+export interface Props {
+  /** A document's headings as Astro's Markdown gives them, or a page's own. */
+  headings: readonly Heading[];
+}
+
+const toc = tocOf(Astro.props.headings);
+---
+
+{toc.length > 0 && (
+  <aside class="k-docaside">
+    <nav class="k-toc" data-k-toc aria-label="On this page"><p class="k-toc__name">On this page</p><ul>
+      {toc.map((t) => <li class={t.sub ? 'k-toc__sub' : undefined}><a href={t.href}>{t.text}</a></li>)}
+    </ul></nav>
+  </aside>
+)}

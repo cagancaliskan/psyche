@@ -137,7 +137,7 @@
   var FOOT = [
     { label: 'Blog', href: KIT_DIR + 'blog/' },
     { label: 'Contact', href: KIT_DIR + 'about/' },
-    { label: 'For developers', href: SITE.developers }
+    { label: 'For developers', href: KIT_DIR + 'developers/' }
   ];
   P.site = SITE;
   P.nav = NAV.map(function (n) { return { label: n.label, file: n.file }; });

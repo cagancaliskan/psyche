@@ -1,0 +1,18 @@
+---
+// The line under a page of the documentation: the link to its source in the repository (a document's
+// Markdown, a site page's page file; lib/devdocs.ts sourceEditUrl and pageEditUrl) and, where the page
+// has one, "Last updated" with the day in words, in one quiet line.
+import { formatDay } from '@/lib/plan.ts';
+
+export interface Props {
+  /** The address of the page's source on the repository's main branch. */
+  editUrl: string;
+  /** The day the page last changed (YYYY-MM-DD), or none. */
+  updated?: string | null;
+}
+
+const { editUrl, updated } = Astro.props;
+if (updated && !/^\d{4}-\d{2}-\d{2}$/.test(updated)) throw new Error(`DocEdit: "${updated}" is not a day (YYYY-MM-DD)`);
+---
+
+<p class="k-docedit"><a href={editUrl}>Edit this page on GitHub</a>{updated && <span class="k-docedit__date">Last updated <time datetime={updated}>{formatDay(updated)}</time></span>}</p>

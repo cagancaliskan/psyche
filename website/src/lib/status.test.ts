@@ -80,7 +80,7 @@ test('every brick of the real ledger has a row, and the counts of each axis add 
 
 test('the meaning column\'s wording holds only while the meaning bar is open and no brick has earned a verdict', () => {
   // The cell "Not earned" and the line under the table are true of a brick whose status is a build
-  // status only as long as this holds. When it stops holding, the wording in components/BrickBoard.astro
+  // status only as long as this holds. When it stops holding, the wording in pages/status.astro
   // and the "Not earned" cell in lib/status.ts have to be rewritten by a person, not left to pass.
   assert.equal(ledger.meaning_bar.status, 'OPEN');
   const earned = Object.values<{ status: string }>(ledger.bricks).filter((b) => b.status === 'EARNED');

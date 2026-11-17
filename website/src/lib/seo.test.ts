@@ -15,8 +15,8 @@ import {
   type HeadEntry,
 } from './seo.ts';
 
-// The head Starlight builds for a page, as far as this module reads it.
-const starlightHead = (title: string, description: string): HeadEntry[] => [
+// The head lib/head.ts builds for a page before seoHead(), as far as this module reads it.
+const baseHead = (title: string, description: string): HeadEntry[] => [
   { tag: 'title', content: `${title} | Psyche` },
   { tag: 'meta', attrs: { property: 'og:title', content: title } },
   { tag: 'meta', attrs: { property: 'og:type', content: 'article' } },
@@ -38,14 +38,14 @@ test('routeOf names a page below the base', () => {
 });
 
 test('the landing page is a website, every other page an article', () => {
-  const head = starlightHead('Home', 'About.');
+  const head = baseHead('Home', 'About.');
   assert.equal(attrOf(seoHead(head, ''), 'property', 'og:type'), 'website');
   assert.equal(attrOf(seoHead(head, 'research/gates'), 'property', 'og:type'), 'article');
   assert.equal(attrOf(seoHead(head, 'battery'), 'property', 'og:type'), 'article');
 });
 
 test('twitter:title and twitter:description come from the page, once', () => {
-  const head = starlightHead('Decision gates', 'The gates of stage 2.');
+  const head = baseHead('Decision gates', 'The gates of stage 2.');
   const out = seoHead(head, 'research/gates');
   assert.equal(attrOf(out, 'name', 'twitter:title'), 'Decision gates');
   assert.equal(attrOf(out, 'name', 'twitter:description'), 'The gates of stage 2.');
@@ -57,7 +57,7 @@ test('twitter:title and twitter:description come from the page, once', () => {
 });
 
 test('only the 404 page is noindex, and only the landing page carries structured data', () => {
-  const head = starlightHead('404', 'Not found.');
+  const head = baseHead('404', 'Not found.');
   const robots = (route: string) => attrOf(seoHead(head, route), 'name', 'robots');
   assert.equal(robots('404'), 'noindex');
   for (const route of ['', 'battery', 'research/gates', 'substrate/overview']) assert.equal(robots(route), undefined);
@@ -68,14 +68,14 @@ test('only the 404 page is noindex, and only the landing page carries structured
 });
 
 test('seoHead returns a new array and leaves the one it was given unchanged', () => {
-  const head = starlightHead('Home', 'About.');
+  const head = baseHead('Home', 'About.');
   const before = JSON.stringify(head);
   seoHead(head, '');
   assert.equal(JSON.stringify(head), before);
 });
 
 test('the landing JSON-LD parses and describes the site and the project', () => {
-  const entry = seoHead(starlightHead('Home', 'About.'), '').find((e) => e.tag === 'script');
+  const entry = seoHead(baseHead('Home', 'About.'), '').find((e) => e.tag === 'script');
   assert.ok(entry?.content);
   assert.equal(entry.attrs?.type, 'application/ld+json');
   const data = JSON.parse(entry.content);
@@ -141,7 +141,7 @@ test('the 404 page has its own name and description, and is the one page that is
   // the same length rule as every other page (scripts/check-seo.mjs)
   assert.ok(NOT_FOUND.description.length >= 120 && NOT_FOUND.description.length <= 160, `${NOT_FOUND.description.length} characters`);
   assert.doesNotMatch(NOT_FOUND.description, /\b(proven|original|first|conscious|sentient)\b/i);
-  const head = seoHead(starlightHead(NOT_FOUND.title, NOT_FOUND.description), NOT_FOUND.route);
+  const head = seoHead(baseHead(NOT_FOUND.title, NOT_FOUND.description), NOT_FOUND.route);
   assert.equal(attrOf(head, 'name', 'robots'), 'noindex');
   assert.equal(attrOf(head, 'name', 'twitter:title'), NOT_FOUND.title);
   assert.equal(attrOf(head, 'name', 'twitter:description'), NOT_FOUND.description);
@@ -156,7 +156,7 @@ const withUrl = (head: HeadEntry[], url: string): HeadEntry[] => [...head, { tag
 
 test('a blog post carries its days, author and tags, and one BlogPosting with the same facts', () => {
   const url = `${SITE_URL}blog/opening-the-log/`;
-  const head = withUrl(starlightHead('Opening the log', 'Why the project keeps a dated public log.'), url);
+  const head = withUrl(baseHead('Opening the log', 'Why the project keeps a dated public log.'), url);
   const out = seoHead(head, 'blog/opening-the-log', ARTICLE);
   assert.equal(attrOf(out, 'property', 'og:type'), 'article');
   assert.equal(attrOf(out, 'property', 'article:published_time'), '2026-11-04');
@@ -177,7 +177,7 @@ test('a blog post carries its days, author and tags, and one BlogPosting with th
 
 test('a post never revised has no modified time, and its BlogPosting is modified on the day it was published', () => {
   const facts: ArticleFacts = { published: '2026-11-04', modified: null, author: 'A', tags: [] };
-  const out = seoHead(withUrl(starlightHead('T', 'D.'), `${SITE_URL}blog/t/`), 'blog/t', facts);
+  const out = seoHead(withUrl(baseHead('T', 'D.'), `${SITE_URL}blog/t/`), 'blog/t', facts);
   assert.equal(attrOf(out, 'property', 'article:modified_time'), undefined);
   assert.equal(out.filter((e) => e.attrs?.property === 'article:tag').length, 0);
   const data = postJsonLd({ url: `${SITE_URL}blog/t/`, title: 'T', description: 'D.', article: facts });
@@ -187,7 +187,7 @@ test('a post never revised has no modified time, and its BlogPosting is modified
 
 test('article facts are never written on the landing page or the 404 page', () => {
   for (const route of ['', '404']) {
-    const out = seoHead(starlightHead('T', 'D.'), route, ARTICLE);
+    const out = seoHead(baseHead('T', 'D.'), route, ARTICLE);
     assert.equal(attrOf(out, 'property', 'article:published_time'), undefined);
     assert.equal(out.filter((e) => e.tag === 'script').length, route === '' ? 1 : 0);
   }

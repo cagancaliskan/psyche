@@ -135,13 +135,18 @@ test('the page table: the chosen titles, a description of 120 to 160 characters 
   const pages = Object.values(PAGES);
   assert.deepEqual(
     pages.map((p) => p.route),
-    ['', 'what-were-building', 'experiments', 'about', 'blog', '404'],
+    ['', 'what-were-building', 'experiments', 'about', 'blog', 'developers', 'roadmap', 'battery', 'status', '404'],
   );
   assert.equal(PAGES.home.title, 'Psyche: New era of intelligence');
   assert.equal(PAGES.whatWereBuilding.title, "What we're building");
   assert.equal(PAGES.experiments.title, 'The five experiments');
   assert.equal(PAGES.about.title, 'About and contact');
   assert.equal(PAGES.blog.title, 'Blog');
+  assert.equal(PAGES.developers.title, 'For developers');
+  // the documentation list's three pages of the site, by the titles staging gives them (stage.py CUSTOM_PAGES)
+  assert.equal(PAGES.roadmap.title, 'Explore the timeline');
+  assert.equal(PAGES.battery.title, 'Step through the paradigms');
+  assert.equal(PAGES.status.title, 'Substrate status');
   // the 404 page's are the ones check-seo compares the built page with
   assert.deepEqual(PAGES.notFound, { route: NOT_FOUND.route, title: NOT_FOUND.title, description: NOT_FOUND.description });
   for (const p of pages) {
@@ -279,7 +284,7 @@ test('pageHead refuses what check-seo would fail or never see', () => {
   assert.throws(() => pageHead({ ...PAGES.blog, article: POST_ARTICLE }), /blog post only/);
   assert.throws(() => pageHead({ ...PAGES.home, article: POST_ARTICLE }), /blog post only/);
   assert.throws(() => pageHead({ ...PAGES.notFound, article: POST_ARTICLE }), /blog post only/);
-  // the generator is written where Starlight writes it, when it is given
+  // the generator is written when it is given, and only then
   assert.deepEqual(metas(pageHead({ ...ok, generator: 'Astro v0' }), 'name', 'generator'), ['Astro v0']);
   assert.deepEqual(metas(pageHead(ok), 'name', 'generator'), []);
 });

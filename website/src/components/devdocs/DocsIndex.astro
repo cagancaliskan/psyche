@@ -1,0 +1,41 @@
+---
+// The documentation home's lists, written whole into the HTML: the filter (written hidden, shown by the
+// documentation script, since it filters only with script) with the count of pages, "Where to start"
+// (lib/devdocs.ts START_SLUGS), then every page of the documentation list by group, each with its
+// description, then the "no page" line the script shows when nothing matches. The script filters the
+// items by their data-k-text and rewrites the count's words; it writes no item, link or description.
+import { NO_MATCH, countLabel, type DocsEntry, type NavGroup } from '@/lib/devdocs.ts';
+import { withBase } from '@/lib/url.ts';
+
+export interface Props {
+  /** The list's groups (lib/devdocs.ts navGroups). */
+  groups: NavGroup[];
+  /** The "Where to start" pages (lib/devdocs.ts startEntries). */
+  start: DocsEntry[];
+}
+
+const { groups, start } = Astro.props;
+const total = groups.reduce((n, g) => n + g.items.length, 0);
+---
+
+<div class="k-filter" role="search" hidden>
+  <label class="k-filter__label" for="k-docfilter">Search the documentation</label>
+  <input class="k-filter__input" id="k-docfilter" type="search" data-k-docfilter autocomplete="off" spellcheck="false" placeholder="A title or a word, such as gates" aria-describedby="k-docfilter-count" />
+  <p class="k-filter__count" id="k-docfilter-count" data-k-docfilter-count aria-live="polite">{countLabel(total)}</p>
+</div>
+
+<section class="k-devstart" aria-labelledby="k-devstart-name">
+  <h2 class="k-devhome__name" id="k-devstart-name">Where to start</h2>
+  <ul class="k-devstart__list">
+    {start.map((e) => <li><a class="k-devstart__title" href={withBase(e.path)}>{e.title}</a><p class="k-docindex__desc">{e.description}</p></li>)}
+  </ul>
+</section>
+
+<div data-k-docindex>
+  {groups.map((g, i) => (
+    <section class="k-docindex__group" aria-labelledby={`k-docgroup-${i}`}><h2 class="k-devhome__name k-docindex__name" id={`k-docgroup-${i}`}>{g.title}</h2><ul class="k-docindex__list">
+      {g.items.map((e) => <li class="k-docindex__item" data-k-text={e.text}><a class="k-docindex__title" href={withBase(e.path)}>{e.title}</a><p class="k-docindex__desc">{e.description}</p></li>)}
+    </ul></section>
+  ))}
+  <p class="k-docindex__none" hidden>{NO_MATCH}</p>
+</div>

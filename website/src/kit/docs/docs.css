@@ -1,0 +1,549 @@
+/* Psyche developer documentation: the frame, the documents and the documentation's own pages.
+   Loaded after kit.css, and only by the documentation pages (<body class="k-docs">): the home, every
+   document and the three site pages in its list. Nothing else on the site loads it.
+
+   A tool, not a statement page: a persistent left navigation, a comfortable reading column and an
+   "On this page" list. No boxes, no fills, no chips: the current page and the current section are marked
+   by ink weight, and the only lines are the faint rule between table rows and one above previous / next.
+   The server writes every part of the frame (the navigation, the lists, "On this page", previous / next,
+   the edit line and the table cells' labels); docs.js only adds behaviour to it. */
+
+/* ---------- The frame ---------- */
+:root {
+  --doc-size: 17px;          /* document body text */
+  --doc-measure: 572px;      /* about 33.6em of the body text: lines of 62 to 78 characters, median 72 (measured) */
+  --doc-nav: 240px;          /* left navigation */
+  --doc-toc: 200px;          /* "On this page" */
+}
+/* the header stays where it is in the documentation: nothing moves while one reads or looks things up */
+.k-docs .k-head, .k-docs .k-head.is-hidden { transform: none; background: var(--field); }
+.k-docs .k-foot { margin-top: 120px; }
+
+/* The frame: navigation, document, "On this page" (three columns from 1100 px, two from 901 px, one below). */
+.k-doclayout {
+  display: grid; grid-template-columns: var(--doc-nav) minmax(0, 1fr) var(--doc-toc); column-gap: 56px;
+  max-width: calc(1200px + 2 * var(--gutter)); margin: 0 auto;
+  padding: calc(var(--head-h) + 44px) var(--gutter) 0;
+}
+.k-doclayout > main { min-width: 0; }
+/* the two side columns stretch the full height of the document, so their lists can stay in view */
+.k-docside, .k-docaside { min-width: 0; }
+
+/* Left navigation: group names in ink, pages in soft ink, the current page in full ink and weight 500. */
+.k-docnav {
+  position: sticky; top: calc(var(--head-h) + 28px); align-self: start;
+  max-height: calc(100vh - var(--head-h) - 40px); overflow-y: auto; overscroll-behavior: contain;
+  padding: 0 8px 32px 2px; margin-left: -2px; font-size: 15px; line-height: 1.35;
+  scrollbar-width: thin;
+}
+.k-docnav ul { list-style: none; margin: 0; padding: 0; }
+.k-docnav__home { display: block; padding: 6px 0; margin: 0 0 20px; }
+.k-docnav__group { margin: 0 0 28px; }
+.k-docnav__name { margin: 0 0 4px; padding: 6px 0; color: var(--ink); font-weight: 500; }
+.k-docnav a, .k-toc a {
+  display: block; padding: 6px 0; color: var(--soft); text-decoration: underline; text-decoration-color: transparent;
+  text-decoration-thickness: 1px; text-underline-offset: .3em; transition: color .2s, text-decoration-color .2s;
+}
+.k-docnav a:hover, .k-toc a:hover { color: var(--ink); }
+.k-docnav a[aria-current="page"], .k-toc a[aria-current="true"] { color: var(--ink); font-weight: 500; }
+.k-docnav a:focus-visible, .k-toc a:focus-visible { outline: none; color: var(--ink); text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+/* "Pages" folds the navigation on narrow screens; it works only with script, so it is shown only then */
+.k-docmenu { display: none; }
+/* the search at the top of the navigation (documents): one line under the words, no box. The server writes
+   it hidden; the script shows it, since it filters only with script. */
+.k-docnav__search { margin: 0 0 22px; }
+.k-docnav__input {
+  -webkit-appearance: none; appearance: none; display: block; width: 100%; margin: 0;
+  background: transparent; border: 0; border-bottom: 1px solid var(--quiet); border-radius: 0;
+  color: var(--ink); font: inherit; font-size: 15px; line-height: 1.3; padding: 8px 0 9px;
+}
+.k-docnav__input::placeholder { color: var(--quiet); opacity: 1; }
+.k-docnav__input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.k-docnav__input:focus-visible { outline: none; border-bottom: 2px solid var(--focus); padding-bottom: 8px; }
+.k-docnav__none { margin: 0; padding: 6px 0; color: var(--soft); }
+.k-docnav__search[hidden], .k-docnav__group[hidden], .k-docnav li[hidden], .k-docnav__none[hidden] { display: none; }
+
+/* "On this page": the document's h2 and h3, the section being read in full ink and weight 500. */
+.k-toc {
+  position: sticky; top: calc(var(--head-h) + 28px); align-self: start;
+  max-height: calc(100vh - var(--head-h) - 40px); overflow-y: auto; overscroll-behavior: contain;
+  font-size: 14px; line-height: 1.35; padding: 0 2px 32px; scrollbar-width: thin;
+}
+.k-toc ul { list-style: none; margin: 0; padding: 0; }
+.k-toc a { padding: 5px 0; }
+.k-toc__name { margin: 0 0 6px; padding: 6px 0 5px; color: var(--ink); font-weight: 500; }
+.k-toc__sub a { padding-left: 14px; }
+
+/* ---------- The document ----------
+   Title, its one-line description, then the text at a reading measure. Tables, code and drawn diagrams
+   may use the whole column; prose never runs wider than --doc-measure. */
+.k-doc {
+  font-size: var(--doc-size); line-height: 1.7; color: var(--read);
+  font-feature-settings: "kern", "liga"; hanging-punctuation: first;
+}
+/* the document's own text sits in <article class="k-doc__body"> inside <main class="k-doc"> */
+.k-doc__body > * { max-width: var(--doc-measure); }
+.k-doc__body > table, .k-doc__body > .sx-table, .k-doc__body > pre, .k-doc__body > .sx-diagram { max-width: none; }
+.k-doc__title {
+  margin: 0; color: var(--ink); font-weight: 500;
+  font-size: var(--t-list); line-height: 1.1; letter-spacing: -.018em; text-wrap: balance;
+}
+.k-doc .k-doc__desc { margin: 20px 0 48px; font-size: var(--t-under); line-height: 1.5; letter-spacing: -.004em; color: var(--soft); text-wrap: pretty; }
+.k-doc p { margin: 0 0 1.05em; }
+.k-doc h2, .k-doc h3, .k-doc h4 { color: var(--ink); font-weight: 500; text-wrap: balance; scroll-margin-top: calc(var(--head-h) + 28px); }
+.k-doc h2 { font-size: 1.5em; line-height: 1.2; letter-spacing: -.016em; margin: 2.3em 0 .55em; }
+.k-doc h3 { font-size: 1.15em; line-height: 1.3; letter-spacing: -.008em; margin: 1.9em 0 .4em; }
+.k-doc h4 { font-size: 1em; line-height: 1.4; margin: 1.6em 0 .3em; }
+.k-doc strong { font-weight: 500; color: var(--ink); }
+.k-doc em { font-style: italic; }
+.k-doc a {
+  color: inherit; text-decoration: underline; text-decoration-thickness: 1px;
+  text-decoration-color: var(--quiet); text-underline-offset: .2em; transition: text-decoration-color .2s, color .2s;
+}
+/* a long address written out in the text breaks where it would leave the column, so a narrow phone does not scroll sideways */
+.k-doc__body a { overflow-wrap: break-word; }
+.k-doc a:hover { color: var(--ink); text-decoration-color: var(--ink); }
+.k-doc a:focus-visible { outline: none; color: var(--ink); text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+.k-doc a:not([href]) { text-decoration: none; color: inherit; }
+.k-doc ul, .k-doc ol { margin: 0 0 1.2em; padding-left: 1.25em; }
+.k-doc li { margin: 0 0 .5em; padding-left: .25em; }
+.k-doc li::marker { color: var(--quiet); }
+.k-doc ol > li::marker { font-variant-numeric: tabular-nums; }
+/* a list inside a list item: no space of its own above, its items as close as the outer ones */
+.k-doc li > ul, .k-doc li > ol { margin: .5em 0 0; }
+/* a thematic break: space only, as in the reading column */
+.k-doc hr { border: 0; height: 0; margin: 3em 0; }
+/* a note (the document's blockquote): a thin mark at its left, text in the reading ink */
+.k-doc blockquote { margin: 0 0 2em; padding: 1px 0 1px 18px; border-left: 2px solid var(--peri); color: var(--read); }
+.k-doc blockquote p { margin: 0 0 .5em; }
+.k-doc blockquote p:last-child { margin-bottom: 0; }
+/* inline code: the mono face in ink, no chip */
+.k-doc code { font-family: var(--mono); font-size: .8em; color: var(--ink); letter-spacing: -.01em; overflow-wrap: anywhere; }
+/* a code block: as in the reading column, a thin rule at its left; long lines scroll inside it (a tab stop
+   while they do: docs.js) */
+.k-doc pre {
+  margin: 0 0 1.8em; padding: .15em 0 .15em 1.25em; border-left: 1px solid var(--quiet);
+  overflow-x: auto; -webkit-overflow-scrolling: touch;
+  font-family: var(--mono); font-size: 13px; line-height: 1.75; color: var(--read); tab-size: 4;
+}
+.k-doc pre code { font-size: inherit; color: inherit; overflow-wrap: normal; }
+.k-doc pre:focus-visible { outline-offset: 2px; }
+/* a date stays on one line (the server marks it: data-nowrap on a cell or on a span in the text) */
+.k-doc [data-nowrap] { white-space: nowrap; }
+/* tables: no frame, no cell borders, no fill; one faint rule between rows. A document's table stands in
+   <div class="sx-table" role="region" tabindex="0" aria-label="Table: …">, which scrolls sideways when
+   the table is wider than the column (a tab stop only while it does: docs.js). The space around the
+   table is the region's, at the table's own size (.94em), so the page reads as with a bare table. */
+.k-doc table { width: 100%; border-collapse: collapse; margin: 1.4em 0 2.2em; font-size: .94em; line-height: 1.55; }
+.k-doc .sx-table { margin: calc(1.4em * .94) 0 calc(2.2em * .94); overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.k-doc .sx-table > table { margin: 0; }
+.k-doc .sx-table:focus-visible { outline-offset: 2px; }
+.k-doc th { text-align: left; font-weight: 400; color: var(--soft); font-size: 15px; padding: 0 1.6em .7em 0; vertical-align: bottom; }
+.k-doc td { padding: .8em 1.6em .8em 0; vertical-align: top; }
+.k-doc th:last-child, .k-doc td:last-child { padding-right: 0; }
+.k-doc thead + tbody tr:first-child td, .k-doc tbody tr + tr td { border-top: 1px solid var(--rule); }
+.k-doc td:first-child { color: var(--ink); min-width: 9em; }
+
+/* The end of a document: previous and next, then "Edit this page on GitHub" and "Last updated". */
+.k-docpager { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin: 80px 0 0; padding-top: 28px; border-top: 1px solid var(--rule); }
+.k-doc .k-docpager a { display: flex; flex-direction: column; gap: 4px; max-width: 48%; text-decoration: none; color: var(--ink); }
+.k-docpager__next { margin-left: auto; text-align: right; align-items: flex-end; }
+.k-docpager__label { font-size: 15px; color: var(--soft); }
+.k-docpager__title { font-size: 19px; line-height: 1.3; font-weight: 500; text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1px; text-underline-offset: .22em; transition: text-decoration-color .2s; }
+.k-docpager a:hover .k-docpager__title { text-decoration-color: var(--ink); }
+.k-docpager a:focus-visible { outline: none; }
+.k-docpager a:focus-visible .k-docpager__title { text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+/* the edit link and, beside it, one quiet line with the date of the page's last change */
+.k-doc .k-docedit { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 28px; margin: 36px 0 0; font-size: 15px; color: var(--soft); }
+.k-docedit__date { color: var(--soft); }
+
+/* ---------- Drawn diagrams ----------
+   The figure staging writes in place of a Mermaid fence, restyled as it is:
+     figure.sx-diagram                     the figure
+     div.sx-diagram__scroll                its scroll box: [role=group][aria-labelledby][tabindex=0] and the
+                                           --dg-w custom property (the viewBox width); docs.js keeps role and
+                                           tabindex only while it overflows
+     svg[role=img] > title, desc           the name and the plain-word reading ("Steps: ... Connections: ...")
+     g.node                                every shape, with its class-def name (.start .step .question .change
+                                           .keep .stop and others)
+     g.node > rect, g.node > polygon       the outline (polygon = decision diamond)
+     g.node text                           the label
+     path.flowchart-link                   a connection
+     marker path                           its arrowhead (marker.marker > path.arrowMarkerPath)
+     g.edgeLabel text, g.edgeLabel rect.background   the "yes" / "no" on a connection and the box behind it
+   One SVG, both themes: every paint comes from the kit's tokens. Flat: no box, no fill behind the drawing,
+   square shapes in thin strokes, open chevron arrowheads. */
+.k-doc .sx-diagram { margin: 2.1em 0 2.3em; padding: 0; border: 0; background: none; }
+.k-doc .sx-diagram__scroll { overflow-x: auto; overscroll-behavior-x: contain; padding: 2px 2px 4px; scrollbar-width: thin; scrollbar-color: var(--quiet) transparent; }
+.k-doc .sx-diagram__scroll:focus-visible { outline-offset: 2px; }
+/* Drawn at one and a quarter times the size it was laid out at, so the 12-unit labels read at 15 px, the caption size.
+   Never shrunk to the column: wider than the column, it scrolls inside its own box (a phone). */
+.k-doc .sx-diagram svg { display: block; width: calc(var(--dg-w, 600) * 1.25px); max-width: none; height: auto; overflow: visible; font-family: var(--sans); }
+.k-doc .sx-diagram svg :is(path, rect, polygon) { vector-effect: non-scaling-stroke; }
+/* Labels: the site's sans, ink. Instrument Sans is narrower than the Martian Mono the labels were measured in, so
+   every label stays inside the shape drawn for it. */
+.k-doc .sx-diagram svg text { fill: var(--ink); stroke: none; font-weight: 400; }
+/* Shapes: a thin outline in soft ink; the inside is the field itself (no tint), so it only hides a line that passes behind.
+   The shapes keep the size and place they were laid out at: the connections end on their edges, so a shape drawn
+   smaller would leave every arrowhead short of it. */
+.k-doc .sx-diagram svg .node :is(rect, polygon, circle, ellipse, path) { fill: var(--field); stroke: var(--soft); stroke-width: 1px; }
+/* The node the source marks as the one that changes (classDef change) and the outcomes (keep, stop) keep their
+   distinction as a drawn mark, never a fill: periwinkle and mint outlines, a dashed outline for "not started".
+   Every label still says it in words. */
+.k-doc .sx-diagram svg .node.change :is(rect, polygon) { stroke: var(--peri); stroke-width: 1.5px; }
+.k-doc .sx-diagram svg .node.keep :is(rect, polygon) { stroke: var(--mint); stroke-width: 1.5px; }
+.k-doc .sx-diagram svg .node.stop :is(rect, polygon) { stroke-dasharray: 5 4; }
+/* Connections and their open chevrons: quiet ink, one pixel. */
+.k-doc .sx-diagram svg .flowchart-link { fill: none; stroke: var(--quiet); stroke-width: 1px; }
+.k-doc .sx-diagram svg marker path { fill: none; stroke: var(--quiet); stroke-width: 1px; stroke-linejoin: miter; }
+/* "yes" / "no" stand on their line. The box drawn behind them is wider and taller than the word and cut the line into
+   stubs, so it is not drawn; the word carries a narrow halo in the field colour instead, which hides the line only
+   behind the letters. */
+.k-doc .sx-diagram svg .edgeLabel .background { display: none; }
+.k-doc .sx-diagram svg .edgeLabel text { fill: var(--read); font-weight: 500; stroke: var(--field); stroke-width: 5px; stroke-linejoin: round; paint-order: stroke fill; }
+/* Over a diagram that is wider than its column (a phone): one quiet line, shown only while it overflows (docs.js
+   writes it, with the plain-word reading of the drawing after it). */
+.k-doc .k-diagram__note { margin: 0 0 .6em; font-size: 15px; line-height: 1.4; color: var(--soft); }
+.k-doc .k-diagram__note[hidden] { display: none; }
+@media (forced-colors: active) {
+  .k-doc .sx-diagram svg text { fill: CanvasText !important; }
+  .k-doc .sx-diagram svg .edgeLabel text { stroke: Canvas !important; }
+  .k-doc .sx-diagram svg .node :is(rect, polygon, circle, ellipse, path) { fill: Canvas !important; }
+  .k-doc .sx-diagram svg :is(.node rect, .node polygon, .flowchart-link, marker path) { stroke: CanvasText !important; }
+}
+
+/* ---------- The documentation home ----------
+   The same frame as the documents (navigation at the left), then the title at the document title's size,
+   one sentence, the repository, the search field, three places to start, and every page by group (the
+   group name as a heading above its pages). */
+.k-doclayout--home { grid-template-columns: var(--doc-nav) minmax(0, 1fr); }
+.k-devhome { min-width: 0; max-width: 880px; }
+.k-devhome__lead { margin: 20px 0 0; max-width: 36em; font-size: var(--t-under); line-height: 1.5; letter-spacing: -.004em; color: var(--soft); text-wrap: pretty; }
+.k-devhome__repo { margin: 14px 0 0; font-size: 17px; color: var(--soft); }
+.k-devhome__repo a { color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: var(--quiet); text-underline-offset: .2em; }
+.k-devhome__repo a:hover { text-decoration-color: var(--ink); }
+.k-devhome__repo a:focus-visible { outline: none; text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+/* a heading on the home: as a document's h2 */
+.k-devhome__name { margin: 0; color: var(--ink); font-weight: 500; font-size: 25.5px; line-height: 1.2; letter-spacing: -.016em; }
+/* the search field: one line under the words, no box. The server writes it hidden; the script shows it. */
+.k-filter { margin: 36px 0 0; max-width: 560px; }
+.k-filter[hidden] { display: none; }
+.k-filter__label { display: block; margin: 0 0 4px; font-size: 15px; color: var(--soft); }
+.k-filter__input {
+  -webkit-appearance: none; appearance: none; display: block; width: 100%; margin: 0;
+  background: transparent; border: 0; border-bottom: 1px solid var(--quiet); border-radius: 0;
+  color: var(--ink); font: inherit; font-size: var(--t-under); line-height: 1.3; padding: 10px 0 11px;
+}
+.k-filter__input::placeholder { color: var(--quiet); opacity: 1; }
+.k-filter__input::-webkit-search-cancel-button { -webkit-appearance: none; }
+.k-filter__input:focus-visible { outline: none; border-bottom: 2px solid var(--focus); padding-bottom: 10px; }
+.k-filter__count { margin: 10px 0 0; font-size: 15px; color: var(--soft); }
+/* where to start: three pages, title and one-line description, one per line */
+.k-devstart { margin: 44px 0 0; }
+.k-devstart[hidden] { display: none; }
+.k-devstart__list { list-style: none; margin: 18px 0 0; padding: 0; }
+.k-devstart__list li { margin: 0 0 16px; max-width: 40em; }
+.k-docindex__group { margin: 64px 0 0; }
+.k-docindex__group[hidden], .k-docindex__item[hidden] { display: none; }
+.k-docindex__list { list-style: none; margin: 22px 0 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 48px; }
+.k-docindex__title, .k-devstart__title {
+  font-size: 19px; line-height: 1.3; font-weight: 500; color: var(--ink);
+  text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1px; text-underline-offset: .22em;
+  transition: text-decoration-color .2s;
+}
+.k-docindex__title:hover, .k-devstart__title:hover { text-decoration-color: var(--ink); }
+.k-docindex__title:focus-visible, .k-devstart__title:focus-visible { outline: none; text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+.k-docindex__desc { margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: var(--soft); max-width: 34em; }
+.k-docindex__none { font-size: var(--t-under); color: var(--soft); margin: 48px 0 0; }
+.k-docindex__none[hidden] { display: none; }
+
+/* ---------- Widths of the screen ---------- */
+@media (max-width: 1099px) {
+  .k-doclayout { grid-template-columns: var(--doc-nav) minmax(0, 1fr); }
+  .k-docaside { display: none; }
+}
+@media (max-width: 900px) {
+  .k-doclayout { display: block; padding-top: calc(var(--head-h) + 4px); }
+  /* without script the whole list stands once above the text, in the flow of the page */
+  .k-docside { margin: 0 0 16px; }
+  .k-docnav { position: static; max-height: none; overflow-y: visible; padding: 4px 0 24px; margin: 0; }
+  /* with script the navigation folds behind "Pages", which stays just under the header; it opens over the
+     text from that line, capped to the screen, and takes no room in the page: the text under it does not
+     move and the page keeps its scroll position */
+  .k-js .k-docside { position: sticky; top: var(--head-h); z-index: 30; margin: 0 calc(-1 * var(--gutter)) 16px; padding: 0 var(--gutter); background: var(--field); }
+  .k-js .k-docmenu { display: inline-block; margin: 0 0 0 -2px; font-size: 16px; color: var(--read); }
+  .k-js .k-docnav {
+    position: absolute; top: 100%; left: 0; right: 0; padding: 4px var(--gutter) 24px; background: var(--field);
+    border-bottom: 1px solid var(--rule); /* where the list ends and the text it lies over goes on */
+    max-height: calc(100vh - var(--head-h) - 52px); overflow-y: auto;
+  }
+  .k-js .k-docnav:not(.is-open) { display: none; }
+  .k-devhome { max-width: none; }
+}
+@media (max-width: 700px) {
+  .k-doc .k-doc__desc { margin: 14px 0 36px; }
+  .k-doc h2 { font-size: 1.4em; margin-top: 2em; }
+  .k-doc pre { font-size: 12px; }
+  .k-filter { margin-top: 32px; }
+  .k-devstart { margin-top: 48px; }
+  .k-docindex__group { margin-top: 56px; }
+  .k-devhome__name { font-size: 23px; }
+  .k-docindex__list { grid-template-columns: minmax(0, 1fr); gap: 26px; }
+  .k-docpager { flex-direction: column; gap: 22px; }
+  .k-doc .k-docpager a { max-width: none; }
+  .k-docpager__next { margin-left: 0; text-align: left; align-items: flex-start; }
+  /* tables stack one row at a time, each cell under its column's name (the server writes it as data-label) */
+  .k-doc table, .k-doc tbody, .k-doc tr, .k-doc td { display: block; width: 100%; }
+  .k-doc thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .k-doc tbody tr { padding: .9em 0; }
+  .k-doc tbody tr + tr, .k-doc thead + tbody tr:first-child { border-top: 1px solid var(--rule); }
+  .k-doc tbody tr + tr td, .k-doc thead + tbody tr:first-child td { border-top: 0; }
+  .k-doc td { padding: 0 0 .35em; min-width: 0; }
+  .k-doc td[data-label]::before { content: attr(data-label); display: block; margin: 0 0 2px; font-size: 15px; line-height: 1.4; color: var(--soft); }
+}
+
+/* ---------- Explore the timeline (prefix tl-) ----------
+   A flat drawn timeline: one rule for the months, thin lines for the phases, short marks for the gates,
+   one thin line for today. No box, no fill, no chip: what is chosen is told by ink and weight. */
+.k-doc__body > .tl-draw, .k-doc__body > .tl-now { max-width: none; }
+
+/* "Now" and "Next gate": two plain rows, the name at the left in soft ink, a faint rule between them. */
+.tl-now { margin: 0 0 8px; }
+.tl-now > div { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 0 24px; padding: 12px 0; }
+.tl-now > div + div { border-top: 1px solid var(--rule); }
+.tl-now dt { color: var(--soft); font-size: 15px; line-height: 1.7; }
+.tl-now dd { margin: 0; color: var(--read); }
+.tl-now .tl-id { color: var(--ink); font-weight: 500; }
+
+/* The drawing: a name column and a time column, one row per phase and per gate. */
+.tl-draw { --tl-name: 212px; position: relative; margin: 8px 0 0; }
+.tl-row, .tl-lane { display: grid; grid-template-columns: var(--tl-name) minmax(0, 1fr); align-items: stretch; }
+.tl-draw ol { list-style: none; margin: 0; padding: 0; }
+.tl-draw li { margin: 0; padding: 0; }
+.tl-draw li + li { border-top: 1px solid var(--rule); }
+/* the line in time fills its row: a box that stretches with the row, the drawing laid over it */
+.tl-timebox { position: relative; display: block; min-height: 20px; }
+.tl-time { position: absolute; left: 0; top: 0; width: 100%; height: 100%; overflow: visible; }
+.tl-axis .tl-timebox { height: 46px; }
+/* today: one unbroken 1 px line over the whole time column, laid under the marks so a gate tick on it stays seen */
+.tl-todayline { position: absolute; top: 0; bottom: 0; width: 1px; margin-left: -.5px; background: var(--mint); pointer-events: none; }
+.tl-today--row { display: none; }
+.k-doc .tl-group { margin: 0; padding: 16px 0 4px; color: var(--ink); font-weight: 500; font-size: 15px; line-height: 1.35; }
+.tl-lane {
+  -webkit-appearance: none; appearance: none; width: 100%; margin: 0; padding: 0; border: 0; background: none;
+  font: inherit; color: var(--soft); text-align: left; cursor: pointer;
+}
+.tl-lane__name { display: block; padding: 8px 18px 8px 0; font-size: 15px; line-height: 1.35;
+  text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1px; text-underline-offset: .3em; }
+.tl-lane:hover { color: var(--ink); }
+.tl-lane[aria-pressed="true"] { color: var(--ink); font-weight: 500; }
+.tl-lane:focus-visible { outline: none; color: var(--ink); }
+.tl-lane:focus-visible .tl-lane__name { text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+.tl-lane .tl-id { color: var(--ink); font-weight: 500; }
+
+/* Drawn marks. Every paint is a kit token, so light and dark come from the theme. */
+.tl-time text { font-family: var(--sans); font-size: 14px; fill: var(--soft); }
+.tl-time .tl-today-word { fill: var(--read); }
+/* "Today" is named once, beside the line at the top of the drawing: in the "Phases" row on a wide screen, in the axis on a phone */
+.tl-today-word--axis { display: none; }
+.tl-rule { stroke: var(--quiet); stroke-width: 1px; }
+.tl-bar { stroke: var(--soft); stroke-width: 2px; stroke-linecap: butt; }
+.tl-bar.is-open { stroke-dasharray: 5 4; }
+.tl-bar.is-active { stroke: var(--mint); stroke-width: 3px; }
+.tl-bar.is-sel { stroke: var(--ink); stroke-width: 3px; }
+.tl-bar.is-active.is-sel { stroke: var(--mint); stroke-width: 4px; }
+.tl-gate { stroke: var(--soft); stroke-width: 3px; }
+.tl-gate.is-next { stroke: var(--peri); }
+/* a chosen gate's tick runs the full height of its row (the script sets its ends) */
+.tl-gate.is-sel { stroke: var(--ink); }
+.tl-gate.is-next.is-sel { stroke: var(--peri); }
+.tl-time .tl-gtext.is-sel { fill: var(--ink); font-weight: 500; }
+.tl-today { stroke: var(--mint); stroke-width: 1px; }
+
+/* Above the drawing: one short sentence, then what is chosen, with a thin mark at its left. The script gives the
+   reading the height of its longest text at the current width, so the drawing below never moves on a choice. */
+.k-doc .tl-hint { margin: 0; font-size: 15px; line-height: 1.5; color: var(--soft); }
+.tl-readbox { margin: 14px 0 22px; }
+.tl-read { margin: 0; padding: 2px 0 2px 18px; border-left: 2px solid var(--peri); box-sizing: border-box; }
+.k-doc .tl-read p { margin: 0 0 .55em; }
+.k-doc .tl-read .tl-read__title { color: var(--ink); font-weight: 500; font-size: 19px; line-height: 1.3; margin: 0 0 .2em; }
+.k-doc .tl-read .tl-read__state { color: var(--soft); font-size: 15px; margin-bottom: .45em; }
+.k-doc .tl-read .tl-k { color: var(--soft); font-size: 15px; padding-right: .3em; }
+.k-doc .tl-read p:last-child { margin-bottom: 0; }
+
+/* The phases table: a phase's state under its name; outputs as a short list. */
+.k-doc .tl-table td:first-child { min-width: 0; width: 38%; }
+.k-doc .tl-table td { font-size: 15.5px; }
+.k-doc .tl-table ul { margin: 0; padding-left: 1.05em; }
+.k-doc .tl-table li { margin: 0 0 .3em; padding-left: .15em; }
+.tl-when { display: block; margin-top: .2em; color: var(--read); }
+.tl-state { display: block; color: var(--soft); font-size: 15px; }
+.tl-state.is-active { color: var(--ink); font-weight: 500; }
+.tl-note { display: block; margin-top: .35em; color: var(--soft); }
+
+/* The gates: one part each, a faint rule between them. */
+.tl-gates { margin: 30px 0 0; }
+.tl-gatepart + .tl-gatepart { border-top: 1px solid var(--rule); }
+.k-doc .tl-gatepart h3 { margin: 0; padding: 24px 0 4px; }
+.k-doc .tl-gmeta { display: flex; flex-wrap: wrap; gap: 2px 22px; margin: 0 0 .5em; font-size: 15px; color: var(--soft); }
+.tl-gmeta time { color: var(--read); }
+.tl-gmeta .tl-gnext { color: var(--ink); font-weight: 500; }
+.k-doc .tl-gnote { color: var(--soft); }
+.k-doc .tl-miss .tl-k { display: block; color: var(--soft); font-size: 15px; }
+.k-doc .tl-gatepart p:last-child { margin-bottom: 20px; }
+
+@media (max-width: 700px) {
+  .tl-now > div { grid-template-columns: minmax(0, 1fr); padding: 10px 0; }
+  .tl-now dt { line-height: 1.5; }
+  /* on a phone a row's name stands above its line in time */
+  .tl-row, .tl-lane { display: block; }
+  .tl-axis .tl-row__name, .tl-grouprow .tl-timebox { display: none; }
+  /* names stand across the full width here, so today is drawn per row, in each row's line in time only */
+  .tl-todayline { display: none; }
+  .tl-today--row { display: inline; }
+  .tl-today-word--axis { display: inline; }
+  .tl-axis .tl-timebox { height: 70px; }
+  .tl-lane .tl-timebox { height: 22px; margin: 0 0 8px; }
+  .tl-lane__name { padding: 10px 0 4px; }
+  .tl-group { padding-top: 20px; }
+  .k-doc .tl-table td:empty { display: none; }
+  .k-doc .tl-table td { font-size: inherit; }
+  .k-doc .tl-table td:first-child { width: auto; }
+}
+@media (forced-colors: active) {
+  .tl-time text { fill: CanvasText; }
+  .tl-rule, .tl-bar, .tl-gate, .tl-today { stroke: CanvasText; }
+}
+
+/* ---------- Step through the paradigms (prefix bw-) ----------
+   Flat: no boxes, fills, chips or shadows; faint rules between step rows; the current step in full ink at
+   weight 500. Nothing moves: a step changes at once. */
+.bw-index { display: none; }
+.bw-index__name { margin: 0 0 4px; color: var(--ink); font-weight: 500; }
+.k-doc .bw-index ul { list-style: none; padding: 0; margin: 0 0 8px; }
+.k-doc .bw-index li { margin: 0; padding: 0; }
+.k-doc .bw-index a { display: inline-block; padding: 5px 0; }
+@media (max-width: 1099px) { .bw-index { display: block; margin: 0 0 8px; } }
+
+.bw-test { container-type: inline-size; max-width: none !important; }
+.bw-test > p { max-width: var(--doc-measure); }
+.k-doc .bw-after { margin: -.2em 0 1.1em; color: var(--soft); }
+.bw-ask__name { display: block; }
+.bw-play { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px; margin: 1.9em 0 0; }
+@container (min-width: 600px) {
+  .bw-play { grid-template-columns: minmax(0, 1fr) 260px; gap: 40px; align-items: start; }
+}
+.bw-look { min-width: 0; }
+.bw-art { display: block; width: 100%; height: auto; overflow: hidden; }
+.bw-art--chain { max-width: 420px; }
+.bw-art * { vector-effect: non-scaling-stroke; }
+.bw-wall { fill: none; stroke: var(--soft); stroke-width: 1.25; stroke-linecap: square; }
+.bw-door { fill: none; stroke: var(--peri); stroke-width: 3.5; stroke-linecap: butt; }
+:root[data-theme="light"] .bw-door { stroke-width: 2.5; } /* the light periwinkle is more saturated: a lighter stroke keeps the shut door from being the loudest mark */
+.bw-trail { fill: none; stroke: var(--read); stroke-width: 2.25; stroke-dasharray: 0 6; stroke-linecap: round; stroke-linejoin: round; }
+.bw-route { fill: none; stroke: var(--mint); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+.bw-start { fill: var(--field); stroke: var(--ink); stroke-width: 1.5; }
+.bw-goal { fill: none; stroke: var(--mint); stroke-width: 1.5; }
+.bw-goal-dot { fill: var(--mint); }
+.bw-edge { stroke: var(--soft); stroke-width: 1.5; }
+.bw-node { fill: var(--field); stroke: var(--soft); stroke-width: 1.5; }
+.bw-node--asked { stroke: var(--mint); stroke-width: 2; }
+.bw-letter { fill: var(--ink); font-family: var(--sans); font-size: .44px; font-weight: 500; text-anchor: middle; dominant-baseline: central; }
+
+/* the controls: plain words under the drawing, where the step stands at the right */
+.bw-ctl { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 24px; margin: 14px 0 0; }
+.k-doc .bw-ctl__btn { font-size: 16px; color: var(--read); min-height: 40px; padding: 10px 2px; }
+.k-doc .bw-ctl__btn:hover, .k-doc .bw-ctl__btn:focus-visible { color: var(--ink); }
+.k-doc .bw-ctl__btn[aria-disabled="true"] { color: var(--quiet); cursor: default; text-decoration-color: transparent; }
+.k-doc .bw-ctl__btn[aria-disabled="true"]:focus-visible { text-decoration-color: var(--focus); }
+.k-doc .bw-ctl__at { margin: 0 0 0 auto; font-size: 15px; color: var(--soft); font-variant-numeric: tabular-nums; }
+
+/* the steps: one row each, a faint rule between rows; the current one in full ink at weight 500 */
+.k-doc .bw-steps { list-style: none; margin: 0; padding: 0; border-bottom: 1px solid var(--rule); }
+.k-doc .bw-steps li { margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+.bw-step {
+  appearance: none; -webkit-appearance: none; display: block; width: 100%; margin: 0; padding: 12px 0 13px;
+  background: none; border: 0; text-align: left; font: inherit; cursor: pointer; color: var(--soft);
+}
+.bw-step__name { display: block; font-size: 17px; line-height: 1.35; color: var(--soft); text-decoration: underline; text-decoration-color: transparent; text-decoration-thickness: 1px; text-underline-offset: .25em; }
+.bw-step__text { display: block; margin: 3px 0 0; font-size: 16px; line-height: 1.5; color: var(--soft); }
+.bw-step:hover .bw-step__name { color: var(--ink); text-decoration-color: var(--quiet); }
+.bw-step[aria-current="step"] .bw-step__name { color: var(--ink); font-weight: 500; }
+.bw-step[aria-current="step"] .bw-step__text { color: var(--read); }
+.bw-step:focus-visible { outline: none; }
+.bw-step:focus-visible .bw-step__name { color: var(--ink); text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+
+.k-doc .bw-test + .bw-test h2 { margin-top: 2.6em; }
+.k-doc .bw-code { margin-right: .12em; }
+
+/* ---------- Substrate status (prefix st-) ---------- */
+/* the captured run: five figures on one line, then its facts as ruled label and value rows */
+/* the readout, the facts and the two keys use the whole column, as tables do */
+.k-doc__body > .st-runbox, .k-doc__body > .st-facts, .k-doc__body > .st-key, .k-doc__body > .st-more { max-width: none; }
+/* five cells at their own width with equal gaps between them; where the column is too narrow for one line, three to a line */
+.st-runbox { container-type: inline-size; margin: 1.5em 0 0; }
+.st-run { margin: 0; display: flex; justify-content: space-between; gap: 22px 32px; }
+@container (max-width: 599px) {
+  .st-run { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 22px 18px; }
+  .st-run__cell:nth-child(4) { grid-column: 1 / 3; }
+  /* a detail wider than its third of a narrow column wraps instead of leaving it */
+  .st-run__detail { white-space: normal; }
+}
+.st-run__cell { display: flex; flex-direction: column; margin: 0; }
+.st-run__cell dt { order: 2; margin: 6px 0 0; font-size: 16px; line-height: 1.35; color: var(--ink); }
+.st-run__fig { order: 1; margin: 0; font-size: var(--t-part); line-height: 1.1; font-weight: 500; letter-spacing: -.012em; color: var(--ink); font-variant-numeric: tabular-nums; }
+.st-run__detail { order: 3; margin: 4px 0 0; font-size: 15px; line-height: 1.45; color: var(--soft); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.st-facts { margin: 28px 0 0; }
+.st-facts__row { display: grid; grid-template-columns: 10.5em minmax(0, 1fr); gap: 0 24px; padding: .8em 0; border-top: 1px solid var(--rule); }
+.st-facts__row:last-child { border-bottom: 1px solid var(--rule); }
+.st-facts dt { color: var(--soft); }
+.st-facts dd { margin: 0; color: var(--ink); }
+/* a note: the kit's 2 px periwinkle mark at its left, nothing else */
+.st-note { margin: 3em 0 2.2em; padding: 1px 0 1px 18px; border-left: 2px solid var(--peri); }
+.st-note p { margin: 0 0 .5em; }
+.st-note p:last-child { margin-bottom: 0; }
+.st-nowrap { white-space: nowrap; }
+/* the two axes, each a ruled list: state word, count, what the state means */
+.st-ask { color: var(--soft); }
+.k-doc .st-key { list-style: none; margin: .9em 0 2em; padding: 0; }
+.k-doc .st-key li { display: grid; grid-template-columns: 7.5em 5.5em minmax(0, 1fr); gap: 0 20px; margin: 0; padding: .8em 0; border-top: 1px solid var(--rule); }
+.k-doc .st-key li:last-child { border-bottom: 1px solid var(--rule); }
+.st-key__state { color: var(--ink); font-weight: 500; }
+.st-key__count { color: var(--ink); font-variant-numeric: tabular-nums; }
+.st-key__notes p { margin: 0 0 .5em; }
+.st-key__notes p:last-child { margin: 0; }
+/* the brick table: kit table rules; the row's id is a row header in mono */
+.k-doc .st-brk { margin-top: 2.4em; }
+.k-doc .st-brk tbody th { text-align: left; font-weight: 400; font-size: inherit; color: var(--ink); padding: .8em 1.6em .8em 0; vertical-align: top; white-space: nowrap; }
+.k-doc .st-brk thead + tbody tr:first-child th, .k-doc .st-brk tbody tr + tr th { border-top: 1px solid var(--rule); }
+.k-doc .st-brk td.st-brk__name { color: var(--read); min-width: 0; }
+.k-doc .st-brk td.st-brk__st { color: var(--ink); white-space: nowrap; }
+/* the same fixed column widths in both tables (their colgroups), so the designed bricks line up with the others */
+@media (min-width: 701px) {
+  .k-doc .st-brk { table-layout: fixed; }
+  .st-brk__c-id { width: 5.5em; }
+  .st-brk__c-st { width: 9em; }
+  .k-doc .st-brk tbody th { padding-right: 1em; }
+}
+/* the designed bricks behind one plain-word control; it opens at once */
+.st-more { margin: 0 0 2em; }
+.st-more > summary { display: inline-block; list-style: none; cursor: pointer; padding: 8px 2px; min-height: 32px; margin-left: -2px; font-size: 16px; line-height: 1; color: var(--read);
+  text-decoration: underline; text-decoration-color: var(--quiet); text-decoration-thickness: 1px; text-underline-offset: .32em; transition: color .2s, text-decoration-color .2s; }
+.st-more > summary::-webkit-details-marker { display: none; }
+.st-more > summary:hover { color: var(--ink); text-decoration-color: var(--ink); }
+.st-more > summary:focus-visible { outline: none; color: var(--ink); text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+.st-more .st-brk { margin-top: 1.2em; }
+@media (max-width: 700px) {
+  .st-facts__row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+  .k-doc .st-key li { grid-template-columns: auto minmax(0, 1fr); gap: 2px 14px; }
+  .st-key__notes { grid-column: 1 / -1; margin-top: 4px; }
+  /* a brick on a phone: its id and name on one line, its two states side by side under them */
+  .k-doc .st-brk colgroup { display: none; }
+  .k-doc .st-brk tbody tr { display: grid; grid-template-columns: 5em minmax(0, 1fr) minmax(0, 1fr); grid-template-areas: "id name name" "b b m"; column-gap: 14px; }
+  .k-doc .st-brk tbody th { grid-area: id; display: block; padding: 0 0 .35em; border-top: 0 !important; white-space: nowrap; }
+  .k-doc .st-brk td.st-brk__name { grid-area: name; color: var(--ink); }
+  .k-doc .st-brk td.st-brk__name::before { display: none !important; }
+  .k-doc .st-brk td.st-brk__st { width: auto; margin-top: .3em; white-space: normal; }
+  .k-doc .st-brk td.st-brk__st:nth-child(3) { grid-area: b; }
+  .k-doc .st-brk td.st-brk__st:nth-child(4) { grid-area: m; }
+}

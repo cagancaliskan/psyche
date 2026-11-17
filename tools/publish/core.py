@@ -529,11 +529,15 @@ DESCRIPTION_MIN = 120
 DESCRIPTION_MAX = 160
 RESERVED_WIKI = {"home", "_sidebar", "_footer"}
 # Site routes that belong to something other than a manifest page: the blog (its index at blog/, and
-# each post at blog/<slug>/, staged by stage.py from docs/blog/), and admin/, where the blog's editor
-# was served until it was removed: the address stays reserved so that no page takes its place. A
-# manifest page at blog/, or below it, would be staged to the same place as a post, and which one the
-# build kept would be up to the filesystem and Astro, so the manifest refuses both roots.
-RESERVED_SLUG_ROOTS = ("blog", "admin")
+# each post at blog/<slug>/, staged by stage.py from docs/blog/); admin/, where the blog's editor was
+# served until it was removed, so that no page takes its address; and every page the site writes by
+# hand (website/src/pages): the developer home at developers/, the timeline, the paradigm walk-through
+# and the substrate status at roadmap/, battery/ and status/, the front pages and the not-found page.
+# A manifest page at one of these routes, or below it, would be staged to the address of a page the
+# site already serves, and which one the build kept would be up to the filesystem and Astro, so the
+# manifest refuses every such root (test_core.py checks that each hand-written page is in the list).
+RESERVED_SLUG_ROOTS = ("blog", "admin", "developers", "roadmap", "battery", "status", "what-were-building",
+                       "experiments", "about", "404")
 SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*)*$")
 WIKI_RE = re.compile(r"^[A-Za-z0-9]+(?:-[A-Za-z0-9]+)*$")
 REPO_RE = re.compile(r"^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$")
@@ -630,7 +634,8 @@ def manifest_problems(m: object) -> List[str]:
                 out.append(f"{pw}.slug must be lowercase words joined by '-' and '/'")
             elif slug.split("/")[0] in RESERVED_SLUG_ROOTS:
                 out.append(f"{pw}.slug {slug!r} is in the site route {slug.split('/')[0]}/, which is reserved "
-                           f"(the blog's index and posts, and admin/, where the removed editor was served)")
+                           f"(the blog, admin/ where the removed editor was served, and the pages the site "
+                           f"writes by hand)")
             if not (isinstance(wiki, str) and WIKI_RE.match(wiki)):
                 out.append(f"{pw}.wiki must be letters and digits joined by '-'")
             elif wiki.casefold() in RESERVED_WIKI:

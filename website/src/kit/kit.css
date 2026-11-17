@@ -14,7 +14,7 @@
   --mint: #5ef0c8;
   --focus: #5ef0c8;
   --sans: "Instrument Sans Variable", "Instrument Sans Fallback", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --mono: "Martian Mono Variable", "Martian Mono Fallback", ui-monospace, "SF Mono", Menlo, monospace;
+  --mono: "Martian Mono Variable", "Martian Mono Fallback", "Psyche Lines", ui-monospace, "SF Mono", Menlo, monospace;
   --read-size: 19px;
   --measure: 30.2em;          /* 60 to 68 characters a line of Instrument Sans at the reading size (measured) */
   --gutter: 32px;

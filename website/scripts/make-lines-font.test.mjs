@@ -7,7 +7,9 @@ import { ADVANCE, ARMS, COVERED, DASHES, DESIGN, OUTPUT, UPM, buildFont, buildGl
 
 const text = (relative) => readFileSync(new URL(relative, import.meta.url), 'utf8');
 const FONTS_CSS = text('../src/styles/fonts.css');
-const GLOBAL_CSS = text('../src/styles/global.css');
+// The page kit's stylesheet (src/kit/kit.css, written by the page import): every page on the kit and the
+// documentation set their code in its --mono stack.
+const KIT_CSS = text('../src/kit/kit.css');
 const MARTIAN = fileURLToPath(new URL('../node_modules/@fontsource-variable/martian-mono/files/martian-mono-latin-wght-normal.woff2', import.meta.url));
 
 const font = buildFont();
@@ -121,7 +123,7 @@ test('it covers all of U+2500 to U+257F, the four triangles and the two arrows, 
 });
 
 test('the mono stack puts the face right after the Martian Mono faces, ahead of every system face', () => {
-  assert.match(GLOBAL_CSS, /--font-mono:\s*'Martian Mono Variable',\s*'Martian Mono Fallback',\s*'Psyche Lines',\s*ui-monospace/);
+  assert.match(KIT_CSS, /--mono:\s*"Martian Mono Variable",\s*"Martian Mono Fallback",\s*"Psyche Lines",\s*ui-monospace/);
 });
 
 // ---- the grid ------------------------------------------------------------------------------------
@@ -157,7 +159,7 @@ test('a vertical line fills a code block\'s line, so the rails of a tree are unb
   assert.ok(yMax >= DESIGN.LINE_TOP, 'it reaches the top of a 1.75 em line');
   assert.ok(yMin <= DESIGN.LINE_BOTTOM, 'and its bottom');
   assert.deepEqual([yMin, yMax], [DESIGN.BOTTOM, DESIGN.TOP]);
-  // The line is 1.75 em, Starlight's --sl-line-height, which the code blocks use.
+  // The line is 1.75 em, the line height of the documentation's code blocks (src/kit/docs/docs.css).
   assert.equal(DESIGN.LINE_TOP - DESIGN.LINE_BOTTOM, 1750);
 });
 

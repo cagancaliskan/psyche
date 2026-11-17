@@ -6,9 +6,7 @@
 //        module of every island, the imports of each of those files (followed to the end), and the
 //        page's inline scripts. An import is static (`import x from './a.js'`) or dynamic with a
 //        literal address (`import('./a.js')`): a dynamic one is a chunk the page loads later, often on
-//        idle, and it is still the reader's download. Starlight's search loads its interface this
-//        way (about 26 KB gzipped) on every page, which is why a docs page counts about 34 KB, not
-//        the 7 KB its first script weighs. Diagrams are drawn ahead of the build and sit in the
+//        idle, and it is still the reader's download. Diagrams are drawn ahead of the build and sit in the
 //        page as inline SVG (tools/publish/diagrams.py), so they add no script; their bytes are
 //        in the HTML, which this check does not count.
 //   Also, whatever the sizes: a file in dist/_astro named for a diagram or maths library (mermaid,
@@ -19,10 +17,10 @@
 // a file used twice on a page counts once. Fonts and images are not counted.
 //
 // Budgets sit 3 percent above the sizes measured when they were set, rounded up to 100 bytes, so
-// that a different zlib build does not trip them but real growth does. A page not listed in
-// PAGE_BUDGETS falls under DEFAULT_BUDGET, which is the largest budget of any docs page, the research
-// roadmap (it hosts the timeline island) excepted. To raise
-// a budget on purpose, change the number here and say why in the commit that does it.
+// that a different zlib build does not trip them but real growth does. Every document of the
+// documentation (each slug of docs/publish.json, read there) falls under DOC_BUDGET; a page listed in
+// PAGE_BUDGETS has its own line; any other page falls under DEFAULT_BUDGET, which is DOC_BUDGET. To
+// raise a budget on purpose, change the number here and say why in the commit that does it.
 //
 // Usage: node scripts/check-budget.mjs
 import { readFileSync, readdirSync, existsSync, statSync } from 'node:fs';
@@ -35,8 +33,11 @@ const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const BASE = '/';
 
 // Bytes, gzipped. The comment on each line is what was measured when the budget was set (JavaScript,
-// then CSS). Last set when the site chrome was redrawn: the title strip, the footer's title block, the
-// shared registration-corner recipe, the search dialog and the forced-colours rules grew every page's CSS
+// then CSS). The paragraphs below are the lines' history: the files they name are the ones of their time,
+// and most of those (global.css, styles/docs.css, the chrome components, plan.css, readout.css and
+// status.css) went with the old documentation frame. Last set when the site chrome was redrawn: the title
+// strip, the footer's title block, the shared registration-corner recipe, the search dialog and the
+// forced-colours rules grew every page's CSS
 // by about 1.2 KB (they are in global.css and docs.css), and the script that takes the tab stop off a
 // table that does not scroll (components/chrome/TableRegions.astro) and, on stage 2 pages, the one that
 // reads the next gate against the reader's day (components/chrome/NextGateClock.astro) grew the
@@ -85,44 +86,78 @@ const BASE = '/';
 // The About page and the blog index were raised, to the measured size plus 3 percent, when the header's
 // theme switch became a drawn icon: the icon and the reworked phone menu add about 0.8 KB of JavaScript
 // to every page of the kit, and with the motion curves those two pages no longer fitted their lines.
-// What we're building and the experiments page followed for the same reason, to the sizes the CI build
-// measured plus 3 percent: the same files compress to as much as 200 B more there than on a Mac, so a
-// line that only just holds locally can fail in CI. Measure against the CI figures when a line is tight.
-const DEFAULT_BUDGET = { js: 37100, css: 40200 };
+//
+// /developers/, the documentation's home, got a line of its own at its measured size when it was added:
+// the page kit plus the documentation's own stylesheet and script (src/kit/docs/docs.css, about 5.3 KB
+// gzipped as built, and docs.js, about 4.1 KB), which only the documentation pages load. The front pages and the
+// posts did not move: the kit's stylesheet and script grew by a few bytes (the footer's link to the new
+// page, one more face in the mono stack), well inside their lines.
+//
+// /roadmap/, /battery/ and /status/ were reset when they moved into the documentation's frame (the page kit
+// and the documentation's stylesheet and script, as /developers/). Their islands went: the timeline, the
+// "Now" line and the walk-through are written on the server, so React and the two islands no longer load,
+// and the timeline's and the walk-through's own scripts (choosing a row, stepping, the reader's day) are
+// small; the JavaScript of /roadmap/ and /battery/ fell from about 108 and 109 KB to about 36 and 33 KB.
+// Their CSS fell from about 35 KB (Starlight's) to the frame's 14.4 KB. /status/ rose by about 1.1 KB of
+// JavaScript over its old line: the page kit's and the documentation's scripts replace Starlight's.
+//
+// The eighteen document lines were replaced by one, DOC_BUDGET, when the documents moved into the same
+// frame (src/pages/[...slug].astro on layouts/Docs.astro): every document now loads exactly what the
+// documentation's home loads (the page kit, the documentation's stylesheet and script, the site's
+// prefetch script), measured at 33107 bytes of JavaScript and 14301 of CSS on each, down from 33.4 to
+// 36.0 KB of JavaScript and 35.0 to 38.9 KB of CSS under the old frame (its search, its stylesheets,
+// and on the research roadmap the timeline island of its header, about 110 KB of JavaScript). The code
+// in documents is plain ink, so no code renderer's styles load. DEFAULT_BUDGET fell with it to the same
+// line. The CSS of /developers/, /roadmap/, /battery/ and /status/ fell by about 100 bytes and that of
+// every front page and post by about 60 (the stand-in face of the old display font left the shared font
+// stylesheet); the one post with code blocks, three-questions, also lost the code renderer's styles and
+// copy script (about 4.0 KB of CSS and 1.2 KB of JavaScript). Those five lines were reset with this change
+// to the measured size plus 3 percent: three-questions, which was 38 percent over its CSS, and the four
+// pages of the frame, whose CSS line had kept the room of their old size. /roadmap/'s JavaScript also
+// fell with this change, from 36328 to 35530 bytes, and its line was reset with them.
+//
+// Every line was reset again, to the measured size plus at most 3 percent (rounded down to 100 bytes),
+// when the documentation's frame met the retimed figures and the new header: the page kit's script
+// (motion curves, the drawn theme icon, the phone menu's top row) and its stylesheet now reach every
+// page of the frame too, about 640 bytes of JavaScript and 310 of CSS on each document, which took them
+// over DOC_BUDGET; the front pages and the posts were measured and reset with them in the same build.
+// The home's film was measured and reset too (its header's styles are in its own film.css).
+// The same files compress to as much as 200 B more in the CI build than on a Mac, so a line that only
+// just holds locally can fail there: measure against the CI figures when a line is tight.
+// The documentation's "Pages" list then came to lie over the text on a phone: about 25 bytes more CSS
+// on every page of the frame (14637), inside DOC_BUDGET. The CSS line of testing-the-test was raised
+// from 11800 to 11870 (11531 plus 2.9 percent) so that it keeps 300 bytes of room for the CI build. Two
+// CSS lines cannot keep 300 bytes inside 3 percent, the home's (6619, at most 6817) and the blog
+// index's (9819, at most 10113); they stay as they are: the CI build measured their CSS within 15 bytes
+// of this machine's (the film branch's run: 6672 and 9873 there against 6679 and 9865 here).
+const DOC_BUDGET = { js: 35700, css: 15000 }; // 34745, 14637 on every document
+const DEFAULT_BUDGET = DOC_BUDGET;
 const PAGE_BUDGETS = {
   // '/': CSS raised from 6200 when the film got the site's header and phone menu (their styles are in
-  // the film's own stylesheet, src/kit/film/film.css, since the film does not load kit.css): measured
-  // 201841 and 6679, the CSS line set below 6679 plus 3 percent (6879); the JS line holds.
-  '/':                          { js: 207100, css:   6800 }, // 201841,   6679
-  '/what-were-building/':       { js:  64100, css:  15700 }, //  62262,  15473
-  '/experiments/':              { js:  57700, css:  17600 }, //  56052,  17346
-  '/about/':                    { js:  45300, css:  12000 }, //  44059,  11913
-  '/blog/':                     { js:  36500, css:   9900 }, //  35481,   9865
-  '/blog/three-questions-before-a-number-counts/': { js: 43800, css: 16700 }, // 42484, 16124 (its four figures)
-  '/blog/testing-the-test-before-the-model/':      { js: 37100, css: 11700 }, // 35965, 11338 (its three figures)
-  '/blog/why-psyche-keeps-a-blog/':                { js: 35500, css: 10800 }, // 34413, 10401 (its one figure)
-  '/guide/':                    { js:  34500, css:  36100 }, //  33448,  35024
-  '/faq/':                      { js:  34500, css:  36100 }, //  33448,  35024
-  '/progress/':                 { js:  34500, css:  36100 }, //  33448,  35024
-  '/governance/':               { js:  34500, css:  36100 }, //  33448,  35024
-  '/roadmap/':                  { js: 111500, css:  36200 }, // 108173,  35075
-  '/battery/':                  { js: 112700, css:  36200 }, // 109410,  35120
-  '/status/':                   { js:  33100, css:  37800 }, //  32089,  36635
-  '/research/':                 { js:  34900, css:  36100 }, //  33852,  35009
-  '/research/origins/':         { js:  34900, css:  36100 }, //  33852,  35009
-  '/research/roadmap/':         { js: 113000, css:  36200 }, // 109615,  35075
-  '/research/gates/':           { js:  37100, css:  36100 }, //  35951,  35009
-  '/research/test-battery/':    { js:  35300, css:  36100 }, //  34175,  35009
-  '/research/claims-and-scope/':{ js:  34900, css:  36100 }, //  33852,  35009
-  '/research/engineering/':     { js:  34900, css:  36100 }, //  33852,  35009
-  '/research/glossary/':        { js:  34900, css:  36100 }, //  33852,  35009
-  '/research/reading-list/':    { js:  34900, css:  36100 }, //  33852,  35009
-  '/research/disclosure-policy/':{ js:  34900, css:  36100 }, //  33852,  35009
-  '/substrate/overview/':       { js:  35700, css:  40200 }, //  34616,  38933
-  '/substrate/architecture/':   { js:  35700, css:  40200 }, //  34616,  38933
-  '/substrate/methodology/':    { js:  34500, css:  36100 }, //  33448,  35009
-  '/substrate/three-walls/':    { js:  34500, css:  36100 }, //  33448,  35024
+  // the film's own stylesheet, src/kit/film/film.css, since the film does not load kit.css).
+  '/':                          { js: 207600, css:   6800 }, // 201633,   6619
+  '/what-were-building/':       { js:  63900, css:  15800 }, //  62095,  15418
+  '/experiments/':              { js:  57500, css:  17800 }, //  55865,  17295
+  '/about/':                    { js:  45300, css:  12200 }, //  44059,  11867
+  '/blog/':                     { js:  36500, css:  10100 }, //  35481,   9819
+  '/blog/three-questions-before-a-number-counts/': { js: 43400, css: 12700 }, // 42155, 12393 (its four figures; no code renderer)
+  '/blog/testing-the-test-before-the-model/':      { js: 37900, css: 11870 }, // 36804, 11531 (its three figures)
+  '/blog/why-psyche-keeps-a-blog/':                { js: 36300, css: 10900 }, // 35252, 10594 (its one figure)
+  '/developers/':               { js:  35700, css:  15000 }, //  34745,  14637 (the documentation's stylesheet and script)
+  '/roadmap/':                  { js:  38200, css:  15000 }, //  37168,  14637 (the timeline, written on the server)
+  '/battery/':                  { js:  36200, css:  15000 }, //  35182,  14637 (the walk-through, written on the server)
+  '/status/':                   { js:  35900, css:  15000 }, //  34904,  14637
 };
+
+// Every document's route, from the manifest (a source, so the list is the commit's, not a build's).
+const MANIFEST = JSON.parse(readFileSync(fileURLToPath(new URL('../../docs/publish.json', import.meta.url)), 'utf8'));
+for (const section of MANIFEST.sections) {
+  for (const { slug } of section.pages) {
+    const route = `/${slug}/`;
+    if (PAGE_BUDGETS[route]) throw new Error(`check-budget: ${route} is a document and has a line of its own; documents fall under DOC_BUDGET`);
+    PAGE_BUDGETS[route] = DOC_BUDGET;
+  }
+}
 
 const gz = (buf) => gzipSync(buf, { level: 9 }).length;
 
@@ -192,7 +227,7 @@ function htmlFiles(dir) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     if (statSync(p).isDirectory()) {
-      if (name === 'pagefind' || name === '_astro') continue;
+      if (name === '_astro') continue;
       out.push(...htmlFiles(p));
     } else if (name.endsWith('.html')) out.push(p);
   }

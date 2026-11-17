@@ -1,8 +1,10 @@
 // Accessibility check of the built site: axe-core over every page of dist/, at WCAG 2.2 AA (the axe
 // tags wcag2a, wcag2aa, wcag21a, wcag21aa and wcag22aa), and over the interface states a reader opens
-// (on a docs page: the search dialog with results, the phone menu, the phone contents list; on a front
-// page and on the film: the site's phone menu; on a front page: the theme switch pressed; on a post with
-// designed figures: a figure after its control is used). Exits 1 when any serious
+// (on a document: the documentation's page list filtered to nothing; on a page of the documentation: its
+// "Pages" list open on a phone, the timeline with a gate chosen, the walk-through stepped, the status
+// page's designed bricks shown; on a front page, on a document and on the film: the site's phone menu; on
+// a front page and on a document: the theme switch pressed; on a post with designed figures: a figure
+// after its control is used; on the documentation's home: its filter with words typed). Exits 1 when any serious
 // or critical violation is found, or when a page cannot be audited at all; moderate and minor ones are
 // listed but never fail the run, and neither does what axe cannot decide (its "incomplete" results:
 // today only text contrast over gradients, pseudo-elements and images, which need a human look).
@@ -30,14 +32,14 @@
 //
 // Each page is loaded four ways: desktop and phone width, light and dark colour scheme, all with
 // reduced motion so that nothing is mid-fade when axe measures contrast. The page is scrolled
-// through once first, so that islands which hydrate when they come into view have done so. A state
+// through once first, so that anything a page draws when it comes into view has been drawn. A state
 // is the same page after the click that opens it; a state that has a way to close is closed again
 // after the audit, and the run fails if it does not close as a reader expects.
 //
-// The theme is set, not left to chance. The docs pages (Starlight) follow the system's colour scheme,
-// which the run emulates. The front pages (the page kit) ignore it: they open dark and keep the
-// reader's choice in localStorage ('psyche-theme', the key the kit's switch writes), so each load
-// writes the scheme there before any script of the page runs. After the load the page must show the
+// The theme is set, not left to chance. Every page is on the page kit, which ignores the system's
+// colour scheme: a page opens dark and keeps the reader's choice in localStorage ('psyche-theme', the
+// key the kit's switch writes), so each load writes the scheme there before any script of the page
+// runs (the run emulates the system scheme too, for any rule that reads it). After the load the page must show the
 // theme the run asked for (<html data-theme>), or the run fails: a "light" run that shows the dark
 // theme would audit the dark page twice and the light one never. A page whose head script carries
 // data-k-theme fixes its theme (the home page's film is dark by design): it is audited once per width,
@@ -61,8 +63,11 @@ const TAGS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
 // Anything that is not named lesser fails, so a violation that carries no impact cannot slip through.
 const LESSER = new Set(['moderate', 'minor']);
 const isFailing = (impact) => !LESSER.has(impact);
-// A run in which axe tested fewer rules than this did not run axe: fail rather than pass.
-const MIN_RULES_RUN = 20;
+// A run in which axe tested fewer rules than this did not run axe: fail rather than pass. A page with
+// little in it applies few rules: the shortest document on a phone (/faq/: headings and paragraphs, its
+// page list folded behind "Pages" and "On this page" not shown) applies 19, and a run that fails to start
+// axe applies none.
+const MIN_RULES_RUN = 15;
 
 const DIST = resolve(fileURLToPath(new URL('../dist/', import.meta.url)));
 // Must equal `base` in astro.config.mjs.
@@ -70,8 +75,8 @@ const BASE = '/';
 // Every page of the site: each folder of dist/ with an index.html (the home page included), then the
 // 404 page, which the host serves for a missing address (the file itself is opened here, so its script
 // has run as it does for a reader). Found, not listed, so a page added later is audited without anyone
-// remembering to add it. The search index and the bundles are not pages.
-const NOT_PAGES = new Set(['_astro', 'pagefind']);
+// remembering to add it. The bundles are not pages.
+const NOT_PAGES = new Set(['_astro']);
 function findPages() {
   const found = [];
   const walk = (dir, rel) => {
@@ -105,8 +110,8 @@ const VIEWPORTS = [
 const SCHEMES = ['light', 'dark'];
 
 // What a reader opens on a page. Each has to be opened by a click, so axe cannot reach it by loading
-// a page. Starlight's states are audited on one docs page that has a sidebar, a contents list and
-// headings; a state that names a `page` is audited there instead. A state may also say how it is
+// a page. A state is audited on one document that has the documentation's page list, "On this page"
+// and headings; a state that names a `page` is audited there instead. A state may also say how it is
 // closed (`close`), which is checked after its audit.
 const STATE_PAGE = 'research/gates/';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -173,37 +178,57 @@ function siteMenu(name, page, themeSwitch) {
     },
   };
 }
+// The theme switch of the page kit's header, as a state: a drawn icon whose spoken name says what it
+// will do. Pressed, it must switch the theme, keep the choice ('psyche-theme') and change its name; the
+// page is audited in the theme it switched to, then pressed again, and must switch back.
+function themeSwitched(name, page) {
+  const button = '.k-head button[data-k-theme]';
+  return {
+    name,
+    page,
+    viewports: ['desktop'],
+    async open(p) {
+      await p.waitForSelector(button, { visible: true, timeout: 20000 });
+      const before = await themeState(p, button);
+      await p.click(button);
+      await wait(400);
+      expectSwitched(before, await themeState(p, button));
+    },
+    async close(p) {
+      const now = await themeState(p, button);
+      await p.click(button);
+      await wait(400);
+      expectSwitched(now, await themeState(p, button));
+    },
+  };
+}
 const STATES = [
   {
-    name: 'search dialog with results',
-    viewports: ['desktop', 'phone'],
+    // The documentation's page list on a document, with words typed into its field that match no page:
+    // the field is written hidden by the server and shown by the documentation script; every page and
+    // group must be hidden and the line "No page matches these words." shown. Then Escape in the field
+    // must clear the words, show every page again and hide that line.
+    name: 'page filter with no match',
+    viewports: ['desktop'],
     async open(page) {
-      // The button is disabled until Starlight's script has run, and the search box exists once the
-      // search interface has loaded on idle.
-      await page.waitForSelector('button[data-open-modal]:not([disabled])', { timeout: 20000 });
-      await page.waitForSelector('#starlight__search input', { timeout: 20000 });
-      await page.click('button[data-open-modal]');
-      await page.type('#starlight__search input', 'gate');
-      await page.waitForSelector('#starlight__search .pagefind-ui__result', { timeout: 20000 });
-      await wait(600);
+      const field = '#k-docnav-q';
+      await page.waitForSelector(field, { visible: true, timeout: 20000 });
+      await page.click(field);
+      await page.type(field, 'qqqzzz');
+      await page.waitForSelector('.k-docnav__none:not([hidden])', { timeout: 10000 });
+      const shown = await page.$$eval('#k-docnav li[data-k-text]:not([hidden])', (l) => l.length);
+      if (shown !== 0) throw new Error(`words that match no page left ${shown} page(s) in the list`);
+      await wait(200);
     },
-  },
-  {
-    name: 'phone menu open',
-    viewports: ['phone'],
-    async open(page) {
-      await page.click('button.sl-menu-button');
-      await page.waitForSelector('#starlight__sidebar:popover-open', { timeout: 10000 });
-      await wait(400);
-    },
-  },
-  {
-    name: 'phone contents open',
-    viewports: ['phone'],
-    async open(page) {
-      await page.click('mobile-starlight-toc summary');
-      await page.waitForSelector('mobile-starlight-toc details[open]', { timeout: 10000 });
-      await wait(400);
+    async close(page) {
+      await page.keyboard.press('Escape');
+      const after = await page.evaluate(() => ({
+        value: document.querySelector('#k-docnav-q')?.value,
+        hidden: document.querySelectorAll('#k-docnav li[data-k-text][hidden], #k-docnav .k-docnav__group[hidden]').length,
+        none: document.querySelector('.k-docnav__none')?.hidden,
+      }));
+      if (after.value !== '') throw new Error(`Escape did not clear the field (it holds "${after.value}")`);
+      if (after.hidden !== 0 || after.none !== true) throw new Error(`Escape cleared the words but ${after.hidden} page(s) or group(s) stay hidden`);
     },
   },
   // The front pages' phone menu: on an inner page the page kit's full-screen list, with the theme
@@ -211,28 +236,146 @@ const STATES = [
   // switch (the film is dark only).
   siteMenu('site menu open', 'what-were-building/', true),
   siteMenu('site menu open on the film', '', false),
+  // A document's phone menu is the same list as a front page's, beside the documentation's own "Pages".
+  siteMenu('site menu open on a document', STATE_PAGE, true),
+  // The header's theme switch, on a front page and on a document (the documentation's frame is on the
+  // same page kit, so its header is the same).
+  themeSwitched('theme switched', 'about/'),
+  themeSwitched('theme switched on a document', STATE_PAGE),
   {
-    // The theme switch of the front pages' header: a drawn icon whose spoken name says what it will
-    // do. Pressed, it must switch the theme, keep the choice ('psyche-theme') and change its name;
-    // the page is audited in the theme it switched to, then pressed again, and must switch back.
-    name: 'theme switched',
-    page: 'about/',
+    // The documentation's home (/developers/): its filter, which the server writes hidden and the
+    // documentation script shows, with a word typed. Audited filtered: the count's words must change from
+    // the total to "N pages of <total>" and some page must be left; then Escape in the field must clear
+    // the words, show every page again and put the count back to the total.
+    name: 'documentation filter',
+    page: 'developers/',
     viewports: ['desktop'],
     async open(page) {
-      const button = '.k-head button[data-k-theme]';
-      await page.waitForSelector(button, { visible: true, timeout: 20000 });
-      const before = await themeState(page, button);
-      await page.click(button);
-      await wait(400);
-      const after = await themeState(page, button);
-      expectSwitched(before, after);
+      const field = '#k-docfilter';
+      await page.waitForSelector(field, { visible: true, timeout: 20000 });
+      const count = () => page.$eval('#k-docfilter-count', (p) => p.textContent.trim());
+      const total = await count();
+      if (!/^\d+ pages$/.test(total)) throw new Error(`the filter's count reads "${total}" before anything is typed`);
+      await page.click(field);
+      await page.type(field, 'gate');
+      await page.waitForFunction((t) => document.querySelector('#k-docfilter-count')?.textContent.trim() !== t, { timeout: 10000 }, total);
+      const after = await page.evaluate(() => ({
+        count: document.querySelector('#k-docfilter-count')?.textContent.trim(),
+        shown: document.querySelectorAll('.k-docindex__item:not([hidden])').length,
+      }));
+      if (!/^\d+ pages? of \d+$/.test(after.count || '') || after.shown < 1) throw new Error(`the filter left ${after.shown} page(s) and reads "${after.count}"`);
+      await wait(200);
     },
     async close(page) {
-      const button = '.k-head button[data-k-theme]';
-      const now = await themeState(page, button);
-      await page.click(button);
-      await wait(400);
-      expectSwitched(now, await themeState(page, button));
+      await page.keyboard.press('Escape');
+      const after = await page.evaluate(() => ({
+        value: document.querySelector('#k-docfilter')?.value,
+        count: document.querySelector('#k-docfilter-count')?.textContent.trim(),
+        hidden: document.querySelectorAll('.k-docindex__item[hidden]').length,
+      }));
+      if (after.value !== '') throw new Error(`Escape did not clear the filter (it holds "${after.value}")`);
+      if (after.hidden !== 0 || !/^\d+ pages$/.test(after.count || '')) throw new Error(`Escape cleared the words but ${after.hidden} page(s) stay hidden and the count reads "${after.count}"`);
+    },
+  },
+  {
+    // The documentation's "Pages" list on a phone, on a page of the list (the timeline): the server writes
+    // the list whole; the documentation script folds it behind "Pages". Opened with the page read some way
+    // down, it must lie over the text and take no room: the page keeps its scroll position and its text
+    // does not move. Audited open; then Escape must close it, mark the button collapsed and return focus to
+    // the button.
+    name: 'documentation pages open',
+    page: 'roadmap/',
+    viewports: ['phone'],
+    async open(page) {
+      await page.waitForSelector('button[data-k-docmenu]', { visible: true, timeout: 20000 });
+      const where = () => page.evaluate(() => ({ y: Math.round(window.scrollY), top: Math.round(document.querySelector('main').getBoundingClientRect().top) }));
+      await page.evaluate(() => window.scrollTo(0, 900));
+      await wait(200);
+      const before = await where();
+      await page.click('button[data-k-docmenu]');
+      await page.waitForSelector('#k-docnav.is-open', { timeout: 10000 });
+      const expanded = await page.$eval('button[data-k-docmenu]', (b) => b.getAttribute('aria-expanded'));
+      if (expanded !== 'true') throw new Error(`the list opened but its button says aria-expanded="${expanded}"`);
+      await wait(200);
+      const after = await where();
+      if (after.y !== before.y || after.top !== before.top) throw new Error(`opening the list moved the page: scrolled ${before.y} then ${after.y}, its text at ${before.top} then ${after.top}`);
+    },
+    async close(page) {
+      await page.keyboard.press('Escape');
+      const after = await page.evaluate(() => {
+        const button = document.querySelector('button[data-k-docmenu]');
+        return {
+          open: document.querySelector('#k-docnav')?.classList.contains('is-open'),
+          expanded: button?.getAttribute('aria-expanded'),
+          focused: document.activeElement === button,
+        };
+      });
+      if (after.open || after.expanded !== 'false') throw new Error(`Escape left the list open (aria-expanded="${after.expanded}")`);
+      if (!after.focused) throw new Error('the list closed but focus did not return to its button');
+    },
+  },
+  {
+    // The timeline's drawing (/roadmap/), written hidden and shown by its script, with a gate chosen: its
+    // row must be pressed, the phase chosen before must not be, and the gate's reading must be the one shown.
+    name: 'timeline gate chosen',
+    page: 'roadmap/',
+    viewports: ['desktop', 'phone'],
+    async open(page) {
+      const lane = '.tl-lane[data-tl="B"]';
+      await page.waitForSelector(lane, { visible: true, timeout: 20000 });
+      await page.$eval(lane, (b) => b.scrollIntoView({ block: 'center' }));
+      await page.click(lane);
+      const after = await page.evaluate(() => ({
+        pressed: [...document.querySelectorAll('.tl-lane[aria-pressed="true"]')].map((b) => b.getAttribute('data-tl')),
+        shown: [...document.querySelectorAll('[data-tl-reading]:not([hidden])')].map((r) => r.getAttribute('data-tl-reading')),
+      }));
+      if (after.pressed.join() !== 'B' || after.shown.join() !== 'B') throw new Error(`choosing Gate B left ${after.pressed.join() || 'nothing'} pressed and ${after.shown.join() || 'nothing'} shown`);
+      await wait(200);
+    },
+  },
+  {
+    // The walk-through (/battery/): the first test stepped to its last step with "Next step". The picture,
+    // the step marked current and the words "Step 3 of 3" must follow; nothing steps by itself.
+    name: 'walk-through stepped',
+    page: 'battery/',
+    viewports: ['desktop', 'phone'],
+    async open(page) {
+      const next = '[data-bw-test="T1"] [data-bw-next]';
+      await page.waitForSelector(next, { visible: true, timeout: 20000 });
+      await page.$eval(next, (b) => b.scrollIntoView({ block: 'center' }));
+      await page.click(next);
+      await page.click(next);
+      await wait(200);
+      const after = await page.$eval('[data-bw-test="T1"]', (t) => ({
+        at: t.querySelector('[data-bw-at]')?.textContent.trim(),
+        current: [...t.querySelectorAll('[data-bw-step]')].findIndex((b) => b.getAttribute('aria-current') === 'step'),
+        shown: [...t.querySelectorAll('[data-bw-pic]')].findIndex((p) => !p.hidden),
+        last: t.querySelector('[data-bw-next]')?.getAttribute('aria-disabled'),
+      }));
+      if (after.at !== 'Step 3 of 3' || after.current !== 2 || after.shown !== 2 || after.last !== 'true') {
+        throw new Error(`after two steps the walk-through reads "${after.at}", step ${after.current + 1} current, picture ${after.shown + 1} shown`);
+      }
+    },
+  },
+  {
+    // The status page's designed bricks, opened: the control's first word must now say what it will do.
+    name: 'designed bricks shown',
+    page: 'status/',
+    viewports: ['desktop', 'phone'],
+    async open(page) {
+      const summary = 'details[data-st-more] > summary';
+      await page.waitForSelector(summary, { visible: true, timeout: 20000 });
+      await page.$eval(summary, (s) => s.scrollIntoView({ block: 'center' }));
+      await page.click(summary);
+      await wait(200);
+      const words = await page.$eval(summary, (s) => s.textContent.trim());
+      if (!/^Hide the \d+ designed bricks?$/.test(words)) throw new Error(`the open control reads "${words}"`);
+    },
+    async close(page) {
+      await page.click('details[data-st-more] > summary');
+      await wait(200);
+      const words = await page.$eval('details[data-st-more] > summary', (s) => s.textContent.trim());
+      if (!/^Show the \d+ designed bricks?$/.test(words)) throw new Error(`the closed control reads "${words}"`);
     },
   },
   {
@@ -386,7 +529,7 @@ async function audit(browser, axeSource, url, viewport, scheme, state, fixed) {
       deviceScaleFactor: 1,
     });
     // The reader's choice as the page kit's theme switch stores it, written before any script of the
-    // page runs. Starlight's pages do not read this key and follow the emulated scheme below.
+    // page runs.
     await page.evaluateOnNewDocument((s) => {
       try {
         localStorage.setItem('psyche-theme', s);

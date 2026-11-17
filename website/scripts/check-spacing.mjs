@@ -12,13 +12,15 @@ import { fileURLToPath } from 'node:url';
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 // The hand-written pages: the front pages (the home, What we're building, Experiments, About and the
-// blog's index) and the custom pages that are still built (roadmap, battery, status).
+// blog's index), the documentation's home and the custom pages that are still built (roadmap, battery,
+// status).
 const PAGES = [
   'index.html',
   'what-were-building/index.html',
   'experiments/index.html',
   'about/index.html',
   'blog/index.html',
+  'developers/index.html',
   'roadmap/index.html',
   'battery/index.html',
   'status/index.html',
@@ -38,11 +40,11 @@ function main(html) {
   return (m ? m[0] : html).replace(/<(script|style|svg)\b[\s\S]*?<\/\1>/g, '');
 }
 
-// Every page of dist/: each folder with an index.html (the search index and the bundles are not pages).
+// Every page of dist/: each folder with an index.html (the bundles are not pages).
 function allPages(dir = DIST, rel = '') {
   const found = existsSync(join(dir, 'index.html')) ? [`${rel}index.html`] : [];
   for (const entry of readdirSync(dir, { withFileTypes: true })) {
-    if (entry.isDirectory() && !['_astro', 'pagefind'].includes(entry.name)) found.push(...allPages(join(dir, entry.name), `${rel}${entry.name}/`));
+    if (entry.isDirectory() && entry.name !== '_astro') found.push(...allPages(join(dir, entry.name), `${rel}${entry.name}/`));
   }
   return found;
 }

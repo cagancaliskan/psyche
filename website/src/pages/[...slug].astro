@@ -1,0 +1,44 @@
+---
+// Every document of the documentation list at its address (/guide/, /research/gates/, ...), in the
+// documentation frame (layouts/Docs.astro): its title and description, its rendered Markdown, previous
+// and next over the whole list, the edit line with "Last updated", and "On this page" beside it.
+//
+// The documents are the `docs` collection (src/content.config.ts): what tools/publish/stage.py stages
+// into src/content/docs/ from docs/publish.json, the posts left out. A document's id is its slug, so its
+// address is the one the manifest gives it. "Last updated" is the date the sitemap gives the page
+// (lib/lastUpdated.ts): the last commit that touched its governed source.
+//
+// The title carries no id: a heading of the document may already own that slug.
+import { getCollection, render } from 'astro:content';
+import DocEdit from '@/components/devdocs/DocEdit.astro';
+import DocPager from '@/components/devdocs/DocPager.astro';
+import OnThisPage from '@/components/devdocs/OnThisPage.astro';
+import docs from '@/data/docs.json';
+import Docs from '@/layouts/Docs.astro';
+import { entriesOf, neighbours, type DocsData } from '@/lib/devdocs.ts';
+import { lastUpdatedOf } from '@/lib/lastUpdated.ts';
+
+export async function getStaticPaths() {
+  const entries = await getCollection('docs');
+  return entries.map((entry) => ({ params: { slug: entry.id }, props: { entry } }));
+}
+
+const { entry } = Astro.props;
+const { title, description, editUrl } = entry.data;
+const { Content, headings } = await render(entry);
+const { prev, next } = neighbours(entriesOf(docs as DocsData), entry.id);
+const updated = lastUpdatedOf(entry.id)?.iso ?? null;
+---
+
+<Docs page={{ route: entry.id, title, description }} here={entry.id} skip={{ href: '#doc', text: 'Skip to the text' }}>
+  <main id="doc" class="k-doc" tabindex="-1">
+    <article class="k-doc__body">
+      <h1 class="k-doc__title">{title}</h1>
+      <p class="k-doc__desc">{description}</p>
+      <Content />
+    </article>
+    <DocPager prev={prev} next={next} />
+    <DocEdit editUrl={editUrl} updated={updated} />
+  </main>
+  <OnThisPage slot="aside" headings={headings} />
+</Docs>

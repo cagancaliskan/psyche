@@ -17,16 +17,25 @@ Output (both directories are gitignored, and CI fails if a staged copy is ever t
     website/src/content/docs/blog/<slug>/index.md   a blog post, with its pictures beside it
     website/src/data/plan.json           tools/research_plan.json, validated
     website/src/data/ledger.public.json  core.ledger_public
-    website/src/data/sidebar.json        Starlight sidebar: one first group, "Start here", then the manifest
+    website/src/data/docs.json           the documentation list: "Start here", then the manifest's sections
     website/src/data/progress.json       the plan's public events and the author, for the Atom feed
     website/src/data/blog.json           the published posts, newest first, and the author
     website/src/data/stage.json          which commit was staged, and how many pages and posts
 
-The sidebar's first group is "Start here": Home, then the pages of the manifest section of that
-title, then the other hand-written pages (build_sidebar). The events in progress.json come from
-render_plan.progress_events, the one place that derives them, and the author from CITATION.cff;
-website/src/pages/progress.xml.ts writes the feed from that file with a serialiser of its own
-(website/src/lib/feed.ts), and the feed's dates are the events' days, never the build time.
+The events in progress.json come from render_plan.progress_events, the one place that derives them,
+and the author from CITATION.cff; website/src/pages/progress.xml.ts writes the feed from that file
+with a serialiser of its own (website/src/lib/feed.ts), and the feed's dates are the events' days,
+never the build time.
+
+docs.json is the list the documentation section of the site draws its navigation, its previous and
+next links and its index from (build_docs_index). Its first group is "Start here": the documents of
+the manifest section of that title, then the hand-written pages of DOCS_PAGES; every other manifest
+section follows as a group of its own. Neither the home page nor the blog is in it. A document item is
+{"kind": "doc", "slug", "title", "description"}, with the title the page shows and the manifest's
+description; a hand-written page item is {"kind": "page", "route", "title"}, and its description is
+the one the site states with the page itself, so it is written once. A new first entry of the list (a page to
+get started, say) is a document listed first in the Start here section of docs/publish.json: it then
+leads the list with the same item shape and no change here.
 
 The blog's posts are not in the manifest. Each folder docs/blog/<slug>/ of the commit that holds an
 index.md which is not a draft is a post (blog.py: layout, front matter, pictures, order). A post is
@@ -34,8 +43,7 @@ read through the same guard as a page, staged with a front matter of its own (ti
 tags and its neighbours in date order, besides the description) and the GENERATED line, and its
 pictures are copied beside it byte for byte from the commit. A relative link or image in a post that
 names a picture of the same post becomes ./<file>; a link from a post or from a page to another post
-becomes /blog/<slug>/, through the same mapping that core.rewrite_links uses for pages. The
-sidebar gains a Blog item right after the page `progress` of the Start here group.
+becomes /blog/<slug>/, through the same mapping that core.rewrite_links uses for pages.
 
 Each staged page starts with `<!-- ledger:ignore-file -->`, so a local ledger_check does not
 report the copy a second time (the governed source is still checked), and a GENERATED line
@@ -71,33 +79,34 @@ SITE_DIR = Path("website")
 DOCS_OUT = SITE_DIR / "src" / "content" / "docs"
 DATA_OUT = SITE_DIR / "src" / "data"
 
-# Hand-written pages of the site (website/src/pages/*.astro), listed first in the sidebar. Each page's
-# own title is its label here (the title in its .astro front matter), and no label may be, or contain,
-# the title of a staged document: "Roadmap", "Decision gates" and "Test battery" are the documents, so
-# the two interactive pages say what a reader does with them instead (test_core.py checks this).
+# Hand-written pages of the documentation (website/src/pages/*.astro), listed at the end of the
+# documentation list's first group. Each page's own title is its label here (the title in its .astro
+# front matter), and no label may be, or contain, the title of a staged document: "Roadmap", "Decision
+# gates" and "Test battery" are the documents, so the two interactive pages say what a reader does with
+# them instead (test_core.py checks this).
 CUSTOM_PAGES: List[Tuple[str, str]] = [
-    ("Home", ""),
     ("Explore the timeline", "roadmap/"),
     ("Step through the paradigms", "battery/"),
     ("Substrate status", "status/"),
 ]
 
-# The sidebar's first group. The pages of the manifest section with exactly this title stand in it
-# right after Home, before the other hand-written pages, so the sidebar has one group of this name.
-# website/src/lib/pageChrome.ts reads the group as it stands: a page in it opens with the group's
-# number and name and has no stage.
+# The documentation list's first group. The pages of the manifest section with exactly this title stand
+# in it, before the hand-written pages, so the list has one group of this name.
 START_GROUP = "Start here"
 
-# The blog's index page (website/src/pages), listed in the first group right after the page whose slug is
-# BLOG_AFTER_SLUG, or after the group's manifest pages if there is none. Like the labels above, it may be
-# neither a document's title nor contain one (test_core.py checks this).
+# The blog's index page (website/src/pages). It is not in the documentation list, but like the labels
+# above its title may be neither a document's title nor contain one (test_core.py checks this).
 BLOG_PAGE: Tuple[str, str] = ("Blog", "blog/")
-BLOG_AFTER_SLUG = "progress"
+
+# The hand-written pages of the documentation list (docs.json), each with its route as the site states
+# it (no slashes). The home page and the blog are pages of the site, not of its documentation, so the
+# list holds neither.
+DOCS_PAGES: List[Tuple[str, str]] = [(label, path.strip("/")) for label, path in CUSTOM_PAGES]
 
 
 def split_title(text: str, src: str) -> Tuple[str, str]:
     """The first ATX level-one heading outside fenced code, and the text without it.
-    A page with no H1 is refused: Starlight needs a title, and inventing one would be the
+    A page with no H1 is refused: every page shows a title, and inventing one would be the
     stager writing prose."""
     lines = text.splitlines(keepends=True)
     fence = None
@@ -138,36 +147,36 @@ def start_section(manifest: dict) -> Optional[dict]:
         elif section["title"].casefold() == START_GROUP.casefold():
             raise core.PublishError(
                 f"docs/publish.json: the section {section['title']!r} differs from {START_GROUP!r} "
-                f"only in case; the sidebar would show two groups of that name")
+                f"only in case; the documentation list would show two groups of that name")
     return found
 
 
-def build_sidebar(manifest: dict, titles: Dict[str, str]) -> List[dict]:
-    """The Starlight sidebar. Its first group is START_GROUP: Home, the pages of the manifest
-    section of that title (in manifest order, each labelled with its title) and then the other
-    hand-written pages. Every other manifest section follows as a group of its own, in manifest
-    order. Starlight prefixes the site base onto every link that has no protocol
-    (utils/navigation.js makeSidebarLink -> formatPath -> pathWithBase), so these links are
-    site-relative and carry no base; adding it here would write the base twice."""
-    if not CUSTOM_PAGES or CUSTOM_PAGES[0] != ("Home", ""):
-        raise core.PublishError("stage.py: CUSTOM_PAGES must start with Home")
+def build_docs_index(manifest: dict, titles: Dict[str, str]) -> Dict[str, List[dict]]:
+    """The documentation list (docs.json). Its first group is START_GROUP: the documents of the
+    manifest section of that title, in manifest order, then the hand-written pages of DOCS_PAGES.
+    Every other manifest section follows as a group of its own, in manifest order. A document item
+    carries its slug, the title the page shows (titles) and the manifest's description; a page item
+    carries its route and its title only. Routes and slugs carry no site base and no slashes at
+    either end: the site adds both when it writes a link."""
     start = start_section(manifest)
-    custom = [{"label": label, "link": "/" + path} for label, path in CUSTOM_PAGES]
-    docs = ([{"label": titles[p["slug"]], "slug": p["slug"]} for p in start["pages"]]
-            if start is not None else [])
-    items = custom[:1] + docs + custom[1:]
-    after = next((i for i, it in enumerate(items) if it.get("slug") == BLOG_AFTER_SLUG), None)
-    at = (after + 1) if after is not None else 1 + len(docs)
-    items.insert(at, {"label": BLOG_PAGE[0], "link": "/" + BLOG_PAGE[1]})
-    sidebar: List[dict] = [{"label": START_GROUP, "items": items}]
+
+    def doc(page: dict) -> dict:
+        description = page.get("description")
+        if not description:
+            raise core.PublishError(
+                f"{page['src']}: its entry in docs/publish.json has no description, which the "
+                f"documentation list shows under its title")
+        return {"kind": "doc", "slug": page["slug"], "title": titles[page["slug"]],
+                "description": description}
+
+    first = [doc(p) for p in start["pages"]] if start is not None else []
+    first += [{"kind": "page", "route": route, "title": label} for label, route in DOCS_PAGES]
+    groups: List[dict] = [{"title": START_GROUP, "items": first}]
     for section in manifest["sections"]:
         if section is start:
             continue
-        sidebar.append({
-            "label": section["title"],
-            "items": [{"label": titles[p["slug"]], "slug": p["slug"]} for p in section["pages"]],
-        })
-    return sidebar
+        groups.append({"title": section["title"], "items": [doc(p) for p in section["pages"]]})
+    return {"groups": groups}
 
 
 def committed_json(root: Path, sha: str, rel: str) -> object:
@@ -271,7 +280,7 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
             f"{', '.join(unused[:3])}{', ...' if len(unused) > 3 else ''}); run `npm run diagrams` in "
             f"website/ to drop them")
 
-    sidebar = build_sidebar(manifest, titles)
+    docs_index = build_docs_index(manifest, titles)
 
     def dump(name: str, obj: object) -> None:
         (data_dir / name).write_text(json.dumps(obj, indent=2, ensure_ascii=False, sort_keys=False) + "\n",
@@ -279,7 +288,7 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
 
     dump("plan.json", plan)
     dump("ledger.public.json", public)
-    dump("sidebar.json", sidebar)
+    dump("docs.json", docs_index)
     dump("progress.json", {"as_of": plan["as_of"], "timezone": plan["timezone"], "author": author,
                            "events": events})
     dump("blog.json", blog.blog_json(manifest, posts, author))

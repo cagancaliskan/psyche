@@ -1,42 +1,142 @@
 ---
-// The test battery: a short lead, two notes, then one sheet per test from
-// components/BatteryExplorer.tsx, each drawing on the flat night plate. A wider content width for this page
-// only, as the roadmap and status pages do with .sx-wide (styles/battery.css). The notes are two boxes,
-// a label and its text, after "Spec Sheet" by isaiahbjork (21st.dev). The island hydrates when it
-// scrolls into view; without script its Pause control would do nothing, so the noscript rule hides it.
-import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import BatteryExplorer from '@/components/BatteryExplorer.tsx';
+// Step through the paradigms: the five classic paradigms the stage 2 test battery is built from, one part
+// per test, in the documentation's frame (layouts/Docs.astro). The tests, their steps and their pictures
+// are read from lib/battery.ts and drawn by lib/walkthrough.ts; none is typed here.
+//
+// Every step's picture is written here, on the server; all but the first of each test are hidden. The
+// reader steps with plain words ("Previous step", "Next step") or by choosing a step in the list under
+// the picture, by pointer or keyboard; the picture changes at once. Nothing steps by itself. Without
+// script the first picture and every step's words are shown, and the two step controls, which need
+// script, stay hidden (in a plain wrapper, since the stylesheet gives the controls' row a display of
+// its own).
+import docs from '@/data/docs.json';
+import DocEdit from '@/components/devdocs/DocEdit.astro';
+import DocPager from '@/components/devdocs/DocPager.astro';
+import OnThisPage from '@/components/devdocs/OnThisPage.astro';
+import Docs from '@/layouts/Docs.astro';
+import { TESTS, splitSummary } from '@/lib/battery.ts';
+import { entriesOf, neighbours, pageEditUrl, type DocsData } from '@/lib/devdocs.ts';
+import { PAGES } from '@/lib/head.ts';
+import { lastUpdatedOf } from '@/lib/lastUpdated.ts';
 import { withBase } from '@/lib/url.ts';
-import '@/styles/battery.css';
+import { stepLabel, stepShapes, viewBox } from '@/lib/walkthrough.ts';
 
+const page = {
+  ...PAGES.battery,
+  title: 'Step through the paradigms',
+};
 const textVersion = withBase('research/test-battery/');
+// A test's heading id, as the page had it before it moved into this frame (t1-name ... t5-name), so links
+// to those parts keep landing on them.
+const slug = (id: string) => `${id.toLowerCase()}-name`;
+const headings = TESTS.map((t) => ({ depth: 2, slug: slug(t.id), text: `${t.id} ${t.name}` }));
+const { prev, next } = neighbours(entriesOf(docs as DocsData), page.route);
+const updated = lastUpdatedOf(page.route)?.iso ?? null;
 ---
 
-<StarlightPage
-  frontmatter={{
-    title: 'Step through the paradigms',
-    description: 'Step through the classic cognitive-map paradigms behind the stage 2 test battery: what the agent does, what changes after learning and what each test measures.',
-    tableOfContents: false,
-  }}
->
-  <div class="sx-bat not-content">
-    <header class="sx-bat__intro">
-      <p class="sx-bat__lead">
+<Docs page={page} here={page.route} skip={{ href: '#doc', text: 'Skip to the text' }}>
+  <main id="doc" class="k-doc" tabindex="-1">
+    <article class="k-doc__body">
+      <h1 class="k-doc__title">{page.title}</h1>
+      <p class="k-doc__desc">{page.description}</p>
+      <p>
         The battery is built from five classic behavioural paradigms. Each was designed to probe behaviour
         that memorised responses would not explain.
       </p>
-      <ul class="sx-bnotes" role="list">
-        <li>
-          <p class="sx-bnotes__k">Pre-registered</p>
-          <p class="sx-bnotes__t">Protocol details and pass criteria are pre-registered and stay private until release.</p>
-        </li>
-        <li>
-          <p class="sx-bnotes__k">Text version</p>
-          <p class="sx-bnotes__t">The text version, with the fairness rules, is in <a href={textVersion}>Test battery</a>.</p>
-        </li>
-      </ul>
-    </header>
-    <BatteryExplorer client:visible />
-    <noscript><style is:inline>.sx-bs__ctl{display:none}</style></noscript>
-  </div>
-</StarlightPage>
+      <blockquote>
+        <p><strong>Pre-registered</strong><br />Protocol details and pass criteria are pre-registered and stay private until release.</p>
+        <p><strong>Text version</strong><br />The text version, with the fairness rules, is in <a href={textVersion}>Test battery</a>.</p>
+      </blockquote>
+      <nav class="bw-index" aria-labelledby="bw-index-name">
+        <p class="bw-index__name" id="bw-index-name">Tests in the battery</p>
+        <ul>
+          {TESTS.map((t) => <li><a href={`#${slug(t.id)}`}>{t.id} {t.name}</a></li>)}
+        </ul>
+      </nav>
+      {TESTS.map((t) => {
+        const id = slug(t.id);
+        const { setup, ask } = splitSummary(t.summary);
+        const n = t.steps.length;
+        const kind = `bw-art bw-art--${t.kind}`;
+        return (
+          <section class="bw-test" data-bw-test={t.id} aria-labelledby={id}>
+            <h2 id={id}><span class="bw-code">{t.id}</span> {t.name}</h2>
+            <p class="bw-after">{t.paradigm}</p>
+            {setup && <p>{setup}</p>}
+            <p class="bw-ask"><strong class="bw-ask__name">The question</strong> {ask}</p>
+            <div class="bw-play">
+              <div class="bw-look">
+                {t.steps.map((_, i) => (
+                  <div data-bw-pic={i} hidden={i !== 0}>
+                    <svg class={kind} viewBox={viewBox(t)} role="img" aria-label={stepLabel(t, i)}>
+                      {stepShapes(t, i).map((s) =>
+                        s.el === 'path' ? <path {...s.attrs} />
+                        : s.el === 'polyline' ? <polyline {...s.attrs} />
+                        : s.el === 'circle' ? <circle {...s.attrs} />
+                        : s.el === 'line' ? <line {...s.attrs} />
+                        : <text {...s.attrs}>{s.text}</text>,
+                      )}
+                    </svg>
+                  </div>
+                ))}
+                <p class="bw-after">An illustration, not a result.</p>
+                <div data-bw-ctl hidden>
+                  <div class="bw-ctl">
+                    <button type="button" class="k-ctl bw-ctl__btn" data-bw-prev aria-disabled="true" aria-describedby={id}>Previous step</button>
+                    <button type="button" class="k-ctl bw-ctl__btn" data-bw-next aria-describedby={id}>Next step</button>
+                    <p class="bw-ctl__at" data-bw-at>Step 1 of {n}</p>
+                  </div>
+                </div>
+                <p class="k-vh" data-bw-live aria-live="polite"></p>
+              </div>
+              <ol class="bw-steps" aria-label={`${t.name}: steps`}>
+                {t.steps.map((s, i) => (
+                  <li><button type="button" class="bw-step" data-bw-step={i} aria-current={i === 0 ? 'step' : undefined}><span class="bw-step__name">{s.label}</span> <span class="bw-step__text">{s.caption}</span></button></li>
+                ))}
+              </ol>
+            </div>
+          </section>
+        );
+      })}
+    </article>
+    <DocPager prev={prev} next={next} />
+    <DocEdit editUrl={pageEditUrl(page.route)} updated={updated} />
+  </main>
+  <OnThisPage slot="aside" headings={headings} />
+</Docs>
+
+<script>
+  // Stepping: "Previous step", "Next step" and the steps in the list. A step changes the picture at
+  // once, and only when the reader acts.
+  for (const test of document.querySelectorAll<HTMLElement>('[data-bw-test]')) {
+    const pics = [...test.querySelectorAll<HTMLElement>('[data-bw-pic]')];
+    const rows = [...test.querySelectorAll<HTMLButtonElement>('[data-bw-step]')];
+    const ctl = test.querySelector<HTMLElement>('[data-bw-ctl]');
+    const prev = test.querySelector<HTMLButtonElement>('[data-bw-prev]');
+    const next = test.querySelector<HTMLButtonElement>('[data-bw-next]');
+    const at = test.querySelector<HTMLElement>('[data-bw-at]');
+    const live = test.querySelector<HTMLElement>('[data-bw-live]');
+    const n = pics.length;
+    if (!ctl || !prev || !next || !at || !live || n === 0 || rows.length !== n) continue;
+    let current = 0;
+    const show = (i: number, say: boolean) => {
+      if (i < 0 || i >= n) return;
+      current = i;
+      pics.forEach((pic, k) => (pic.hidden = k !== i));
+      rows.forEach((row, k) => (k === i ? row.setAttribute('aria-current', 'step') : row.removeAttribute('aria-current')));
+      prev.setAttribute('aria-disabled', i === 0 ? 'true' : 'false');
+      next.setAttribute('aria-disabled', i === n - 1 ? 'true' : 'false');
+      at.textContent = `Step ${i + 1} of ${n}`;
+      if (say) {
+        const name = rows[i].querySelector('.bw-step__name')?.textContent ?? '';
+        const text = rows[i].querySelector('.bw-step__text')?.textContent ?? '';
+        live.textContent = `Step ${i + 1} of ${n}: ${name}. ${text}`;
+      }
+    };
+    prev.addEventListener('click', () => show(current - 1, true));
+    next.addEventListener('click', () => show(current + 1, true));
+    rows.forEach((row, k) => row.addEventListener('click', () => show(k, true)));
+    ctl.hidden = false;
+    show(0, false);
+  }
+</script>

@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="dg-18a13c1c90dd71cf-t" aria-describedby="dg-18a13c1c90dd71cf-d" data-key="18a13c1c90dd71cf" data-diagram="flowchart" font-size="12" viewBox="0 0 411.13 486.96" width="412" height="487">
+ <title id="dg-18a13c1c90dd71cf-t">Flowchart of 6 steps, starting at A new idea</title>
+ <desc id="dg-18a13c1c90dd71cf-d">Steps: A new idea; Answers a research question directly?; Finished before Gate C?; Parked: recorded, not started; A reviewer accepts it without asking why it is there?; Joins the line. Connections: A new idea to Answers a research question directly?; Answers a research question directly? to Finished before Gate C? (yes); Answers a research question directly? to Parked: recorded, not started (no); Finished before Gate C? to A reviewer accepts it without asking why it is there? (yes); Finished before Gate C? to Parked: recorded, not started (no); A reviewer accepts it without asking why it is there? to Joins the line (yes); A reviewer accepts it without asking why it is there? to Parked: recorded, not started (no).</desc>
+ <g>
+  <marker id="dg-18a13c1c90dd71cf_flowchart-v2-pointEnd" class="marker flowchart-v2" viewBox="0 0 10 10" refX="5" refY="5" markerUnits="userSpaceOnUse" markerWidth="8" markerHeight="8" orient="auto">
+   <path d="M 1 0.75 L 10 5 L 1 9.25" class="arrowMarkerPath"/>
+  </marker>
+  <g class="root">
+   <g class="edgePaths">
+    <path d="M227.82 42V76" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-18a13c1c90dd71cf_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M174.316 132.592V185.184" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-18a13c1c90dd71cf_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M282.881 132.592V146.74H342.129V420.96" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-18a13c1c90dd71cf_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M109.309 241.184V293.776" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-18a13c1c90dd71cf_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M221.774 241.184V255.332H273.422V420.96" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-18a13c1c90dd71cf_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M86.805 368.368V429.96" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-18a13c1c90dd71cf_flowchart-v2-pointEnd)" fill="none"/>
+    <path d="M193.211 368.368V408.812H251.336V420.96" class="edge-thickness-normal edge-pattern-solid flowchart-link" marker-end="url(#dg-18a13c1c90dd71cf_flowchart-v2-pointEnd)" fill="none"/>
+   </g>
+   <g class="edgeLabels">
+    <g class="edgeLabel" transform="translate(174.31640625, 160.88800430297852)">
+     <g class="label" transform="translate(0, -7.296001434326172)">
+      <g>
+       <rect class="background" x="-14.6015625" y="-1.9999990463256836" width="29.203125" height="18.59200096130371"/>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em" text-anchor="middle">yes</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="edgeLabel" transform="translate(342.12890625, 269.48000717163086)">
+     <g class="label" transform="translate(0, -7.000000953674316)">
+      <g>
+       <rect class="background" x="-10.40625" y="-1.9999990463256836" width="20.8125" height="18"/>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em" text-anchor="middle">no</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="edgeLabel" transform="translate(109.30859375, 269.48000717163086)">
+     <g class="label" transform="translate(0, -7.296001434326172)">
+      <g>
+       <rect class="background" x="-14.6015625" y="-1.9999990463256836" width="29.203125" height="18.59200096130371"/>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em" text-anchor="middle">yes</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="edgeLabel" transform="translate(273.421875, 333.0720100402832)">
+     <g class="label" transform="translate(0, -7.000000953674316)">
+      <g>
+       <rect class="background" x="-10.40625" y="-1.9999990463256836" width="20.8125" height="18"/>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em" text-anchor="middle">no</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="edgeLabel" transform="translate(86.8046875, 396.66401290893555)">
+     <g class="label" transform="translate(0, -7.296001434326172)">
+      <g>
+       <rect class="background" x="-14.6015625" y="-1.9999990463256836" width="29.203125" height="18.59200096130371"/>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em" text-anchor="middle">yes</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="edgeLabel" transform="translate(193.2109375, 396.66401290893555)">
+     <g class="label" transform="translate(0, -7.000000953674316)">
+      <g>
+       <rect class="background" x="-10.40625" y="-1.9999990463256836" width="20.8125" height="18"/>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em" text-anchor="middle">no</tspan></text>
+      </g>
+     </g>
+    </g>
+   </g>
+   <g class="nodes">
+    <g class="node default start" transform="translate(227.8203125, 25)">
+     <rect class="basic label-container" x="-62.0078125" y="-17" width="124.015625" height="34"/>
+     <g class="label" transform="translate(0, -7)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">A new idea</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default question" transform="translate(227.8203125, 106.29600143432617)">
+     <rect class="basic label-container" x="-95.6171875" y="-26.296001434326172" width="191.234375" height="52.592002868652344"/>
+     <g class="label" transform="translate(0, -16.296001434326172)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Answers a research</tspan><tspan x="0" y="1.4em" dy="1.1em">question directly?</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default question" transform="translate(174.31640625, 215.1840057373047)">
+     <rect class="basic label-container" x="-83.0078125" y="-26" width="166.015625" height="52"/>
+     <g class="label" transform="translate(0, -16)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Finished before</tspan><tspan x="0" y="1.4em" dy="1.1em">Gate C?</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default stop" transform="translate(311.72265625, 450.9600143432617)">
+     <rect class="basic label-container" x="-91.40625" y="-26" width="182.8125" height="52"/>
+     <g class="label" transform="translate(0, -16)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Parked: recorded,</tspan><tspan x="0" y="1.4em" dy="1.1em">not started</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default question" transform="translate(109.30859375, 333.0720100402832)">
+     <rect class="basic label-container" x="-95.609375" y="-35.29600143432617" width="191.21875" height="70.59200286865234"/>
+     <g class="label" transform="translate(0, -25.296001434326172)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">A reviewer accepts</tspan><tspan x="0" y="1.4em" dy="1.1em">it without asking</tspan><tspan x="0" y="2.9em" dy="1.1em">why it is there?</tspan></text>
+      </g>
+     </g>
+    </g>
+    <g class="node default keep" transform="translate(86.8046875, 450.9600143432617)">
+     <rect class="basic label-container" x="-78.8046875" y="-17" width="157.609375" height="34"/>
+     <g class="label" transform="translate(0, -7)">
+      <g>
+       <text y="-10.1" text-anchor="middle"><tspan x="0" y="-0.1em" dy="1.1em">Joins the line</tspan></text>
+      </g>
+     </g>
+    </g>
+   </g>
+  </g>
+ </g>
+</svg>
