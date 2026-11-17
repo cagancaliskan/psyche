@@ -1,7 +1,6 @@
 /**
- * Drafting geometry for the battery's sheets (components/battery/Pictures.tsx and
- * components/BatteryExplorer.tsx): the outline of the walls, the faint cell grid and the rulers on
- * a sheet's two axes. Pure functions of integer sizes, so the same input always draws the same
+ * Drafting geometry for the battery's sheets: the outline of the walls (drawn on the walk-through
+ * page by lib/walkthrough.ts), the faint cell grid and the rulers on a sheet's two axes. Pure functions of integer sizes, so the same input always draws the same
  * sheet.
  */
 import type { Grid } from './maze.ts';

@@ -74,8 +74,7 @@ const DOCS_PAGE = [
  *  module that reads the date (src/lib/lastUpdated.ts) and what it reads it with, this file among them. */
 const DATED_PAGE = [
   `${SRC}/lib/lastUpdated.ts`,
-  `${SRC}/lib/pageChrome.ts`,
-  `${SRC}/lib/ledger.ts`,
+  `${SRC}/lib/commitDay.ts`,
   'website/scripts/sitemap-lastmod.mjs',
 ];
 
@@ -119,6 +118,7 @@ export const SITE_PAGES = {
     ...DOCS_PAGE,
     ...DATED_PAGE,
     `${SRC}/lib/status.ts`,
+    `${SRC}/lib/ledger.ts`,
     LEDGER,
   ],
   blog: [`${SRC}/pages/blog/index.astro`, ...KIT_PAGE, BLOG],

@@ -33,8 +33,11 @@ const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 const BASE = '/';
 
 // Bytes, gzipped. The comment on each line is what was measured when the budget was set (JavaScript,
-// then CSS). Last set when the site chrome was redrawn: the title strip, the footer's title block, the
-// shared registration-corner recipe, the search dialog and the forced-colours rules grew every page's CSS
+// then CSS). The paragraphs below are the lines' history: the files they name are the ones of their time,
+// and most of those (global.css, styles/docs.css, the chrome components, plan.css, readout.css and
+// status.css) went with the old documentation frame. Last set when the site chrome was redrawn: the title
+// strip, the footer's title block, the shared registration-corner recipe, the search dialog and the
+// forced-colours rules grew every page's CSS
 // by about 1.2 KB (they are in global.css and docs.css), and the script that takes the tab stop off a
 // table that does not scroll (components/chrome/TableRegions.astro) and, on stage 2 pages, the one that
 // reads the next gate against the reader's day (components/chrome/NextGateClock.astro) grew the

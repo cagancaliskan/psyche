@@ -1,6 +1,6 @@
 // lib/devdocs.ts on fixtures. The staged list (src/data/docs.json) is never read here: it exists only
 // after staging, and `npm test` runs before. What is read are sources: docs/publish.json (the manifest
-// the list is staged from) and the three site pages' own files.
+// the list is staged from), tools/ledger.json (its program states) and the three site pages' own files.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
@@ -139,4 +139,27 @@ test('the three site pages in the list say what their own page files say (one de
     const own = file.includes(`...PAGES.${key}`) || (file.includes(`title: '${PAGES[key].title}'`) && file.includes(`description: '${PAGES[key].description}'`));
     assert.ok(own, `src/pages/${key}.astro states a title or description that lib/head.ts PAGES.${key} does not`);
   }
+});
+
+test('no section title of the manifest carries a program state in brackets', () => {
+  // The navigation's group names are docs/publish.json's section titles, shown as typed. A state is
+  // typed once, in the ledger (program, D-031), and read from there. A bracketed "(active)" or "(paused)"
+  // beside a group would be a second copy that goes stale the day a line is paused or resumed, so no
+  // title carries one. A bracketed word that is not a program state says what a stage is, not where it
+  // stands, and is not checked here.
+  const repo = new URL('../../../', import.meta.url);
+  const read = (rel: string) => JSON.parse(readFileSync(new URL(rel, repo), 'utf8'));
+  const states = new Set<string>(read('tools/ledger.json').program_states.map((w: string) => w.toLowerCase()));
+  assert.ok(states.size >= 2, 'the ledger lists its program states');
+  /** The program states a title names inside (), [] or {}. */
+  const bracketed = (title: string) =>
+    [...title.matchAll(/[(\[{]([^)\]}]*)[)\]}]/g)].flatMap((g) => g[1].toLowerCase().split(/[^a-z]+/)).filter((w) => states.has(w));
+  for (const section of read('docs/publish.json').sections as { title: string }[]) {
+    assert.deepEqual(bracketed(section.title), [], `"${section.title}" names a state in brackets: the ledger holds program state, so drop it from the title in docs/publish.json`);
+  }
+  // the check bites: labels of that kind would fail it
+  assert.deepEqual(bracketed('Cognitive maps (active)'), ['active']);
+  assert.deepEqual(bracketed('Cognitive maps [Paused]'), ['paused']);
+  assert.deepEqual(bracketed('Substrate (foundation)'), []);
+  assert.deepEqual(bracketed('Cognitive maps'), []);
 });

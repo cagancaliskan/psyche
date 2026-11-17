@@ -7,7 +7,6 @@
 // fails if a staged copy is ever tracked, so the governed sources stay the only source.
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'astro/config';
-import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 import { BASE, ORIGIN } from './src/lib/seo.ts';
 import { makeSerialize } from './scripts/sitemap-lastmod.mjs';
@@ -43,6 +42,5 @@ export default defineConfig({
     postFiguresIntegration(),
     // Each entry carries a <lastmod> from git (scripts/sitemap-lastmod.mjs).
     sitemap({ serialize: makeSerialize({ repoRoot: REPO_ROOT, base: BASE }) }),
-    react(),
   ],
 });
