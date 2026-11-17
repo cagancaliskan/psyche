@@ -17,11 +17,83 @@
   a { color: inherit; }
   a:focus-visible { outline: 2px solid var(--mint); outline-offset: 5px; border-radius: 2px; }
 
-  .chrome {
-    position: fixed; top: 28px; left: 32px; z-index: 5;
-    display: block; line-height: 0; opacity: 0.92;
+  /* The site menu: the inner pages' header (kit.css, "Header" and "Phone menu"), the same places and
+     sizes, so nothing moves on a page change. Here it never slides away and never takes a field
+     behind it: it sits quietly over the film, in the band above every sentence. The film is dark
+     only, so the theme switch's place is kept empty (.k-head__theme), and the links stay where the
+     inner pages have them. Keep these values in step with kit.css. */
+  :root { --soft: rgba(238, 241, 248, 0.72); --quiet: rgba(238, 241, 248, 0.52); --focus: #5ef0c8; --gutter: 32px; --head-h: 68px; }
+  .k-head {
+    position: fixed; inset: 0 0 auto 0; z-index: 40; height: var(--head-h);
+    display: flex; align-items: center; gap: 28px;
+    padding: 0 var(--gutter);
+    pointer-events: none;
   }
-  .chrome svg { height: 21px; width: auto; display: block; }
+  .k-head > * { pointer-events: auto; }
+  .k-head__home { display: inline-flex; align-items: center; min-height: 36px; padding: 6px 0; margin-right: auto; }
+  .k-head__home img { display: block; height: 19px; width: auto; }
+  .k-head__home:focus-visible { outline-offset: 4px; border-radius: 1px; }
+  .k-head__nav { display: flex; align-items: center; gap: 30px; }
+  .k-head__link {
+    font-size: 15px; line-height: 1; color: var(--soft); text-decoration: none; font-weight: 400;
+    padding: 10px 0; min-height: 36px; display: inline-flex; align-items: center;
+    text-decoration-line: underline; text-decoration-color: transparent; text-decoration-thickness: 1px; text-underline-offset: .32em;
+    transition: color .2s, text-decoration-color .2s;
+  }
+  /* the captions' own field-coloured halo, smaller: on the empty field it is the field itself (so
+     the words match the inner pages pixel for pixel); over a bright branch it keeps them readable */
+  .k-head__link, .k-head__menu { text-shadow: 0 0 10px rgba(5, 7, 13, 0.95), 0 0 3px rgba(5, 7, 13, 0.8); }
+  .k-head__link { flex-direction: column; justify-content: center; }
+  .k-head__link::after { content: attr(data-text); font-weight: 500; height: 0; overflow: hidden; visibility: hidden; pointer-events: none; }
+  .k-head__link:hover { color: var(--ink); text-decoration-color: var(--quiet); }
+  .k-head__link:focus-visible, .k-menu__link:focus-visible { outline: none; color: var(--ink); text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+  .k-head__end { display: flex; align-items: center; gap: 28px; margin-left: -6px; }
+  .k-head__theme { display: block; width: 36px; height: 36px; margin-right: -8px; }
+  .k-head__menu { display: none; }
+  .k-ctl {
+    appearance: none; -webkit-appearance: none; background: none; border: 0; margin: 0;
+    font: inherit; font-size: 15px; line-height: 1; color: var(--soft);
+    padding: 10px 2px; min-height: 36px; min-width: 24px; cursor: pointer;
+    text-decoration: underline; text-decoration-color: transparent; text-underline-offset: .32em; text-decoration-thickness: 1px;
+    transition: color .2s, text-decoration-color .2s;
+  }
+  .k-ctl:hover { color: var(--ink); text-decoration-color: var(--quiet); }
+  .k-ctl:focus-visible { outline: none; color: var(--ink); text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+  .k-leaving .k-head { opacity: 0; transition: opacity .3s ease; }
+  /* the still page (reduced motion, no WebGL): the inner pages' header, so the menu is always one
+     scroll up away: the field behind it once the page has moved, out of the way while reading down,
+     back on any scroll up or when focus enters it (kit.css, setupHeader in kit.js) */
+  html.is-static .k-head { transition: transform .45s cubic-bezier(.2, .7, .1, 1), background-color .35s ease; }
+  html.is-static .k-head.is-scrolled { background: var(--space); }
+  html.is-static .k-head.is-hidden { transform: translateY(-100%); }
+  html.is-static .k-head:focus-within { transform: none; }
+  .k-menu {
+    position: fixed; inset: 0; z-index: 70; background: var(--space); color: var(--ink);
+    overflow-y: auto; overscroll-behavior: contain;
+    display: flex; flex-direction: column;
+    padding: 0 var(--gutter) 40px;
+    opacity: 0; transition: opacity .24s ease;
+  }
+  .k-menu.is-open { opacity: 1; }
+  .k-menu[hidden] { display: none; }
+  .k-menu__top { flex: none; height: var(--head-h); display: flex; align-items: center; justify-content: space-between; }
+  .k-menu__top img { display: block; height: 16px; width: auto; }
+  .k-menu__list { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 9vh 0 auto; }
+  .k-menu__link {
+    color: var(--soft); text-decoration: none; font-weight: 400;
+    font-size: clamp(36px, 10.6vw, 52px); line-height: 1.08; letter-spacing: -.035em; padding: 4px 0;
+    text-decoration-line: underline; text-decoration-color: transparent; text-decoration-thickness: 2px; text-underline-offset: .14em;
+  }
+  .k-menu-open { overflow: hidden; }
+  @media (max-width: 700px) {
+    :root { --gutter: 16px; --head-h: 58px; }
+    .k-head__home img { height: 16px; }
+    .k-head__nav, .k-head__theme { display: none; }
+    .k-js .k-head__menu { display: inline-block; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .k-head__link, .k-ctl, .k-menu, .k-leaving .k-head, html.is-static .k-head { transition: none; }
+  }
 
   #track { position: relative; height: 900vh; } /* set exactly from the camera path at start */
   .stage { position: sticky; top: 0; height: 100vh; height: 100svh; width: 100%; overflow: hidden; }
@@ -87,8 +159,6 @@
   .static .era { margin: 14px 0 0; font-size: clamp(1rem, 2.6vw, 1.2rem); line-height: 1.35; color: var(--ink-soft); }
 
   @media (max-width: 640px) {
-    .chrome { top: 20px; left: 16px; }
-    .chrome svg { height: 17px; }
     .hint { bottom: 12px; gap: 6px; }
     .hint i { height: 22px; }
     .caption, .caption.long { left: 20px; right: 20px; bottom: 13vh; max-width: none; font-size: 1.2rem; line-height: 1.3; }

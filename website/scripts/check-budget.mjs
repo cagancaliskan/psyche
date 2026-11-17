@@ -82,13 +82,22 @@ const BASE = '/';
 // They were raised again, to the measured size plus 3 percent, when the page kit gained three named
 // motion curves for a figure's sequence and the posts' figures were retimed with them: about 0.8 KB
 // more JavaScript on every page of the kit, which the other pages' lines already had room for.
+// The About page and the blog index were raised, to the measured size plus 3 percent, when the header's
+// theme switch became a drawn icon: the icon and the reworked phone menu add about 0.8 KB of JavaScript
+// to every page of the kit, and with the motion curves those two pages no longer fitted their lines.
+// What we're building and the experiments page followed for the same reason, to the sizes the CI build
+// measured plus 3 percent: the same files compress to as much as 200 B more there than on a Mac, so a
+// line that only just holds locally can fail in CI. Measure against the CI figures when a line is tight.
 const DEFAULT_BUDGET = { js: 37100, css: 40200 };
 const PAGE_BUDGETS = {
-  '/':                          { js: 207100, css:   6200 }, // 201053,   5944
-  '/what-were-building/':       { js:  62300, css:  15700 }, //  60449,  15153
-  '/experiments/':              { js:  55900, css:  17600 }, //  54219,  17030
-  '/about/':                    { js:  43700, css:  12000 }, //  42413,  11602
-  '/blog/':                     { js:  34900, css:   9900 }, //  33835,   9554
+  // '/': CSS raised from 6200 when the film got the site's header and phone menu (their styles are in
+  // the film's own stylesheet, src/kit/film/film.css, since the film does not load kit.css): measured
+  // 201841 and 6679, the CSS line set below 6679 plus 3 percent (6879); the JS line holds.
+  '/':                          { js: 207100, css:   6800 }, // 201841,   6679
+  '/what-were-building/':       { js:  64100, css:  15700 }, //  62262,  15473
+  '/experiments/':              { js:  57700, css:  17600 }, //  56052,  17346
+  '/about/':                    { js:  45300, css:  12000 }, //  44059,  11913
+  '/blog/':                     { js:  36500, css:   9900 }, //  35481,   9865
   '/blog/three-questions-before-a-number-counts/': { js: 43800, css: 16700 }, // 42484, 16124 (its four figures)
   '/blog/testing-the-test-before-the-model/':      { js: 37100, css: 11700 }, // 35965, 11338 (its three figures)
   '/blog/why-psyche-keeps-a-blog/':                { js: 35500, css: 10800 }, // 34413, 10401 (its one figure)

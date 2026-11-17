@@ -105,12 +105,47 @@ img, svg, canvas { display: block; max-width: 100%; }
   text-decoration-line: underline; text-decoration-color: transparent; text-decoration-thickness: 1px; text-underline-offset: .32em;
   transition: color .2s, text-decoration-color .2s;
 }
+/* each link keeps the width of its heavier (current) weight, so marking the current page moves
+   nothing beside it, and the menu stands in the same place on every page and on the film */
+.k-head__link { flex-direction: column; justify-content: center; }
+.k-head__link::after { content: attr(data-text); font-weight: 500; height: 0; overflow: hidden; visibility: hidden; pointer-events: none; }
 .k-head__link:hover { color: var(--ink); text-decoration-color: var(--quiet); }
 /* the current page: ink weight only */
 .k-head__link[aria-current] { color: var(--ink); font-weight: 500; }
 .k-head__link:focus-visible { outline: none; color: var(--ink); text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
-.k-head__end { display: flex; align-items: center; gap: 28px; margin-left: 10px; }
+.k-head__end { display: flex; align-items: center; gap: 28px; margin-left: -6px; }
 .k-head__menu { display: none; }
+
+/* ---------- The theme switch: one drawn icon (kit.js, "The theme switch") ----------
+   The only icon on the site. A 36 px button around a 20 px drawing in the wordmark's line; soft ink
+   like the links beside it, full ink on hover and focus; keyboard focus is a mark under the drawing,
+   as under a word. Its two states crossfade in .22 s; nothing else moves. */
+.k-ti {
+  appearance: none; -webkit-appearance: none; background: none; border: 0; margin: 0; padding: 0;
+  position: relative; display: inline-flex; align-items: center; justify-content: center;
+  width: 36px; height: 36px; color: var(--ink); cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.k-ti__svg { width: 20px; height: 20px; overflow: visible; opacity: .72; transition: opacity .2s; }
+.k-ti:hover .k-ti__svg, .k-ti:focus-visible .k-ti__svg { opacity: 1; }
+.k-ti:focus-visible { outline: none; }
+.k-ti:focus-visible::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: 4px; height: 2px; background: var(--focus); }
+.k-ti__s { opacity: 0; transition: opacity .22s ease; }
+.k-ti[data-state="dark"] .k-ti__s[data-for="dark"], .k-ti[data-state="light"] .k-ti__s[data-for="light"] { opacity: 1; }
+.k-ti .l { fill: none; stroke: currentColor; stroke-width: 1.2; stroke-linecap: round; stroke-linejoin: round; }
+.k-ti .f { fill: currentColor; stroke: currentColor; stroke-width: 1.2; stroke-linejoin: round; }
+.k-ti .g { fill: none; stroke: var(--field); stroke-width: 1.4; stroke-linecap: round; }
+/* after .k-ti, so its own margin of 0 does not undo this: the drawing ends on the gutter */
+.k-head__end .k-head__theme { margin-right: -8px; }
+/* arriving from the orb: the icon is held back until the orb has fully opened (kit.js, k-ti-wait),
+   then fades in, so the header that comes out of the orb is the film's header exactly (the film
+   keeps an empty place there). Keyboard focus shows it at once. */
+.k-head__theme { transition: opacity .5s ease; }
+.k-ti-wait .k-head__theme:not(:focus-visible) { opacity: 0; pointer-events: none; }
+/* in the phone menu: in the top row beside "Close", where "Menu" and the header's controls were,
+   the header's 20 px drawing in a 44 px hit area */
+.k-menu__ctl { display: flex; align-items: center; gap: 16px; }
+.k-ti--menu { width: 44px; height: 44px; }
+.k-ti--menu:focus-visible::after { left: 12px; right: 12px; bottom: 6px; }
 
 /* ---------- Phone menu: one full-screen list ---------- */
 .k-menu {
@@ -132,7 +167,6 @@ img, svg, canvas { display: block; max-width: 100%; }
 }
 .k-menu__link[aria-current] { color: var(--ink); font-weight: 500; }
 .k-menu__link:focus-visible { outline: none; color: var(--ink); text-decoration-color: var(--focus); }
-.k-menu__end { flex: none; padding-top: 40px; }
 .k-menu-open { overflow: hidden; }
 
 /* ---------- The type scale: one set of sizes for every page ----------

@@ -2,7 +2,76 @@
 // Imported from the page design. Written by the page import: do not edit here.
 import GEN_SRC from './gen.js?raw';
 const root = document.documentElement;
-const goStatic = () => { root.classList.add('is-static'); };
+// The still page keeps the inner pages' header: fixed, the field behind it once scrolled, slides away
+// while reading down and returns on any scroll up or when focus enters it.
+const goStatic = () => {
+  if (root.classList.contains('is-static')) return;
+  root.classList.add('is-static');
+  const head = document.querySelector('.k-head');
+  if (!head) return;
+  let lastY = scrollY, hidden = false, scrolled = null;
+  const setHidden = (h) => {
+    if (h === hidden || (h && (head.contains(document.activeElement) || document.body.classList.contains('k-menu-open')))) return;
+    hidden = h; head.classList.toggle('is-hidden', h);
+  };
+  const onScroll = () => {
+    const y = scrollY;
+    if ((y > 8) !== scrolled) { scrolled = y > 8; head.classList.toggle('is-scrolled', scrolled); }
+    if (y > lastY + 6 && y > 120) setHidden(true);
+    else if (y < lastY - 6 || y < 60) setHidden(false);
+    lastY = y;
+  };
+  onScroll();
+  addEventListener('scroll', onScroll, { passive: true });
+  head.addEventListener('focusin', () => setHidden(false));
+};
+
+// The site menu on a phone: "Menu" opens the same full-screen list the inner pages have (Escape
+// closes it, focus stays inside and returns to "Menu"). No theme switch in it: the film is dark only.
+{
+  const sheet = document.getElementById('k-menu');
+  const openers = [...document.querySelectorAll('[data-k-menu]')];
+  let isOpen = false, returnTo = null;
+  const rm = () => matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const open = () => {
+    if (isOpen) return;
+    isOpen = true; returnTo = document.activeElement;
+    for (const c of document.body.children) {
+      if (c === sheet || c.tagName === 'SCRIPT' || c.classList.contains('k-orb-veil')) continue;
+      c.setAttribute('inert', ''); c.setAttribute('data-k-inert', '');
+    }
+    document.body.classList.add('k-menu-open');
+    openers.forEach((b) => b.setAttribute('aria-expanded', 'true'));
+    sheet.hidden = false;
+    requestAnimationFrame(() => sheet.classList.add('is-open'));
+    (sheet.querySelector('.k-menu__link') || sheet.querySelector('[data-k-close]')).focus();
+  };
+  const close = (restore) => {
+    if (!isOpen) return;
+    isOpen = false;
+    document.querySelectorAll('[data-k-inert]').forEach((c) => { c.removeAttribute('inert'); c.removeAttribute('data-k-inert'); });
+    document.body.classList.remove('k-menu-open');
+    openers.forEach((b) => b.setAttribute('aria-expanded', 'false'));
+    sheet.classList.remove('is-open');
+    const hide = () => { if (!isOpen) sheet.hidden = true; };
+    if (rm()) hide(); else setTimeout(hide, 240);
+    if (restore !== false && returnTo && returnTo.focus) returnTo.focus();
+  };
+  openers.forEach((b) => b.addEventListener('click', open));
+  sheet.querySelector('[data-k-close]').addEventListener('click', () => close(true));
+  sheet.querySelector('.k-head__home').addEventListener('click', () => close(false)); // the wordmark: back to the film's start
+  sheet.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') { e.preventDefault(); close(true); return; }
+    if (e.key !== 'Tab') return;
+    const f = [...sheet.querySelectorAll('a[href], button')].filter((x) => x.offsetParent !== null);
+    if (!f.length) return;
+    const first = f[0], last = f[f.length - 1];
+    if (e.shiftKey && (document.activeElement === first || !sheet.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+  addEventListener('resize', () => { if (isOpen && innerWidth > 700) close(false); });
+  if (window.PsycheOrb) { const prev = window.PsycheOrb.beforeLeave; window.PsycheOrb.beforeLeave = (h) => { close(false); if (prev) prev(h); }; }
+}
 
 const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const probe = document.createElement('canvas');
@@ -555,6 +624,12 @@ function run(THREE) {
   const finale = document.getElementById('finale');
   const hint = document.getElementById('hint');
   const markVec = document.getElementById('markvec');
+  // The closing links join the Tab order only once the closing scene shows: before that the menu
+  // above has the same pages, and Tab from "Contact" must not throw the film to its very end.
+  const finLinks = [...finale.querySelectorAll('a')];
+  let finTab = null;
+  const setFinTab = (on) => { if (on === finTab) return; finTab = on; finLinks.forEach((a) => (on ? a.removeAttribute('tabindex') : a.setAttribute('tabindex', '-1'))); };
+  setFinTab(false);
   finale.addEventListener('focusin', () => { const max = scrollMax(); if (scrollY < max - 2) scrollTo({ top: max, behavior: 'instant' }); });
   const lastStyle = new Map();
   function setStyle(el, o, y) {
@@ -725,6 +800,7 @@ function run(THREE) {
     const fo = smooth(0.82, 1.0, fin);
     setStyle(finale, fo, (1 - fo) * 22);
     finale.style.visibility = 'visible'; // links stay reachable by keyboard
+    setFinTab(fo > 0.05);
     hint.style.opacity = (introDone ? (FREEZE ? 1 : smooth(0, 1, (now - introStart - INTRO - 500) / 900)) : 0) * (1 - smooth(1.02, 1.12, b));
 
     renderer.render(scene, cam3);

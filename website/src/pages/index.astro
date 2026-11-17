@@ -1,14 +1,20 @@
 ---
 // The home page: the film. One scroll-driven scene drawn with three.js (the installed dependency,
 // bundled by the build), its captions over it, and the links to What we're building, the blog and
-// About at its end. The film's markup, style and script are in src/kit/film/, brought in from the page
-// design as they are (do not edit them here); this file only puts them on the bare layout.
+// About at its end. Over it, from the first frame to the last, the site's header: the wordmark and the
+// four menu links at the places the other front pages have them, and on a phone (700 px and under) the
+// Menu button that opens the same full-screen list. The film's markup, style and script are in
+// src/kit/film/, brought in from the page design as they are (do not edit them here); this file only
+// puts them on the bare layout. The film does not load the page kit (kit.js, kit.css): its header and
+// menu are written in its own markup and script.
 //
 // - The head is lib/head.ts's home entry: the whole title, the description, the structured data.
-// - The theme is fixed dark: the film has no light version.
+// - The theme is fixed dark: the film has no light version, so its header has no theme switch (its
+//   place is kept empty, so the links do not move on the way to another page).
 // - Without script, or under reduced motion, or without WebGL, the static page in the film's markup
-//   shows instead: the same captions and the same links, as plain text. The <noscript> style in the
-//   head is what shows it when no script runs at all.
+//   shows instead: the same captions and the same links, as plain text, under the same header. The
+//   <noscript> style in the head is what shows it when no script runs at all; the header's links are
+//   plain links, so they work without script too (on a phone they sit behind Menu, which needs script).
 // - The film's script is a module that Astro bundles: it imports three.js and the shape generator
 //   (gen.js, as text, so the generator ships inside the film's chunk and counts in the page's budget).
 import Bare from '@/layouts/Bare.astro';
