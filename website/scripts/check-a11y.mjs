@@ -1,7 +1,8 @@
 // Accessibility check of the built site: axe-core over every page of dist/, at WCAG 2.2 AA (the axe
 // tags wcag2a, wcag2aa, wcag21a, wcag21aa and wcag22aa), and over the interface states a reader opens
 // (on a docs page: the search dialog with results, the phone menu, the phone contents list; on a front
-// page: the site's phone menu; on a post with designed figures: a figure after its control is used). Exits 1 when any serious
+// page and on the film: the site's phone menu; on a front page: the theme switch pressed; on a post with
+// designed figures: a figure after its control is used). Exits 1 when any serious
 // or critical violation is found, or when a page cannot be audited at all; moderate and minor ones are
 // listed but never fail the run, and neither does what axe cannot decide (its "incomplete" results:
 // today only text contrast over gradients, pseudo-elements and images, which need a human look).
@@ -113,6 +114,65 @@ const stateUrl = (state) => state.page ?? STATE_PAGE;
 // How many elements of a page were inert before its menu opened, so that the close can be held to it.
 const inertBefore = new WeakMap();
 const countInert = (page) => page.evaluate(() => document.querySelectorAll('[inert]').length);
+// The theme switch's spoken name in each theme: it says what pressing it will do.
+const THEME_NAMES = { dark: 'Switch to the light theme', light: 'Switch to the dark theme' };
+const themeState = (page, selector) => page.$eval(selector, (b) => {
+  let kept = null;
+  try { kept = localStorage.getItem('psyche-theme'); } catch { /* storage refused */ }
+  return { theme: document.documentElement.dataset.theme, name: b.getAttribute('aria-label'), kept, text: b.textContent.trim() };
+});
+function expectSwitched(before, after) {
+  if (before.name !== THEME_NAMES[before.theme]) throw new Error(`the theme switch is named "${before.name}" in the ${before.theme} theme`);
+  if (before.text) throw new Error(`the theme switch shows the text "${before.text}"; it is a drawn icon`);
+  if (after.theme === before.theme) throw new Error(`the theme switch was pressed but the page stayed ${before.theme}`);
+  if (after.name !== THEME_NAMES[after.theme]) throw new Error(`after a press the theme switch is named "${after.name}" in the ${after.theme} theme`);
+  if (after.kept !== after.theme) throw new Error(`after a press the page is ${after.theme} but the kept choice is ${after.kept}`);
+}
+// The phone menu of a front page, as a state: audited open; then Escape must close it, hide it, mark
+// its button collapsed, give the rest of the page back (no more inert elements than before it
+// opened) and return focus to the button. `themeSwitch` says whether the menu holds the theme switch.
+function siteMenu(name, page, themeSwitch) {
+  return {
+    name,
+    page,
+    viewports: ['phone'],
+    async open(p) {
+      await p.waitForSelector('button[data-k-menu]', { visible: true, timeout: 20000 });
+      inertBefore.set(p, await countInert(p));
+      await p.click('button[data-k-menu]');
+      await p.waitForSelector('#k-menu:not([hidden])', { timeout: 10000 });
+      const seen = await p.evaluate(() => ({
+        expanded: document.querySelector('button[data-k-menu]')?.getAttribute('aria-expanded'),
+        links: document.querySelectorAll('#k-menu .k-menu__link').length,
+        focused: !!document.activeElement?.matches('#k-menu .k-menu__link'),
+        theme: document.documentElement.dataset.theme,
+        switches: [...document.querySelectorAll('#k-menu [data-k-theme]')].map((b) => b.getAttribute('aria-label')),
+      }));
+      if (seen.expanded !== 'true') throw new Error(`the menu opened but its button says aria-expanded="${seen.expanded}"`);
+      if (seen.links !== 4) throw new Error(`the menu holds ${seen.links} link(s), not the site's four`);
+      if (!seen.focused) throw new Error('the menu opened but focus is not on its first link');
+      const want = themeSwitch ? [THEME_NAMES[seen.theme]] : [];
+      if (seen.switches.join() !== want.join()) throw new Error(`the menu's theme switch: ${JSON.stringify(seen.switches)}, expected ${JSON.stringify(want)}`);
+      await wait(400);
+    },
+    async close(p) {
+      await p.keyboard.press('Escape');
+      await p.waitForSelector('#k-menu[hidden]', { timeout: 10000 });
+      const after = await p.evaluate(() => {
+        const button = document.querySelector('button[data-k-menu]');
+        return {
+          expanded: button?.getAttribute('aria-expanded'),
+          focused: document.activeElement === button,
+          inert: document.querySelectorAll('[inert]').length,
+        };
+      });
+      if (after.expanded !== 'false') throw new Error(`the menu closed but its button says aria-expanded="${after.expanded}"`);
+      const before = inertBefore.get(p) ?? 0;
+      if (after.inert !== before) throw new Error(`the menu closed but ${after.inert} element(s) are inert (${before} before it opened)`);
+      if (!after.focused) throw new Error('the menu closed but focus did not return to its button');
+    },
+  };
+}
 const STATES = [
   {
     name: 'search dialog with results',
@@ -146,37 +206,33 @@ const STATES = [
       await wait(400);
     },
   },
+  // The front pages' phone menu: on an inner page the page kit's full-screen list, with the theme
+  // switch in its top row beside "Close"; on the home page the film's own copy of it, without the
+  // switch (the film is dark only).
+  siteMenu('site menu open', 'what-were-building/', true),
+  siteMenu('site menu open on the film', '', false),
   {
-    // The front pages' phone menu (the page kit's full-screen list): a modal dialog with the four links
-    // and the theme switch. Audited open; then Escape must close it, hide it, mark its button collapsed,
-    // give the rest of the page back (no more inert elements than before it opened) and return focus to the button.
-    name: 'site menu open',
-    page: 'what-were-building/',
-    viewports: ['phone'],
+    // The theme switch of the front pages' header: a drawn icon whose spoken name says what it will
+    // do. Pressed, it must switch the theme, keep the choice ('psyche-theme') and change its name;
+    // the page is audited in the theme it switched to, then pressed again, and must switch back.
+    name: 'theme switched',
+    page: 'about/',
+    viewports: ['desktop'],
     async open(page) {
-      await page.waitForSelector('button[data-k-menu]', { visible: true, timeout: 20000 });
-      inertBefore.set(page, await countInert(page));
-      await page.click('button[data-k-menu]');
-      await page.waitForSelector('#k-menu:not([hidden])', { timeout: 10000 });
-      const expanded = await page.$eval('button[data-k-menu]', (b) => b.getAttribute('aria-expanded'));
-      if (expanded !== 'true') throw new Error(`the menu opened but its button says aria-expanded="${expanded}"`);
+      const button = '.k-head button[data-k-theme]';
+      await page.waitForSelector(button, { visible: true, timeout: 20000 });
+      const before = await themeState(page, button);
+      await page.click(button);
       await wait(400);
+      const after = await themeState(page, button);
+      expectSwitched(before, after);
     },
     async close(page) {
-      await page.keyboard.press('Escape');
-      await page.waitForSelector('#k-menu[hidden]', { timeout: 10000 });
-      const after = await page.evaluate(() => {
-        const button = document.querySelector('button[data-k-menu]');
-        return {
-          expanded: button?.getAttribute('aria-expanded'),
-          focused: document.activeElement === button,
-          inert: document.querySelectorAll('[inert]').length,
-        };
-      });
-      if (after.expanded !== 'false') throw new Error(`the menu closed but its button says aria-expanded="${after.expanded}"`);
-      const before = inertBefore.get(page) ?? 0;
-      if (after.inert !== before) throw new Error(`the menu closed but ${after.inert} element(s) are inert (${before} before it opened)`);
-      if (!after.focused) throw new Error('the menu closed but focus did not return to its button');
+      const button = '.k-head button[data-k-theme]';
+      const now = await themeState(page, button);
+      await page.click(button);
+      await wait(400);
+      expectSwitched(now, await themeState(page, button));
     },
   },
   {

@@ -25,10 +25,12 @@ the step that copies governed sources into the site's input. The two are unrelat
 The site has two parts. The front pages (the home, What we're building, Experiments, About, the blog's
 index, its posts and the 404 page) are plain Astro pages on three layouts of their own,
 `src/layouts/Bare.astro`, `Kit.astro` and `Post.astro`, drawn with the page kit (`src/kit/`): its
-stylesheet, a classic script that writes the header's theme switch and phone menu and the footer and
-runs the figures, a head script that shows an orb while a page opens and between pages, and each
-page's markup, styles, figure script and figure stills. The home is a scroll film drawn with three.js
-(`src/kit/film/`). Astro with Starlight is the documentation shell: every docs page, and the
+stylesheet, a classic script that writes the header's theme switch (a drawn icon, named for what it
+does: "Switch to the light theme" or "Switch to the dark theme") and phone menu and the footer and
+runs the figures, a head script that shows an orb while a page opens and between pages, and each page's markup,
+styles, figure script and figure stills. The home is a scroll film drawn with three.js
+(`src/kit/film/`), with the site's header and phone menu over it in its own markup and script; the
+film is dark only, so it has no theme switch. Astro with Starlight is the documentation shell: every docs page, and the
 `/roadmap/`, `/battery/` and `/status/` pages. React runs three interactive pieces there (the "now"
 readout, the timeline, the battery explorer); everything else is static Astro and CSS. The front
 pages link to no documentation page; the documentation pages are still built and reachable at their
@@ -71,7 +73,7 @@ list of posts under it is read from `blog.json`.
 | every other route | `docs/publish.json` | A governed Markdown document, staged into `src/content/docs/` |
 
 - Folders: `public/` (icons, `og.png`, manifest, `robots.txt`, and in `public/brand/` the two wordmarks
-  the kit's header loads), `scripts/` (checks and drawing tools), `src/diagrams/` (committed drawings),
+  the kit's header and the film's header load), `scripts/` (checks and drawing tools), `src/diagrams/` (committed drawings),
   `src/assets/brand/` (copies of the two wordmarks in `brand/`), `src/layouts/` and `src/kit/` (the front
   pages).
 - `astro.config.mjs` takes `site` and `base` from `src/lib/seo.ts` and sets `trailingSlash: 'always'`, the Starlight options and four
@@ -449,9 +451,12 @@ each load first writes the scheme to `localStorage` (`psyche-theme`), and the ru
 then shows another theme. The home fixes its own theme (the film is dark), so it is audited once per
 width, dark, and listed as "fixed dark"; any other page that fixes its theme fails the run. On
 `research/gates/` it also opens what a reader opens by clicking: the search dialog with results, the
-phone menu and the phone contents list; on `what-were-building/`, at phone width, it opens the site's
-menu, audits it, and closes it with Escape, failing if the menu does not close, return focus to its
-button or leave the page as it was. It exits 1 on a serious or critical
+phone menu and the phone contents list; on `what-were-building/` and on the home (the film), at phone
+width, it opens the site's menu, audits it, and closes it with Escape, failing if the menu does not
+hold the four links, take focus to the first, hold the theme switch (on the film: no switch), close,
+return focus to its button or leave the page as it was; on `about/`, at desktop width, it presses the
+header's theme switch, audits the page in the other theme, and presses it again, failing if the theme
+does not change and stay chosen or the switch's spoken name does not say what it will do. It exits 1 on a serious or critical
 violation and on anything it cannot audit (a page that does not answer 200, a state that will not open,
 a run where axe tested fewer than 20 rules, a state whose page is missing). Lesser findings, and rules axe cannot decide, are listed
 and never fail it. It exits 2 when it could not set itself up (no Chrome, a failed install), which says
