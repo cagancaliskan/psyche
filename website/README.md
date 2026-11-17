@@ -402,9 +402,9 @@ data), `sheet.ts` (wall outlines, grids, rulers), `url.ts` (`withBase`). `batter
 | `check:og` | The card names a stage other than the ledger's active one, the sidecar does not describe `brand/psyche-social.png` byte for byte, or `public/og.png` is not its copy |
 | Staging | A governed source differs from `HEAD`; the guard refuses a page; a heading or description is missing; a relative link is dead; a fence has no current drawing or a drawing no fence |
 | `astro check` | Type or Astro errors. Warnings and hints do not fail it |
-| Link validation | `starlight-links-validator`, during `astro build`, finds an invalid internal link or fragment in a Markdown page, posts included (`errorOnRelativeLinks` is off: staging has rewritten them). It does not read the hand-written pages: a dead root-relative link there passes, so build those with `withBase()` and check them yourself. For the front pages, `scripts/kit-links.test.mjs` (in `npm test`) fails on a link in the kit or a front page that leads to no page |
+| Link validation | `starlight-links-validator`, during `astro build`, finds an invalid internal link or fragment in a Markdown page, posts included (`errorOnRelativeLinks` is off: staging has rewritten them). It does not read the hand-written pages; the built output of every page is read after the build: `check:refs` fails on a link to an id the same page lacks, `check:seo` on a link from the root or by the site's whole address that leads to no built page or file, or to an id that page lacks. Build hand-written links with `withBase()`. For the front pages, `scripts/kit-links.test.mjs` (in `npm test`) fails earlier, on a link in the kit or a front page that leads to no page |
 | `check:spacing` | The built home, What we're building, Experiments, About, blog index, roadmap, battery or status page has text glued to an inline element or an expression's output, or a number to a word; or any figure caption has two words run together |
-| `check:refs` | A page has a `<use href>`, `url(#...)`, `aria-labelledby`, `aria-describedby`, `aria-controls` or `<label for>` pointing at an id it lacks |
+| `check:refs` | A page has a `<use href>`, `url(#...)`, `aria-labelledby`, `aria-describedby`, `aria-controls`, `<label for>` or `<a href="#...">` pointing at an id it lacks (a bare `#` is no reference) |
 | `check:budget` | See below |
 | `check:seo` | See below |
 | `npm test` | A unit test fails. CI runs it before the build |
@@ -429,9 +429,9 @@ why each weighs what it does.
 on: other than one title, canonical address and description (120 to 160 characters, unique); `og:` or
 `twitter:` tags that differ from the page's; an image that is not a PNG of its stated size; a missing
 theme colour, icon or manifest; a `robots` meta anywhere but the 404 page (which must be `noindex`, with
-its own title, description and address); structured data off the landing page and the blog posts; and a link written with
-the site's whole address (which the link validator treats as external) that leads to nothing or to a
-missing id. For the site: a `robots.txt` that does not allow everything and name the sitemap; a bad
+its own title, description and address); structured data off the landing page and the blog posts; and a link to another page of the site,
+written from the root or with the site's whole address (which the link validator treats as external),
+that leads to nothing or to a missing id (markup inside a script is not read). For the site: a `robots.txt` that does not allow everything and name the sitemap; a bad
 manifest; a sitemap that omits a page, lists a non-page or repeats an address, or a `<lastmod>` that is
 missing (with history), unreadable or in the future. For the feeds: either one not named once in every
 head; for the progress feed, not Atom 1.0, an `updated` other than the newest event's day, an author

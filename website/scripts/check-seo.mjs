@@ -19,10 +19,11 @@
 //             article:published_time, article:author); on no other page
 //   article   a blog post (blog/<slug>/) has one article:published_time and one article:author, and no
 //             other page has either
-//   own links every link in a page's body that is written with the site's whole address (a docs page
-//             reaches the hand-written pages, which have no Markdown source to link, that way) leads to a
-//             built page or file, and to an id that is on that page when it names one. The link validator
-//             treats such an address as external and checks nothing
+//   own links every link in a page's body to another place of the site, written with the site's whole
+//             address (a docs page reaches the hand-written pages, which have no Markdown source to link,
+//             that way) or from the root (/guide/, /research/gates/#x), leads to a built page or file, and
+//             to an id that is on that page when it names one. Markup inside a script is not a link. A
+//             link to an id on the same page (#x) is checked by check-refs.mjs
 // The site:
 //   robots.txt             allows everything and names the sitemap
 //   site.webmanifest       parses; start_url inside scope; its icons exist at their sizes, one maskable
@@ -265,9 +266,9 @@ for (const file of pages().sort()) {
 if (!routes.includes('') || !routes.includes('404')) bad('dist', 'no landing page or no 404 page was built');
 if (!routes.includes('blog')) bad('dist', "the blog's index was not built");
 
-// ---- the links written with the site's whole address
-// A page may link another page of the site by its absolute address, and the link validator then calls the
-// link external. Every one must lead to a built page or file, and to an id that is there when it names one.
+// ---- the links to the site's own pages
+// A page links another page of the site by its whole address or from the root. Every such link must lead
+// to a built page or file, and to an id that is there when it names one.
 const targetHtml = new Map(); // file -> its text
 function ownLinkProblem(address) {
   let url;
@@ -289,13 +290,25 @@ function ownLinkProblem(address) {
   }
   return null;
 }
+// A link written from the root ("/x/", never "//host/x/") is an address of the site's origin.
+const ownAddress = (href) => (href.startsWith(SITE_URL) ? href : /^\/(?!\/)/.test(href) ? `${ORIGIN}${href}` : null);
 let ownLinks = 0;
-for (const [where, body] of bodies) {
+let wholeLinks = 0;
+for (const [where, page] of bodies) {
+  // Scripts hold strings that look like markup; what they build at run time is not in the file. The removal
+  // is repeated until nothing changes, so that no script is left behind by one it joined up.
+  let body = page;
+  for (let before = ''; before !== body; ) {
+    before = body;
+    body = body.replace(/<script\b[\s\S]*?<\/script\b[^>]*>/gi, '');
+  }
   for (const m of body.matchAll(/<a\b[^>]*>/gi)) {
     const href = attributes(m[0]).href;
-    if (!href?.startsWith(SITE_URL)) continue;
+    const address = href === undefined ? null : ownAddress(href);
+    if (address === null) continue;
     ownLinks += 1;
-    const problem = ownLinkProblem(href);
+    if (href.startsWith(SITE_URL)) wholeLinks += 1;
+    const problem = ownLinkProblem(address);
     if (problem) bad(where, `the link ${href} ${problem}`);
   }
 }
@@ -550,4 +563,4 @@ if (problems.length) {
   for (const p of problems) console.error(`  ${p}`);
   process.exit(1);
 }
-console.log(`check-seo: ${routes.length} pages, ${ownLinks} links by the site's own address, the manifest, robots.txt and the sitemap are in order (${ORIGIN})`);
+console.log(`check-seo: ${routes.length} pages, ${ownLinks} links to the site's own pages (${wholeLinks} by its whole address), each to a built page or file and id, the manifest, robots.txt and the sitemap are in order (${ORIGIN})`);

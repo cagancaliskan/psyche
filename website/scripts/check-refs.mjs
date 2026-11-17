@@ -3,9 +3,11 @@
 // A reference inside one page is only a string, and nothing else in the build reads it: a drawing that
 // takes its letters from glyphs defined elsewhere on the page (<use href="#...">), a mask or a marker
 // (url(#...)), and the names and descriptions that assistive technology reads from another element
-// (aria-labelledby, aria-describedby, aria-controls, <label for>). When the id is missing, the browser
-// draws nothing or reads nothing, without an error, and the accessibility check cannot tell an empty
-// circle from a full one. Links to headings (<a href="#...">) are left to the link validation step.
+// (aria-labelledby, aria-describedby, aria-controls, <label for>), and a link to a place on the same
+// page (<a href="#...">, a skip link or an entry of "On this page"). When the id is missing, the browser
+// draws nothing, reads nothing or scrolls nowhere, without an error, and the accessibility check cannot
+// tell an empty circle from a full one. A bare "#" names no id and is not a reference. A link to another
+// page, and to an id there, is checked by check-seo.mjs.
 //
 // Every page of dist/ is read, the 404 page included. Node built-ins only.
 //
@@ -35,7 +37,18 @@ const REFS = [
   ['aria-describedby', /\saria-describedby\s*=\s*["']([^"']+)["']/gi, 'list'],
   ['aria-controls', /\saria-controls\s*=\s*["']([^"']+)["']/gi, 'list'],
   ['<label for>', /<label\b[^>]*?\sfor\s*=\s*["']([^"']+)["']/gi, 'one'],
+  ['<a href="#...">', /<a\b[^>]*?\shref\s*=\s*(?:"#([^"]+)"|'#([^']+)'|#([^\s"'>]+))/gi, 'fragment'],
 ];
+
+// The id a fragment names: entities as the attribute holds them, then percent-escapes as the address does.
+function fragmentId(raw) {
+  const text = raw.replace(/&quot;/g, '"').replace(/&#39;|&#x27;/g, "'").replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&');
+  try {
+    return decodeURIComponent(text);
+  } catch {
+    return text;
+  }
+}
 
 if (!existsSync(DIST)) {
   console.error('check-refs: dist/ does not exist; build the site first');
@@ -53,10 +66,11 @@ for (const page of all) {
     before = html;
     html = html.replace(/<script\b[\s\S]*?<\/script\b[^>]*>/gi, '');
   }
-  const ids = new Set([...html.matchAll(/\sid\s*=\s*["']([^"']+)["']/gi)].map((m) => m[1]));
+  const ids = new Set([...html.matchAll(/\sid\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s"'>]+))/gi)].map((m) => m[1] ?? m[2] ?? m[3]));
   for (const [what, pattern, arity] of REFS) {
     for (const m of html.matchAll(pattern)) {
-      for (const id of arity === 'list' ? m[1].trim().split(/\s+/) : [m[1]]) {
+      const found = arity === 'list' ? m[1].trim().split(/\s+/) : arity === 'fragment' ? [fragmentId(m[1] ?? m[2] ?? m[3])] : [m[1]];
+      for (const id of found) {
         refs++;
         if (!ids.has(id)) {
           console.error(`check-refs: ${page}: ${what} points at #${id}, which is not on the page`);
