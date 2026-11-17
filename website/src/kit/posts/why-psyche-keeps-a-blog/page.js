@@ -43,10 +43,17 @@
     for (i = 1; i < pts.length; i++) len.push(len[i - 1] + Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]));
     return { pts: pts, len: len, L: len[len.length - 1] };
   }
-  function uAt(r, p) { // route progress (0..1) of the sample nearest to p, and its distance
-    var best = 0, bd = 1e9;
-    for (var i = 0; i < r.pts.length; i++) { var d = Math.hypot(r.pts[i][0] - p[0], r.pts[i][1] - p[1]); if (d < bd) { bd = d; best = i; } }
-    return { u: r.len[best] / r.L, d: bd };
+  function uAt(r, p) { // route progress (0..1) of the point of the way nearest to p, and its distance
+    // (measured on each piece of the polyline, not only at its samples: a straight piece has none
+    // between its ends, so a check in its middle would otherwise take the progress of an end)
+    var bu = 0, bd = Math.hypot(r.pts[0][0] - p[0], r.pts[0][1] - p[1]);
+    for (var i = 1; i < r.pts.length; i++) {
+      var a = r.pts[i - 1], b = r.pts[i], dx = b[0] - a[0], dy = b[1] - a[1], l2 = dx * dx + dy * dy;
+      var f = l2 > 0 ? clamp(((p[0] - a[0]) * dx + (p[1] - a[1]) * dy) / l2, 0, 1) : 0;
+      var d = Math.hypot(a[0] + dx * f - p[0], a[1] + dy * f - p[1]);
+      if (d < bd) { bd = d; bu = (r.len[i - 1] + (r.len[i] - r.len[i - 1]) * f) / r.L; }
+    }
+    return { u: bu, d: bd };
   }
   function uOfPoint(r, p) { return uAt(r, p).u; }
   function at(r, u) { // the point at progress u, and the polyline up to it
@@ -193,17 +200,17 @@
     },
     // The story by itself: written, through the seven checks one by one, read in review, merged,
     // then staged from that commit and published.
+    // One move from the start to review on 'pass': out from rest, then a steady pace across the
+    // checks so each one lights a beat (about 320 ms) after the last, then a long slowing into review.
     sequence: [
-      { dur: 900 },
-      { dur: 1400, to: function (m) { return { u: m.uIn }; } },
-      { dur: 3800, to: function (m) { return { u: m.uOut }; }, ease: 'linear' },
-      { dur: 700, to: function (m) { return { u: m.uEnd }; }, ease: 'out' },
-      { dur: 1000, to: { rv: 1 } },
+      { dur: 300 },
+      { dur: 4800, to: function (m) { return { u: m.uEnd }; }, ease: 'pass' },
+      { dur: 600, to: { rv: 1 }, ease: 'settle' },
       { dur: 600 },
-      { dur: 1300, to: function (m) { return { u: m.uMerge }; } },
+      { dur: 800, to: function (m) { return { u: m.uMerge }; }, ease: 'travel' },
       { dur: 600 },
-      { dur: 2200, to: { u: 1 } },
-      { dur: 500 }
+      { dur: 1300, to: { u: 1 }, ease: 'travel' },
+      { dur: 600 }
     ],
     keysLabel: 'Left and right arrow keys move the post along its way; Home and End go to its start and its end.',
     keys: {

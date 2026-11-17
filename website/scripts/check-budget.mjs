@@ -79,6 +79,9 @@ const BASE = '/';
 // why-psyche-keeps-a-blog (one); its stylesheet (page.css, 0.6 to 1.0 KB) is linked on its own page only,
 // and the stills that are folded for both themes carry a small <style> each, which is inline CSS and
 // counted here (about 0.6 to 1.4 KB a post). The stills' drawings are inline SVG, not counted.
+// They were raised again, to the measured size plus 3 percent, when the page kit gained three named
+// motion curves for a figure's sequence and the posts' figures were retimed with them: about 0.8 KB
+// more JavaScript on every page of the kit, which the other pages' lines already had room for.
 const DEFAULT_BUDGET = { js: 37100, css: 40200 };
 const PAGE_BUDGETS = {
   '/':                          { js: 207100, css:   6200 }, // 201053,   5944
@@ -86,9 +89,9 @@ const PAGE_BUDGETS = {
   '/experiments/':              { js:  55900, css:  17600 }, //  54219,  17030
   '/about/':                    { js:  43700, css:  12000 }, //  42413,  11602
   '/blog/':                     { js:  34900, css:   9900 }, //  33835,   9554
-  '/blog/three-questions-before-a-number-counts/': { js: 42400, css: 16700 }, // 41146, 16124 (its four figures)
-  '/blog/testing-the-test-before-the-model/':      { js: 36200, css: 11700 }, // 35070, 11338 (its three figures)
-  '/blog/why-psyche-keeps-a-blog/':                { js: 34400, css: 10800 }, // 33358, 10401 (its one figure)
+  '/blog/three-questions-before-a-number-counts/': { js: 43800, css: 16700 }, // 42484, 16124 (its four figures)
+  '/blog/testing-the-test-before-the-model/':      { js: 37100, css: 11700 }, // 35965, 11338 (its three figures)
+  '/blog/why-psyche-keeps-a-blog/':                { js: 35500, css: 10800 }, // 34413, 10401 (its one figure)
   '/guide/':                    { js:  34500, css:  36100 }, //  33448,  35024
   '/faq/':                      { js:  34500, css:  36100 }, //  33448,  35024
   '/progress/':                 { js:  34500, css:  36100 }, //  33448,  35024

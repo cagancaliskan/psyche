@@ -84,14 +84,25 @@
       } };
   }
 
-  // where each test's moving point is at time t (0..1 of the run)
+  // where each test's moving point is at time t (0..1 of the run). t is the clock the three runs
+  // share (they start one after another); each run goes from rest at its start to rest at its stop
+  // on the kit's 'travel' curve, in the same time a constant speed v would take.
+  var TRAVEL = P.ease.travel;
   function heads(m, s) {
     var v = (m.ag - m.a0) / 0.5;
     return m.rows.map(function (c, i) {
-      var start = 0.06 + i * 0.15, stop = s.unchecked ? m.ag : m.gates[i];
-      var a = m.a0 + v * Math.max(0, s.t - start);
-      return { a: Math.min(a, stop), started: s.t > start, done: a >= stop, age: s.t - (start + (stop - m.a0) / v), stop: stop };
+      var start = 0.06 + i * 0.15, stop = s.unchecked ? m.ag : m.gates[i], T = (stop - m.a0) / v;
+      var p = clamp((s.t - start) / T, 0, 1);
+      return { a: m.a0 + (stop - m.a0) * TRAVEL(p), started: s.t > start, done: p >= 1, age: s.t - (start + T), stop: stop };
     });
+  }
+  // the clock at which the second test's point stands at a (the inverse of heads for that row)
+  function clockAt(m, s, a) {
+    var v = (m.ag - m.a0) / 0.5, stop = s.unchecked ? m.ag : m.gates[1], T = (stop - m.a0) / v;
+    if (a <= m.a0 || a >= stop) return 0.21 + (a - m.a0) / v;
+    var f = (a - m.a0) / (stop - m.a0), lo = 0, hi = 1;
+    for (var k = 0; k < 30; k++) { var mid = (lo + hi) / 2; if (TRAVEL(mid) < f) lo = mid; else hi = mid; }
+    return 0.21 + (lo + hi) / 2 * T;
   }
   // one part per test, so a row that has stopped is not rewritten while the others still run
   function drawRun(m, s, pal, hs, dim) {
@@ -173,11 +184,16 @@
     // The story by itself: the three runs are stopped at their checks; with the checks taken out
     // all three run through to a number; with the checks back, each is stopped again.
     sequence: [
-      { dur: 3400, tick: false, to: { t: 1 }, ease: 'linear' },
-      { dur: 1300, tick: false },
-      { dur: 3400, tick: false, 'do': function () { return { t: 0, unchecked: true }; }, to: { t: 1 }, ease: 'linear' },
-      { dur: 1700, tick: false },
-      { dur: 3400, tick: false, 'do': function () { return { t: 0, unchecked: false }; }, to: { t: 1 }, ease: 'linear' },
+      // t is the shared clock and stays 'linear': each point eases itself in heads()
+      // each reset (checks out, checks back) is held on its own before the clock runs again
+      { dur: 300, tick: false },
+      { dur: 2200, tick: false, to: { t: 1 }, ease: 'linear' },
+      { dur: 700, tick: false },
+      { dur: 650, tick: false, 'do': function () { return { t: 0, unchecked: true }; } },
+      { dur: 2200, tick: false, to: { t: 1 }, ease: 'linear' },
+      { dur: 700, tick: false },
+      { dur: 650, tick: false, 'do': function () { return { t: 0, unchecked: false }; } },
+      { dur: 2200, tick: false, to: { t: 1 }, ease: 'linear' },
       { dur: 600, tick: false }
     ],
     keysLabel: 'Left and right arrow keys move through the run; the C key takes the checks out or puts them back.',
@@ -189,8 +205,8 @@
     drag: {
       pick: function (m, s, p) { return true; },
       move: function (m, s, p) {
-        var a = m.orient === 'h' ? p[0] : p[1], v = (m.ag - m.a0) / 0.5;
-        return { t: clamp(0.21 + (a - m.a0) / v, 0, 1), unchecked: s.unchecked };
+        var a = m.orient === 'h' ? p[0] : p[1];
+        return { t: clamp(clockAt(m, s, a), 0, 1), unchecked: s.unchecked };
       }
     }
   });
@@ -301,10 +317,10 @@
     // The story by itself: the pair lands on two rungs; the weak associate climbs until both share a
     // rung (weight-blind), then goes back to where most pairs are, ordered by the weights alone.
     sequence: [
-      { dur: 2600, tick: false },
-      { dur: 2800, tick: false, to: { w: 0.0715 } },
-      { dur: 2100, tick: false },
-      { dur: 2400, tick: false, to: { w: WEAK0 } },
+      { dur: 500, tick: false },
+      { dur: 2500, tick: false, to: { w: 0.0715 }, ease: 'travel' },
+      { dur: 1700, tick: false },
+      { dur: 2100, tick: false, to: { w: WEAK0 }, ease: 'travel' },
       { dur: 600, tick: false }
     ],
     keysLabel: 'Left and right arrow keys move the strong associate, down and up the weak one.',
@@ -402,12 +418,17 @@
     },
     // The story by itself: the fan doubles on the engine (flat), then on the scratch copy that
     // divides the source (halving, then below the floor), then the engine again.
+    // Each sweep runs the fan on 'travel' to half a doubling past the last one, held at 4, so the last
+    // pulse reaches its leaf and the fan doubles to 16 while still moving, as every earlier doubling does,
+    // instead of creeping into the last whole value at the very end of the step.
     sequence: [
-      { dur: 4600, tick: false, to: { k: 4 }, ease: 'linear' },
+      { dur: 400, tick: false },
+      { dur: 2900, tick: false, frame: function (m, s, e) { return { k: Math.min(4, 4.25 * e), divide: s.divide }; }, ease: 'travel' },
+      { dur: 600, tick: false },
+      { dur: 650, tick: false, 'do': function () { return { k: 0, divide: true }; } },
+      { dur: 2900, tick: false, frame: function (m, s, e) { return { k: Math.min(4, 4.25 * e), divide: s.divide }; }, ease: 'travel' },
       { dur: 1300, tick: false },
-      { dur: 4600, tick: false, 'do': function () { return { k: 0, divide: true }; }, to: { k: 4 }, ease: 'linear' },
-      { dur: 1800, tick: false },
-      { dur: 900, tick: false, 'do': function () { return { k: 4, divide: false }; } }
+      { dur: 700, tick: false, 'do': function () { return { k: 4, divide: false }; } }
     ],
     keysLabel: 'Left and right arrow keys halve or double the fan; the D key divides the source or undoes it.',
     keys: {
@@ -547,12 +568,15 @@
     // The story by itself: with the sleep in, the reading climbs high; with it taken out, the reading
     // stays near zero; made heavier step by step, the work leaves it near zero.
     sequence: [
-      { dur: 4000, tick: false, to: { t: 1 }, ease: 'linear' },
-      { dur: 1300, tick: false },
-      { dur: 3000, tick: false, 'do': function (m, s) { return assign(s, { sleep: false, t: 0 }); }, to: { t: 1 }, ease: 'linear' },
-      { dur: 1000, tick: false },
-      { dur: 2700, tick: false, frame: function (m, s, u) { return assign(s, { L: 1 + Math.round(9 * u) }); } },
-      { dur: 900, tick: false }
+      // t is wall time, so both cursor sweeps stay 'linear' and take the same 2100 ms: one clock, one speed.
+      { dur: 400, tick: false },
+      { dur: 2100, tick: false, to: { t: 1 }, ease: 'linear' },
+      { dur: 800, tick: false },
+      { dur: 650, tick: false, 'do': function (m, s) { return assign(s, { sleep: false, t: 0 }); } },
+      { dur: 2100, tick: false, to: { t: 1 }, ease: 'linear' },
+      { dur: 700, tick: false },
+      { dur: 1700, tick: false, frame: function (m, s, u) { return assign(s, { L: 1 + Math.round(9 * u) }); }, ease: 'settle' },
+      { dur: 700, tick: false }
     ],
     keysLabel: 'Left and right arrow keys make the work lighter or heavier; the S key takes out the sleep or puts it back.',
     keys: {
