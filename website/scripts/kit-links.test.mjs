@@ -169,6 +169,13 @@ test('the kit has been imported (this test does not pass on an empty folder)', (
       assert.ok(existsSync(join(KIT, 'pages', page, f)), `src/kit/pages/${page}/${f} is missing: run the page import`);
     }
   }
+  // a post's own figures (src/kit/posts/<slug>/) belong to a post the site has; their fit to the post's
+  // text is tested in scripts/post-figures.test.mjs
+  const postDirs = existsSync(join(KIT, 'posts')) ? readdirSync(join(KIT, 'posts'), { withFileTypes: true }).filter((e) => e.isDirectory()).map((e) => e.name) : [];
+  for (const slug of postDirs) {
+    assert.ok(BLOG.posts.some((p) => p.slug === slug), `src/kit/posts/${slug}/ is not a post of docs/blog/`);
+    assert.ok(existsSync(join(KIT, 'stills', 'posts', slug)), `src/kit/stills/posts/${slug}/ is missing: run the page import`);
+  }
 });
 
 test('no address in the kit or the front pages names a design file, climbs out of the site, or leaves it', () => {

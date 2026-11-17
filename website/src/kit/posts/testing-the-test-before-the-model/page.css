@@ -1,0 +1,67 @@
+  /* This post's own layout. The post is about a floor and a ceiling measured before any model,
+     so the opening is the measurement itself, drawn as levels across the whole screen: the
+     ceiling (the all-knowing reference) rises to the top, the assumption is laid at zero, and
+     the floor (the random player) rises from zero to where it was measured. The title stands
+     between ceiling and floor at the right; the lead, the date and the figure's caption sit
+     under zero. The figure measures the title and the foot, so the levels always frame them. */
+
+  /* ---------- Opening: the title between the measured ceiling and floor ---------- */
+  .tt-open {
+    position: relative; min-height: 100vh; min-height: 100svh;
+    display: flex; flex-direction: column;
+    padding: calc(var(--head-h) + 120px) var(--gutter) 40px;
+  }
+  .tt-open > .k-art { position: absolute; inset: 0; z-index: 0; }
+  .tt-open > .k-art > svg, .tt-open > .k-art .k-still, .tt-open > .k-art .k-still svg { width: 100%; height: 100%; }
+  .tt-col { position: relative; z-index: 1; width: 100%; max-width: 1180px; margin-left: auto; margin-right: auto; }
+  .tt-title { margin-top: 0; margin-bottom: 0; padding-left: calc((min(100vw - 2 * var(--gutter), 1180px) - 40px) * .25 + 40px); box-sizing: border-box; }
+  .tt-gap { flex: 1 0 170px; }
+  .tt-foot { display: grid; grid-template-columns: minmax(0, 3fr) minmax(0, 9fr); column-gap: 40px; align-items: end; }
+  .tt-lead { grid-column: 2; grid-row: 1; }
+  .tt-play { grid-column: 1; grid-row: 1; }
+  .tt-play .k-fig-ctl { margin: 0; }
+  .tt-play .k-cap { margin-top: 2px; }
+  .tt-date { margin: 14px 0 0; font-size: 15px; line-height: 1.5; color: var(--ink); }
+  .tt-under { margin: 0; max-width: 34em; }
+
+  /* ---------- The first lines after the opening ---------- */
+  .tt-intro { padding-top: 96px; }
+  .tt-intro > p:first-child { font-size: var(--t-under); line-height: 1.5; letter-spacing: -.004em; color: var(--ink); }
+
+  /* ---------- Section heads in the reading column ---------- */
+  .tt-read h2 { margin: 2.6em 0 .7em; }
+  .tt-read h3 { position: relative; font-size: 1.3em; margin-top: 2.2em; }
+  .tt-read h3::before { content: ""; display: block; width: 28px; height: 1px; margin-bottom: 18px; background: var(--quiet); }
+
+  /* ---------- The formula: set on its own line, in the reading ink ---------- */
+  .tt-read p.tt-eq { margin: 1.3em 0 1.4em; padding-left: 1.6em; font-size: 1.12em; color: var(--ink); }
+  .tt-read var { font-style: italic; }
+
+  /* ---------- Figures between the parts of the text ---------- */
+  .tt-fig .k-cap { max-width: 44em; }
+
+  /* ---------- What this does not show: each claim a line of its own ---------- */
+  .tt-read ul.tt-limits { list-style: none; padding: 0; margin: 0 0 1.4em; }
+  .tt-limits li { padding: 0; margin: 0 0 1.5em; }
+  .tt-limits li strong { display: block; font-size: var(--t-under); line-height: 1.3; letter-spacing: -.008em; margin-bottom: .3em; }
+
+  /* ---------- Further reading: plain links ---------- */
+  .tt-read ul.tt-further { list-style: none; padding: 0; }
+  .tt-further li { padding: 0; margin: 0 0 .9em; }
+
+  /* ---------- The close ---------- */
+  .tt-end { margin-top: 120px; }
+  .tt-end .tt-back { margin: 0; font-size: var(--t-part); line-height: 1.15; letter-spacing: -.012em; font-weight: 500; }
+  .tt-end .tt-back a { color: var(--ink); text-decoration-color: var(--quiet); text-underline-offset: .14em; }
+  .tt-end .tt-date { color: var(--soft); margin-top: 16px; }
+
+  /* ---------- Phone ---------- */
+  @media (max-width: 700px) {
+    .tt-open { min-height: 0; padding-top: calc(var(--head-h) + 72px); padding-bottom: 8px; }
+    .tt-title { padding-left: 0; }
+    .tt-gap { flex: 0 0 196px; }
+    .tt-foot { display: block; }
+    .tt-play { margin-top: 18px; }
+    .tt-date { margin-top: 12px; }
+    .tt-intro { padding-top: 64px; }
+  }

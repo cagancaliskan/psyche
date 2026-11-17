@@ -7,9 +7,15 @@
 // phone puts the same list at the top of the text. The close is the way back to the blog, the day again,
 // and the previous and next posts as plain links.
 //
-// The post designs' own figures are not part of this layout; a post shows the figures of its Markdown.
-// The opening's styles and the reading column's few additions are taken from the post's page design
-// (its .tq-* rules), renamed .post-*.
+// A post with a page design of its own has a folder src/kit/posts/<slug>/, written by the page import
+// (never by hand): its opening (Open.astro) takes the place of the one below, its stylesheet (page.css)
+// is linked before <main> (after the kit's stylesheet), its figure script (page.js) runs after kit.js,
+// and scripts/post-figures.mjs lays the post's Markdown out in the design's reading columns with the
+// figures between them, so the text arrives here already in its columns. A post without such a folder
+// is laid out as below: the generic opening, and its Markdown, with the figures of its Markdown, in one
+// reading column. The generic opening's styles and the reading column's few additions were taken from
+// the first post's page design, renamed .post-*.
+import type { AstroComponentFactory } from 'astro/runtime/server/index.js';
 import blog from '@/data/blog.json';
 import { postMeta } from '@/lib/blog.ts';
 import { articleFacts } from '@/lib/head.ts';
@@ -39,6 +45,23 @@ const meta = postMeta(data, blog.author);
 const article = articleFacts(data, blog.author);
 const prev = data.prev || null;
 const next = data.next || null;
+
+// The post's own design, if it has one (src/kit/posts/<slug>/). Its stylesheet and script are files of
+// the build (?url), linked only on its own page: a stylesheet imported by a component would be bundled
+// into every post's page, and a design's rules are written for its own page only.
+const openings = import.meta.glob<{ default: AstroComponentFactory }>('@/kit/posts/*/Open.astro');
+const sheets = import.meta.glob<string>('@/kit/posts/*/page.css', { query: '?url', import: 'default', eager: true });
+const scripts = import.meta.glob<string>('@/kit/posts/*/page.js', { query: '?url', import: 'default', eager: true });
+const own = (files: Record<string, unknown>, name: string) => Object.keys(files).find((k) => k.endsWith(`/posts/${slug}/${name}`));
+const openKey = own(openings, 'Open.astro');
+const sheetKey = own(sheets, 'page.css');
+const scriptKey = own(scripts, 'page.js');
+if (new Set([!openKey, !sheetKey, !scriptKey]).size > 1) {
+  throw new Error(`Post.astro: src/kit/posts/${slug}/ lacks one of Open.astro, page.css and page.js; re-run the page import`);
+}
+const Open = openKey ? (await openings[openKey]()).default : null;
+const pageSheet = sheetKey ? sheets[sheetKey] : undefined;
+const pageScript = scriptKey ? scripts[scriptKey] : undefined;
 ---
 
 <Kit
@@ -48,21 +71,35 @@ const next = data.next || null;
   skip={{ href: '#reading', text: 'Skip to the text' }}
   current="blog"
   within
+  pageScript={pageScript}
 >
+  {/* after the kit's stylesheet, which the head links: the design's rules come later in the cascade and
+      win over the kit's at equal weight, as on its own page */}
+  {pageSheet && <link rel="stylesheet" href={pageSheet} />}
   <main>
-    <article>
-      <section class="post-open" aria-labelledby="post-title">
-        <h1 class="post-title k-page-title k-open-title" id="post-title">{data.title}</h1>
-        <div class="post-foot k-open-rest">
-          <p class="post-lead k-under">{data.description}</p>
-          <p class="post-date">Published <time data-k-date datetime={meta.published.iso}>{meta.published.label}</time></p>
-          {meta.updated && <p class="post-date post-date--rev">Revised <time data-k-date datetime={meta.updated.iso}>{meta.updated.label}</time></p>}
-        </div>
-      </section>
-
-      <div class="k-read post-read post-intro" id="reading" data-k-parts>
-        <slot />
-      </div>
+    <article class="post-body">
+      {
+        Open ? (
+          <Fragment>
+            <Open title={data.title} description={data.description} published={meta.published} updated={meta.updated} />
+            <slot />
+          </Fragment>
+        ) : (
+          <Fragment>
+            <section class="post-open" aria-labelledby="post-title">
+              <h1 class="post-title k-page-title k-open-title" id="post-title">{data.title}</h1>
+              <div class="post-foot k-open-rest">
+                <p class="post-lead k-under">{data.description}</p>
+                <p class="post-date">Published <time data-k-date datetime={meta.published.iso}>{meta.published.label}</time></p>
+                {meta.updated && <p class="post-date post-date--rev">Revised <time data-k-date datetime={meta.updated.iso}>{meta.updated.label}</time></p>}
+              </div>
+            </section>
+            <div class="k-read post-read post-intro" id="reading" data-k-parts>
+              <slot />
+            </div>
+          </Fragment>
+        )
+      }
 
       <div class="k-read post-end">
         <p class="post-back"><a href={withBase('blog/')}>Back to the blog</a></p>
@@ -108,16 +145,19 @@ const next = data.next || null;
   .post-read :not(pre) > code { overflow-wrap: anywhere; }
   .post-read img { height: auto; margin: 2em 0; }
   /* The Markdown's headings carry an anchor link for the documentation's pages; a post's parts are
-     reached from the rail, so the link is not shown here (and leaves the tab order with it). */
-  .post-read .sl-anchor-link { display: none; }
+     reached from the rail, so the link is not shown here (and leaves the tab order with it), in the
+     reading column and in a designed post's chapter headings alike. */
+  .post-body .sl-anchor-link { display: none; }
   /* Code blocks: the documentation's code renderer draws them (the site's code colours, which follow
      the theme), and the kit's .k-read pre sets their place, rule and type. Its copy button takes its
      colours from the documentation's theme, which these pages do not load, so here it would be an
      invisible control: it is not shown, as the post's page design has none. */
-  .post-read .expressive-code .copy { display: none; }
-  /* code may run wider than the text, to the right */
+  .post-body .expressive-code .copy { display: none; }
+  /* code may run wider than the text, to the right: the code renderer's frame runs wide, and the code
+     inside it fills the frame (a design's rule that widens the bare <pre> is for its own pages) */
   @media (min-width: 1120px) {
-    .post-read .expressive-code { margin-right: -220px; }
+    .post-body .k-read .expressive-code { margin-right: -220px; }
+    .post-body .k-read .expressive-code pre { margin-right: 0; }
   }
 
   /* ---------- The close ---------- */

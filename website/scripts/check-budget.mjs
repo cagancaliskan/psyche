@@ -72,6 +72,13 @@ const BASE = '/';
 // is below the default: they are lighter than a docs page (no Starlight search, no Starlight CSS).
 // No docs page and not the default moved. The 404 page is not measured: this check skips
 // dist/404.html.
+//
+// The three posts' lines were reset when each post got its own designed figures (src/kit/posts/<slug>/,
+// imported from the post's page design): the post's figure script (page.js) adds about 11.0 KB of
+// JavaScript to three-questions (four figures), 6.1 KB to testing-the-test (three) and 4.4 KB to
+// why-psyche-keeps-a-blog (one); its stylesheet (page.css, 0.6 to 1.0 KB) is linked on its own page only,
+// and the stills that are folded for both themes carry a small <style> each, which is inline CSS and
+// counted here (about 0.6 to 1.4 KB a post). The stills' drawings are inline SVG, not counted.
 const DEFAULT_BUDGET = { js: 37100, css: 40200 };
 const PAGE_BUDGETS = {
   '/':                          { js: 207100, css:   6200 }, // 201053,   5944
@@ -79,9 +86,9 @@ const PAGE_BUDGETS = {
   '/experiments/':              { js:  55900, css:  17600 }, //  54219,  17030
   '/about/':                    { js:  43700, css:  12000 }, //  42413,  11602
   '/blog/':                     { js:  34900, css:   9900 }, //  33835,   9554
-  '/blog/three-questions-before-a-number-counts/': { js: 31100, css: 13600 }, // 30115, 13196
-  '/blog/testing-the-test-before-the-model/':      { js: 29900, css:  9600 }, // 28947,  9272
-  '/blog/why-psyche-keeps-a-blog/':                { js: 29900, css:  9600 }, // 28947,  9272
+  '/blog/three-questions-before-a-number-counts/': { js: 42400, css: 16700 }, // 41146, 16124 (its four figures)
+  '/blog/testing-the-test-before-the-model/':      { js: 36200, css: 11700 }, // 35070, 11338 (its three figures)
+  '/blog/why-psyche-keeps-a-blog/':                { js: 34400, css: 10800 }, // 33358, 10401 (its one figure)
   '/guide/':                    { js:  34500, css:  36100 }, //  33448,  35024
   '/faq/':                      { js:  34500, css:  36100 }, //  33448,  35024
   '/progress/':                 { js:  34500, css:  36100 }, //  33448,  35024

@@ -369,8 +369,17 @@ Under `src/kit/` (imported, never edited by hand): `kit.js`, `kit.css`, `orb-hea
 `orb-head.css` (inlined into every front page's head), `Header.astro`, `film/` (the home's film:
 `Body.astro`, `Noscript.astro`, `film.css`, `film.js`, and `gen.js`, the shape generator the film
 bundles as text), `pages/<page>/` (`Main.astro`, `page.css`, `page.js`, `page.ts` for
-what-were-building, experiments, about, blog and not-found) and `stills/<page>/` (each figure's baked
-still, inlined into the page's HTML).
+what-were-building, experiments, about, blog and not-found), `posts/<slug>/` (a post's own figures, for
+a post whose page design has them: `Open.astro`, the opening; `page.css`; `page.js`, the figure script;
+`figures.json`, where the figures go in the post's text) and `stills/<page>/` and `stills/posts/<slug>/`
+(each figure's baked still, inlined into the page's HTML).
+
+A post's words stay its Markdown's. `scripts/post-figures.mjs` (a step of the Markdown processor, like
+`scripts/table-region.mjs`) lays a designed post's Markdown out in the design's reading columns with its
+figures between them; it checks every block of the post against `figures.json` and stops the build when
+the post has changed since its figures were imported, so a revised post needs a re-import. The image in
+the post's Markdown that a figure stands in for stays in `index.md` (GitHub shows it) and is left out of
+the page. A post without a folder under `src/kit/posts/` is shown as its Markdown, in one reading column.
 
 **`src/lib/`**: `plan.ts` (date logic over the plan; "today" is passed in), `today.ts` (`todayIn`, apart
 so a page script loads only it), `gateClock.ts` (brings server-rendered gates to the reader's day),
@@ -412,7 +421,8 @@ zlib build does not trip it and real growth does. A page with no line falls unde
 the largest of any docs page without an island. To raise one, change the number and say why in the
 commit; a new page that needs more gets its own measured line. The home (the film and three.js), What
 we're building, Experiments and About (the kit and their figure scripts) have lines above the default;
-the blog's index and the posts have lines of their own below it. The comment above `PAGE_BUDGETS` says
+the blog's index has a line of its own below it, and each post has its own line (a post with designed
+figures carries its figure script). The comment above `PAGE_BUDGETS` says
 why each weighs what it does.
 
 **SEO and the feed.** `scripts/check-seo.mjs` reads `dist/`. Per page, the 404 page included, it fails

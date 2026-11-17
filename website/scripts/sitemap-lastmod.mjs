@@ -144,11 +144,15 @@ export function sourcesByRoute(repoRoot) {
     for (const page of section.pages) out[page.slug] = [page.src];
   }
   // A post's route is its folder's name. Every folder is listed, drafts too: a draft has no page, so its
-  // route is never asked for.
+  // route is never asked for. A post with designed figures is also made from their files in the page
+  // kit (its opening, its figures' script and styles, and their stills), so a redrawn figure dates the page.
   const posts = join(repoRoot, BLOG);
   if (existsSync(posts)) {
     for (const entry of readdirSync(posts, { withFileTypes: true })) {
-      if (entry.isDirectory()) out[`blog/${entry.name}`] = [`${BLOG}/${entry.name}`];
+      if (!entry.isDirectory()) continue;
+      const designed = [`${SRC}/kit/posts/${entry.name}`, `${SRC}/kit/stills/posts/${entry.name}`]
+        .filter((f) => existsSync(join(repoRoot, f)));
+      out[`blog/${entry.name}`] = [`${BLOG}/${entry.name}`, ...designed];
     }
   }
   return out;

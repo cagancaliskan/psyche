@@ -1,0 +1,24 @@
+---
+// The opening of the post three-questions-before-a-number-counts, imported from its page design.
+// The post's own title, description and days come from layouts/Post.astro; the figure in it is
+// drawn by the post's script (page.js); the layout links the post's page.css.
+// Written by the page import: do not edit here; a change comes in through the design and a re-import.
+import still_gates_both from '@/kit/stills/posts/three-questions-before-a-number-counts/gates.svg?raw';
+interface Day { iso: string; label: string }
+interface Props { title: string; description: string; published: Day; updated?: Day | null }
+const { title, description, published } = Astro.props;
+---
+<section class="tq-open" data-figure="gates" aria-labelledby="tq-title">{' '}
+    <div class="k-art k-open-fig"><!--still:gates--><div class="k-still k-still--both" data-k-still="gates"><Fragment set:html={still_gates_both} /></div><!--/still:gates--></div>{' '}
+    <h1 class="tq-title k-page-title k-open-title" id="tq-title">{title}</h1>{' '}
+    <div class="tq-foot k-open-rest">{' '}
+      <div>{' '}
+        <p class="tq-lead k-under">{description}</p>{' '}
+        <p class="tq-date">Published <time data-k-date datetime={published.iso}>{published.label}</time></p>{' '}
+      </div>{' '}
+      <div class="tq-play">{' '}
+        <div class="k-fig-ctl"></div>{' '}
+        <p class="k-cap" id="gates-cap">Three tests run toward a graded number; each is stopped at a different check, and without the checks all three would print one.</p>{' '}
+      </div>{' '}
+    </div>{' '}
+  </section>

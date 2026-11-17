@@ -1,0 +1,388 @@
+{
+ "post": "testing-the-test-before-the-model",
+ "replaces": [
+  "first-check.svg"
+ ],
+ "sequence": [
+  {
+   "read": {
+    "className": [
+     "k-read",
+     "tt-read",
+     "tt-intro"
+    ],
+    "id": "reading"
+   },
+   "blocks": [
+    {
+     "kind": "p",
+     "digest": "ddacf1e8e3164998"
+    },
+    {
+     "kind": "p",
+     "digest": "a6fdaf878e242e82"
+    },
+    {
+     "kind": "h2",
+     "digest": "229c678c84d9ecc6",
+     "set": {
+      "dataKPart": "The assumption"
+     }
+    },
+    {
+     "kind": "p",
+     "digest": "968b95de74e892a2"
+    },
+    {
+     "kind": "p",
+     "digest": "173127392b24ffe0"
+    },
+    {
+     "kind": "h3",
+     "digest": "7ae7e4e0b3243524"
+    },
+    {
+     "kind": "p",
+     "digest": "37f452dd170bba6a"
+    },
+    {
+     "kind": "p",
+     "digest": "c2782019f52de189",
+     "set": {
+      "className": [
+       "tt-eq"
+      ]
+     }
+    },
+    {
+     "kind": "p",
+     "digest": "8b3eca0286d10944"
+    }
+   ]
+  },
+  {
+   "node": {
+    "type": "element",
+    "tagName": "figure",
+    "properties": {
+     "className": [
+      "k-figure",
+      "k-figure--wide",
+      "tt-fig"
+     ],
+     "dataFigure": "luck",
+     "ariaDescribedby": "luck-cap"
+    },
+    "children": [
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "element",
+      "tagName": "div",
+      "properties": {
+       "className": [
+        "k-art"
+       ]
+      },
+      "children": [
+       {
+        "type": "still",
+        "file": "luck.svg",
+        "properties": {
+         "className": [
+          "k-still",
+          "k-still--both"
+         ],
+         "dataKStill": "luck"
+        }
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "element",
+      "tagName": "div",
+      "properties": {
+       "className": [
+        "k-fig-ctl"
+       ]
+      },
+      "children": []
+     },
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "element",
+      "tagName": "figcaption",
+      "properties": {
+       "className": [
+        "k-cap"
+       ],
+       "id": "luck-cap"
+      },
+      "children": [
+       {
+        "type": "text",
+        "value": "With the illustrative p = 0.05 in each place, the chance that luck breaks the check somewhere is about 0.64 at m = 20 and about 0.994 at m = 100."
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "value": "\n  "
+     }
+    ]
+   }
+  },
+  {
+   "read": {
+    "className": [
+     "k-read",
+     "tt-read"
+    ]
+   },
+   "blocks": [
+    {
+     "kind": "h2",
+     "digest": "918b741c9ac1df8d",
+     "set": {
+      "dataKPart": "Equipment before the model"
+     }
+    },
+    {
+     "kind": "p",
+     "digest": "7e5dbb980931c103"
+    },
+    {
+     "kind": "p",
+     "digest": "74a502cf8a5eef8f"
+    },
+    {
+     "kind": "ul",
+     "digest": "134db215c6db4d6b"
+    },
+    {
+     "kind": "p",
+     "digest": "70b01949633c678f"
+    },
+    {
+     "kind": "h2",
+     "digest": "b37a2dbd76214ee0",
+     "set": {
+      "dataKPart": "What the check returned"
+     }
+    },
+    {
+     "kind": "table",
+     "digest": "5879c4dbc48dbe7a"
+    },
+    {
+     "kind": "p",
+     "digest": "a4ee97126d0dcc67"
+    },
+    {
+     "kind": "p",
+     "digest": "eb708d74ada2e5e4"
+    }
+   ]
+  },
+  {
+   "node": {
+    "type": "element",
+    "tagName": "figure",
+    "properties": {
+     "className": [
+      "k-figure",
+      "k-figure--wide",
+      "tt-fig"
+     ],
+     "dataFigure": "limit",
+     "ariaDescribedby": "limit-cap"
+    },
+    "children": [
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "element",
+      "tagName": "div",
+      "properties": {
+       "className": [
+        "k-art"
+       ]
+      },
+      "children": [
+       {
+        "type": "still",
+        "file": "limit.svg",
+        "properties": {
+         "className": [
+          "k-still",
+          "k-still--both"
+         ],
+         "dataKStill": "limit"
+        }
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "element",
+      "tagName": "div",
+      "properties": {
+       "className": [
+        "k-fig-ctl"
+       ]
+      },
+      "children": []
+     },
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "element",
+      "tagName": "figcaption",
+      "properties": {
+       "className": [
+        "k-cap"
+       ],
+       "id": "limit-cap"
+      },
+      "children": [
+       {
+        "type": "text",
+        "value": "The random player in each of the 50 test environments, drawn in no particular order: it crossed the limit written down before the run in 2 of them."
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "value": "\n  "
+     }
+    ]
+   }
+  },
+  {
+   "read": {
+    "className": [
+     "k-read",
+     "tt-read"
+    ]
+   },
+   "blocks": [
+    {
+     "kind": "p",
+     "digest": "6f9ee30a011099a6"
+    },
+    {
+     "kind": "h2",
+     "digest": "8f70eb017964310b",
+     "set": {
+      "dataKPart": "Why the criterion stayed"
+     }
+    },
+    {
+     "kind": "p",
+     "digest": "33f404e6a2e80346"
+    },
+    {
+     "kind": "p",
+     "digest": "4d4a6deb4a005108"
+    },
+    {
+     "kind": "p",
+     "digest": "305395350753e4ac"
+    },
+    {
+     "kind": "h2",
+     "digest": "59631b8a0b8b0a2a",
+     "set": {
+      "dataKPart": "What else is open"
+     }
+    },
+    {
+     "kind": "p",
+     "digest": "ea8f84ccb2562d18"
+    },
+    {
+     "kind": "p",
+     "digest": "31da42310138ff6c"
+    },
+    {
+     "kind": "h2",
+     "digest": "3363ccec67bf68ec",
+     "set": {
+      "dataKPart": "What this does not show"
+     }
+    },
+    {
+     "kind": "ul",
+     "digest": "1d372153453826fc",
+     "set": {
+      "className": [
+       "tt-limits"
+      ]
+     }
+    },
+    {
+     "kind": "h2",
+     "digest": "6b0bf2c01e45b9a2",
+     "set": {
+      "dataKPart": "The general lesson"
+     }
+    },
+    {
+     "kind": "p",
+     "digest": "f2327f8e27346584"
+    },
+    {
+     "kind": "p",
+     "digest": "3f42e061eb8e6b7a"
+    },
+    {
+     "kind": "p",
+     "digest": "d5b9b166326461a3"
+    },
+    {
+     "kind": "h2",
+     "digest": "ccc1e4cb34dfdc29",
+     "set": {
+      "dataKPart": "What comes next"
+     }
+    },
+    {
+     "kind": "p",
+     "digest": "0895a89655db617d"
+    },
+    {
+     "kind": "h2",
+     "digest": "4e9b2da60c09498f",
+     "set": {
+      "dataKPart": "Further reading"
+     }
+    },
+    {
+     "kind": "ul",
+     "digest": "4ec12b384ff56006",
+     "set": {
+      "className": [
+       "tt-further"
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}
