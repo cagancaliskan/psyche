@@ -124,7 +124,13 @@ const BASE = '/';
 // The home's film was measured and reset too (its header's styles are in its own film.css).
 // The same files compress to as much as 200 B more in the CI build than on a Mac, so a line that only
 // just holds locally can fail there: measure against the CI figures when a line is tight.
-const DOC_BUDGET = { js: 35700, css: 15000 }; // 34745, 14612 on every document
+// The documentation's "Pages" list then came to lie over the text on a phone: about 25 bytes more CSS
+// on every page of the frame (14637), inside DOC_BUDGET. The CSS line of testing-the-test was raised
+// from 11800 to 11870 (11531 plus 2.9 percent) so that it keeps 300 bytes of room for the CI build. Two
+// CSS lines cannot keep 300 bytes inside 3 percent, the home's (6619, at most 6817) and the blog
+// index's (9819, at most 10113); they stay as they are: the CI build measured their CSS within 15 bytes
+// of this machine's (the film branch's run: 6672 and 9873 there against 6679 and 9865 here).
+const DOC_BUDGET = { js: 35700, css: 15000 }; // 34745, 14637 on every document
 const DEFAULT_BUDGET = DOC_BUDGET;
 const PAGE_BUDGETS = {
   // '/': CSS raised from 6200 when the film got the site's header and phone menu (their styles are in
@@ -135,12 +141,12 @@ const PAGE_BUDGETS = {
   '/about/':                    { js:  45300, css:  12200 }, //  44059,  11867
   '/blog/':                     { js:  36500, css:  10100 }, //  35481,   9819
   '/blog/three-questions-before-a-number-counts/': { js: 43400, css: 12700 }, // 42155, 12393 (its four figures; no code renderer)
-  '/blog/testing-the-test-before-the-model/':      { js: 37900, css: 11800 }, // 36804, 11531 (its three figures)
+  '/blog/testing-the-test-before-the-model/':      { js: 37900, css: 11870 }, // 36804, 11531 (its three figures)
   '/blog/why-psyche-keeps-a-blog/':                { js: 36300, css: 10900 }, // 35252, 10594 (its one figure)
-  '/developers/':               { js:  35700, css:  15000 }, //  34745,  14612 (the documentation's stylesheet and script)
-  '/roadmap/':                  { js:  38200, css:  15000 }, //  37168,  14612 (the timeline, written on the server)
-  '/battery/':                  { js:  36200, css:  15000 }, //  35182,  14612 (the walk-through, written on the server)
-  '/status/':                   { js:  35900, css:  15000 }, //  34904,  14612
+  '/developers/':               { js:  35700, css:  15000 }, //  34745,  14637 (the documentation's stylesheet and script)
+  '/roadmap/':                  { js:  38200, css:  15000 }, //  37168,  14637 (the timeline, written on the server)
+  '/battery/':                  { js:  36200, css:  15000 }, //  35182,  14637 (the walk-through, written on the server)
+  '/status/':                   { js:  35900, css:  15000 }, //  34904,  14637
 };
 
 // Every document's route, from the manifest (a source, so the list is the commit's, not a build's).
