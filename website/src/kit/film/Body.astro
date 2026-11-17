@@ -1,5 +1,5 @@
 ---
-// The film's page: the site header (the wordmark and the four menu links, as on every page, with an
+// The film's page: the site header (the wordmark and the five menu links, as on every page, with an
 // empty place where the theme switch stands: the film is dark only) and its phone menu, the scroll
 // track with its canvas and captions, and the static page shown under reduced motion or without
 // WebGL. Imported from the page design with links set to the site's routes. Written by the page
@@ -8,12 +8,12 @@ import { withBase } from '@/lib/url.ts';
 ---
 <header class="k-head">{' '}
   <a class="k-head__home" href={withBase('')} aria-label="Psyche, home"><img src={withBase('brand/psyche-wordmark-dark.svg')} alt="" width="118" height="19"></a>{' '}
-  <nav class="k-head__nav" aria-label="Site"><a class="k-head__link" href={withBase('what-were-building/')} data-text="What we're building">What we're building</a><a class="k-head__link" href={withBase('experiments/')} data-text="Experiments">Experiments</a><a class="k-head__link" href={withBase('blog/')} data-text="Blog">Blog</a><a class="k-head__link" href={withBase('about/')} data-text="Contact">Contact</a></nav>{' '}
+  <nav class="k-head__nav" aria-label="Site"><a class="k-head__link" href={withBase('what-were-building/')} data-text="What we're building">What we're building</a><a class="k-head__link" href={withBase('experiments/')} data-text="Experiments">Experiments</a><a class="k-head__link" href={withBase('blog/')} data-text="Blog">Blog</a><a class="k-head__link" href={withBase('developers/')} data-text="For developers">For developers</a><a class="k-head__link" href={withBase('about/')} data-text="Contact">Contact</a></nav>{' '}
   <div class="k-head__end"><span class="k-head__theme" aria-hidden="true"></span><button type="button" class="k-ctl k-head__menu" data-k-menu aria-haspopup="dialog" aria-expanded="false" aria-controls="k-menu">Menu</button></div>{' '}
 </header>{' '}
 <div class="k-menu" id="k-menu" role="dialog" aria-modal="true" aria-label="Menu" hidden>{' '}
   <div class="k-menu__top"><a class="k-head__home" href={withBase('')} aria-label="Psyche, home"><img src={withBase('brand/psyche-wordmark-dark.svg')} alt="" width="118" height="19"></a><button type="button" class="k-ctl" data-k-close>Close</button></div>{' '}
-  <nav class="k-menu__list" aria-label="Site"><a class="k-menu__link" href={withBase('what-were-building/')}>What we're building</a><a class="k-menu__link" href={withBase('experiments/')}>Experiments</a><a class="k-menu__link" href={withBase('blog/')}>Blog</a><a class="k-menu__link" href={withBase('about/')}>Contact</a></nav>{' '}
+  <nav class="k-menu__list" aria-label="Site"><a class="k-menu__link" href={withBase('what-were-building/')}>What we're building</a><a class="k-menu__link" href={withBase('experiments/')}>Experiments</a><a class="k-menu__link" href={withBase('blog/')}>Blog</a><a class="k-menu__link" href={withBase('developers/')}>For developers</a><a class="k-menu__link" href={withBase('about/')}>Contact</a></nav>{' '}
 </div>{' '}
 
 <main id="track">{' '}

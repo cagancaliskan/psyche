@@ -8,6 +8,10 @@
 // The list is src/data/docs.json, which tools/publish/stage.py writes from docs/publish.json in the
 // commit being built (lib/devdocs.ts reads it). Everything of the frame is in the HTML without script.
 //
+// The header marks "For developers" as the current menu item: the page itself on the home, the item
+// a page is inside on every other page of the documentation (kit.js marks it the same way, from the
+// body's k-docs class).
+//
 // The documentation's stylesheet and script (src/kit/docs/, written by the page import, never by hand)
 // are loaded by these pages only: the stylesheet after the kit's, whose rules it builds on, and the
 // script after kit.js, as Kit.astro's page script. The body never carries the title attribute that
@@ -38,7 +42,7 @@ const groups = navGroups(docs as DocsData, here);
 const body: Record<string, string> = { class: 'k-docs', 'data-page': home ? 'developers' : 'docs', 'data-doc': here ?? DEVELOPERS_ROUTE };
 ---
 
-<Kit page={page} body={body} skip={skip} pageScript={docsJs}>
+<Kit page={page} body={body} skip={skip} current="developers" within={!home} pageScript={docsJs}>
   <div class={home ? 'k-doclayout k-doclayout--home' : 'k-doclayout'}>
     <DocsNav groups={groups} home={home} />
     <slot />

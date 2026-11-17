@@ -126,11 +126,13 @@
     slogan: 'Toward machines with a mind of their own.',
     developers: 'https://github.com/cagancaliskan/psyche'
   };
-  // The menu at the top, in order. `match` marks the item as current on other files too (a post marks Blog).
+  // The menu at the top, in order. `match` marks the item as current on other files too (a post marks Blog);
+  // `docs` marks it on every page of the developer documentation (<body class="k-docs">).
   var NAV = [
     { label: "What we're building", file: 'what-were-building/' },
     { label: 'Experiments', file: 'experiments/' },
     { label: 'Blog', file: 'blog/', match: /^blog\/[^/]+\/$/ },
+    { label: 'For developers', file: 'developers/', docs: true },
     { label: 'Contact', file: 'about/' }
   ];
   // The links at the bottom of every page, in order.
@@ -142,11 +144,13 @@
   P.site = SITE;
   P.nav = NAV.map(function (n) { return { label: n.label, file: n.file }; });
   function currentFile() { return decodeURIComponent(location.pathname).replace(/^\//, '').toLowerCase(); }
-  // 'page' for the file itself, 'true' for a page inside its part (a post under Blog), else null.
+  // 'page' for the file itself, 'true' for a page inside its part (a post under Blog, a document under
+  // For developers), else null.
   function currentOf(n) {
     var here = currentFile();
     if (here === n.file) return 'page';
     if (n.match && n.match.test(here)) return 'true';
+    if (n.docs && doc.body && doc.body.classList.contains('k-docs')) return 'true';
     return null;
   }
 
@@ -1270,7 +1274,7 @@
   }
 
   /* ------------------------------------------------------------------ */
-  /* Phone menu: one full-screen list, the same four links and the theme   */
+  /* Phone menu: one full-screen list, the same five links and the theme   */
   /* ------------------------------------------------------------------ */
   var menu = null;
   function buildMenu() {
@@ -1322,7 +1326,7 @@
   }
   P.menu = { open: openMenu, close: closeMenu, isOpen: function () { return !!(menu && menu.open); } };
   // a phone turned to a wide screen: the links are in the header again
-  window.addEventListener('resize', function () { if (menu && menu.open && innerWidth > 700) closeMenu(false); });
+  window.addEventListener('resize', function () { if (menu && menu.open && innerWidth > 860) closeMenu(false); });
 
   /* ------------------------------------------------------------------ */
   /* Big sentences: word-by-word light as they are scrolled through        */

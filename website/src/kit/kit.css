@@ -158,7 +158,7 @@ img, svg, canvas { display: block; max-width: 100%; }
 .k-menu.is-open { opacity: 1; }
 .k-menu[hidden] { display: none; }
 .k-menu__top { flex: none; height: var(--head-h); display: flex; align-items: center; justify-content: space-between; }
-.k-menu__top img { height: 16px; width: auto; }
+.k-menu__top img { height: 19px; width: auto; }
 .k-menu__list { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 9vh 0 auto; }
 .k-menu__link {
   color: var(--soft); text-decoration: none; font-weight: 400;
@@ -403,12 +403,18 @@ img, svg, canvas { display: block; max-width: 100%; }
 /* ---------- Transition overlay (the orb) ---------- */
 .k-orb-veil { position: fixed; left: 0; top: 0; z-index: 2147483000; pointer-events: none; width: 100%; height: 100%; }
 
+/* ---------- The menu folds: at 860 px and under the five links and the theme switch sit behind
+   "Menu" (the full-screen list); wider, they stand in the header with room between the wordmark and
+   the first link. The film folds at the same width. ---------- */
+@media (max-width: 860px) {
+  .k-head__nav, .k-head__theme { display: none; }
+  .k-head__menu { display: inline-block; }
+}
+
 /* ---------- Phone ---------- */
 @media (max-width: 700px) {
   :root { --read-size: 18px; --gutter: 16px; --head-h: 58px; }
-  .k-head__home img { height: 16px; }
-  .k-head__nav, .k-head__theme { display: none; }
-  .k-head__menu { display: inline-block; }
+  .k-head__home img, .k-menu__top img { height: 16px; }
   .k-read h2 { font-size: 1.6em; }
   .k-read pre { font-size: 12.5px; }
   .k-figure { margin: 80px auto; }

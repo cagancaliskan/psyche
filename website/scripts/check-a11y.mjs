@@ -135,8 +135,9 @@ function expectSwitched(before, after) {
 }
 // The phone menu of a front page, as a state: audited open; then Escape must close it, hide it, mark
 // its button collapsed, give the rest of the page back (no more inert elements than before it
-// opened) and return focus to the button. `themeSwitch` says whether the menu holds the theme switch.
-function siteMenu(name, page, themeSwitch) {
+// opened) and return focus to the button. `themeSwitch` says whether the menu holds the theme switch,
+// `marked` which of its five links is marked as the current item (none on the film).
+function siteMenu(name, page, themeSwitch, marked) {
   return {
     name,
     page,
@@ -150,11 +151,13 @@ function siteMenu(name, page, themeSwitch) {
         expanded: document.querySelector('button[data-k-menu]')?.getAttribute('aria-expanded'),
         links: document.querySelectorAll('#k-menu .k-menu__link').length,
         focused: !!document.activeElement?.matches('#k-menu .k-menu__link'),
+        marked: [...document.querySelectorAll('#k-menu .k-menu__link[aria-current]')].map((a) => a.textContent),
         theme: document.documentElement.dataset.theme,
         switches: [...document.querySelectorAll('#k-menu [data-k-theme]')].map((b) => b.getAttribute('aria-label')),
       }));
       if (seen.expanded !== 'true') throw new Error(`the menu opened but its button says aria-expanded="${seen.expanded}"`);
-      if (seen.links !== 4) throw new Error(`the menu holds ${seen.links} link(s), not the site's four`);
+      if (seen.links !== 5) throw new Error(`the menu holds ${seen.links} link(s), not the site's five`);
+      if (seen.marked.join() !== (marked ? [marked] : []).join()) throw new Error(`the menu marks ${JSON.stringify(seen.marked)} as the current item, expected ${JSON.stringify(marked ?? null)}`);
       if (!seen.focused) throw new Error('the menu opened but focus is not on its first link');
       const want = themeSwitch ? [THEME_NAMES[seen.theme]] : [];
       if (seen.switches.join() !== want.join()) throw new Error(`the menu's theme switch: ${JSON.stringify(seen.switches)}, expected ${JSON.stringify(want)}`);
@@ -234,10 +237,11 @@ const STATES = [
   // The front pages' phone menu: on an inner page the page kit's full-screen list, with the theme
   // switch in its top row beside "Close"; on the home page the film's own copy of it, without the
   // switch (the film is dark only).
-  siteMenu('site menu open', 'what-were-building/', true),
-  siteMenu('site menu open on the film', '', false),
+  siteMenu('site menu open', 'what-were-building/', true, "What we're building"),
+  siteMenu('site menu open on the film', '', false, null),
   // A document's phone menu is the same list as a front page's, beside the documentation's own "Pages".
-  siteMenu('site menu open on a document', STATE_PAGE, true),
+  // A document marks For developers, the item the documentation is under.
+  siteMenu('site menu open on a document', STATE_PAGE, true, 'For developers'),
   // The header's theme switch, on a front page and on a document (the documentation's frame is on the
   // same page kit, so its header is the same).
   themeSwitched('theme switched', 'about/'),
