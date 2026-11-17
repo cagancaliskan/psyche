@@ -29,8 +29,8 @@
 //     A heavy line is 200. A double line is two bars of 80, their centres 90 either side of the axis.
 //   - A horizontal line bleeds 10 units past the cell on each side, so a row of `─` has no hairline
 //     seam where the browser rounds a glyph's position.
-//   - A vertical line runs the whole height of a code block's line (1.75 em, Starlight's
-//     --sl-line-height, plus 40 units of overlap), so `│` on one line meets `├` on the next and a tree's
+//   - A vertical line runs the whole height of a code block's line (1.75 em, the line height of the
+//     documentation's code blocks in src/kit/docs/docs.css, plus 40 units of overlap), so `│` on one line meets `├` on the next and a tree's
 //     rails are unbroken. If the code blocks' line height changes, only that changes: a gap returns
 //     between the lines of a rail. The font's own metrics are Martian Mono's (ascent 1000, descent 200),
 //     so a line that uses it keeps the height it had.

@@ -6,18 +6,17 @@ credit and the licence terms that go with it.
 
 ## 1. Typefaces
 
-The site self-hosts three variable typefaces. They are installed from the Fontsource packages
+The site self-hosts two variable typefaces. They are installed from the Fontsource packages
 named below, built into the site and served from its own origin. The project uses them as
 packaged and does not modify or sell them.
 
 | Typeface | Used for | npm package | Copyright, as stated in the package | Licence |
 |---|---|---|---|---|
-| Unbounded | Display headings | `@fontsource-variable/unbounded` | Copyright 2022 The Unbounded Project Authors (<https://github.com/googlefonts/unbounded>) | SIL Open Font License 1.1 |
 | Instrument Sans | Body text | `@fontsource-variable/instrument-sans` | Copyright 2022 The Instrument Sans Project Authors (<https://github.com/Instrument/instrument-sans>) | SIL Open Font License 1.1 |
 | Martian Mono | Labels and code | `@fontsource-variable/martian-mono` | Copyright 2020 The Martian Mono Project Authors (<https://github.com/evilmartians/mono>) | SIL Open Font License 1.1 |
 
 The copyright lines and the licence identifier are those in each package's `LICENSE` and
-`package.json`. The three packages carry the same licence text. It is reproduced here, as the
+`package.json`. The two packages carry the same licence text. It is reproduced here, as the
 licence asks of every copy.
 
 ```text
@@ -119,7 +118,7 @@ under the project's own, the MIT licence ([LICENSE](LICENSE)).
 
 ## 2. Components adapted from the 21st.dev catalog
 
-Several layouts and effects on the site were adapted from components in the 21st.dev catalog. None
+This section lists what on the site was adapted from components in the 21st.dev catalog. None
 is bundled or copied as published. Each was rewritten against the site's own design tokens, in
 plain CSS, Astro or a few lines of script, with the catalog component's own libraries left out
 (for example a motion library). The words on the page are the project's own.
@@ -135,51 +134,7 @@ name and author so that anyone can find the original and read the terms its auth
 
 | Component | Author | Adapted for | Credited in |
 |---|---|---|---|
-| 8bit Timeline Horizontal | theorcdev | Square numbered checkpoints on a track that runs across and turns down in a narrow figure (the idea only), in the stage arc and the release flow | `styles/docs-visuals.css` |
-| Alert | shadcn | Asides: a rule and a title in the aside's hue | `styles/global.css` |
-| Animated Sidebar | unlumen | Active marker in the sidebar | `styles/global.css` |
-| Audit Log Table | arihantcodes | Mono identifier column and the state cell that is a marker and a word, in the brick board | `styles/status.css`, `components/BrickBoard.astro` |
-| Blueprint Tiers | arihantcodes_1f7b8c4d | Tiers as ruled rows of hairlines with mono labels, laid out by the figure's own width (the idea only; nothing copied), in the determinism tiers figure | `styles/docs-visuals.css` |
-| Changelog Timeline | shadcnui-blocks | A label column beside a rule that carries its marker, in the role lanes (the idea only) | `styles/docs-visuals.css` |
-| Circuit Board | componentry | Traces that leave a box level, turn in the gap and enter the next box level, with an arrowhead where they end (the idea only; no animation, light or code), in the evaluation pipeline figure | `styles/docs-visuals.css`, `components/docs/EvaluationPipeline.astro` |
-| Code Block | 0xuser64bit | The caption line of a code block: the title or a terminal's label as a mono label, a copy button at its end, over the code | `styles/docs.css` |
-| Command Menu | victor-teles | Search dialog: grouped results, the match in ink | `styles/global.css` |
-| Corner Frame | kevingirelli | Registration corner marks, kept in the markup of the battery's sheets and hidden on the night panel | `components/BatteryExplorer.tsx` |
-| Deployment Pipeline | rmahammad | A state told by a word beside its mark, and a layout that follows the figure's own width, not the window's (the idea only; nothing copied) | `styles/docs-visuals.css` |
-| Footer with Navigation Grid | shadcnui-blocks | The row of links under the facts, in the footer's title block | `components/chrome/Footer.astro` |
-| Gantt Chart | klyv-ui | Month gridlines, today marker and gate marks on the axis of the roadmap timeline | `styles/plan.css`, `components/Timeline.tsx` |
-| Health Checks | astralyxdev | Rows that lead with a state mark and end with its word, and two signals of one item kept apart, in the brick board | `styles/status.css`, `components/BrickBoard.astro` |
-| How It Works Steps | ln-dev7 | Sequence figures in the documentation | `styles/docs-visuals.css` |
-| Input Group with Keyboard Shortcut | sean0205 | Search button | `styles/global.css` |
-| Interactive List Preview | hyperiux | Battery rows | `styles/landing/battery-rows.css`, `components/battery/BatteryTeaser.astro` |
-| Kbd | shadcn | Shortcut key cap on the search button | `styles/global.css` |
-| Kbd Input Group | uiable | Search button | `styles/global.css` |
-| Key Value List | corr | The label column and value column of the captured-run facts (a definition list of label and value pairs; its rounded border, truncation and colour classes are not used), stacked when narrow | `styles/status.css`, `pages/status.astro` |
-| Kokonut UI Scroll Index | kokonutd | Passed, current and ahead states of the battery index | `styles/battery.css`, `components/BatteryExplorer.tsx` |
-| Leaderboard Bars | eugeneshilow | A shared scale with its marks labelled in mono and hairline rules (the idea only), in the determinism tiers gauge | `styles/docs-visuals.css`, `components/docs/DeterminismTiers.astro` |
-| Line Draw SVG | pulkitxm | Route draw in the battery pictures | `styles/battery.css` |
-| Marks Slider | ai2 | A ruler-style scale of cells and marks named by labels (the idea only; no slider, thumb or motion), in the determinism tiers gauge | `styles/docs-visuals.css`, `components/docs/DeterminismTiers.astro` |
-| Milestone Timeline | olewandowski1 | Dated rows with a status label in the roadmap's phase list | `components/TimelineList.astro`, `styles/plan.css` |
-| NavBar | mohitsapat | A text link beside the GitHub link in the header (the idea only), for the blog | `components/chrome/SocialIcons.astro` |
-| Page Header with Breadcrumbs | olewandowski1 | The ruled strip of stage, section and state above a page title | `styles/docs.css`, `components/chrome/PageTitle.astro` |
-| Pagination with Arrows | sean0205 | Previous and next links, one block for each direction | `styles/global.css` |
-| Reshaped Alert | reshaped | The tone of an aside, told by its colour and its title | `styles/global.css` |
-| Scroll animated timeline | ibrandify | Scroll-drawn bars of the roadmap timeline and rows of its list | `styles/plan.css` |
-| Search Input with Keyboard Shortcut | shadcnspace | Search field | `styles/global.css` |
-| Segmented Control | klyv-ui | The battery page's switch between its paradigms (T1 to T5) | `styles/battery.css` |
-| Sidebar Light | inference-sh | Sidebar rail and rows | `styles/global.css` |
-| Spec Sheet | isaiahbjork | The header label of the documentation's tables, the label column and rows of the gate list and of the brick board, and the battery page's notes | `styles/docs.css`, `components/GateStepper.astro`, `components/BrickBoard.astro`, `styles/status.css`, `pages/battery.astro` |
-| Stats Band | kuratlielia | Label-over-figure cells of the substrate readout | `styles/readout.css`, `components/landing/SubstrateReadout.astro` |
-| Status | diceui | State label with its marker, in the roadmap's timeline, list and gate rows | `styles/plan.css` |
-| Status Badge | serafimcloud | Two-part label and value of the "now" readout | `styles/plan.css`, `components/NowLine.tsx` |
-| Stepper | corr | Columns sized by a step count, each step a marker with its rule to the next marker (the idea only), in the stage arc and the release flow | `styles/docs-visuals.css` |
-| Stepper | kevingirelli | Step rows of the battery, and the connecting rule and square marks of the gate list | `styles/battery.css`, `styles/plan.css`, `components/BatteryExplorer.tsx`, `components/GateStepper.astro` |
-| Table | originui | Ruled tables in the documentation: rules between rows and none round the table | `styles/docs.css` |
-| Table of Contents | appica-dev | Current-heading bar of the contents list | `styles/global.css` |
-| Table of Contents | mohammadshehadeh | The bar beside the current heading in the contents list | `styles/global.css` |
 | Thinking Orb | adrielzimbril | A particle orb that a page opens out of while it loads and gathers into when the reader leaves it (the idea only; the component's drawing code was not obtained and nothing of it is copied) | `kit/kit.js` |
-| Underline Link | balick | The underline of a paradigm's name in the battery rows of the test-battery figure | `styles/landing/battery-rows.css` |
-| Vertical Titled Stepper | sean0205 | Numbered titles of the battery steps | `styles/battery.css`, `components/BatteryExplorer.tsx` |
 
 If you are an author listed here and want a credit corrected or an adaptation removed, tell the
 project lead in an issue or in a
@@ -193,36 +148,3 @@ this repository. The built site bundles parts of these packages, and each packag
 the licence it ships with; those terms apply to it. This file does not reproduce them. One of them
 is three.js (the npm package `three`, 0.160.0, MIT licence), which is bundled into the home page,
 where it draws the film.
-
-Two files are copies rather than installs, both of `@astrojs/starlight` 0.42.6.
-`website/src/components/chrome/Search.astro` is Starlight's Search component with three small edits
-(the key cap beside the search button is drawn rather than written, so the button's accessible name
-holds its visible text; the script for Apple devices sets the key's attribute; the icon is imported
-from the package). `website/src/components/chrome/Footer.astro` reproduces the markup and the first
-style rules of Starlight's Footer component (the footer element, the edit-link row, previous and next,
-and the layout rules for the footer and that row), with the project's title block added below them.
-Both are used under the package's MIT licence, whose notice follows and covers both.
-
-```text
-MIT License
-
-Copyright (c) 2023 Astro contributors (https://github.com/withastro/starlight/graphs/contributors)
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-```

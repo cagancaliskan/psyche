@@ -55,7 +55,7 @@ reproduces anything that comes from its source.
 
 ## What is not in scope
 
-- Vulnerabilities in software this project uses but does not maintain: Astro, Starlight, npm
+- Vulnerabilities in software this project uses but does not maintain: Astro, npm
   packages, GitHub Actions, GitHub Pages, GitHub itself. Report those to their maintainers. If
   this repository's configuration is what makes one exploitable, that part is in scope.
 - Anything that needs the attacker to already control the maintainer's machine or GitHub

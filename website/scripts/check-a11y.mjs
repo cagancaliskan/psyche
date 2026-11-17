@@ -31,7 +31,7 @@
 //
 // Each page is loaded four ways: desktop and phone width, light and dark colour scheme, all with
 // reduced motion so that nothing is mid-fade when axe measures contrast. The page is scrolled
-// through once first, so that islands which hydrate when they come into view have done so. A state
+// through once first, so that anything a page draws when it comes into view has been drawn. A state
 // is the same page after the click that opens it; a state that has a way to close is closed again
 // after the audit, and the run fails if it does not close as a reader expects.
 //
