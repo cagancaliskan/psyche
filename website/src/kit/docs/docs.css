@@ -214,15 +214,17 @@
 
 /* ---------- The documentation home ----------
    The same frame as the documents (navigation at the left), then the title at the document title's size,
-   one sentence, the repository, the search field, three places to start, and every page by group (the
+   one sentence, the repository and four places in it, the search field, three places to start, and every page by group (the
    group name as a heading above its pages). */
 .k-doclayout--home { grid-template-columns: var(--doc-nav) minmax(0, 1fr); }
 .k-devhome { min-width: 0; max-width: 880px; }
 .k-devhome__lead { margin: 20px 0 0; max-width: 36em; font-size: var(--t-under); line-height: 1.5; letter-spacing: -.004em; color: var(--soft); text-wrap: pretty; }
 .k-devhome__repo { margin: 14px 0 0; font-size: 17px; color: var(--soft); }
-.k-devhome__repo a { color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: var(--quiet); text-underline-offset: .2em; }
-.k-devhome__repo a:hover { text-decoration-color: var(--ink); }
-.k-devhome__repo a:focus-visible { outline: none; text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+.k-devhome__repo a, .k-devhome__links a { color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-decoration-color: var(--quiet); text-underline-offset: .2em; }
+.k-devhome__repo a:hover, .k-devhome__links a:hover { text-decoration-color: var(--ink); }
+.k-devhome__repo a:focus-visible, .k-devhome__links a:focus-visible { outline: none; text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+/* four more places in the repository, under its line: plain words in one row, wrapping on a phone */
+.k-devhome__links { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 28px; font-size: 17px; }
 /* a heading on the home: as a document's h2 */
 .k-devhome__name { margin: 0; color: var(--ink); font-weight: 500; font-size: 25.5px; line-height: 1.2; letter-spacing: -.016em; }
 /* the search field: one line under the words, no box. The server writes it hidden; the script shows it. */
@@ -285,6 +287,8 @@
   .k-doc h2 { font-size: 1.4em; margin-top: 2em; }
   .k-doc pre { font-size: 12px; }
   .k-filter { margin-top: 32px; }
+  .k-devhome__links { margin-top: 0; gap: 0 24px; }
+  .k-devhome__links a { display: inline-block; padding: 12px 0; } /* a 44 px tall target */
   .k-devstart { margin-top: 48px; }
   .k-docindex__group { margin-top: 56px; }
   .k-devhome__name { font-size: 23px; }
