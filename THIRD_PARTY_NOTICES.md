@@ -1,7 +1,7 @@
 # Third-party notices
 
 Psyche's own code is released under the MIT licence (see [LICENSE](LICENSE)). This file lists the
-third-party material that the documentation site (`website/`) uses or was adapted from, with the
+third-party material that the site (`website/`) uses or was adapted from, with the
 credit and the licence terms that go with it.
 
 ## 1. Typefaces
@@ -135,22 +135,16 @@ name and author so that anyone can find the original and read the terms its auth
 
 | Component | Author | Adapted for | Credited in |
 |---|---|---|---|
-| 404 Did You Mean | ziegfiroyt | The address that was asked for, and the nearest page to it, on the 404 page | `pages/404.astro`, `components/chrome/NearestPage.astro`, `styles/notfound.css` |
-| 404 Search And Popular Links | olewandowski1 | The 404 page's places to go | `styles/notfound.css`, `pages/404.astro` |
 | 8bit Timeline Horizontal | theorcdev | Square numbered checkpoints on a track that runs across and turns down in a narrow figure (the idea only), in the stage arc and the release flow | `styles/docs-visuals.css` |
 | Alert | shadcn | Asides: a rule and a title in the aside's hue | `styles/global.css` |
 | Animated Sidebar | unlumen | Active marker in the sidebar | `styles/global.css` |
-| Animated Signature | dqnamo | Stroke draw of the hero mark and the maze figure | `styles/hero.css`, `styles/landing/maze-figure.css` |
-| Announcement | haydenbleasel | A tag and a title in one link, between two rules: the row under the landing hero's actions that leads to the newest blog post | `styles/hero.css` |
 | Audit Log Table | arihantcodes | Mono identifier column and the state cell that is a marker and a word, in the brick board | `styles/status.css`, `components/BrickBoard.astro` |
-| Blog Cards | sumonadotwork | Post cards, in the landing page's latest posts and on the blog's index | `styles/landing/posts.css`, `components/landing/LatestPosts.astro`, `styles/blog.css` |
 | Blueprint Tiers | arihantcodes_1f7b8c4d | Tiers as ruled rows of hairlines with mono labels, laid out by the figure's own width (the idea only; nothing copied), in the determinism tiers figure | `styles/docs-visuals.css` |
-| Changelog | mohammadshehadeh | The date rail beside each ruled entry of the blog's index (its filter, badges and subscribe form are not used) | `styles/blog.css`, `pages/blog/index.astro` |
 | Changelog Timeline | shadcnui-blocks | A label column beside a rule that carries its marker, in the role lanes (the idea only) | `styles/docs-visuals.css` |
 | Circuit Board | componentry | Traces that leave a box level, turn in the gap and enter the next box level, with an arrowhead where they end (the idea only; no animation, light or code), in the evaluation pipeline figure | `styles/docs-visuals.css`, `components/docs/EvaluationPipeline.astro` |
 | Code Block | 0xuser64bit | The caption line of a code block: the title or a terminal's label as a mono label, a copy button at its end, over the code | `styles/docs.css` |
 | Command Menu | victor-teles | Search dialog: grouped results, the match in ink | `styles/global.css` |
-| Corner Frame | kevingirelli | Registration corner marks, kept in the markup of the maze figure and of the battery's sheets and hidden on the night panel | `components/landing/MazeFigure.astro`, `components/BatteryExplorer.tsx` |
+| Corner Frame | kevingirelli | Registration corner marks, kept in the markup of the battery's sheets and hidden on the night panel | `components/BatteryExplorer.tsx` |
 | Deployment Pipeline | rmahammad | A state told by a word beside its mark, and a layout that follows the figure's own width, not the window's (the idea only; nothing copied) | `styles/docs-visuals.css` |
 | Footer with Navigation Grid | shadcnui-blocks | The row of links under the facts, in the footer's title block | `components/chrome/Footer.astro` |
 | Gantt Chart | klyv-ui | Month gridlines, today marker and gate marks on the axis of the roadmap timeline | `styles/plan.css`, `components/Timeline.tsx` |
@@ -160,25 +154,21 @@ name and author so that anyone can find the original and read the terms its auth
 | Interactive List Preview | hyperiux | Battery rows | `styles/landing/battery-rows.css`, `components/battery/BatteryTeaser.astro` |
 | Kbd | shadcn | Shortcut key cap on the search button | `styles/global.css` |
 | Kbd Input Group | uiable | Search button | `styles/global.css` |
-| Key Value List | corr | The label column and value column of the captured-run facts, and of the cite and contact rows on the landing page (a definition list of label and value pairs; its rounded border, truncation and colour classes are not used), stacked when narrow | `styles/status.css`, `pages/status.astro`, `styles/landing/cite.css`, `components/landing/CiteContact.astro` |
+| Key Value List | corr | The label column and value column of the captured-run facts (a definition list of label and value pairs; its rounded border, truncation and colour classes are not used), stacked when narrow | `styles/status.css`, `pages/status.astro` |
 | Kokonut UI Scroll Index | kokonutd | Passed, current and ahead states of the battery index | `styles/battery.css`, `components/BatteryExplorer.tsx` |
 | Leaderboard Bars | eugeneshilow | A shared scale with its marks labelled in mono and hairline rules (the idea only), in the determinism tiers gauge | `styles/docs-visuals.css`, `components/docs/DeterminismTiers.astro` |
-| Legends | airbnb-visx | The key to the hero's four sheets: a swatch in each sheet's own colour, then its name in neutral type | `styles/hero.css` |
 | Line Draw SVG | pulkitxm | Route draw in the battery pictures | `styles/battery.css` |
 | Marks Slider | ai2 | A ruler-style scale of cells and marks named by labels (the idea only; no slider, thumb or motion), in the determinism tiers gauge | `styles/docs-visuals.css`, `components/docs/DeterminismTiers.astro` |
 | Milestone Timeline | olewandowski1 | Dated rows with a status label in the roadmap's phase list | `components/TimelineList.astro`, `styles/plan.css` |
 | NavBar | mohitsapat | A text link beside the GitHub link in the header (the idea only), for the blog | `components/chrome/SocialIcons.astro` |
-| Not Found 404 Page | mohammadshehadeh | The 404 page: a mono label, one sentence and a ruled list of places to go | `pages/404.astro`, `styles/notfound.css` |
 | Page Header with Breadcrumbs | olewandowski1 | The ruled strip of stage, section and state above a page title | `styles/docs.css`, `components/chrome/PageTitle.astro` |
 | Pagination with Arrows | sean0205 | Previous and next links, one block for each direction | `styles/global.css` |
 | Reshaped Alert | reshaped | The tone of an aside, told by its colour and its title | `styles/global.css` |
-| Reveal | asanshay | Scroll reveals on the landing page | `styles/landing.css`, `pages/index.astro` |
 | Scroll animated timeline | ibrandify | Scroll-drawn bars of the roadmap timeline and rows of its list | `styles/plan.css` |
-| Scroll Caliper | nikolas-sapa | Measuring rail in the page gutter | `styles/landing/caliper.css`, `components/landing/CaliperRail.astro` |
 | Search Input with Keyboard Shortcut | shadcnspace | Search field | `styles/global.css` |
 | Segmented Control | klyv-ui | The battery page's switch between its paradigms (T1 to T5) | `styles/battery.css` |
 | Sidebar Light | inference-sh | Sidebar rail and rows | `styles/global.css` |
-| Spec Sheet | isaiahbjork | The label and value rows of the landing page's stage cards and of its two disclosure cards, the grid of its method cards, the header label of the documentation's tables, the label column and rows of the gate list and of the brick board, and the battery page's notes | `components/landing/StageLedger.astro`, `styles/landing/ledger.css`, `components/landing/HowBuilt.astro`, `components/landing/PublicWithheld.astro`, `styles/landing/rows.css`, `styles/docs.css`, `components/GateStepper.astro`, `components/BrickBoard.astro`, `styles/status.css`, `pages/battery.astro` |
+| Spec Sheet | isaiahbjork | The header label of the documentation's tables, the label column and rows of the gate list and of the brick board, and the battery page's notes | `styles/docs.css`, `components/GateStepper.astro`, `components/BrickBoard.astro`, `styles/status.css`, `pages/battery.astro` |
 | Stats Band | kuratlielia | Label-over-figure cells of the substrate readout | `styles/readout.css`, `components/landing/SubstrateReadout.astro` |
 | Status | diceui | State label with its marker, in the roadmap's timeline, list and gate rows | `styles/plan.css` |
 | Status Badge | serafimcloud | Two-part label and value of the "now" readout | `styles/plan.css`, `components/NowLine.tsx` |
@@ -187,9 +177,8 @@ name and author so that anyone can find the original and read the terms its auth
 | Table | originui | Ruled tables in the documentation: rules between rows and none round the table | `styles/docs.css` |
 | Table of Contents | appica-dev | Current-heading bar of the contents list | `styles/global.css` |
 | Table of Contents | mohammadshehadeh | The bar beside the current heading in the contents list | `styles/global.css` |
-| Tagline | shadcncraft | Index and kicker of the landing section openings | `components/landing/SectionHeader.astro` |
-| Text Reveal (Mask) | soralabs | Headings that rise out of a clip | `styles/hero.css`, `styles/landing/section-header.css`, `components/landing/SectionHeader.astro` |
-| Underline Link | balick | The underline of a paradigm's name in the landing page's battery rows | `styles/landing/battery-rows.css` |
+| Thinking Orb | adrielzimbril | A particle orb that a page opens out of while it loads and gathers into when the reader leaves it (the idea only; the component's drawing code was not obtained and nothing of it is copied) | `kit/kit.js` |
+| Underline Link | balick | The underline of a paradigm's name in the battery rows of the test-battery figure | `styles/landing/battery-rows.css` |
 | Vertical Titled Stepper | sean0205 | Numbered titles of the battery steps | `styles/battery.css`, `components/BatteryExplorer.tsx` |
 
 If you are an author listed here and want a credit corrected or an adaptation removed, tell the
@@ -201,7 +190,9 @@ project lead in an issue or in a
 Everything else the site uses comes from npm packages pinned in `website/package.json` and
 `website/package-lock.json`. They are installed when the site is built and are not copied into
 this repository. The built site bundles parts of these packages, and each package remains under
-the licence it ships with; those terms apply to it. This file does not reproduce them.
+the licence it ships with; those terms apply to it. This file does not reproduce them. One of them
+is three.js (the npm package `three`, 0.160.0, MIT licence), which is bundled into the home page,
+where it draws the film.
 
 Two files are copies rather than installs, both of `@astrojs/starlight` 0.42.6.
 `website/src/components/chrome/Search.astro` is Starlight's Search component with three small edits

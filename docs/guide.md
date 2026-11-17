@@ -124,7 +124,7 @@ reads that file and offers it through the "Cite this repository" link on the rep
 
 ### If you are visiting
 
-- [Home](https://psyche.cagancaliskan.com/): the project on one page.
+- [Home](https://psyche.cagancaliskan.com/): the project's front page.
 - [Explore the timeline](https://psyche.cagancaliskan.com/roadmap/): the phases and gates of
   stage 2 on one timeline.
 - [Step through the paradigms](https://psyche.cagancaliskan.com/battery/): the classic tests
