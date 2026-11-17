@@ -1,0 +1,63 @@
+---
+// The document of every page that is not a Starlight page: the home page, What we're building,
+// Experiments, About, the blog's index, its posts and the 404 page. It writes <html>, the head and an
+// empty <body>; Kit.astro adds the page kit's header, footer and script, and the home page uses this
+// layout as it is.
+//
+// The head, in this order: the charset and viewport, then the page kit's head snippet (the orb that
+// covers the page until it is styled, and the theme: dark on a first visit, the reader's choice from
+// then on, kept in localStorage under psyche-theme, read before the first paint so a page never
+// flashes the other theme; `fixedTheme` pins it, as the home page's film does), then everything else
+// lib/head.ts writes for the page (title, canonical address, icons, feeds, link previews, structured
+// data). The snippet's two halves are src/kit/orb-head.css and orb-head.js, imported from the page
+// design; they go in as written.
+//
+// Fonts: the two web fonts the page kit sets its text in, Instrument Sans (400 and 500 from its
+// variable file) and Martian Mono for code, from the Fontsource packages, served with the site and
+// shown with font-display: swap. styles/fonts.css gives each a local stand-in face scaled to its
+// metrics, so the text paints at once and nothing moves when the web font arrives.
+//
+// Slots: the default slot is the body; `head` adds to the end of the head (the film's <noscript>).
+import '@fontsource-variable/instrument-sans';
+import '@fontsource-variable/martian-mono';
+import '@/styles/fonts.css';
+import orbCss from '@/kit/orb-head.css?raw';
+import orbJs from '@/kit/orb-head.js?raw';
+import { headHtml, pageHead, type PageFacts } from '@/lib/head.ts';
+import type { ArticleFacts } from '@/lib/seo.ts';
+
+export interface Props {
+  /** The page's route, title and description: an entry of PAGES in lib/head.ts, or a post's own. */
+  page: PageFacts;
+  /** A blog post's days, author and tags (lib/head.ts articleFacts); on a post and on no other page. */
+  article?: ArticleFacts;
+  /** Pins the theme, whatever the reader chose: the home page's film is dark only. */
+  fixedTheme?: 'dark' | 'light';
+  /** Attributes of <body>: a page kit page's data-page, and data-k-no-rail where it has one. */
+  body?: Record<string, string>;
+}
+
+const { page, article, fixedTheme, body = {} } = Astro.props;
+const entries = pageHead({ ...page, article, generator: Astro.generator });
+// The charset and viewport come first, then the head snippet, then the rest (lib/head.ts writes them in
+// this order; the split is checked so a change there cannot quietly move the snippet).
+const lead = entries.slice(0, 2);
+if (lead[0]?.attrs?.charset !== 'utf-8' || lead[1]?.attrs?.name !== 'viewport') {
+  throw new Error('Bare.astro: lib/head.ts no longer starts with the charset and the viewport');
+}
+const rest = entries.slice(2);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <Fragment set:html={headHtml(lead)} />
+    <style is:inline set:html={orbCss}></style>
+    {fixedTheme ? <script is:inline data-k-theme={fixedTheme} set:html={orbJs}></script> : <script is:inline set:html={orbJs}></script>}
+    <Fragment set:html={headHtml(rest)} />
+    <slot name="head" />
+  </head>
+  <body {...body}>
+    <slot />
+  </body>
+</html>

@@ -1,0 +1,14 @@
+---
+// About and contact, at /about/: the page kit's page as its design lays it out. Every word, figure still
+// and script comes from src/kit/pages/about/ (written by the page import, never by hand), except the
+// founder's name: it is written here, once, as he writes it, and passed into the page's founder heading.
+// This is the one file the copy check lets carry it (tools/publish/check_disclosure.py NAME_ALLOWANCE).
+import Kit from '@/layouts/Kit.astro';
+import { PAGES } from '@/lib/head.ts';
+import Main from '@/kit/pages/about/Main.astro';
+import { body, skip } from '@/kit/pages/about/page.ts';
+import '@/kit/pages/about/page.css';
+import pageJs from '@/kit/pages/about/page.js?url';
+---
+
+<Kit page={PAGES.about} body={body} skip={skip} current="about" pageScript={pageJs}><Main><Fragment slot="founder">Çağan Çalışkan</Fragment></Main></Kit>

@@ -1,0 +1,65 @@
+---
+// The experiments page's <main>, imported from the page design with links set to the site's routes.
+// Written by the page import: do not edit here; a change comes in through the design and a re-import.
+import { withBase } from '@/lib/url.ts';
+import still_five_both from '@/kit/stills/experiments/five.svg?raw';
+import still_latent_both from '@/kit/stills/experiments/latent.svg?raw';
+import still_detour_both from '@/kit/stills/experiments/detour.svg?raw';
+import still_shortcut_both from '@/kit/stills/experiments/shortcut.svg?raw';
+import still_sets_both from '@/kit/stills/experiments/sets.svg?raw';
+import still_order_both from '@/kit/stills/experiments/order.svg?raw';
+---
+<main>{' '}
+  <!-- Opening: the title flush left; five corridors leave from behind it, one for each experiment. -->{' '}
+  <section class="x-open" data-figure="five" aria-labelledby="page-title">{' '}
+    <div class="k-art"><!--still:five--><div class="k-still k-still--both" data-k-still="five"><Fragment set:html={still_five_both} /></div><!--/still:five--></div>{' '}
+    <h1 class="x-title k-page-title k-open-title" id="page-title"><span class="x-l">Five things</span> <span class="x-l">a lookup</span> <span class="x-l">table can't</span> <span class="x-l">do.</span></h1>{' '}
+    <div class="x-open__zone" aria-hidden="true"></div>{' '}
+    <div class="x-open__words k-open-rest">{' '}
+      <p class="x-lead k-under">Memorising answers gets you far. These five experiments show where it stops and something else takes over. Animals do all five. We're building machines that will.</p>{' '}
+      <div class="k-fig-ctl"></div>{' '}
+    </div>{' '}
+  </section>{' '}
+
+  <section class="x-row x-row--a" id="latent" data-figure="latent" aria-labelledby="h-latent" style="--nar: 600 / 560">{' '}
+    <h2 class="x-line k-big-line" id="h-latent">It learns without being told to.</h2>{' '}
+    <p class="x-say k-under">Let a rat wander a maze with no food in it. Nothing seems to happen. Then put food at the end, and it runs straight there. It was learning the whole time.</p>{' '}
+    <div class="k-art"><!--still:latent--><div class="k-still k-still--both" data-k-still="latent"><Fragment set:html={still_latent_both} /></div><!--/still:latent--></div>{' '}
+    <div class="x-under"><div class="k-fig-ctl"></div><p class="k-cap">A rat explores a maze with no food in it.</p></div>{' '}
+  </section>{' '}
+
+  <section class="x-row x-row--b" id="detour" data-figure="detour" aria-labelledby="h-detour" style="--nar: 600 / 600">{' '}
+    <h2 class="x-line k-big-line" id="h-detour">Block the road, and it finds another.</h2>{' '}
+    <p class="x-say k-under">A rat that knows the way meets a wall on its usual route. It doesn't start over. It takes the route that gets around the wall.</p>{' '}
+    <div class="k-art"><!--still:detour--><div class="k-still k-still--both" data-k-still="detour"><Fragment set:html={still_detour_both} /></div><!--/still:detour--></div>{' '}
+    <div class="x-under"><div class="k-fig-ctl"></div><p class="k-cap">Three routes of different lengths lead to the same food.</p></div>{' '}
+  </section>{' '}
+
+  <section class="x-row x-row--c" id="shortcut" data-figure="shortcut" aria-labelledby="h-shortcut" style="--nar: 1 / 1">{' '}
+    <h2 class="x-line k-big-line" id="h-shortcut">It takes a shortcut it has never taken.</h2>{' '}
+    <p class="x-say k-under">Teach a rat the long way round, then close it and open a fan of new paths. More rats choose the one pointing straight at the food than any other. You can't memorise a path you've never walked. You need a map.</p>{' '}
+    <div class="k-art"><!--still:shortcut--><div class="k-still k-still--both" data-k-still="shortcut"><Fragment set:html={still_shortcut_both} /></div><!--/still:shortcut--></div>{' '}
+    <div class="x-under"><div class="k-fig-ctl"></div><p class="k-cap">Points released at the start spread over a fan of new paths.</p></div>{' '}
+  </section>{' '}
+
+  <section class="x-row x-row--d" id="sets" data-figure="sets" aria-labelledby="h-sets" style="--nar: 600 / 828">{' '}
+    <div class="x-words">{' '}
+      <h2 class="x-line k-big-line" id="h-sets">Learn one world, and the next comes easy.</h2>{' '}
+      <p class="x-say k-under">Give a monkey hundreds of small puzzles, each with new objects. Soon it solves a new one almost at once. It stopped learning answers and learned how the puzzle works.</p>{' '}
+    </div>{' '}
+    <div class="k-art"><!--still:sets--><div class="k-still k-still--both" data-k-still="sets"><Fragment set:html={still_sets_both} /></div><!--/still:sets--></div>{' '}
+    <div class="x-under"><div class="k-fig-ctl"></div><p class="k-cap">Each puzzle has two new objects, and each mark under it is one try.</p></div>{' '}
+  </section>{' '}
+
+  <section class="x-row x-row--e" id="order" data-figure="order" aria-labelledby="h-order" style="--nar: 600 / 600">{' '}
+    <h2 class="x-line k-big-line" id="h-order">It knows what it was never taught.</h2>{' '}
+    <p class="x-say k-under">Teach a rat that A beats B, B beats C, C beats D. Then show it B and D together for the first time. It picks B. It worked that out from the pieces.</p>{' '}
+    <div class="k-art"><!--still:order--><div class="k-still k-still--both" data-k-still="order"><Fragment set:html={still_order_both} /></div><!--/still:order--></div>{' '}
+    <div class="x-under"><div class="k-fig-ctl"></div><p class="k-cap">Four items taught one pair at a time, then two that were never shown together.</p></div>{' '}
+  </section>{' '}
+
+  <section class="x-close" aria-labelledby="h-close">{' '}
+    <h2 class="x-close__line k-big-line" id="h-close"><span class="x-l">Animals do</span> <span class="x-l">all five.</span></h2>{' '}
+    <p class="x-close__say k-under">We're building the machine that does too. If you want to be part of it, <a class="k-link" href={withBase('about/')}>get in touch</a>.</p>{' '}
+  </section>{' '}
+</main>

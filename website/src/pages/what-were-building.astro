@@ -1,0 +1,13 @@
+---
+// What we're building, at /what-were-building/: the page kit's page as its design lays it out. Every word,
+// figure still and script comes from src/kit/pages/what-were-building/ (written by the page import, never
+// by hand); this file only puts them on the kit layout with the page's head from lib/head.ts.
+import Kit from '@/layouts/Kit.astro';
+import { PAGES } from '@/lib/head.ts';
+import Main from '@/kit/pages/what-were-building/Main.astro';
+import { body, skip } from '@/kit/pages/what-were-building/page.ts';
+import '@/kit/pages/what-were-building/page.css';
+import pageJs from '@/kit/pages/what-were-building/page.js?url';
+---
+
+<Kit page={PAGES.whatWereBuilding} body={body} skip={skip} current="what-were-building" pageScript={pageJs}><Main /></Kit>

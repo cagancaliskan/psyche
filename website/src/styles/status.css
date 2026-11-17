@@ -9,8 +9,8 @@
  * struck square (no-go), a dash (no verdict earned). The markers are drawn with borders, so they
  * survive forced colours. Hairlines remain only between the rows of a list or a table.
  *
- * The readout's tiles and their panel are in readout.css, which the landing and the substrate
- * overview share.
+ * The readout's tiles and their panel are in readout.css, which the status page and the
+ * substrate overview share.
  *
  * Catalog sources (21st.dev), rewritten in plain CSS with none of their code or dependencies: the
  * label column and value column of a definition list, stacked when narrow, after "Key Value List" by

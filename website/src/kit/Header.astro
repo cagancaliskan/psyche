@@ -1,0 +1,16 @@
+---
+// The static header of the kit pages (wordmark and the four menu links), as the page design writes it;
+// kit.js writes the live header over it. Written by the page import: do not edit here.
+// current: the menu item of this page; within: true on a page inside that item (a post under Blog).
+import { withBase } from '@/lib/url.ts';
+interface Props { current?: 'what-were-building' | 'experiments' | 'blog' | 'about'; within?: boolean }
+const { current, within = false } = Astro.props;
+const mark = (key: string) => (key === current ? (within ? 'true' : 'page') : undefined);
+---
+<header class="k-head">{' '}
+  <a class="k-head__home" href={withBase('')} aria-label="Psyche, home">{' '}
+    <img class="k-on-dark" src={withBase('brand/psyche-wordmark-dark.svg')} alt="" width="118" height="19">{' '}
+    <img class="k-on-light" src={withBase('brand/psyche-wordmark-light.svg')} alt="" width="118" height="19">{' '}
+  </a>{' '}
+  <nav class="k-head__nav" aria-label="Site"><a class="k-head__link" href={withBase('what-were-building/')} aria-current={mark('what-were-building')}>What we&#39;re building</a><a class="k-head__link" href={withBase('experiments/')} aria-current={mark('experiments')}>Experiments</a><a class="k-head__link" href={withBase('blog/')} aria-current={mark('blog')}>Blog</a><a class="k-head__link" href={withBase('about/')} aria-current={mark('about')}>Contact</a></nav>{' '}
+</header>

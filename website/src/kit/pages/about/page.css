@@ -1,0 +1,99 @@
+  /* About and contact. The opening: the title stands high across the screen, set to the right, and
+     three lines of light rise into its full stop from below: one from the left edge, one from the
+     bottom edge, one from the right edge low down. They join just under the full stop and run up
+     into it as one. The sentences under the title sit low on the left, clear of the lines.
+     Every size comes from the kit's type scale (kit.css); this page sets only places and gaps.
+     Nothing moves beside the reading text. */
+  .ab-open {
+    position: relative; min-height: 100vh; min-height: 100svh;
+    display: flex; flex-direction: column; justify-content: space-between; gap: 6vh;
+    padding: calc(var(--head-h) + 9vh) var(--gutter) 7vh; overflow: hidden;
+  }
+  .ab-open .k-art { position: absolute; inset: 0; }
+  .ab-open .k-art > svg, .ab-open .k-still, .ab-open .k-still svg { width: 100%; height: 100%; }
+  .ab-title { position: relative; pointer-events: none; align-self: flex-end; text-align: right; margin-right: 4vw; }
+  .ab-l1, .ab-l2 { display: block; }
+  .ab-row { position: relative; align-self: flex-start; margin-left: 4vw; }
+  .ab-row .k-under { margin: 0; }
+  .ab-ctl { margin-top: 26px; }
+  .ab-ctl .k-fig-ctl { margin: 0; justify-content: flex-start; }
+  .ab-ctl .k-cap { margin: 2px 0 0; }
+
+  /* the arrival of this opening: the title only fades in (its layout must not move, the lines
+     find its full stop by measuring it), at rest within 1.3 s; the lines play once it is open */
+  .ab-title { transition: opacity 1.1s var(--ease); }
+  .k-arrive .ab-title { opacity: 0; }
+  /* the three lines are already drawn when the orb opens: the figure does not fade or scale in */
+  .k-arrive .ab-open .k-open-fig { opacity: 1; transform: none; }
+
+  /* ---------- the three audiences ---------- */
+  .ab-part { padding: clamp(80px, 13vh, 150px) var(--gutter) 0; }
+  .ab-part .k-big-line { max-width: 13em; }
+  .ab-part .k-under { margin-top: 28px; }
+
+  /* Investors: the name and the line on the left, the sentences set in under the line */
+  .ab-inv .ab-group { margin-left: 4vw; }
+  .ab-inv .k-under { margin-left: 18vw; }
+  /* Engineers: the whole part on the right half of the screen */
+  .ab-eng .ab-group { margin-left: 50%; }
+  .ab-eng .k-big-line { max-width: 10em; }
+  /* Research partners: the name over the line and the sentences side by side, then the figure, large.
+     One grid for every part: the left edge is the gutter plus 4vw, the second column starts at the
+     middle of the content (where the Engineers part starts), so both sentence columns line up. */
+  .ab-res__head { display: grid; grid-template-columns: calc(50% - 2vw) minmax(0, 1fr); align-items: start; margin-left: 4vw; }
+  .ab-res .k-big-line { max-width: 9.5em; }
+  .ab-res__head > .k-under { margin-top: calc(var(--t-part) * 1.15 + var(--t-part) * .6 + .2em); }
+  .ab-fig { margin: clamp(40px, 7vh, 80px) 0 0; padding: 0; width: 100%; max-width: none; container-type: inline-size; }
+  .ab-fig .k-fig-ctl, .ab-fig .k-cap { margin-left: 4vw; }
+  /* on a narrow figure the networks stand one above the other (700 by 1180): keep that room from
+     the start, so nothing below moves when the live drawing replaces the wide still */
+  @container (max-width: 640px) {
+    .ab-fig .k-art { aspect-ratio: 700 / 1180; }
+    /* the baked still is the wide drawing: with script on, a narrow figure never shows it (the live
+       drawing takes its place before it comes into view, and a reader who jumps here sees no swap) */
+    .k-js .ab-fig .k-still { visibility: hidden; }
+  }
+
+  /* the founder, and below him the contact: one closing screen, set in from the left */
+  .ab-close { padding: clamp(96px, 16vh, 180px) var(--gutter) 0; }
+  .ab-close > * { margin-left: 4vw; }
+  .ab-close .k-founder { margin: 0; }
+  .ab-role { margin: .35em 0 0; }
+  .ab-contact { margin-top: clamp(64px, 11vh, 120px); }
+  .ab-contact .k-part-name { margin-bottom: .45em; }
+  .ab-close ~ .k-foot, main ~ .k-foot { margin-top: 16vh; }
+
+  /* a part's words arrive once as they come into view (never with reduced motion) */
+  .k-js .ab-rv { opacity: 0; transform: translateY(22px); transition: opacity 1s var(--ease), transform 1.1s var(--ease); }
+  .k-js .ab-rv.is-in { opacity: 1; transform: none; }
+  .k-js .ab-rv.ab-d1 { transition-delay: .12s; }
+  .k-js .ab-rv.ab-d2 { transition-delay: .24s; }
+
+  @media (max-width: 1100px) and (min-width: 701px) {
+    .ab-inv .k-under { margin-left: 10vw; }
+    .ab-eng .ab-group { margin-left: 34%; }
+    .ab-res__head { display: block; }
+    .ab-res__head > .k-under { margin-top: 28px; }
+  }
+
+  @media (max-width: 700px) {
+    .ab-open { padding-top: calc(var(--head-h) + 6vh); padding-bottom: 40px; justify-content: flex-start; gap: 0; }
+    .ab-title { margin-right: 0; }
+    .ab-row { margin-top: 34vh; margin-top: 34svh; margin-left: 0; }
+    .ab-ctl { margin-top: 22px; }
+    .ab-part { padding-top: 76px; }
+    .ab-part .k-under { margin-top: 20px; }
+    .ab-inv .ab-group, .ab-res__head, .ab-close > * { margin-left: 0; }
+    .ab-inv .k-under { margin-left: 0; }
+    .ab-eng .ab-group { margin-left: 0; }
+    .ab-res__head { display: block; }
+    .ab-res__head > .k-under { margin-top: 20px; }
+    .ab-fig { margin-top: 36px; }
+    .ab-fig .k-fig-ctl, .ab-fig .k-cap { margin-left: 0; }
+    .ab-close { padding-top: 92px; }
+    .ab-contact { margin-top: 56px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .k-js .ab-rv { opacity: 1; transform: none; }
+    .k-arrive .ab-title { opacity: 1; }
+  }

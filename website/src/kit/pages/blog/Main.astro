@@ -1,0 +1,24 @@
+---
+// The blog page's <main>, imported from the page design with links set to the site's routes.
+// Written by the page import: do not edit here; a change comes in through the design and a re-import.
+// The list of posts is not here: pages/blog/index.astro writes its <li> items into the default slot.
+import still_days_dark from '@/kit/stills/blog/days-dark.svg?raw';
+import still_days_light from '@/kit/stills/blog/days-light.svg?raw';
+---
+<main>{' '}
+  <!-- Opening: the word stands on a line of days; each post stands on the day it was published. -->{' '}
+  <section class="b-open" data-figure="days" aria-labelledby="page-title">{' '}
+    <div class="b-stage">{' '}
+      <div class="k-art k-open-fig"><!--still:days--><div class="k-still k-still--dark"><Fragment set:html={still_days_dark} /></div><div class="k-still k-still--light"><Fragment set:html={still_days_light} /></div><!--/still:days--></div>{' '}
+      <h1 class="b-title k-page-title k-page-title--word k-open-title" id="page-title"><span>Blo</span><span class="b-g">g</span><span>.</span><span class="b-base" aria-hidden="true"></span></h1>{' '}
+    </div>{' '}
+    <div class="b-open__text k-open-rest">{' '}
+      <p class="b-lead k-under">Notes from the road to machine cognition.</p>{' '}
+      <div class="k-fig-ctl"></div>{' '}
+      <p class="k-cap" id="days-cap">Each post stands on the day it was published.</p>{' '}
+    </div>{' '}
+  </section>{' '}
+
+  <ol class="b-list" id="posts" aria-label="Posts"><slot /></ol>{' '}
+
+</main>

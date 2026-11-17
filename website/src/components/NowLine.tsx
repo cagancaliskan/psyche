@@ -4,7 +4,7 @@ import '../styles/plan.css';
 
 interface Props {
   plan: Plan;
-  /** Lead word for the current phase, e.g. 'Now in stage 2' on the landing page. */
+  /** Lead word for the current phase, e.g. 'Now in stage 2'. */
   label?: string;
 }
 

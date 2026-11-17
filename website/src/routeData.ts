@@ -1,10 +1,12 @@
-// Route data for every Starlight page, the landing and the 404 included.
+// Route data for every Starlight page: the docs pages and the roadmap, battery and status pages.
 //
 // It adds to each page's head what differs by page, for search engines and link previews
-// (lib/seo.ts): og:type, twitter:title and twitter:description from the page, noindex on the 404
-// page, the landing page's structured data, and on a blog post the days, author and tags of its
-// front matter, which tools/publish/stage.py wrote from the post's source. The entries that are the
-// same on every page are in astro.config.mjs.
+// (lib/seo.ts): og:type, twitter:title and twitter:description from the page. The entries that are
+// the same on every page are in astro.config.mjs. The home page, the front pages, the blog's index,
+// its posts and the 404 page are not Starlight pages: src/lib/head.ts writes their head (the 404
+// page's noindex, the home page's structured data, a post's days, author and tags). The post branch
+// below is kept from when posts were Starlight pages; no Starlight page is a post now, so it adds
+// nothing.
 //
 // The web fonts are deliberately not preloaded. A preload fetches the two Latin files (81 KB) beside
 // the render-blocking stylesheet, and in headless Chrome with the cache off and the network

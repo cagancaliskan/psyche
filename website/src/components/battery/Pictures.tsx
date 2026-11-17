@@ -1,17 +1,17 @@
 // Drawings of the five classic paradigms: public illustrations, never a model or a result.
-// They are drawn in the landing figure's language (components/landing/MazeFigure.astro): walls as a
+// Walls are drawn as a
 // very low structure-blue fill inside a fine structure outline, the agent's trail in ink, one signal
 // route, a ringed start and a goal ring with its dot. The agent's trail and route, the arc between a
 // test pair and a new goal ring carry the classes that the battery styles draw; doors and node
 // labels fade in. Rendered on the server, so they need no client JavaScript of their own. The
 // battery page passes `ruled` for the faint cell grid of its sheets (and the whole chain strip);
-// the landing's thumbnails leave it off.
+// the battery rows' thumbnails leave it off.
 import '@/styles/battery.css';
 import type { ChainStep, GridStep, Test, TransferStep } from '@/lib/battery.ts';
 import { polylinePoints, wallPath, withCell, type Cell, type Grid } from '@/lib/maze.ts';
 import { gridLines, wallOutline } from '@/lib/sheet.ts';
 
-/** `decorative` marks a picture beside a text that says the same (the landing's rows, the battery
+/** `decorative` marks a picture beside a text that says the same (the battery rows, the battery
  *  page's sheet): hidden from assistive technology. `sharedGlyphs` draws its node letters through <use>
  *  from glyphs defined once per page, which only components/battery/BatteryTeaser.astro writes: a
  *  thumbnail inside a link then holds no text but the link's own label, which is the whole of its name

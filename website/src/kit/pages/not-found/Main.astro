@@ -1,0 +1,20 @@
+---
+// The not-found page's <main>, imported from the page design with links set to the site's routes.
+// Written by the page import: do not edit here; a change comes in through the design and a re-import.
+import { withBase } from '@/lib/url.ts';
+import still_deadend_dark from '@/kit/stills/not-found/deadend-dark.svg?raw';
+import still_deadend_light from '@/kit/stills/not-found/deadend-light.svg?raw';
+---
+<main>{' '}
+  <section class="nf" data-figure="deadend" aria-labelledby="nf-title">{' '}
+    <div class="k-art k-open-fig"><!--still:deadend--><div class="k-still k-still--dark"><Fragment set:html={still_deadend_dark} /></div><div class="k-still k-still--light"><Fragment set:html={still_deadend_light} /></div><!--/still:deadend--></div>{' '}
+    <div class="nf__words">{' '}
+      <h1 class="nf__title k-page-title k-open-title" id="nf-title"><span>This page</span> <span>doesn't exist.</span></h1>{' '}
+      <p class="nf__way k-open-rest"><a class="nf__back" id="back" href={withBase('')}>Back to the start</a></p>{' '}
+    </div>{' '}
+    <div class="nf__ctl k-open-rest">{' '}
+      <div class="k-fig-ctl"></div>{' '}
+      <p class="k-cap" id="deadend-cap">A point of light reaches a dead end and turns back.</p>{' '}
+    </div>{' '}
+  </section>{' '}
+</main>

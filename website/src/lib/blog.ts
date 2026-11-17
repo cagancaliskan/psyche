@@ -1,7 +1,6 @@
 /**
- * The blog: the pure logic behind its index (pages/blog/index.astro), the strip above a post's title
- * (components/chrome/PageTitle.astro), the landing page's latest posts (components/landing/LatestPosts.astro)
- * and its Atom feed (pages/blog.xml.ts). No framework import, so `npm test` runs it as it is.
+ * The blog: the pure logic behind its index (pages/blog/index.astro), the page of a post
+ * (pages/blog/[slug].astro on layouts/Post.astro) and its Atom feed (pages/blog.xml.ts). No framework import, so `npm test` runs it as it is.
  *
  * Nothing here is a list of posts and nothing is typed per post. A post is a folder of docs/blog/ in the
  * repository; tools/publish/stage.py reads each one from the commit being built, checks its front matter

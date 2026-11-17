@@ -1,0 +1,79 @@
+---
+// The what-were-building page's <main>, imported from the page design with links set to the site's routes.
+// Written by the page import: do not edit here; a change comes in through the design and a re-import.
+import { withBase } from '@/lib/url.ts';
+import still_field_both from '@/kit/stills/what-were-building/field.svg?raw';
+import still_pulse_both from '@/kit/stills/what-were-building/pulse.svg?raw';
+import still_hebb_both from '@/kit/stills/what-were-building/hebb.svg?raw';
+import still_maze_both from '@/kit/stills/what-were-building/maze.svg?raw';
+import still_watts_both from '@/kit/stills/what-were-building/watts.svg?raw';
+---
+<main>{' '}
+  <!-- Opening: a deep field of model neurons; the title in the lower left; a pulse leaves its full stop. -->{' '}
+  <section class="w-open" data-figure="field" data-fit="xMidYMid slice" aria-labelledby="page-title">{' '}
+    <div class="k-art"><!--still:field--><div class="k-still k-still--both" data-k-still="field"><Fragment set:html={still_field_both} /></div><!--/still:field--></div>{' '}
+    <div class="w-open__words">{' '}
+      <h1 class="w-title k-page-title" id="page-title"><span class="w-title__line"><span class="w-ink">New era of</span></span> <span class="w-title__line"><span class="w-ink"><span>intelligence</span><span class="w-dot">.</span></span></span></h1>{' '}
+      <p class="w-lead k-under k-open-rest" id="pitch">Today's AI has read the whole internet and still has no map of the room it's in. A brain builds that map just by walking around, on twenty watts. We're building machines the way nature built minds: neurons that spike, connections that teach themselves, networks that draw their own map of the world. They won't just answer. They'll know where they are, learn as they go, and run on a fraction of the power.</p>{' '}
+    </div>{' '}
+    <div class="w-open__foot k-open-rest">{' '}
+      <div class="k-fig-ctl"></div>{' '}
+      <p class="k-cap">Pulses leave the full stop, then two other cells, and run from cell to cell through a deep field of model neurons.</p>{' '}
+    </div>{' '}
+  </section>{' '}
+
+  <section class="w-row w-row--brain" aria-labelledby="row-brain">{' '}
+    <div class="w-text">{' '}
+      <h2 class="w-big k-big-line" id="row-brain">Built like a brain, not like a calculator.</h2>{' '}
+      <p class="k-under">Every AI today pushes numbers through layers, all the time, for everything. A brain sends a pulse only when there is something to say. Silence costs nothing. Our machines are built on pulses.</p>{' '}
+    </div>{' '}
+    <figure class="w-fig" data-figure="pulse" aria-describedby="pulse-cap">{' '}
+      <div class="k-art"><!--still:pulse--><div class="k-still k-still--both" data-k-still="pulse"><Fragment set:html={still_pulse_both} /></div><!--/still:pulse--></div>{' '}
+      <div class="k-fig-ctl"></div>{' '}
+      <figcaption class="k-cap" id="pulse-cap">A signal enters both networks twice: each time it lights every connection of the layered one, and one short path through the other.</figcaption>{' '}
+    </figure>{' '}
+  </section>{' '}
+
+  <section class="w-row w-row--right" aria-labelledby="row-teacher">{' '}
+    <div class="w-text">{' '}
+      <h2 class="w-big k-big-line" id="row-teacher"><span class="w-nb">No teacher.</span> <span class="w-nb">No answer key.</span></h2>{' '}
+      <p class="k-under">Each connection learns from what happens right beside it, the moment it happens. No training run that costs a fortune. No starting over. We're building a machine that never stops learning.</p>{' '}
+    </div>{' '}
+    <figure class="w-fig" data-figure="hebb" aria-describedby="hebb-cap">{' '}
+      <div class="k-art"><!--still:hebb--><div class="k-still k-still--both" data-k-still="hebb"><Fragment set:html={still_hebb_both} /></div><!--/still:hebb--></div>{' '}
+      <div class="k-fig-ctl"></div>{' '}
+      <figcaption class="k-cap" id="hebb-cap">Two pairs of cells fire together, and each time the connection between them brightens and thickens.</figcaption>{' '}
+    </figure>{' '}
+  </section>{' '}
+
+  <section class="w-row w-row--map" aria-labelledby="row-map">{' '}
+    <div class="w-text">{' '}
+      <h2 class="w-big k-big-line" id="row-map">A machine that knows where it is.</h2>{' '}
+      <p class="k-under">A rat that wanders a maze with no reward still learns the way. Block its route and it finds another. It carries a map of its world. We're building machines that draw their own.</p>{' '}
+    </div>{' '}
+    <figure class="w-fig w-fig--maze" data-figure="maze" aria-describedby="maze-cap">{' '}
+      <div class="k-art"><!--still:maze--><div class="k-still k-still--both" data-k-still="maze"><Fragment set:html={still_maze_both} /></div><!--/still:maze--></div>{' '}
+      <div class="k-fig-ctl"></div>{' '}
+      <figcaption class="k-cap" id="maze-cap">A point of light wanders a maze with no reward; when a corridor on its route is blocked, it takes another way.</figcaption>{' '}
+    </figure>{' '}
+  </section>{' '}
+
+  <section class="w-row w-row--watts" aria-labelledby="row-watts">{' '}
+    <div class="w-text">{' '}
+      <h2 class="w-big k-big-line" id="row-watts">Twenty watts.</h2>{' '}
+      <p class="k-under">That is what a brain runs on. Today's AI needs a power plant. Ours won't.</p>{' '}
+    </div>{' '}
+    <figure class="w-fig w-fig--bleed" data-figure="watts" aria-describedby="watts-cap">{' '}
+      <div class="k-art"><!--still:watts--><div class="k-still k-still--both" data-k-still="watts"><Fragment set:html={still_watts_both} /></div><!--/still:watts--></div>{' '}
+      <div class="k-fig-ctl"></div>{' '}
+      <figcaption class="k-cap" id="watts-cap">One steady point of light; beside it a field of lights comes up, and the view travels far along the field and comes back to the point.</figcaption>{' '}
+    </figure>{' '}
+  </section>{' '}
+
+  <section class="w-close" aria-labelledby="row-close">{' '}
+    <div class="w-close__field" aria-hidden="true"></div>{' '}
+    <svg class="w-close__point" viewBox="0 0 72 72" aria-hidden="true" focusable="false"><circle cx="36" cy="36" r="30" style="fill:var(--mint)" fill-opacity=".035"/><circle cx="36" cy="36" r="21" style="fill:var(--mint)" fill-opacity=".05"/><circle cx="36" cy="36" r="13" style="fill:var(--mint)" fill-opacity=".08"/><circle cx="36" cy="36" r="8" style="fill:var(--mint)" fill-opacity=".14"/><circle cx="36" cy="36" r="4.4" style="fill:var(--mint)"/></svg>{' '}
+    <h2 class="w-big k-big-line" id="row-close">So far, only brains can do this.</h2>{' '}
+    <p class="k-under">We're building the machine that can. If you want to be part of it, <a href={withBase('about/')}>get in touch</a>.</p>{' '}
+  </section>{' '}
+</main>

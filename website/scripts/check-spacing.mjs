@@ -1,4 +1,4 @@
-// Fails the build when words run together on the custom pages.
+// Fails the build when words run together on the hand-written pages (PAGES below).
 //
 // Astro compresses whitespace the way JSX does: a line break next to an {expression} or an
 // inline element disappears, so "on⏎{name}" renders as "onCPython" and "the⏎<a>" as "the<a>".
@@ -11,7 +11,18 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
-const PAGES = ['index.html', 'roadmap/index.html', 'battery/index.html', 'status/index.html', 'blog/index.html'];
+// The hand-written pages: the front pages (the home, What we're building, Experiments, About and the
+// blog's index) and the custom pages that are still built (roadmap, battery, status).
+const PAGES = [
+  'index.html',
+  'what-were-building/index.html',
+  'experiments/index.html',
+  'about/index.html',
+  'blog/index.html',
+  'roadmap/index.html',
+  'battery/index.html',
+  'status/index.html',
+];
 
 const RAW_RULES = [
   [/[A-Za-z0-9,.;:]<(a|code|strong|em|span|time)[\s>]/g, 'text glued to the start of an inline element'],

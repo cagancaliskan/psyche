@@ -1,4 +1,5 @@
-// Docs site for Psyche, one open research project in stages (D-031, D-033).
+// The site of Psyche, one open research project in stages (D-031, D-033): its front pages and its
+// documentation.
 //
 // Content is never written here by hand. `npm run stage` (tools/publish/stage.py) copies the
 // governed Markdown listed in docs/publish.json into src/content/docs/ and writes the data files
@@ -115,7 +116,7 @@ export default defineConfig({
         Search: './src/components/chrome/Search.astro',
         SocialIcons: './src/components/chrome/SocialIcons.astro',
       },
-      // The 404 page is src/pages/404.astro, a StarlightPage set as a drafting sheet.
+      // The 404 page is src/pages/404.astro, a plain page on the page kit (layouts/Kit.astro).
       disable404Route: true,
       routeMiddleware: './src/routeData.ts',
       sidebar: stagedSidebar(),
@@ -123,8 +124,10 @@ export default defineConfig({
       pagination: true,
       expressiveCode: { customizeTheme: codeTheme },
       plugins: [starlightLinksValidator({ errorOnRelativeLinks: false })],
-      // The same on every page. What differs by page (og:type, twitter:title and twitter:description,
-      // noindex on the 404 page, the landing page's structured data) is added by src/routeData.ts.
+      // The same on every Starlight page (the docs and the roadmap, battery and status pages). What
+      // differs by page (og:type, twitter:title and twitter:description) is added by src/routeData.ts.
+      // The front pages, the posts and the 404 page are not Starlight pages: src/lib/head.ts writes
+      // their head.
       // Starlight writes the favicon link, <link rel="shortcut icon"> to favicon.svg, after these, so
       // the SVG stays the primary icon and the PNGs are fallbacks.
       head: [

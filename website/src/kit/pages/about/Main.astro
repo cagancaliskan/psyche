@@ -1,0 +1,62 @@
+---
+// The about page's <main>, imported from the page design with links set to the site's routes.
+// Written by the page import: do not edit here; a change comes in through the design and a re-import.
+// The founder's name is not here: pages/about.astro passes it in (<Fragment slot="founder">).
+import still_join_both from '@/kit/stills/about/join.svg?raw';
+import still_both_both from '@/kit/stills/about/both.svg?raw';
+---
+<main>{' '}
+  <section class="ab-open" data-figure="join" aria-labelledby="ab-title">{' '}
+    <div class="k-art k-open-fig"><!--still:join--><div class="k-still k-still--both" data-k-still="join"><Fragment set:html={still_join_both} /></div><!--/still:join--></div>{' '}
+    <h1 class="k-page-title ab-title" id="ab-title"><span class="ab-l1">The other way to</span> <span class="ab-l2"><span>build intelligence</span><span class="ab-dot">.</span></span></h1>{' '}
+    <div class="ab-row">{' '}
+      <p class="k-under ab-lead k-open-rest">Psyche is a pre-seed company building machines on the brain's own principles, toward machine cognition. Three kinds of people will build it with us: investors, engineers and research partners.</p>{' '}
+      <div class="ab-ctl k-open-rest">{' '}
+        <div class="k-fig-ctl"></div>{' '}
+        <p class="k-cap">Three lines of light run toward one point and join there.</p>{' '}
+      </div>{' '}
+    </div>{' '}
+  </section>{' '}
+
+  <section class="ab-part ab-inv" aria-labelledby="ab-inv">{' '}
+    <div class="ab-group">{' '}
+      <h2 class="k-part-name ab-rv" id="ab-inv">Investors</h2>{' '}
+      <p class="k-big-line ab-rv ab-d1">Twenty watts against a power plant.</p>{' '}
+      <p class="k-under ab-rv ab-d2">Today's AI needs a power plant. A brain runs on twenty watts. Machines built on the brain's own principles would change what intelligence costs and where it can run, and we're building them. Psyche is at pre-seed, and we're looking for investors to hold a stake from the start.</p>{' '}
+    </div>{' '}
+  </section>{' '}
+
+  <section class="ab-part ab-eng" aria-labelledby="ab-eng">{' '}
+    <div class="ab-group">{' '}
+      <h2 class="k-part-name ab-rv" id="ab-eng">Engineers</h2>{' '}
+      <p class="k-big-line ab-rv ab-d1">Nothing here is off the shelf.</p>{' '}
+      <p class="k-under ab-rv ab-d2">No standard model, no training run, no stack to copy. We're building spiking networks that wire and teach themselves, from the neuron up. The engineers who join now decide how the first of these machines is built.</p>{' '}
+    </div>{' '}
+  </section>{' '}
+
+  <section class="ab-part ab-res" aria-labelledby="ab-res">{' '}
+    <div class="ab-res__head">{' '}
+      <div class="ab-res__words">{' '}
+        <h2 class="k-part-name ab-rv" id="ab-res">Research partners</h2>{' '}
+        <p class="k-big-line ab-rv ab-d1">Where brains and machines meet.</p>{' '}
+      </div>{' '}
+      <p class="k-under ab-rv ab-d2">Every principle we build on was found in a laboratory. We're turning that science into machines, and the work runs both ways: a machine built like a brain will be a new instrument for studying one. We're looking for research partners in neuroscience and neuromorphic computing. Write to us with your field and the question you'd bring.</p>{' '}
+    </div>{' '}
+    <figure class="k-figure ab-fig" data-figure="both">{' '}
+      <div class="k-art"><!--still:both--><div class="k-still k-still--both" data-k-still="both"><Fragment set:html={still_both_both} /></div><!--/still:both--></div>{' '}
+      <div class="k-fig-ctl"></div>{' '}
+      <figcaption class="k-cap">A pulse crosses from a brain-like network to a machine-like network, and another crosses back.</figcaption>{' '}
+    </figure>{' '}
+  </section>{' '}
+
+  <section class="ab-close" aria-label="Founder and contact">{' '}
+    <div class="ab-founder">{' '}
+      <h2 class="k-founder ab-rv" id="ab-person"><slot name="founder" /></h2>{' '}
+      <p class="k-part-name ab-role ab-rv ab-d1">Founder</p>{' '}
+    </div>{' '}
+    <div class="ab-contact" id="contact" aria-labelledby="ab-contact" tabindex="-1" role="region">{' '}
+      <h2 class="k-part-name ab-rv" id="ab-contact">Contact</h2>{' '}
+      <p class="ab-rv ab-d1" style="margin:0"><a class="k-email" href="mailto:cagan@cagancaliskan.com">cagan@<wbr>cagancaliskan.com</a></p>{' '}
+    </div>{' '}
+  </section>{' '}
+</main>

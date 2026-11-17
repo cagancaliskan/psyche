@@ -111,7 +111,7 @@
   --sx-r-m: 2px;
   --sx-r-l: 2px;
   --sx-r-pill: 2px;
-  /* Space: between the landing page's sections, and inside a panel or a card. */
+  /* Space: between sections, and inside a panel or a card. */
   --sx-space-section: clamp(4.5rem, 2rem + 6vw, 8.5rem);
   --sx-pad-panel: clamp(1.25rem, 0.9rem + 1.6vw, 2.25rem);
   --sx-pad-card: clamp(1rem, 0.85rem + 0.6vw, 1.5rem);
@@ -122,7 +122,7 @@
   --sx-lab-case: none;
   --sx-lab-size: 0.8125rem;
   --sx-lab-track: 0.01em;
-  /* The gutter of the landing page's sheet, and so of the footer beneath it (landing.css, hero.css). */
+  /* The gutter of a full-width sheet, and of the footer beneath it on a page that carries .sx-landing. */
   --sx-gutter: max(clamp(24px, 6vw, 104px), calc((100vw - 90rem) / 2));
   /* How long a state change takes in the chrome: a colour, a bar that runs a rule, an underline that
      draws. All three are 0s under prefers-reduced-motion: reduce, so no rule needs its own override. */
@@ -846,7 +846,7 @@
   .pagination-links {
     gap: var(--sx-pad-card);
   }
-  /* A page with neither (the landing, the 404) still gets Starlight's empty box: it draws nothing. */
+  /* A page with neither still gets Starlight's empty box: it draws nothing. */
   .pagination-links:not(:has(a)) {
     display: none;
   }
@@ -930,8 +930,8 @@
      next surface step (its title and number, its stage, the next gate); the page's own tile has no
      fill. Under them the repository's links are underlined text, each saying what it does, and the
      page's date sits at the end of the row. The tiles stack on a phone and sit side by side from
-     40rem. On the landing page the box runs on the landing's own gutter, so it sits on the grid of
-     the sections above it. */
+     40rem. On a page that carries .sx-landing the box runs on that page's gutter, so it sits on the
+     grid of the sections above it. */
   .sx-foot {
     display: grid;
     gap: 1.25rem;
@@ -940,7 +940,7 @@
     border-radius: var(--sx-r-l);
     background-color: var(--sx-surface);
   }
-  /* A page with no facts (the Start here pages, the landing page, the 404 page) has no box: its links
+  /* A page with no facts (the Start here pages) has no box: its links
      sit under a hairline. */
   .sx-foot:not(:has(.sx-foot__cells)) {
     padding: 1rem 0 0;
@@ -1024,8 +1024,9 @@
       margin-inline-start: auto;
     }
   }
-  /* On the landing page the box leaves Starlight's 1080px column for the gutter of the sections above
-     it (--sx-gutter, the same as landing.css's), so its edges meet theirs. */
+  /* On a page that carries .sx-landing the box leaves Starlight's 1080px column for the gutter of the
+     sections above it (--sx-gutter), so its edges meet theirs. No Starlight page carries it since the
+     home page moved to the page kit. */
   body:has(.sx-landing) .sx-foot {
     box-sizing: border-box;
     inline-size: calc(100vw - 2 * var(--sx-gutter));
@@ -1078,8 +1079,8 @@
     text-decoration-color: var(--sx-aside);
   }
 
-  /* The landing carries its own h1 (the project name); drop Starlight's title panel there, and the
-     rule it would leave above the hero. */
+  /* A page that carries .sx-landing writes its own h1; drop Starlight's title panel there, and the
+     rule it would leave above it. */
   body:has(.sx-landing) .content-panel:has(h1#_top) {
     display: none;
   }

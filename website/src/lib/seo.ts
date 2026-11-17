@@ -33,7 +33,7 @@ export const NOT_FOUND = {
   route: '404',
   title: 'Page not found',
   description:
-    'The address you followed does not match a page of this site. These lead to the home page, the research overview, the test battery and the substrate status.',
+    "This page doesn't exist. Psyche is building machines on the brain's own principles: neurons that spike, connections that teach themselves.",
 } as const;
 
 /** The site's canvas colours (--sl-color-black in styles/global.css), for the browser's address bar. */

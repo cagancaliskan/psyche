@@ -1,0 +1,51 @@
+---
+// A page on the page kit: Bare.astro, plus the kit's stylesheet, the skip link, the site header, the
+// page's own <main> (the default slot), the footer and the kit's script, in the order the page design
+// writes them.
+//
+// The header is written here as the design writes it for readers without script: the wordmark and the
+// four menu links (src/kit/Header.astro). kit.js writes the live header over it as soon as it runs: the
+// same wordmark and links, the theme switch, and on a phone (700 px and under) the Menu button that opens
+// the full-screen list. The footer is an empty <footer class="k-foot">, which kit.js always fills with
+// the slogan and the footer links, so every page carries the same words.
+//
+// The scripts are classic scripts at the end of the body: kit.js first, then the page's own script
+// (its figures), which needs the kit. Both are files of the build (?url), so the browser caches kit.js
+// once for every page.
+import '@/kit/kit.css';
+import kitUrl from '@/kit/kit.js?url';
+import Header from '@/kit/Header.astro';
+import type { PageFacts } from '@/lib/head.ts';
+import type { ArticleFacts } from '@/lib/seo.ts';
+import Bare from './Bare.astro';
+
+export interface Props {
+  /** The page's route, title and description (lib/head.ts PAGES, or a post's own). */
+  page: PageFacts;
+  /** A blog post's days, author and tags; on a post only. */
+  article?: ArticleFacts;
+  /** Attributes of <body> (the page's page.ts `body`): data-page, and data-k-no-rail where it has one. */
+  body?: Record<string, string>;
+  /** The skip link to the page's main text (the page's page.ts `skip`). */
+  skip: { href: string; text: string };
+  /** The menu item of this page; none on the 404 page. */
+  current?: 'what-were-building' | 'experiments' | 'blog' | 'about';
+  /** True on a page inside that item (a post, under Blog). */
+  within?: boolean;
+  /** The address of the page's own classic script, if it has one: a `?url` import of its
+   *  src/kit/pages/<page>/page.js. */
+  pageScript?: string;
+}
+
+const { page, article, body, skip, current, within = false, pageScript } = Astro.props;
+---
+
+<Bare page={page} article={article} body={body}>
+  <slot name="head" slot="head" />
+  <a class="k-skip" href={skip.href}>{skip.text}</a>
+  <Header current={current} within={within} />
+  <slot />
+  <footer class="k-foot"></footer>
+  <script is:inline src={kitUrl}></script>
+  {pageScript && <script is:inline src={pageScript}></script>}
+</Bare>

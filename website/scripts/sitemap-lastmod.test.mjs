@@ -68,11 +68,11 @@ test('sourcesByRoute lists the site pages and every docs page of the manifest', 
     const s = sourcesByRoute(dir);
     assert.deepEqual(s['research/gates'], ['docs/research/gates.md']);
     assert.deepEqual(s['substrate/overview'], ['docs/PSYCHE.md']);
-    assert.ok(s[''].includes('website/src/pages/index.astro') && s[''].includes('tools/ledger.json'));
+    assert.ok(s[''].includes('website/src/pages/index.astro') && s[''].includes('website/src/kit') && !s[''].includes('tools/ledger.json'));
     assert.ok(s.battery.includes('website/src/pages/battery.astro') && s.battery.includes('website/src/components/BatteryExplorer.tsx'));
-    // a post is dated by its own folder, and the index and the landing page by every post
+    // a post is dated by its own folder, and the index by every post; the home page lists no post
     assert.deepEqual(s['blog/first-post'], ['docs/blog/first-post']);
-    assert.ok(s.blog.includes('docs/blog/first-post') && s[''].includes('docs/blog/first-post'));
+    assert.ok(s.blog.includes('docs/blog/first-post') && !s[''].some((f) => f.startsWith('docs/blog')));
     assert.ok(!s.blog.includes('docs/blog') && !s[''].includes('docs/blog'), 'the guide and drafts are not sources');
   } finally {
     rmSync(dir, { recursive: true, force: true });
@@ -86,14 +86,18 @@ test('each page gets the date of the last commit that touched its own files', ()
     const serialize = makeSerialize({ repoRoot: dir, base: BASE });
     assert.equal(serialize({ url: url('research/gates') }).lastmod, '2026-03-05T08:30:00.000Z');
     assert.equal(serialize({ url: url('substrate/overview') }).lastmod, '2026-01-10T12:00:00.000Z');
-    // the roadmap and the landing page move with the plan; the status page and the battery do not
+    // the roadmap moves with the plan; the home page, the status page and the battery do not
     assert.equal(serialize({ url: url('roadmap') }).lastmod, '2026-05-20T17:45:00.000Z');
-    assert.equal(serialize({ url: url('') }).lastmod, '2026-05-20T17:45:00.000Z');
+    assert.equal(serialize({ url: url('') }).lastmod, '2026-01-10T12:00:00.000Z');
     assert.equal(serialize({ url: url('status') }).lastmod, '2026-01-10T12:00:00.000Z');
     // a component a page is made from moves its date: the explorer is the battery's text, not its page file
     assert.equal(serialize({ url: url('battery') }).lastmod, '2026-07-01T09:00:00.000Z');
-    // ... and a file in a listed directory counts, while the explorer is no part of the landing page
-    assert.equal(serialize({ url: url('') }).lastmod, '2026-05-20T17:45:00.000Z');
+    // ... while the explorer is no part of the home page, and a file in a listed directory counts
+    mkdirSync(join(dir, 'website/src/kit/film'), { recursive: true });
+    writeFileSync(join(dir, 'website/src/kit/film/film.js'), 'a');
+    git(dir, ['add', '-A']);
+    git(dir, ['commit', '-q', '-m', 'five'], '2026-07-15T09:00:00Z');
+    assert.equal(serialize({ url: url('') }).lastmod, '2026-07-15T09:00:00.000Z');
     // other fields of the entry are kept
     assert.deepEqual(Object.keys(serialize({ url: url('battery'), changefreq: 'weekly' })).sort(), ['changefreq', 'lastmod', 'url']);
   } finally {
@@ -224,11 +228,21 @@ function importClosure(entry) {
 }
 
 test('every module a site page imports is in that page\'s source list, so a change to it moves the date', () => {
-  const entries = { '': 'index', roadmap: 'roadmap', battery: 'battery', status: 'status', blog: 'blog/index' };
+  const entries = {
+    '': 'index',
+    'what-were-building': 'what-were-building',
+    experiments: 'experiments',
+    about: 'about',
+    roadmap: 'roadmap',
+    battery: 'battery',
+    status: 'status',
+    blog: 'blog/index',
+  };
   // Not text of the page: stylesheets. Data the build writes into src/data is covered by its source.
   for (const [route, name] of Object.entries(entries)) {
     const listed = SITE_PAGES[route];
     const covered = (rel) => listed.some((l) => rel === l || rel.startsWith(`${l}/`));
+    assert.ok(existsSync(join(REPO, `website/src/pages/${name}.astro`)), `page "${route}" has no page file website/src/pages/${name}.astro`);
     const { files, unresolved } = importClosure(`website/src/pages/${name}.astro`);
     assert.deepEqual(unresolved, [], `page "${route}" imports something that cannot be found`);
     const missing = files.filter((rel) => {

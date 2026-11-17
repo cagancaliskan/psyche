@@ -1,0 +1,61 @@
+  /* ---------- Blog front page. Page-only styles. ---------- */
+
+  /* The opening: the word stands on the line of days. */
+  .b-open {
+    position: relative; height: 100vh; height: 100svh; min-height: 660px;
+    --tf: var(--t-word);
+    --base: 54%;
+  }
+  .b-stage { position: absolute; inset: 0; }
+  .b-stage .k-art { position: absolute; inset: 0; }
+  .b-open .k-art > svg, .b-open .k-still, .b-open .k-still svg { width: 100%; height: 100%; }
+  .b-open .k-art:focus-visible { outline-offset: -6px; }
+  .b-title {
+    position: absolute; left: calc(var(--gutter) - .055em); top: calc(var(--base) - var(--tf) * .93);
+    margin: 0; white-space: nowrap; pointer-events: none;
+  }
+  .b-base { display: inline-block; width: 0; height: 0; vertical-align: baseline; }
+  /* the first plain-word control lines up with the caption under it */
+  .k-fig-ctl > .k-ctl:first-child { margin-left: -2px; }
+  .b-open__text {
+    position: absolute; left: var(--gutter); top: calc(var(--base) + var(--tf) * .42);
+    width: min(29em, 38vw);
+  }
+  .b-lead { margin: 0; }
+  .b-open .k-fig-ctl { margin-top: 20px; }
+  .b-open .k-cap { margin-top: 2px; }
+
+  /* The list: three posts, newest first, each its title and its day, read as one list. Space only between them. */
+  /* The day stands at the left, on the gutter the word and the lead stand on; the title to its right, on its first line. */
+  /* A title brought into view by a link or the keyboard stops clear of the fixed header. */
+  .b-list { list-style: none; margin: 0; padding: clamp(64px, 11vh, 132px) var(--gutter) clamp(120px, 22vh, 240px); scroll-margin-top: var(--head-h); }
+  .b-entry {
+    display: grid; grid-template-columns: 26vw minmax(0, 1fr); align-items: baseline; margin: 0 0 clamp(56px, 8.5vh, 104px);
+    scroll-margin-top: calc(var(--head-h) + 32px);
+  }
+  .b-entry > .b-entry__title { grid-column: 2; grid-row: 1; }
+  .b-entry > .b-date { grid-column: 1; grid-row: 1; }
+  .b-entry:last-child { margin-bottom: 0; }
+  .b-entry__title {
+    margin: 0; max-width: 16em;
+  }
+  .b-entry__title a {
+    color: inherit; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: .13em;
+    text-decoration-color: var(--quiet); transition: text-decoration-color .25s;
+  }
+  /* a post without its own page yet: the quieter ink, no underline */
+  .b-entry__title--plain { color: var(--soft); }
+  .b-entry__title a:hover { text-decoration-color: var(--ink); }
+  .b-entry__title a:focus-visible { outline: none; text-decoration-color: var(--focus); text-decoration-thickness: 3px; }
+  .b-date { display: block; font-size: 19px; letter-spacing: -.004em; color: var(--soft); }
+  @media (max-width: 1000px) and (min-width: 701px) {
+    .b-entry { grid-template-columns: 22vw minmax(0, 1fr); }
+  }
+  @media (max-width: 700px) {
+    .b-open { height: auto; min-height: 100svh; display: flex; flex-direction: column; --base: 38%; }
+    .b-stage { position: relative; height: 62vh; height: 62svh; min-height: 440px; }
+    .b-open__text { position: static; width: auto; padding: 4px var(--gutter) 28px; }
+    .b-list { padding: 56px var(--gutter) 120px; }
+    .b-entry { display: block; margin-bottom: 52px; }
+    .b-date { margin-top: 18px; font-size: 16px; }
+  }
