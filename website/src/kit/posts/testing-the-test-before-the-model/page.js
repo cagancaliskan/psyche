@@ -120,11 +120,11 @@
     },
     // the story by itself: from one place to twenty, a pause on 0.64, then on to a hundred
     sequence: [
-      { dur: 700 },
-      { dur: 3000, to: { m: 20 }, ease: 'inOut' },
-      { dur: 1500 },
-      { dur: 3800, to: { m: 100 }, ease: 'inOut' },
-      { dur: 1500 }
+      { dur: 450 },
+      { dur: 2200, to: { m: 20 }, ease: 'travel' },
+      { dur: 1000 },
+      { dur: 2700, to: { m: 100 }, ease: 'travel' },
+      { dur: 1000 }
     ],
     keysLabel: 'Left and right arrow keys take m down or up by one place; Page Up and Page Down by ten; Home and End go to 1 and 100.',
     keys: {
@@ -234,15 +234,15 @@
     },
     // the story by itself: the ceiling, then the assumption for the floor, then the floor as measured
     sequence: [
-      { dur: 600 },
-      { dur: 2200, to: { a: 1 }, ease: 'out' },
-      { dur: 1000 },
-      { dur: 0, 'do': function (m, s) { return assign(s, { z: 1 }); } },
-      { dur: 1500 },
-      { dur: 2600, to: { b: 0.22 }, ease: 'out' },
+      { dur: 400 },
+      { dur: 1600, to: { a: 1 }, ease: 'settle' },
       { dur: 700 },
+      { dur: 0, 'do': function (m, s) { return assign(s, { z: 1 }); } },
+      { dur: 1100 },
+      { dur: 1900, to: { b: 0.22 }, ease: 'settle' },
+      { dur: 600 },
       { dur: 0, 'do': function (m, s) { return assign(s, { g: 1 }); } },
-      { dur: 1500 }
+      { dur: 1000 }
     ]
   });
 
@@ -308,13 +308,15 @@
     },
     // the story by itself: the limit is set, the 50 environments are checked one by one, two cross it
     sequence: [
-      { dur: 500 },
-      { dur: 1000, to: { lim: 1 }, ease: 'out' },
+      { dur: 400 },
+      { dur: 800, to: { lim: 1 }, ease: 'settle' },
       { dur: 600 },
-      { dur: 5200, to: { n: ENVS }, ease: 'linear' },
-      { dur: 800 },
-      { dur: 1200, to: { lift: 1 }, ease: 'inOut' },
-      { dur: 1600 }
+      // 'travel' to half a ring past the last, held at 50: the last ring comes as the count slows, not in
+      // the step's final frames where the curve is all but at rest
+      { dur: 3700, frame: function (m, s, e) { return assign(s, { n: Math.min(ENVS, (ENVS + 0.5) * e) }); }, ease: 'travel' },
+      { dur: 600 },
+      { dur: 900, to: { lift: 1 }, ease: 'settle' },
+      { dur: 1000 }
     ]
   });
 })(window.Psyche);

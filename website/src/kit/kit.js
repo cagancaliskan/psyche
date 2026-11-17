@@ -725,7 +725,7 @@
   //   to: { field: value } or (model, state) -> { field: value }
   //                                     numeric fields of the state eased from where they are to these
   //                                     values over the step (`ease`: 'inOut' (default), 'in', 'out',
-  //                                     'linear', or a function of 0..1);
+  //                                     'travel', 'settle', 'pass', 'linear', or a function of 0..1);
   //   frame(model, state, u) -> state   every frame, u the eased progress 0..1;
   //   tick: false                       hold the figure's own tick or step during it (they run by default).
   // The kit plays it from initialState when the figure is well in view (60% of it, or of the screen)
@@ -736,8 +736,32 @@
     linear: function (u) { return u; },
     'in': function (u) { return u * u * u; },
     out: function (u) { return 1 - Math.pow(1 - u, 3); },
-    inOut: function (u) { return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; }
+    inOut: function (u) { return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; },
+    // travel: from rest to rest, the way a pushed thing or a hand moves. x = 1 - (1-u)^3 (1+3u),
+    // speed 12u(1-u)^2: zero at both ends, peak 16/9 of the average at a third of the step, then a
+    // long slowing over the last two thirds. Never passes 1.
+    travel: function (u) { return 1 - Math.pow(1 - u, 3) * (1 + 3 * u); },
+    // settle: an arrival at a value, from rest, quicker to start and longer to settle. x = 1 - (1-u)^4 (1+4u),
+    // speed 20u(1-u)^3: zero at both ends, peak 135/64 (about 2.1) of the average at a quarter of the
+    // step. Never passes 1 (no overshoot, safe for anything that encodes a number).
+    settle: function (u) { return 1 - Math.pow(1 - u, 4) * (1 + 4 * u); },
+    // pass: one move from rest to rest past a row of marks, a flat middle so evenly spaced marks go by
+    // at an even beat. Over the first 27% of the time it gathers speed (peak about 2.6 times the later
+    // pace at 15%) and eases back to a steady pace, reached at 43% of the way; it holds that pace to 85%
+    // of the way, then slows to rest over the last 30% of the time (smoothstep ramps). Speed is
+    // continuous and zero at both ends; never passes 1.
+    pass: (function () {
+      var xa = 0.27, pa = 0.43, pb = 0.85;
+      var xb = ((pb - pa) + 2 * (1 - pb) * xa) / ((pb - pa) + 2 * (1 - pb)), vc = (pb - pa) / (xb - xa), h = (pa / xa - vc / 2) * 15 / 8;
+      return function (u) {
+        if (u <= 0) return 0; if (u >= 1) return 1;
+        if (u < xa) { var y = u / xa, y3 = y * y * y; return xa * (vc * (y3 - y3 * y / 2) + 16 * h * (y3 / 3 - y3 * y / 2 + y3 * y * y / 5)); }
+        if (u < xb) return pa + (u - xa) * vc;
+        var z = (u - xb) / (1 - xb); return pb + (1 - xb) * vc * (z - z * z * z + z * z * z * z / 2);
+      };
+    })()
   };
+  P.ease = EASE; // the same curves, by name, for a figure whose model eases something the sequence cannot reach
   function seqOf(def) {
     var sq = def.sequence, steps = Array.isArray(sq) ? sq : (sq.steps || []);
     if (!steps.length) throw new Error('Psyche.figure "' + def.id + '": sequence has no steps');
