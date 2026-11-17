@@ -1,6 +1,7 @@
 # Security policy
 
-Psyche is an open research project with one maintainer, the project lead, Cagan Caliskan
+Psyche is a pre-seed company whose research is open in this repository. It has one maintainer,
+the project lead, Cagan Caliskan
 ([@cagancaliskan](https://github.com/cagancaliskan)). This page says how to report a
 vulnerability in what this repository publishes, what counts as one, and what to expect back.
 

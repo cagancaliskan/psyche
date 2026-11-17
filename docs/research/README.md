@@ -4,8 +4,9 @@
 
 **Cognitive Map Formation and Energy Efficiency in Spiking Neural Networks with Local Plasticity**
 
-Stage 2 of Psyche, an open research project that builds brain-inspired components in stages with
-artificial general intelligence (AGI) as its long-term aim, and the project's active line of
+Stage 2 of Psyche, a pre-seed company building machines on the brain's own principles, toward
+machine cognition, whose research builds brain-inspired components in stages with artificial
+general intelligence (AGI) as its long-term aim. It has been the project's active line of
 research since 2026-10-23.
 
 <!-- generated:status-line:start -->

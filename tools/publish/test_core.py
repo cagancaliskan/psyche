@@ -2816,7 +2816,8 @@ def test_og(tmp: Path) -> None:
     card = OG.card(root)
     check(card["stage"] == "Stage 2 " + MIDDOT + " Spiking cognitive maps" and card["tagline"] == OG.TAGLINE
           and card["url"] == OG.URL_TEXT and card["stage"] in card["alt"] and card["tagline"] in card["alt"]
-          and "long-term aim" in card["tagline"] and "is AGI" not in card["tagline"],
+          and "toward machine cognition" in card["tagline"] and "is AGI" not in card["tagline"]
+          and not re.search(r"\b(is|has) (a )?mind\b|conscious|sentient", card["tagline"], re.I),
           "the card text is the stage line, the tagline (the aim named as an aim) and the address; the alt text holds both")
     rc, out, err = capture(OG.main, ["--card", "--root", str(root)])
     check(rc == 0 and json.loads(out) == card, "--card prints the same text as JSON")
@@ -3926,7 +3927,7 @@ def readme_problems(text: str, versions: list, repo: str, doi: str, root: Path) 
         out.append("the on-ramp does not point to the Citation section and CITATION.cff")
     if "/discussions)" not in ramp or "](SECURITY.md)" not in ramp:
         out.append("the on-ramp does not say how to get in touch (Discussions, SECURITY.md)")
-    intro = ramp.split("Psyche is an open research project", 1)[0]
+    intro = ramp.split("Psyche is a pre-seed company", 1)[0]
     badges = re.findall(r"\[!\[([^\]]*)\]\(([^)]+)\)\]\(([^)]+)\)", intro)
     images = len(re.findall(r"!\[", intro))
     if images != 4 or len(badges) != 4:

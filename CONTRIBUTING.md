@@ -133,9 +133,10 @@ again before the site deploys from the main branch.
 
 ## What this repository is (D-031, D-033)
 
-Psyche is one open research project that builds brain-inspired components in stages, with
-artificial general intelligence (AGI) as its long-term aim. Each stage is built test-first and
-kept as a citable artifact.
+Psyche is a pre-seed company building machines on the brain's own principles, toward machine
+cognition (D-037). Its research is open in this repository. The project builds brain-inspired
+components in stages, with artificial general intelligence (AGI) as its long-term aim. Each stage
+is built test-first and kept as a citable artifact.
 
 - **Stage 1, the substrate** (`src/`, `tests/`, `experiments/`, `docs/PSYCHE.md`): a
   memory-and-activation substrate, the project's foundation. **Paused** since 2026-10-23.
@@ -150,8 +151,9 @@ kept as a citable artifact.
 - **Later stages** build toward the long-term aim on the same discipline; they are not specified
   publicly yet.
 
-**AGI is the project's long-term aim (D-033).** Name it freely, as an aim. Never write that
-Psyche or any current component is or achieves AGI.
+**AGI is the project's long-term aim (D-033).** Name it freely, as an aim. Do not write that
+Psyche or any current component is or achieves AGI until that is shown, with evidence the project
+can show (D-037).
 
 **Program state** is a third axis, orthogonal to the build axis (`bricks[*].status`) and the
 meaning axis (`meaning_bar`). Read it from `program` in `tools/ledger.json`: it says which line
@@ -183,11 +185,13 @@ done (D-036). When unsure whether something is private, it is.
 
 Public text describes the project this way.
 
-Psyche is an open research project that builds brain-inspired components in stages, with AGI as
-its long-term aim. Its first stage, the substrate, is a biologically-motivated, dependency-free
-Python prototype of a **memory-and-activation substrate for a cognitive architecture**; its aim is
-stated above and is paused. Its second stage, spiking cognitive maps, is active. The current built
-artifact is a verified substrate plus an honest, well-tested exploration of higher layers.
+Psyche is a pre-seed company building machines on the brain's own principles, toward machine
+cognition. Its research is open in this repository. The project builds brain-inspired components in
+stages, with AGI as its long-term aim. Its first stage, the substrate, is a biologically-motivated,
+dependency-free Python prototype of a **memory-and-activation substrate for a cognitive
+architecture**; its aim is stated above and is paused. Its second stage, spiking cognitive maps, is
+active. The current built artifact is a verified substrate plus an honest, well-tested exploration
+of higher layers.
 
 **What is verified** is that the substrate's lower layers are *correct and deterministic*:
 verified by the full adversarial suite on every interpreter; not a formal proof. **What is not
@@ -223,18 +227,24 @@ assertion total; that is why `tools/ledger_check.py` exists and why it runs in C
 
 These are the disciplines the project has already paid for in bugs.
 
-1. **Never overclaim.** Psyche, or any of its components, is never called "a mind,"
-   "conscious," "sentient," or "a validated cognitive model," and no text says that it is or
-   achieves AGI — not in code, comments, docstrings, docs, or commit messages. AGI may be named
-   as the project's long-term aim (D-033). Biological *inspiration* may be described; biological
-   *fidelity* or cognitive achievement may not be asserted.
+1. **Never overclaim.** Psyche, or any of its components, is not called "a mind,"
+   "conscious," "sentient," "a validated cognitive model" or AGI — not in code, comments,
+   docstrings, docs, or commit messages — until that is shown, with evidence the project can
+   show (D-037). AGI may be named as the project's long-term aim at any time (D-033). A claim about energy or ability that is backed by a measurement is
+   allowed, stated with what was measured and under what conditions; a claim with no measurement
+   behind it is written as an aim (D-037). Biological *inspiration* may be described; biological
+   *fidelity* may not be asserted, and cognitive achievement may not be asserted without a
+   measurement behind it.
 
-   **The cognitive-map line adds its own terms.** The spiking model is never described in
-   terms of consciousness, understanding or thinking; results describe behaviour and internal
-   structure. It is "brain-inspired" or, where it can be argued, "biologically plausible",
-   never "the brain does it this way". Energy appears only as an analytic estimate or lower
-   bound, reported with its sensitivity analysis: never GPU wall-clock time or watts as
-   evidence, and never a general claim that spiking networks are more efficient. No priority claim
+   **The cognitive-map line adds its own terms.** The spiking model is not described in
+   terms of consciousness, understanding or thinking until that is shown, with evidence the
+   project can show (D-037); results describe behaviour and internal structure. It is
+   "brain-inspired" or, where it can be argued, "biologically plausible", never "the brain does
+   it this way". Energy is presented as measured only when it was measured, stated with the
+   measure and the conditions; otherwise it appears as an analytic estimate or lower bound,
+   reported with its sensitivity analysis. GPU wall-clock time or watts are never evidence of
+   spiking efficiency, and there is never a general claim that spiking networks are more
+   efficient. No priority claim
    ("first", "the first to") before release: a decided gate lifts none of the claim terms
    (D-034). Every number traces to a captured results file.
 
@@ -432,5 +442,7 @@ first-class result.
 ## Tone
 
 Honest, precise, willing to report what broke. A result that says "this passes, and here is
-exactly where it would not" is worth more than a confident one. No marketing language and no
-exclamation marks in documents, commit messages or notes.
+exactly where it would not" is worth more than a confident one. No marketing language in research
+documents, records, commit messages or notes; the company's pages (home, What we're building, The
+five experiments, About, the blog) are written in the company's voice (D-037). No exclamation
+marks in documents, commit messages or notes.

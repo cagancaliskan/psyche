@@ -10,8 +10,9 @@ listed in full in the [reading list](reading-list.md).
 
 ## The project
 
-**Psyche.** One open research project that builds brain-inspired components in stages, with
-artificial general intelligence as its long-term aim. Each stage is built test-first and kept as
+**Psyche.** A pre-seed company building machines on the brain's own principles, toward machine
+cognition. Its research is open and builds brain-inspired components in stages, with artificial
+general intelligence as its long-term aim. Each stage is built test-first and kept as
 a citable artifact. The overview is the [repository README](../../README.md).
 
 **Stage.** One step of the project, with its own code, record and claims. Stage 1 is the

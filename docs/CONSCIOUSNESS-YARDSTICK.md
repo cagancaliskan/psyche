@@ -151,6 +151,9 @@ actively rewards grandiosity. The rule that keeps it safe is already written:
 > `CONTRIBUTING.md` rule 1: Psyche is never called "a mind," "conscious," "sentient," "AGI," or "a
 > validated cognitive model."
 
+(Rule 1 as it read when this was written. D-037 later changed "never" to "not until shown, with
+evidence the project can show" for every term in it.)
+
 **Keep it. Forever.** The indicator list is how the project makes real progress toward the
 question while never once needing to break that rule. "The architecture satisfies GWT-2 and AE-1,
 assessed against Butlin et al.'s indicator properties" is checkable, citable, modest, and true. It

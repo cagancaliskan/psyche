@@ -1,9 +1,10 @@
 # Map of content
 
 The entry point for reading this repository as an Obsidian vault. Every link is a standard
-Markdown link, so the same map also works on GitHub. Psyche is one open research project that
-builds brain-inspired components in stages, with artificial general intelligence (AGI) as its
-long-term aim, named only as an aim. Stage 1, the substrate, is the foundation and is paused;
+Markdown link, so the same map also works on GitHub. Psyche is a pre-seed company building
+machines on the brain's own principles, toward machine cognition. Its research builds
+brain-inspired components in stages, with artificial general intelligence (AGI) as its long-term
+aim, named only as an aim. Stage 1, the substrate, is the foundation and is paused;
 stage 2, spiking cognitive maps, is the active line. Both are recorded under D-031 in
 [DECISIONS.md](DECISIONS.md), and the aim under D-033.
 

@@ -104,7 +104,7 @@ test('the landing JSON-LD parses and describes the site and the project', () => 
 
 test('the JSON-LD names the aim as an aim and claims nothing about a component', () => {
   const text = JSON.stringify(projectJsonLd());
-  assert.match(text, /as its long-term aim/);
+  assert.match(text, /toward machine cognition/);
   assert.doesNotMatch(text, /\b(is|achieves|reaches)\s+(an\s+)?(AGI|artificial general intelligence)/i);
   assert.doesNotMatch(text, /conscious|sentient|\bmind\b|proven|\boriginal\b|\bfirst\b/i);
   const keywords = (projectJsonLd()['@graph'] as { keywords?: string[] }[])[1].keywords ?? [];
@@ -125,8 +125,8 @@ test('the manifest, the social card and its alt text say the project sentence of
   const read = (rel: string) => JSON.parse(readFileSync(new URL(rel, import.meta.url), 'utf8'));
   const manifest = read('../../public/site.webmanifest');
   const sidecar = read('../../../brand/psyche-social.json');
-  const sentence = PROJECT_DESCRIPTION.replace(/^Psyche is an /, 'An ');
-  assert.notEqual(sentence, PROJECT_DESCRIPTION, 'PROJECT_DESCRIPTION no longer starts "Psyche is an": update this test');
+  const sentence = PROJECT_DESCRIPTION.replace(/^Psyche is a /, 'A ');
+  assert.notEqual(sentence, PROJECT_DESCRIPTION, 'PROJECT_DESCRIPTION no longer starts "Psyche is a": update this test');
   assert.equal(manifest.description, sentence);
   assert.equal(sidecar.tagline, sentence);
   assert.ok(sidecar.alt.endsWith(` ${sentence}`), 'the card alt text ends with the sentence');

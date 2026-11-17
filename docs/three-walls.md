@@ -9,9 +9,10 @@ attempted, what stopped it, what was and was not claimed, and what it left behin
 The [substrate](PSYCHE.md) is a dependency-free memory-and-activation prototype whose lower layers
 are verified correct and deterministic. Its cycle runs end to end: activation spreads over a graph
 of weighted roads, a workspace selects one candidate, and a bounded broadcast feeds back. It makes
-no cognitive claim. Psyche itself is an open research project that builds brain-inspired
-components in stages, with artificial general intelligence (AGI) as its long-term aim, named here
-only as an aim ([Reader's guide](guide.md)).
+no cognitive claim. Psyche itself is a pre-seed company building machines on the brain's own
+principles, toward machine cognition; its research builds brain-inspired components in stages,
+with artificial general intelligence (AGI) as its long-term aim, named here only as an aim
+([Reader's guide](guide.md)).
 
 ## The three at a glance
 

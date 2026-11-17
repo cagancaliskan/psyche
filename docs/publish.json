@@ -18,7 +18,7 @@
     {
       "title": "Start here",
       "pages": [
-        {"src": "docs/guide.md", "slug": "guide", "wiki": "Reader-Guide", "description": "A guide to Psyche, an open research project that builds brain-inspired components in stages, with AGI as its long-term aim, and to where each reader goes next."},
+        {"src": "docs/guide.md", "slug": "guide", "wiki": "Reader-Guide", "description": "A guide to Psyche, a pre-seed company building machines on the brain's own principles, toward machine cognition, and to where each reader goes next."},
         {"src": "docs/faq.md", "slug": "faq", "wiki": "Questions-and-Answers", "description": "Answers to common questions about Psyche: why AGI is named as its long-term aim, why some work stays private, whether it uses a language model, and who runs it."},
         {"src": "docs/progress.md", "slug": "progress", "wiki": "Progress", "description": "The public record of Psyche's research plan: phases started and finished, gates decided, dates changed and commitments made, with an Atom feed to follow it."},
         {"src": "docs/governance.md", "slug": "governance", "wiki": "Governance", "description": "How Psyche is run: who leads it, the four roles that keep its evidence honest, what happens if the work stops, its funding, and a note on ethics and safety."}

@@ -19,9 +19,9 @@ export const SITE_URL = ORIGIN + BASE;
 /** The project's public repository, where the footer's links and the structured data point. */
 export const REPO_URL = 'https://github.com/cagancaliskan/psyche';
 
-/** The project in one sentence, in the words CONTRIBUTING.md gives it: what it is, then its aim, named as an aim. */
+/** The project in one sentence, in the words CONTRIBUTING.md gives it (D-037): what it is, then where it is headed, named as an aim. */
 export const PROJECT_DESCRIPTION =
-  'Psyche is an open research project that builds brain-inspired components in stages, with artificial general intelligence as its long-term aim.';
+  "Psyche is a pre-seed company building machines on the brain's own principles, toward machine cognition.";
 
 /**
  * The 404 page, which the host serves for an address that does not exist (src/pages/404.astro). It has
