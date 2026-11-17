@@ -143,8 +143,9 @@ jobs:
       # site (found in dist, the 404 page included) and over the interface states a reader opens (the
       # search dialog with results, the phone menu, the phone contents list on a docs page; the site's
       # phone menu on a front page, which must also close again; the documentation home's filter, which
-      # Escape must clear), light and dark, desktop and phone
-      # width. The theme of each load is set and checked, since the front pages ignore the system's
+      # Escape must clear; the documentation's "Pages" list on a phone, which Escape must close; a gate
+      # chosen on the timeline, the walk-through stepped, the status page's designed bricks opened and
+      # closed), light and dark, desktop and phone width. The theme of each load is set and checked, since the front pages ignore the system's
       # colour scheme; the home page, dark by design, is audited dark once per width. The step fails
       # on any serious or critical violation, and on a page or state it cannot audit; moderate and
       # minor ones are listed, and what axe cannot decide (text contrast over gradients,

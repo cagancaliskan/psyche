@@ -1,6 +1,7 @@
 /**
  * The <head> of the pages that are not Starlight pages: the home page, What we're building, Experiments,
- * About, the blog's index, the blog's posts, the documentation's home (/developers/) and the 404 page. Starlight writes the head of every docs page
+ * About, the blog's index, the blog's posts, the documentation's home (/developers/), the timeline, the
+ * walk-through and the status page, and the 404 page. Starlight writes the head of every docs page
  * itself (with astro.config.mjs `head` and src/routeData.ts); these pages have no Starlight, so this
  * module writes the same entries: the ones Starlight wrote (title, canonical, sitemap link, SVG icon,
  * og:* and description), the ones astro.config.mjs gives every docs page (theme colour, icons, manifest,
@@ -34,10 +35,10 @@ export interface PageFacts {
 }
 
 /**
- * The name and description of each page that is not a Starlight page and not a post (a post's come from
- * its front matter). The descriptions are made only of sentences the project lead chose for these
- * pages; a page takes its entry from here, so no page types its own. The 404 page's are lib/seo.ts
- * NOT_FOUND, which check-seo compares the built page with.
+ * The name and description of each page that is not a document and not a post (a document's come from
+ * docs/publish.json and its first heading, a post's from its front matter). The descriptions are made
+ * only of sentences the project lead chose for these pages; a page takes its entry from here, so no page
+ * types its own. The 404 page's are lib/seo.ts NOT_FOUND, which check-seo compares the built page with.
  */
 export const PAGES = {
   home: {

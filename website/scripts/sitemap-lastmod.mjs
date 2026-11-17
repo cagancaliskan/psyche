@@ -12,6 +12,9 @@
 //                          change to either moves no date
 //   the documentation's    its page file, the kit page's sources, the documentation's frame and parts,
 //   home (/developers/)    and docs/publish.json, the list of every page it shows with its description
+//   the timeline, the      the same as the documentation's home, plus the modules that read its "Last
+//   walk-through and the   updated", its own modules (the drawing, the paradigms' pictures, the brick
+//   status page            board's reading of the ledger) and the data it is drawn from
 //   a page of the site     its page file, every layout, component and module it imports whose change can
 //                          change what the page says (not stylesheets), the page kit (src/kit, which
 //                          also holds the home page's film, src/kit/film), and the data the page is drawn from
@@ -66,6 +69,15 @@ const DOCS_PAGE = [
   'docs/publish.json',
 ];
 
+/** What a page in the documentation's frame that shows its own "Last updated" is made from for it: the
+ *  module that reads the date (src/lib/lastUpdated.ts) and what it reads it with, this file among them. */
+const DATED_PAGE = [
+  `${SRC}/lib/lastUpdated.ts`,
+  `${SRC}/lib/pageChrome.ts`,
+  `${SRC}/lib/ledger.ts`,
+  'website/scripts/sitemap-lastmod.mjs',
+];
+
 /** Pages of the site that are not docs pages, by route below the base ('' is the home page). */
 export const SITE_PAGES = {
   '': [
@@ -86,36 +98,26 @@ export const SITE_PAGES = {
   about: [`${SRC}/pages/about.astro`, ...KIT_PAGE],
   roadmap: [
     `${SRC}/pages/roadmap.astro`,
-    `${SRC}/components/GateStepper.astro`,
-    `${SRC}/components/NowLine.tsx`,
-    `${SRC}/components/Timeline.tsx`,
-    `${SRC}/components/TimelineList.astro`,
-    `${SRC}/components/docs`,
-    `${SRC}/lib/gateClock.ts`,
-    `${SRC}/lib/plan.ts`,
-    `${SRC}/lib/today.ts`,
-    `${SRC}/lib/url.ts`,
+    ...DOCS_PAGE,
+    ...DATED_PAGE,
+    `${SRC}/lib/timeline.ts`,
+    `${SRC}/lib/timelineView.ts`,
     PLAN,
   ],
   battery: [
     `${SRC}/pages/battery.astro`,
-    `${SRC}/components/BatteryExplorer.tsx`,
-    `${SRC}/components/battery`,
+    ...DOCS_PAGE,
+    ...DATED_PAGE,
     `${SRC}/lib/battery.ts`,
     `${SRC}/lib/maze.ts`,
     `${SRC}/lib/sheet.ts`,
-    `${SRC}/lib/url.ts`,
+    `${SRC}/lib/walkthrough.ts`,
   ],
   status: [
     `${SRC}/pages/status.astro`,
-    `${SRC}/components/BrickBoard.astro`,
-    `${SRC}/components/BrickTable.astro`,
-    `${SRC}/components/landing/SubstrateReadout.astro`,
-    `${SRC}/lib/ledger.ts`,
-    `${SRC}/lib/plan.ts`,
+    ...DOCS_PAGE,
+    ...DATED_PAGE,
     `${SRC}/lib/status.ts`,
-    `${SRC}/lib/today.ts`,
-    `${SRC}/lib/url.ts`,
     LEDGER,
   ],
   blog: [`${SRC}/pages/blog/index.astro`, ...KIT_PAGE, BLOG],

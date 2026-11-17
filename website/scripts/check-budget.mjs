@@ -85,6 +85,14 @@ const BASE = '/';
 // gzipped as built, and docs.js, about 4.1 KB), which only the documentation pages load. The front pages and the
 // posts did not move: the kit's stylesheet and script grew by a few bytes (the footer's link to the new
 // page, one more face in the mono stack), well inside their lines.
+//
+// /roadmap/, /battery/ and /status/ were reset when they moved into the documentation's frame (the page kit
+// and the documentation's stylesheet and script, as /developers/). Their islands went: the timeline, the
+// "Now" line and the walk-through are written on the server, so React and the two islands no longer load,
+// and the timeline's and the walk-through's own scripts (choosing a row, stepping, the reader's day) are
+// small; the JavaScript of /roadmap/ and /battery/ fell from about 108 and 109 KB to about 36 and 33 KB.
+// Their CSS fell from about 35 KB (Starlight's) to the frame's 14.4 KB. /status/ rose by about 1.1 KB of
+// JavaScript over its old line: the page kit's and the documentation's scripts replace Starlight's.
 const DEFAULT_BUDGET = { js: 37100, css: 40200 };
 const PAGE_BUDGETS = {
   '/':                          { js: 207100, css:   6200 }, // 201053,   5944
@@ -100,9 +108,9 @@ const PAGE_BUDGETS = {
   '/faq/':                      { js:  34500, css:  36100 }, //  33448,  35024
   '/progress/':                 { js:  34500, css:  36100 }, //  33448,  35024
   '/governance/':               { js:  34500, css:  36100 }, //  33448,  35024
-  '/roadmap/':                  { js: 111500, css:  36200 }, // 108173,  35075
-  '/battery/':                  { js: 112700, css:  36200 }, // 109410,  35120
-  '/status/':                   { js:  33100, css:  37800 }, //  32089,  36635
+  '/roadmap/':                  { js:  37500, css:  14900 }, //  36328,  14377 (the timeline, written on the server)
+  '/battery/':                  { js:  34500, css:  14900 }, //  33472,  14377 (the walk-through, written on the server)
+  '/status/':                   { js:  34200, css:  14900 }, //  33194,  14377
   '/research/':                 { js:  34900, css:  36100 }, //  33852,  35009
   '/research/origins/':         { js:  34900, css:  36100 }, //  33852,  35009
   '/research/roadmap/':         { js: 113000, css:  36200 }, // 109615,  35075

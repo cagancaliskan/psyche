@@ -21,10 +21,11 @@ const DOCS_JS = join(SRC, 'kit', 'docs', 'docs.js');
 // Created by docs.js itself at run time, never by the server: the diagram's "Scrolls sideways" line and
 // its reading as text.
 const MADE_BY_SCRIPT = new Set(['k-diagram__note', 'k-diagram__reading']);
-// Written by the document route (the page that renders each document in the frame), which does not
-// exist yet: until it does, nothing may write these. The test below fails as soon as a file writes one,
-// so this list is emptied by the change that writes them.
-const DOCUMENT_ROUTE_ONLY = new Set(['k-doc', 'k-doc__body', 'k-doc__desc']);
+// Classes that only a page not built yet may write: none now. The document's main, its body and its
+// description line (k-doc, k-doc__body, k-doc__desc) are written by the timeline, the walk-through and
+// the status page, as by every document. The test below fails as soon as a file writes a class named
+// here, so the list is emptied by the change that writes it.
+const DOCUMENT_ROUTE_ONLY = new Set([]);
 
 const FAMILY = /(?<![\w-])k-(?:doc|toc|filter|devhome|devstart|diagram)[a-z0-9_-]*/g;
 const HOOK = /(?<![\w-])data-k-[a-z0-9-]*[a-z0-9]/g;

@@ -216,6 +216,99 @@ const STATES = [
     },
   },
   {
+    // The documentation's "Pages" list on a phone, on a page of the list (the timeline): the server writes
+    // the list whole; the documentation script folds it behind "Pages". Audited open; then Escape must close
+    // it, mark the button collapsed and return focus to the button.
+    name: 'documentation pages open',
+    page: 'roadmap/',
+    viewports: ['phone'],
+    async open(page) {
+      await page.waitForSelector('button[data-k-docmenu]', { visible: true, timeout: 20000 });
+      await page.click('button[data-k-docmenu]');
+      await page.waitForSelector('#k-docnav.is-open', { timeout: 10000 });
+      const expanded = await page.$eval('button[data-k-docmenu]', (b) => b.getAttribute('aria-expanded'));
+      if (expanded !== 'true') throw new Error(`the list opened but its button says aria-expanded="${expanded}"`);
+      await wait(200);
+    },
+    async close(page) {
+      await page.keyboard.press('Escape');
+      const after = await page.evaluate(() => {
+        const button = document.querySelector('button[data-k-docmenu]');
+        return {
+          open: document.querySelector('#k-docnav')?.classList.contains('is-open'),
+          expanded: button?.getAttribute('aria-expanded'),
+          focused: document.activeElement === button,
+        };
+      });
+      if (after.open || after.expanded !== 'false') throw new Error(`Escape left the list open (aria-expanded="${after.expanded}")`);
+      if (!after.focused) throw new Error('the list closed but focus did not return to its button');
+    },
+  },
+  {
+    // The timeline's drawing (/roadmap/), written hidden and shown by its script, with a gate chosen: its
+    // row must be pressed, the phase chosen before must not be, and the gate's reading must be the one shown.
+    name: 'timeline gate chosen',
+    page: 'roadmap/',
+    viewports: ['desktop', 'phone'],
+    async open(page) {
+      const lane = '.tl-lane[data-tl="B"]';
+      await page.waitForSelector(lane, { visible: true, timeout: 20000 });
+      await page.$eval(lane, (b) => b.scrollIntoView({ block: 'center' }));
+      await page.click(lane);
+      const after = await page.evaluate(() => ({
+        pressed: [...document.querySelectorAll('.tl-lane[aria-pressed="true"]')].map((b) => b.getAttribute('data-tl')),
+        shown: [...document.querySelectorAll('[data-tl-reading]:not([hidden])')].map((r) => r.getAttribute('data-tl-reading')),
+      }));
+      if (after.pressed.join() !== 'B' || after.shown.join() !== 'B') throw new Error(`choosing Gate B left ${after.pressed.join() || 'nothing'} pressed and ${after.shown.join() || 'nothing'} shown`);
+      await wait(200);
+    },
+  },
+  {
+    // The walk-through (/battery/): the first test stepped to its last step with "Next step". The picture,
+    // the step marked current and the words "Step 3 of 3" must follow; nothing steps by itself.
+    name: 'walk-through stepped',
+    page: 'battery/',
+    viewports: ['desktop', 'phone'],
+    async open(page) {
+      const next = '[data-bw-test="T1"] [data-bw-next]';
+      await page.waitForSelector(next, { visible: true, timeout: 20000 });
+      await page.$eval(next, (b) => b.scrollIntoView({ block: 'center' }));
+      await page.click(next);
+      await page.click(next);
+      await wait(200);
+      const after = await page.$eval('[data-bw-test="T1"]', (t) => ({
+        at: t.querySelector('[data-bw-at]')?.textContent.trim(),
+        current: [...t.querySelectorAll('[data-bw-step]')].findIndex((b) => b.getAttribute('aria-current') === 'step'),
+        shown: [...t.querySelectorAll('[data-bw-pic]')].findIndex((p) => !p.hidden),
+        last: t.querySelector('[data-bw-next]')?.getAttribute('aria-disabled'),
+      }));
+      if (after.at !== 'Step 3 of 3' || after.current !== 2 || after.shown !== 2 || after.last !== 'true') {
+        throw new Error(`after two steps the walk-through reads "${after.at}", step ${after.current + 1} current, picture ${after.shown + 1} shown`);
+      }
+    },
+  },
+  {
+    // The status page's designed bricks, opened: the control's first word must now say what it will do.
+    name: 'designed bricks shown',
+    page: 'status/',
+    viewports: ['desktop', 'phone'],
+    async open(page) {
+      const summary = 'details[data-st-more] > summary';
+      await page.waitForSelector(summary, { visible: true, timeout: 20000 });
+      await page.$eval(summary, (s) => s.scrollIntoView({ block: 'center' }));
+      await page.click(summary);
+      await wait(200);
+      const words = await page.$eval(summary, (s) => s.textContent.trim());
+      if (!/^Hide the \d+ designed bricks?$/.test(words)) throw new Error(`the open control reads "${words}"`);
+    },
+    async close(page) {
+      await page.click('details[data-st-more] > summary');
+      await wait(200);
+      const words = await page.$eval('details[data-st-more] > summary', (s) => s.textContent.trim());
+      if (!/^Show the \d+ designed bricks?$/.test(words)) throw new Error(`the closed control reads "${words}"`);
+    },
+  },
+  {
     // A post's own figure (src/kit/posts/<slug>/), after the reader has used its first control ("Play
     // again", or "Play"): the figure is mounted live, with its controls and its description, and the
     // control keeps focus. Audited on the post with the most figures.

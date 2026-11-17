@@ -1,53 +1,205 @@
 ---
-import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import Timeline from '../components/Timeline.tsx';
-import TimelineList from '../components/TimelineList.astro';
-import NowLine from '../components/NowLine.tsx';
-import GateStepper from '../components/GateStepper.astro';
-import plan from '../data/plan.json';
-import { type Plan } from '../lib/plan.ts';
-import { withBase } from '../lib/url.ts';
-import '../styles/docs-visuals.css';
+// Explore the timeline: the phases and decision gates of stage 2 on one time axis, in the documentation's
+// frame (layouts/Docs.astro). Every date, state and word of a phase or a gate is read from the research
+// plan (src/data/plan.json, staged from tools/research_plan.json) through lib/plan.ts and lib/timeline.ts;
+// none is typed here.
+//
+// All of it is written here, on the server, as of the plan's own as_of date, so a rebuild of the same plan
+// gives the same HTML: the "Now" lines, the drawing (one row per phase and per gate, with its marks on the
+// time axis), the reading of each row, the phases table and the gates. The page script
+// (lib/timelineView.ts) then brings what depends on the day to the reader's day and draws the today line.
+// The drawing and its reading work only with script, so they are written hidden and the script shows
+// them; the tables under them say everything without it. Nothing moves by itself: a choice shows at once.
+import docs from '@/data/docs.json';
+import plan from '@/data/plan.json';
+import DocEdit from '@/components/devdocs/DocEdit.astro';
+import DocPager from '@/components/devdocs/DocPager.astro';
+import OnThisPage from '@/components/devdocs/OnThisPage.astro';
+import Docs from '@/layouts/Docs.astro';
+import { entriesOf, neighbours, pageEditUrl, type DocsData } from '@/lib/devdocs.ts';
+import { PAGES } from '@/lib/head.ts';
+import { lastUpdatedOf } from '@/lib/lastUpdated.ts';
+import { axisRange, currentPhase, formatDay, fraction, lineStoppedAt, nextGate, phaseWhen, spans, type Plan } from '@/lib/plan.ts';
+import { axisMonths, cap, dayAt, gateReadings, gateSlug, gateWhen, nextGateId, pct } from '@/lib/timeline.ts';
+import { withBase } from '@/lib/url.ts';
 
+const page = {
+  ...PAGES.roadmap,
+  title: 'Explore the timeline',
+};
 const p = plan as unknown as Plan;
 const roadmapDoc = withBase('research/roadmap/');
 const gatesDoc = withBase('research/gates/');
 const disclosureDoc = withBase('research/disclosure-policy/');
+
+const range = axisRange(p);
+const rows = spans(p);
+const months = axisMonths(range);
+const gates = new Map(p.gates.map((g) => [g.id, g]));
+const readings = gateReadings(p.gates, p.as_of);
+const reading = (id: string) => readings.get(id) ?? { word: 'Upcoming', note: null };
+const nextId = nextGateId(p.gates);
+const stopped = lineStoppedAt(p);
+const now = currentPhase(p);
+const next = nextGate(p, p.as_of);
+const chosen = now?.id ?? p.phases[0]?.id;
+const at = (day: number) => pct(fraction(day, range));
+
+const headings = [
+  { depth: 2, slug: 'timeline', text: 'Timeline' },
+  { depth: 2, slug: 'phases', text: 'Phases' },
+  { depth: 2, slug: 'decision-gates', text: 'Decision gates' },
+  ...p.gates.map((g) => ({ depth: 3, slug: gateSlug(g), text: `Gate ${g.id}: ${g.title}` })),
+];
+const { prev, next: after } = neighbours(entriesOf(docs as DocsData), page.route);
+const updated = lastUpdatedOf(page.route)?.iso ?? null;
 ---
 
-<StarlightPage
-  frontmatter={{
-    title: 'Explore the timeline',
-    description: 'The phases and decision gates of stage 2 of Psyche on one timeline, read from the research plan: where today falls and the date of each gate that has one.',
-    tableOfContents: false,
-  }}
->
-  <div class="sx-wide">
-    <p>
-      These are the phases and gates of Psyche's current research line, stage 2: spiking cognitive maps. Every
-      date here is read from one file, the research plan, at build time. A moved date keeps its original
-      alongside it and gets a change-log entry. The text version is in <a href={roadmapDoc}>Roadmap</a>.
-    </p>
+<Docs page={page} here={page.route} skip={{ href: '#doc', text: 'Skip to the text' }}>
+  <main id="doc" class="k-doc" tabindex="-1">
+    <article class="k-doc__body" data-tl-root data-tz={p.timezone}>
+      <h1 class="k-doc__title">{page.title}</h1>
+      <p class="k-doc__desc">{page.description}</p>
+      <p>
+        These are the phases and gates of Psyche's current research line, stage 2: spiking cognitive maps. Every
+        date here is read from one file, the research plan, at build time. A moved date keeps its original
+        alongside it and gets a change-log entry. The text version is in <a href={roadmapDoc}>Roadmap</a>.
+      </p>
 
-    <NowLine client:visible plan={p} />
+      <dl class="tl-now">
+        {now && (
+          <div><dt>Now</dt><dd><span class="tl-id">{now.id}</span> {now.title}{now.start && now.end ? `, ${formatDay(now.start)} to ${formatDay(now.end)}` : ''}</dd></div>
+        )}
+        <div><dt>Next gate</dt><dd>{
+          next && next.date ? (
+            <><span class="tl-id">Gate {next.id}</span> <span>{next.title}, {formatDay(next.date)}</span><span data-now-days>{next.pending ? ', decision pending' : ''}</span></>
+          ) : stopped ? (
+            `none, the line stops at Gate ${stopped.id}`
+          ) : p.gates.every((g) => g.status === 'decided') ? (
+            'none, every gate is decided'
+          ) : (
+            'none dated yet'
+          )
+        }</dd></div>
+      </dl>
 
-    <section class="sx-section">
-      <p class="sx-kicker">Timeline</p>
-      <h2>Phases</h2>
-      <Timeline client:visible plan={p} />
-      <TimelineList plan={p} />
-    </section>
+      <h2 id="timeline">Timeline</h2>
+      <p class="tl-hint" data-tl-hint hidden>Choose a phase or a gate in the drawing to read about it here.</p>
+      <div class="tl-readbox" data-tl-readbox hidden>
+        <div class="tl-read" aria-live="polite">
+          {rows.map((s) => {
+            const ph = s.phase;
+            const g = ph.gate ? gates.get(ph.gate) : undefined;
+            const note = g ? reading(g.id).note : null;
+            return (
+              <div data-tl-reading={ph.id} hidden={ph.id !== chosen}>
+                <p class="tl-read__title"><span class="k-vh">{ph.id}: </span><span aria-hidden="true">{ph.id} </span><span>{ph.title}</span></p>
+                <p class="tl-read__state"><span>{cap(ph.status)}</span><span class="tl-sep">, </span><span>{phaseWhen(ph)}</span></p>
+                <p><span class="tl-k">Outputs</span> <span>{ph.outputs.join('; ')}</span></p>
+                {g && (
+                  <p><span>Ends at Gate {g.id} ({g.title}){g.date ? `, on ${formatDay(g.date)}` : `, ${g.date_rule ?? ''}`}: {g.question}</span><span data-gate-ref={g.id} data-gate-show="note" hidden={note === null}>{' '}<span data-gate-text>{note}</span></span></p>
+                )}
+              </div>
+            );
+          })}
+          {p.gates.map((g) => {
+            const note = reading(g.id).note;
+            return (
+              <div data-tl-reading={g.id} hidden>
+                <p class="tl-read__title"><span>Gate {g.id}: {g.title}</span></p>
+                <p class="tl-read__state"><span data-gate-ref={g.id} data-gate-show="word">{reading(g.id).word}</span>{g.id === nextId && <span>, the next gate</span>}<span class="tl-sep">, </span><span>{gateWhen(g)}</span><span data-gate-ref={g.id} data-gate-show="note" hidden={note === null}><span class="tl-sep">. </span><span data-gate-text>{note}</span></span></p>
+                <p>{g.question}</p>
+                <p><span class="tl-k">If missed</span> <span>{g.if_missed}</span></p>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+      <div class="tl-draw" data-tl-draw data-from={range.from} data-to={range.to} role="group" aria-label="Research phases and decision gates on a time axis" hidden>
+        <div class="tl-row tl-axis"><span class="tl-row__name"></span><span class="tl-timebox"><svg class="tl-time" aria-hidden="true" focusable="false" data-tl-today="axis"><line class="tl-rule" x1="0" x2="100%" y1="45.5" y2="45.5" />{months.map((m) => (
+          <>
+            <line class="tl-rule" x1={m.at} x2={m.at} y1="39" y2="46" />
+            <text x={m.at} y="16" text-anchor="middle">{m.month}</text>
+            {m.year !== null && <text x={m.at} y="33" text-anchor="middle">{m.year}</text>}
+          </>
+        ))}</svg></span></div>
+        <div class="tl-row tl-grouprow"><p class="tl-group" aria-hidden="true">Phases</p><span class="tl-timebox"><svg class="tl-time" aria-hidden="true" focusable="false" data-tl-today="row"></svg></span></div>
+        <ol aria-label="Phases">
+          {rows.map((s) => {
+            const ph = s.phase;
+            const g = ph.gate ? gates.get(ph.gate) : undefined;
+            const bar = ['tl-bar', s.openStart || s.openEnd ? 'is-open' : '', ph.status === 'active' ? 'is-active' : ''].filter(Boolean).join(' ');
+            const gx = g?.date ? dayAt(p, g.date) : null;
+            return (
+              <li><button type="button" class="tl-lane" data-tl={ph.id} aria-pressed={ph.id === chosen ? 'true' : 'false'}><span class="tl-lane__name"><span class="tl-id">{ph.id}</span><span class="k-vh">:</span> <span>{ph.title}</span><span class="k-vh">, {phaseWhen(ph)}, {ph.status}</span></span><span class="tl-timebox"><svg class="tl-time" aria-hidden="true" focusable="false"><line class={bar} data-tl-for={ph.id} x1={at(s.from)} x2={at(s.to)} y1="50%" y2="50%" />{g && gx !== null && <line class={g.id === nextId ? 'tl-gate is-next' : 'tl-gate'} data-tl-for={ph.id} data-tl-row="phase" x1={gx} x2={gx} y1="30%" y2="70%" />}</svg></span></button></li>
+            );
+          })}
+        </ol>
+        <div class="tl-row tl-grouprow"><p class="tl-group" aria-hidden="true">Gates</p><span class="tl-timebox"><svg class="tl-time" aria-hidden="true" focusable="false"></svg></span></div>
+        <ol aria-label="Gates">
+          {p.gates.map((g) => {
+            const gx = g.date ? dayAt(p, g.date) : null;
+            return (
+              <li><button type="button" class="tl-lane" data-tl={g.id} aria-pressed="false"><span class="tl-lane__name"><span class="tl-id">Gate {g.id}</span><span class="k-vh">:</span> <span>{g.title}</span><span class="k-vh">, {gateWhen(g)}, <span data-gate-ref={g.id} data-gate-show="word-lower">{reading(g.id).word.toLowerCase()}</span></span></span><span class="tl-timebox"><svg class="tl-time" aria-hidden="true" focusable="false">{gx !== null ? <line class={g.id === nextId ? 'tl-gate is-next' : 'tl-gate'} data-tl-for={g.id} data-tl-row="gate" x1={gx} x2={gx} y1="25%" y2="75%" /> : <text class="tl-gtext" data-tl-for={g.id} x="100%" y="50%" dy="5" text-anchor="end">{cap(gateWhen(g))}</text>}</svg></span></button></li>
+            );
+          })}
+        </ol>
+      </div>
 
-    <section class="sx-section">
-      <p class="sx-kicker">Gates</p>
-      <h2>Decision gates</h2>
+      <h2 id="phases">Phases</h2>
+      <table class="tl-table">
+        <thead>
+          <tr><th>Phase</th><th>Outputs</th><th>Ends at</th></tr>
+        </thead>
+        <tbody>
+          {' '}
+          {p.phases.map((ph) => {
+            const g = ph.gate ? gates.get(ph.gate) : undefined;
+            const note = g ? reading(g.id).note : null;
+            return (
+              <tr>
+                <td data-label="Phase">{ph.id} {ph.title} <span class="tl-when">{phaseWhen(ph)}</span> <span class={ph.status === 'active' ? 'tl-state is-active' : 'tl-state'}>{cap(ph.status)}</span></td>
+                <td data-label="Outputs"><ul>{ph.outputs.map((o) => <li>{o}</li>)}</ul></td>
+                <td data-label="Ends at">{g && <><span>Gate {g.id} ({g.title}), {g.date ? `on ${formatDay(g.date)}` : g.date_rule}</span> <span data-gate-ref={g.id} data-gate-show="note" hidden={note === null}><span class="tl-note" data-gate-text>{note}</span></span></>}</td>
+              </tr>
+            );
+          })}
+        </tbody>
+      </table>
+
+      <h2 id="decision-gates">Decision gates</h2>
       <p>
         Each gate is decided against criteria written before the work it judges. Once a gate is decided, the
         public record states only the date it was decided and the next step: the line continues to the next
         phase, extends, or stops. The rest of a decision stays private and moves here only under the{' '}
         <a href={disclosureDoc}>disclosure policy</a>. Details in <a href={gatesDoc}>Decision gates</a>.
       </p>
-      <GateStepper plan={p} />
-    </section>
-  </div>
-</StarlightPage>
+      <div class="tl-gates">
+        {p.gates.map((g) => {
+          const slug = gateSlug(g);
+          const r = reading(g.id);
+          const moved = g.date !== null && g.baseline_date !== null && g.date !== g.baseline_date;
+          return (
+            <section class="tl-gatepart" aria-labelledby={slug} data-gate-id={g.id} data-state={g.status} data-date={g.date ?? ''} data-decided-on={g.decided_on ?? ''} data-next-step={g.next_step ?? ''}>
+              <h3 id={slug}>Gate {g.id}: {g.title}</h3>
+              <p class="tl-gmeta">{g.date ? <time datetime={g.date}>{formatDay(g.date)}</time> : <span>{cap(gateWhen(g))}</span>}{moved && <span>(moved from {formatDay(g.baseline_date!)})</span>}<span data-gate-ref={g.id} data-gate-show="word">{r.word}</span>{g.id === nextId && <span class="tl-gnext">Next</span>}</p>
+              <p class="tl-gnote" data-gate-ref={g.id} data-gate-show="note" hidden={r.note === null}>{r.note}</p>
+              <p>{g.question}</p>
+              <p class="tl-miss"><span class="tl-k">If missed</span> {g.if_missed}</p>
+            </section>
+          );
+        })}
+      </div>
+    </article>
+    <DocPager prev={prev} next={after} />
+    <DocEdit editUrl={pageEditUrl(page.route)} updated={updated} />
+  </main>
+  <OnThisPage slot="aside" headings={headings} />
+</Docs>
+
+<script>
+  import { mountTimeline } from '@/lib/timelineView.ts';
+
+  const root = document.querySelector<HTMLElement>('[data-tl-root]');
+  if (root) mountTimeline(root);
+</script>
