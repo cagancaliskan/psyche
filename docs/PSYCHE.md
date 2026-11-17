@@ -69,7 +69,8 @@ If you use or reference Psyche, please cite:
 > Caliskan, C. (2026). *Nous: Adversarial Testing of a Dependency-Free Memory-and-Activation
 > Substrate for Cognitive Architectures.* Zenodo. https://doi.org/10.5281/zenodo.20474613
 
-The **report is open access under CC BY 4.0**; the **code is MIT-licensed** (see
+The **report is open access under CC BY 4.0**; **everything else in the repository that is
+Psyche's own work is under the PolyForm Noncommercial License 1.0.0** (see
 [LICENSE](../LICENSE)). A machine-readable [`CITATION.cff`](../CITATION.cff) is provided at the
 repository root.
 
@@ -282,7 +283,7 @@ and are checked against every document by `tools/ledger_check.py`.
 ```
 psyche/
 ├── README.md               ← you are here
-├── LICENSE                 ← MIT
+├── LICENSE                 ← PolyForm Noncommercial 1.0.0
 ├── requirements.txt        ← standard library only (no dependencies)
 ├── run_tests.py            ← runs all 26 suites with the correct absolute PYTHONPATH
 ├── src/                    ← the 9 modules
@@ -407,10 +408,14 @@ that follows from those two; and the BUG-0b1 flip count and interpreter, now mat
 BUG-0b1 record](BUG-0b1-coalition-strength-determinism.md) section 1); one module is added to
 the project tree and one wrong tree label is corrected; and a later-record note follows the open
 defect, with another note under the project tree; and the word "proven" is replaced by "verified"
-in prose, with the ledger's status name `PROVEN` explained where the tiers are set out.
+in prose, with the ledger's status name `PROVEN` explained where the tiers are set out. The
+licence named in the citation note, the project tree and the License section is the one D-038 set.
 
 ---
 
 ## License
 
-MIT: see [LICENSE](../LICENSE). Copyright (c) 2026 Cagan Caliskan.
+[PolyForm Noncommercial License 1.0.0](../LICENSE) ([D-038](../DECISIONS.md)): free for any
+non-commercial purpose as that licence defines it; commercial use needs a separate licence from the
+project lead. What was published under the MIT licence before that decision stays available under
+MIT. Copyright (c) 2026 Cagan Caliskan.

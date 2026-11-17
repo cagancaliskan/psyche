@@ -8,7 +8,7 @@
 [![Tests](https://github.com/cagancaliskan/psyche/actions/workflows/tests.yml/badge.svg)](https://github.com/cagancaliskan/psyche/actions/workflows/tests.yml)
 [![Pages](https://github.com/cagancaliskan/psyche/actions/workflows/pages.yml/badge.svg)](https://github.com/cagancaliskan/psyche/actions/workflows/pages.yml)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20474613.svg)](https://doi.org/10.5281/zenodo.20474613)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue.svg)](LICENSE)
 
 Psyche is a pre-seed company building machines on the brain's own principles, toward machine
 cognition. Its research is open in this repository. The project builds brain-inspired components in
@@ -329,9 +329,19 @@ Please cite:
 > Substrate for Cognitive Architectures.* Zenodo. https://doi.org/10.5281/zenodo.20474613
 
 The archived title uses the project's earlier name (D-030). The **report is open access under
-CC BY 4.0**; the **code is MIT-licensed** (see [LICENSE](LICENSE)). A machine-readable
+CC BY 4.0**; **everything else in this repository that is Psyche's own work is under the PolyForm
+Noncommercial License 1.0.0** (see [License](#license)). A machine-readable
 [`CITATION.cff`](CITATION.cff) is provided at the repository root.
 
 ## License
 
-MIT: see [LICENSE](LICENSE). Copyright (c) 2026 Cagan Caliskan.
+[PolyForm Noncommercial License 1.0.0](LICENSE) ([D-038](DECISIONS.md)). Copyright (c) 2026 Cagan
+Caliskan.
+
+The repository is public, and free to use for any non-commercial purpose as that licence defines
+it. Commercial use needs a separate licence from the project lead: get in touch through the
+[site's contact page](https://psyche.cagancaliskan.com/about/#contact).
+
+What was published under the MIT licence before this change stays available under MIT to whoever
+obtained it. The archived report keeps its own licence, CC BY 4.0, and third-party material keeps
+its own terms ([THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)).

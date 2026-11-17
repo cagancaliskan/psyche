@@ -1,8 +1,8 @@
 # Third-party notices
 
-Psyche's own code is released under the MIT licence (see [LICENSE](LICENSE)). This file lists the
-third-party material that the site (`website/`) uses or was adapted from, with the
-credit and the licence terms that go with it.
+Psyche's own work is released under the PolyForm Noncommercial License 1.0.0 (see
+[LICENSE](LICENSE)). This file lists the third-party material that the site (`website/`) uses or
+was adapted from, with the credit and the licence terms that go with it.
 
 ## 1. Typefaces
 
@@ -114,7 +114,7 @@ draws no box-drawing character, no triangle pointer and no leftwards or rightwar
 Lines holds them, at Martian Mono's width, and a text diagram in a code block keeps its columns. It is
 drawn by `website/scripts/make-lines-font.mjs` from rectangles, arcs and triangles. No outline in it
 comes from Martian Mono or from any other font, so it carries no third-party licence: it is released
-under the project's own, the MIT licence ([LICENSE](LICENSE)).
+under the project's own, the PolyForm Noncommercial License 1.0.0 ([LICENSE](LICENSE)).
 
 ## 2. Components adapted from the 21st.dev catalog
 

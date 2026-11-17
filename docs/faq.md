@@ -139,6 +139,11 @@ says where each thing goes, how to set up and what a pull request must pass. The
 
 ## Can I use or cite the work?
 
-The code is MIT-licensed and the archived report is open access under CC BY 4.0. How to cite is in
-the [Reader's guide](guide.md#how-to-cite). No code of stage 2 is public yet: it will appear under
+The repository is public under the PolyForm Noncommercial License 1.0.0
+([LICENSE](../LICENSE), [D-038](../DECISIONS.md)): you may use it for any non-commercial purpose as
+that licence defines it. Commercial use needs a separate licence from the project lead; get in
+touch through the
+[site's contact page](https://psyche.cagancaliskan.com/about/#contact). What was published under
+the MIT licence before that decision stays available under MIT. The archived report is open access
+under CC BY 4.0. How to cite is in the [Reader's guide](guide.md#how-to-cite). No code of stage 2 is public yet: it will appear under
 `cogmap/` only as a release, under the [disclosure policy](research/disclosure-policy.md).
