@@ -28,11 +28,6 @@
 //   site.webmanifest       parses; start_url inside scope; its icons exist at their sizes, one maskable
 //   sitemap                every page but the 404 page is in it and nothing else is (the feeds are not); each
 //                          entry has a lastmod (the date of the last commit) when git history is available here
-//   the editor             dist/admin/ (public/admin/, the blog's editor) is no page of the site: it is left out
-//                          of every rule above and of the sitemap, and must instead be noindex, send no
-//                          referrer, carry one Content-Security-Policy with default-src, object-src, base-uri
-//                          and form-action 'none' and a script-src that is exactly the version-pinned editor
-//                          path, and load its one script, of that same version, with an integrity hash
 //   feeds                  every page's head names both (two <link rel="alternate" type="application/atom+xml">,
 //                          one reaching dist/progress.xml and one dist/blog.xml, each with a title)
 //   blog feed              parses as Atom 1.0 (Python's expat), has an id, a title, the author CITATION.cff names, a
@@ -58,8 +53,6 @@ const REPO = fileURLToPath(new URL('../../', import.meta.url));
 const DESCRIPTION = { min: 120, max: 160 };
 const FEED = { file: 'progress.xml', page: 'progress/', type: 'application/atom+xml' };
 const BLOG_FEED = { file: 'blog.xml', page: 'blog/' };
-// The blog's editor (public/admin/): an application shell, not a page of the site.
-const EDITOR = 'admin';
 const isPost = (route) => /^blog\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(route) && route !== 'blog/index';
 // Starlight writes `<title>` as the page's title, a bar and the site's title.
 const TITLE_SUFFIX = ' | Psyche';
@@ -113,7 +106,6 @@ function pages(dir = DIST, out = []) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     if (name === 'pagefind' || name === '_astro') continue;
-    if (dir === DIST && name === EDITOR) continue;
     if (statSync(p).isDirectory()) pages(p, out);
     else if (name.endsWith('.html')) out.push(p);
   }
@@ -272,72 +264,6 @@ for (const file of pages().sort()) {
 }
 if (!routes.includes('') || !routes.includes('404')) bad('dist', 'no landing page or no 404 page was built');
 if (!routes.includes('blog')) bad('dist', "the blog's index was not built");
-
-// ---- the editor
-// public/admin/ is copied into dist/admin/ as it is. It is an application that runs in the browser of the
-// person who signs in, not a page for a reader, so it is noindex and outside the sitemap, and the rules
-// that make it safe to host are checked here, directive by directive: nothing is loaded that the policy
-// does not name (default-src 'none'), scripts come from exactly one place, the version-pinned path of the
-// editor, and from nowhere else, no plugin, base address or form post is allowed, the one script tag loads
-// the pinned file of that same version under an integrity hash, the translations it fetches come from the
-// same version, and the page sends no referrer.
-{
-  const file = join(DIST, EDITOR, 'index.html');
-  const where = `/${EDITOR}/`;
-  const PIN = /^https:\/\/unpkg\.com\/@sveltia\/cms@(\d+\.\d+\.\d+)\/$/;
-  const SCRIPT = /^https:\/\/unpkg\.com\/@sveltia\/cms@(\d+\.\d+\.\d+)\/dist\/sveltia-cms\.js$/;
-  const LOCALES = /^https:\/\/unpkg\.com\/@sveltia\/cms@(\d+\.\d+\.\d+)\/locales\/$/;
-  if (!existsSync(file)) bad(where, 'the editor was not copied into dist');
-  else {
-    const html = readFileSync(file, 'utf8');
-    const h = head(html);
-    const metaNamed = (name) => h.metas.filter((m) => m.name === name);
-    const robots = metaNamed('robots');
-    if (robots.length !== 1 || !/\bnoindex\b/.test(robots[0].content ?? '')) bad(where, 'the editor must be noindex');
-    const referrer = metaNamed('referrer');
-    if (referrer.length !== 1 || referrer[0].content !== 'no-referrer') bad(where, 'the editor must send no referrer (<meta name="referrer" content="no-referrer">)');
-    const csp = h.metas.filter((m) => (m['http-equiv'] ?? '').toLowerCase() === 'content-security-policy');
-    let pinned = null;
-    if (csp.length !== 1) bad(where, `${csp.length} Content-Security-Policy meta elements, expected one`);
-    else {
-      const directives = new Map();
-      for (const part of (csp[0].content ?? '').split(';')) {
-        const [name, ...sources] = part.trim().split(/\s+/).filter(Boolean);
-        if (!name) continue;
-        if (directives.has(name.toLowerCase())) bad(where, `the policy names ${name} twice`);
-        directives.set(name.toLowerCase(), sources);
-      }
-      const only = (name, want) => {
-        const got = directives.get(name);
-        if (!got || got.length !== 1 || got[0] !== want) bad(where, `the policy's ${name} must be exactly ${want}, not ${got ? got.join(' ') || '(empty)' : '(missing)'}`);
-      };
-      only('default-src', "'none'");
-      only('object-src', "'none'");
-      only('base-uri', "'none'");
-      only('form-action', "'none'");
-      const scripts = directives.get('script-src') ?? [];
-      if (scripts.length !== 1 || !PIN.test(scripts[0])) bad(where, `the policy's script-src must be exactly one source, the version-pinned editor path, not ${scripts.join(' ') || '(missing)'}`);
-      else pinned = scripts[0].match(PIN)[1];
-      for (const name of ['script-src-elem', 'script-src-attr', 'worker-src', 'child-src']) {
-        if (directives.has(name)) bad(where, `the policy names ${name}, which would widen what may run beside script-src`);
-      }
-      const connect = directives.get('connect-src') ?? [];
-      for (const src of connect) {
-        const m = src.match(LOCALES);
-        if (src.includes('@sveltia/cms@') && !(m && m[1] === pinned)) bad(where, `connect-src ${src} is not the locales path of the pinned version`);
-      }
-    }
-    const scripts = [...html.matchAll(/<script\b([^>]*)>/gi)].map((m) => attributes(`<script${m[1]}>`));
-    if (scripts.length !== 1) bad(where, `${scripts.length} script elements, expected one`);
-    for (const a of scripts) {
-      const m = (a.src ?? '').match(SCRIPT);
-      if (!m) bad(where, `the script ${a.src} is not the version-pinned editor`);
-      else if (pinned && m[1] !== pinned) bad(where, `the script loads version ${m[1]} but the policy pins ${pinned}`);
-      if (!/^sha(384|512)-[A-Za-z0-9+/]{43,}={0,2}$/.test(a.integrity ?? '')) bad(where, 'the script has no integrity hash');
-      if (a.crossorigin !== 'anonymous') bad(where, 'the script needs crossorigin="anonymous" for its integrity hash to be checked');
-    }
-  }
-}
 
 // ---- the links written with the site's whole address
 // A page may link another page of the site by its absolute address, and the link validator then calls the

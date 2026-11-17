@@ -2374,7 +2374,7 @@ def test_decode_denylist(tmp: Path) -> None:
 
 
 def test_check_copy_blog(tmp: Path) -> None:
-    section("check_copy: blog posts, their SVG pictures and the CMS files are copy surfaces")
+    section("check_copy: blog posts and their SVG pictures are copy surfaces")
     tr = chr(0xE7)
     r = make_repo(tmp, files={
         "docs/blog/README.md": "# Guide\n\nA guide with a stray letter " + tr + ".\n",
@@ -2383,9 +2383,6 @@ def test_check_copy_blog(tmp: Path) -> None:
         "docs/blog/ok/index.md": "---\ntitle: \"T\"\n---\n\nNo claim that the model " + RESEARCH_TERM + ".\n",
         "docs/blog/a-post/fig.svg":
             "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>It " + CLAIM + "</text></svg>\n",
-        "website/public/admin/config.yml": "collections:\n  - label: \"It " + CLAIM + "\"\n",
-        "website/public/admin/index.html": "<!doctype html>\n<p>Edit " + tr + " posts</p>\n",
-        "website/public/admin/notes.txt": "It " + CLAIM + "\n",
     })
     f = copy_findings(r)
     check("LANGUAGE" in rules_at(f, "docs/blog/README.md", 3), "the authoring guide is read, with LANGUAGE")
@@ -2394,10 +2391,7 @@ def test_check_copy_blog(tmp: Path) -> None:
     check(rules_at(f, "docs/blog/a-draft/index.md", 5) == ["RESEARCH"], "a draft is read too")
     check(rules_at(f, "docs/blog/ok/index.md") == [], "a negated term in a post passes")
     check(rules_at(f, "docs/blog/a-post/fig.svg") == ["CLAIM"], "the text of a post's SVG is read")
-    check(rules_at(f, "website/public/admin/config.yml", 2) == ["CLAIM"], "the CMS configuration is read as text")
-    check(rules_at(f, "website/public/admin/index.html", 2) == ["LANGUAGE"], "the CMS page is read as text")
-    check(rules_at(f, "website/public/admin/notes.txt") == [], "only .yml and .html of the CMS folder are read")
-    check(copy_findings(make_repo(tmp)) == [], "a repository with no blog and no CMS is clean")
+    check(copy_findings(make_repo(tmp)) == [], "a repository with no blog is clean")
 
 
 def main() -> int:

@@ -23,10 +23,6 @@ Surfaces and the rules applied to each:
     docs/assets/*.svg, website/src/**/*.svg,
       website/public/**/*.svg  (text nodes, plus
       aria-label / alt / title attributes)          x      x      x         x       x
-    website/public/admin/*.yml, *.html (the CMS
-      page and its configuration, read as text:
-      the collection and field labels and hints
-      an author sees)                               x      x      x         x       x
     docs/blog/**/*.svg (the pictures of posts)      x      x      x         x       x
     every string value in tools/research_plan.json  x      x      x         x       x
     every string value in docs/publish.json         x      x      x         x       x
@@ -1018,8 +1014,6 @@ def surfaces(root: Path) -> Tuple[List[Path], List[Path], List[Path]]:
             if not (p.suffix.lower() == ".json" and p.name.startswith("package"))]
     code += [root / "website" / name for name in SITE_CONFIGS
              if (root / "website" / name).is_file() or (root / "website" / name).is_symlink()]
-    # the CMS's page and configuration: text an author reads, not part of website/src
-    code += _walk(root, "website/public/admin", {".yml", ".html"})
     # docs/diagrams/*.mmd is not read: archived report figures (see the module docstring)
     svgs = _glob(root, "docs/assets", ".svg")
     svgs += _walk(root, "website/src", {".svg"}, exclude_prefix=STAGED_REL)
