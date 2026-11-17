@@ -16,6 +16,12 @@
 // it is, so a date is still plain ASCII to copy and to search. A date anywhere else in running text, such
 // as the generated status line, is put in a `<span data-nowrap>` for the same reason; code is left alone.
 //
+// Every body cell also carries the words of its column's header cell as `data-label`. On a narrow screen a
+// table can be drawn as one block per row, each cell under its own name, and the name has to be in the
+// page already: the server writes it, so it is there without script. The header's words are taken as text
+// (markup dropped, spaces collapsed); a column whose header is empty gives its cells no label. The
+// attribute is only data: a page whose styles do not use it shows the table as before.
+//
 // This is the step that markdown.rehypePlugins would be. Astro 7 renders Markdown with Satteri, whose
 // plugins work on the same HTML tree (hast) but are registered on the processor; the legacy rehype
 // option would need @astrojs/markdown-remark, which the site does not install. The plugin is added by a
@@ -62,21 +68,42 @@ export function regionName(caption, heading) {
   return name ? PREFIX + name : 'Table';
 }
 
+/** A body cell's label: the words of the header cell in its column, or null when there are none. */
+export function cellLabel(headers, column) {
+  return clean(headers[column]) || null;
+}
+
 /**
  * The hast plugin. A factory, so that each document starts with no heading read and no table counted.
  * Visitors are called in document order, so the heading last seen is the nearest one before a table,
- * however deep the table is nested.
+ * however deep the table is nested, and a table's header cells are read before its body cells. A Markdown
+ * table cannot hold another table, so the table last seen is the one a cell is in.
  */
 export function tableRegion() {
   return () => {
     let heading = '';
     const seen = new Map();
+    let headers = []; // the header cells' words of the table last seen, by column
+    let column = 0; // the position of the next cell in its row
     return {
       name: 'psyche-table-region',
       element: {
-        filter: [...HEADINGS, 'table', 'td'],
+        filter: [...HEADINGS, 'table', 'tr', 'th', 'td'],
         visit(node, ctx) {
+          if (node.tagName === 'tr') {
+            column = 0;
+            return;
+          }
+          if (node.tagName === 'th') {
+            const row = ctx.parent(node);
+            if (row && ctx.parent(row)?.tagName === 'thead') headers[column] = ctx.textContent(node);
+            column += 1;
+            return;
+          }
           if (node.tagName === 'td') {
+            const name = cellLabel(headers, column);
+            column += 1;
+            if (name) ctx.setProperty(node, 'dataLabel', name);
             if (isDateCell(ctx.textContent(node))) ctx.setProperty(node, 'dataNowrap', '');
             return;
           }
@@ -84,6 +111,7 @@ export function tableRegion() {
             heading = ctx.textContent(node);
             return;
           }
+          headers = [];
           const caption = (node.children ?? []).find((c) => c.type === 'element' && c.tagName === 'caption');
           let label = regionName(caption ? ctx.textContent(caption) : '', heading);
           const n = (seen.get(label) ?? 0) + 1;
