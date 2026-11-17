@@ -18,6 +18,7 @@ Output (both directories are gitignored, and CI fails if a staged copy is ever t
     website/src/data/plan.json           tools/research_plan.json, validated
     website/src/data/ledger.public.json  core.ledger_public
     website/src/data/sidebar.json        Starlight sidebar: one first group, "Start here", then the manifest
+    website/src/data/docs.json           the documentation list: the same groups, without Home and Blog
     website/src/data/progress.json       the plan's public events and the author, for the Atom feed
     website/src/data/blog.json           the published posts, newest first, and the author
     website/src/data/stage.json          which commit was staged, and how many pages and posts
@@ -27,6 +28,16 @@ title, then the other hand-written pages (build_sidebar). The events in progress
 render_plan.progress_events, the one place that derives them, and the author from CITATION.cff;
 website/src/pages/progress.xml.ts writes the feed from that file with a serialiser of its own
 (website/src/lib/feed.ts), and the feed's dates are the events' days, never the build time.
+
+docs.json is the list the documentation section of the site draws its navigation, its previous and
+next links and its index from (build_docs_index). It holds the groups of the sidebar in the same order
+with neither Home nor Blog: the documents of the Start here section, then the hand-written pages of
+DOCS_PAGES, then every other manifest section as a group of its own. A document item is
+{"kind": "doc", "slug", "title", "description"}, with the title the page shows and the manifest's
+description; a hand-written page item is {"kind": "page", "route", "title"}, and its description is
+the one the site states with the page itself, so it is written once. A new first entry of the list (a page to
+get started, say) is a document listed first in the Start here section of docs/publish.json: it then
+leads the list with the same item shape and no change here.
 
 The blog's posts are not in the manifest. Each folder docs/blog/<slug>/ of the commit that holds an
 index.md which is not a draft is a post (blog.py: layout, front matter, pictures, order). A post is
@@ -93,6 +104,11 @@ START_GROUP = "Start here"
 # neither a document's title nor contain one (test_core.py checks this).
 BLOG_PAGE: Tuple[str, str] = ("Blog", "blog/")
 BLOG_AFTER_SLUG = "progress"
+
+# The hand-written pages of the documentation list (docs.json), at the end of its START_GROUP group:
+# the pages of CUSTOM_PAGES but Home, each with its route as the site states it (no slashes). Home and
+# the blog are pages of the site, not of its documentation, so the list holds neither.
+DOCS_PAGES: List[Tuple[str, str]] = [(label, path.strip("/")) for label, path in CUSTOM_PAGES if path]
 
 
 def split_title(text: str, src: str) -> Tuple[str, str]:
@@ -168,6 +184,34 @@ def build_sidebar(manifest: dict, titles: Dict[str, str]) -> List[dict]:
             "items": [{"label": titles[p["slug"]], "slug": p["slug"]} for p in section["pages"]],
         })
     return sidebar
+
+
+def build_docs_index(manifest: dict, titles: Dict[str, str]) -> Dict[str, List[dict]]:
+    """The documentation list (docs.json). Its first group is START_GROUP: the documents of the
+    manifest section of that title, in manifest order, then the hand-written pages of DOCS_PAGES.
+    Every other manifest section follows as a group of its own, in manifest order. A document item
+    carries its slug, the title the page shows (titles) and the manifest's description; a page item
+    carries its route and its title only. Routes and slugs carry no site base and no slashes at
+    either end: the site adds both when it writes a link."""
+    start = start_section(manifest)
+
+    def doc(page: dict) -> dict:
+        description = page.get("description")
+        if not description:
+            raise core.PublishError(
+                f"{page['src']}: its entry in docs/publish.json has no description, which the "
+                f"documentation list shows under its title")
+        return {"kind": "doc", "slug": page["slug"], "title": titles[page["slug"]],
+                "description": description}
+
+    first = [doc(p) for p in start["pages"]] if start is not None else []
+    first += [{"kind": "page", "route": route, "title": label} for label, route in DOCS_PAGES]
+    groups: List[dict] = [{"title": START_GROUP, "items": first}]
+    for section in manifest["sections"]:
+        if section is start:
+            continue
+        groups.append({"title": section["title"], "items": [doc(p) for p in section["pages"]]})
+    return {"groups": groups}
 
 
 def committed_json(root: Path, sha: str, rel: str) -> object:
@@ -272,6 +316,7 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
             f"website/ to drop them")
 
     sidebar = build_sidebar(manifest, titles)
+    docs_index = build_docs_index(manifest, titles)
 
     def dump(name: str, obj: object) -> None:
         (data_dir / name).write_text(json.dumps(obj, indent=2, ensure_ascii=False, sort_keys=False) + "\n",
@@ -280,6 +325,7 @@ def stage_site(root: Path, rev: str) -> Dict[str, object]:
     dump("plan.json", plan)
     dump("ledger.public.json", public)
     dump("sidebar.json", sidebar)
+    dump("docs.json", docs_index)
     dump("progress.json", {"as_of": plan["as_of"], "timezone": plan["timezone"], "author": author,
                            "events": events})
     dump("blog.json", blog.blog_json(manifest, posts, author))

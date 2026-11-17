@@ -21,7 +21,7 @@ Covered:
             skip-worktree, assume-unchanged nor a clean filter hides an edit, and no
             filter program runs; published_text reads the commit; the real manifest's
             pages are not self-refusing.
-  manifest  key allowlist, duplicates, reserved names, non-canonical never_publish; a JSON
+  manifest  key allowlist, duplicates, reserved names and routes, non-canonical never_publish; a JSON
             key given twice (a second never_publish) and a lone surrogate stop the guard; a
             page's description (one plain sentence of 120 to 160 characters, no two alike;
             every page of the real manifest has one) and the stager writing it into the front
@@ -628,14 +628,29 @@ def test_guard(tmp: Path) -> None:
     check(has(probs, "listed twice"), "a duplicated src is refused")
     check(has(probs, ".slug"), "a malformed slug is refused")
     check(has(probs, "reserved wiki page"), "a reserved wiki name is refused")
-    for slug in ("blog", "blog/why-psyche-keeps-a-blog", "admin", "admin/x"):
+    for slug in ("blog", "blog/why-psyche-keeps-a-blog", "admin", "admin/x", "developers", "developers/x",
+                 "roadmap", "battery", "status/x", "what-were-building", "experiments", "about", "404"):
         clash = copy.deepcopy(GUARD_MANIFEST)
         clash["sections"][0]["pages"].append({"src": "docs/clash.md", "slug": slug, "wiki": "Clash-Page"})
         check(has(core.manifest_problems(clash), "is reserved"),
-              f"a manifest page at the reserved route {slug!r} is refused, so it cannot share an address with a post or take the removed editor's address")
-    near = copy.deepcopy(GUARD_MANIFEST)
-    near["sections"][0]["pages"].append({"src": "docs/near.md", "slug": "blogs/x", "wiki": "Near-Page"})
-    check(not has(core.manifest_problems(near), "is reserved"), "a slug that only begins with the letters of a reserved route is not refused")
+              f"a manifest page at the reserved route {slug!r} is refused, so it cannot share an address with a post, a page the site writes by hand or the removed editor's address")
+    for slug in ("blogs/x", "research/roadmap", "statuses", "developer"):
+        near = copy.deepcopy(GUARD_MANIFEST)
+        near["sections"][0]["pages"].append({"src": "docs/near.md", "slug": slug, "wiki": "Near-Page"})
+        check(not has(core.manifest_problems(near), "is reserved"),
+              f"the slug {slug!r}, which only begins with or holds the letters of a reserved route, is not refused")
+    # every route a page of website/src/pages serves at the top of the site is reserved, so no manifest page
+    # can take it; developers/ is reserved ahead of its page, the documentation's home
+    pages_dir = REPO / "website" / "src" / "pages"
+    served = sorted({f.stem if f.is_file() else f.name for f in pages_dir.iterdir()
+                     if (f.is_file() and f.suffix == ".astro" and f.stem != "index") or f.is_dir()})
+    check(len(served) >= 7 and all(r in core.RESERVED_SLUG_ROOTS for r in served),
+          f"every hand-written top-level route of the site is reserved: {served}")
+    check("developers" in core.RESERVED_SLUG_ROOTS and len(set(core.RESERVED_SLUG_ROOTS)) == len(core.RESERVED_SLUG_ROOTS)
+          and all(core.SLUG_RE.match(r) and "/" not in r for r in core.RESERVED_SLUG_ROOTS),
+          "the documentation's home is reserved, and each reserved root is one slug word, listed once")
+    check(not any(p["slug"].split("/")[0] in core.RESERVED_SLUG_ROOTS for p in core.manifest_pages(core.load_manifest(REPO))),
+          "no page of the real manifest stands in a reserved route")
     check(core.manifest_problems(GUARD_MANIFEST) == [], "the fixture manifest is valid")
     for entry in ("/docs/design/", "./docs/paper/", "docs\\report\\", "docs//x/", "docs/../x/",
                   "", 5):
@@ -4408,6 +4423,80 @@ def test_stage_sidebar() -> None:
           "two sections with one title (in any case) are a manifest problem")
 
 
+def test_stage_docs_index() -> None:
+    section("docs.json: the documentation list, the sidebar's groups without Home and Blog")
+    manifest = core.load_manifest(REPO)
+    titles = sidebar_titles(manifest)
+    index = stage.build_docs_index(manifest, titles)
+    check(list(index) == ["groups"] and all(list(g) == ["title", "items"] for g in index["groups"]),
+          "the list is one object with groups, each a title and its items")
+    start = next(s for s in manifest["sections"] if s["title"] == stage.START_GROUP)
+    others = [s["title"] for s in manifest["sections"] if s is not start]
+    check([g["title"] for g in index["groups"]] == [stage.START_GROUP] + others,
+          "the first group is Start here, the other sections follow in manifest order")
+    items = [i for g in index["groups"] for i in g["items"]]
+    docs = [i for i in items if i["kind"] == "doc"]
+    pages = [i for i in items if i["kind"] == "page"]
+    check(len(docs) + len(pages) == len(items), "every item is a document or a hand-written page")
+    check(all(list(i) == ["kind", "slug", "title", "description"] for i in docs)
+          and all(list(i) == ["kind", "route", "title"] for i in pages),
+          "a document item is kind, slug, title, description; a page item is kind, route, title, in that order")
+    by_slug = {pg["slug"]: pg for pg in core.manifest_pages(manifest)}
+    check([d["slug"] for d in docs] == list(by_slug),
+          "every published document is in the list once, in manifest order")
+    check(all(d["title"] == titles[d["slug"]] and d["description"] == by_slug[d["slug"]]["description"] for d in docs),
+          "each document carries the title its page shows and the manifest's description")
+    first = index["groups"][0]["items"]
+    check(first[len(start["pages"]):] == [{"kind": "page", "route": r, "title": t} for t, r in stage.DOCS_PAGES]
+          and [i["route"] for i in pages] == ["roadmap", "battery", "status"],
+          "the hand-written pages close the first group: the timeline, the walk-through and the status page")
+    check(stage.DOCS_PAGES == [(t, p.strip("/")) for t, p in stage.CUSTOM_PAGES if p],
+          "the list's pages are the sidebar's hand-written pages but Home, with the same titles")
+    words = {str(v).casefold() for i in items for v in i.values()}
+    check(not ({"home", "blog", "", "blog/"} & words) and not any(i.get("route") in ("", "blog") for i in pages),
+          "neither Home nor Blog is in the list")
+    check(all((REPO / "website" / "src" / "pages" / (i["route"] + ".astro")).is_file() for i in pages),
+          "each page item names a page the site has")
+    check(all(not v.startswith("/") and not v.endswith("/") for i in items for v in (i.get("slug"), i.get("route")) if v),
+          "slugs and routes carry no slash at either end, so the site adds its base once")
+    check({"guide", "research/roadmap", "research/test-battery"} <= set(by_slug),
+          "the three starting pages (the reader's guide, the roadmap, the test battery) are published documents")
+
+    # fixtures: the Start here section leads wherever the manifest lists it; a new first page leads the list
+    pg = lambda n: {"src": f"docs/{n}.md", "slug": n, "wiki": n.capitalize(),  # noqa: E731
+                    "description": FIXTURE_DESCRIPTION}
+    fx = {"sections": [{"title": "Alpha", "pages": [pg("a1")]},
+                       {"title": "Start here", "pages": [pg("s1"), pg("s2")]}]}
+    fx_titles = {n: n.upper() for n in ("a1", "s1", "s2", "get-started")}
+    got = stage.build_docs_index(fx, fx_titles)
+    check([g["title"] for g in got["groups"]] == ["Start here", "Alpha"]
+          and [i.get("slug", i.get("route")) for i in got["groups"][0]["items"]]
+          == ["s1", "s2"] + [r for _, r in stage.DOCS_PAGES],
+          "the Start here section is moved to the front, its documents before the hand-written pages")
+    fx["sections"][1]["pages"].insert(0, pg("get-started"))
+    led = stage.build_docs_index(fx, fx_titles)
+    check(led["groups"][0]["items"][0] == {"kind": "doc", "slug": "get-started", "title": "GET-STARTED",
+                                           "description": FIXTURE_DESCRIPTION}
+          and led["groups"][0]["items"][1:] == got["groups"][0]["items"] and led["groups"][1:] == got["groups"][1:],
+          "a document listed first in Start here leads the list with the same item shape, and nothing else moves")
+    none = stage.build_docs_index({"sections": [{"title": "Alpha", "pages": [pg("a1")]}]}, {"a1": "A1"})
+    check([g["title"] for g in none["groups"]] == ["Start here", "Alpha"]
+          and [i["kind"] for i in none["groups"][0]["items"]] == ["page"] * len(stage.DOCS_PAGES),
+          "without such a section the first group is the hand-written pages")
+    bare = {"sections": [{"title": "Alpha", "pages": [{"src": "docs/a1.md", "slug": "a1", "wiki": "A1"}]}]}
+    try:
+        stage.build_docs_index(bare, {"a1": "A1"})
+        check(False, "a document without a description is refused")
+    except core.PublishError as e:
+        check("no description" in str(e), "a document without a description is refused: the list shows it")
+    for odd in ("start here", "START HERE"):
+        try:
+            stage.build_docs_index({"sections": [{"title": odd, "pages": [pg("s1")]}]}, {"s1": "S1"})
+            check(False, f"a section titled {odd!r} is refused")
+        except core.PublishError as e:
+            check("differs from" in str(e), f"a section titled {odd!r} is refused, as the sidebar refuses it")
+
+
 def test_stage_progress(tmp: Path) -> None:
     section("stage: the progress data, the author and the sidebar are staged from the commit")
     if not GIT:
@@ -4430,9 +4519,19 @@ def test_stage_progress(tmp: Path) -> None:
           and [i["label"] for i in side[0]["items"]][:3] == ["Home", "The start", "Blog"]
           and side[0]["items"][1] == {"label": "The start", "slug": "start"},
           "the staged sidebar has one Start here group, with the manifest's page after Home")
+    docs_index = json.loads((data / "docs.json").read_text(encoding="utf-8"))
+    check([g["title"] for g in docs_index["groups"]] == ["Start here", "Fixture"]
+          and docs_index["groups"][0]["items"][0] == {"kind": "doc", "slug": "start", "title": "The start",
+                                                      "description": SECOND_DESCRIPTION}
+          and docs_index["groups"][1]["items"] == [{"kind": "doc", "slug": "ok", "title": "Title",
+                                                    "description": FIXTURE_DESCRIPTION}]
+          and [i["kind"] for i in docs_index["groups"][0]["items"][1:]] == ["page"] * len(stage.DOCS_PAGES),
+          "the staged documentation list has the manifest's pages with their titles and descriptions, and the hand-written pages")
+    first_docs = (data / "docs.json").read_bytes()
     first = (data / "progress.json").read_bytes()
     stage.stage_site(root, "HEAD")
-    check((data / "progress.json").read_bytes() == first, "staging twice writes the same bytes")
+    check((data / "progress.json").read_bytes() == first and (data / "docs.json").read_bytes() == first_docs,
+          "staging twice writes the same bytes")
     rc, out, err = capture(stage.main, ["--target", "site", "--root", str(root)])
     check(rc == 0 and "7 progress event(s)" in out, f"the command line says how many events: {out.strip()}")
     kinds = {e["kind"] for e in progress["events"]}
@@ -5070,6 +5169,10 @@ def test_blog_stage(tmp: Path) -> None:
     check(stage_json["posts"] == 2 and stage_json["pages"] == 2 and side[0]["items"][1:3] == [
         {"label": "Progress", "slug": "progress"}, {"label": "Blog", "link": "/blog/"}],
           "stage.json counts the posts; the sidebar has Blog right after progress")
+    docs_index = json.loads((root / "website/src/data/docs.json").read_text(encoding="utf-8"))
+    check([i.get("slug", i.get("route")) for g in docs_index["groups"] for i in g["items"]]
+          == ["progress"] + [r for _, r in stage.DOCS_PAGES] + ["ok"],
+          "the documentation list holds no post and no Blog item")
     rc, o, e = capture(stage.main, ["--target", "site", "--root", str(root)])
     check(rc == 0 and "2 post(s)" in o, "the command line reports the post count")
     before = (out / "first/index.md").read_bytes()
@@ -5274,6 +5377,7 @@ def main() -> int:
         test_cited_doi()
         test_front_door(tmp)
         test_stage_sidebar()
+        test_stage_docs_index()
         test_stage_progress(tmp)
         test_blog_parser()
         test_blog_media()
