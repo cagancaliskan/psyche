@@ -1,0 +1,762 @@
+{
+ "post": "three-questions-before-a-number-counts",
+ "replaces": [
+  "what-each-check-caught.svg"
+ ],
+ "sequence": [
+  {
+   "read": {
+    "className": [
+     "k-read",
+     "tq-read",
+     "tq-intro"
+    ],
+    "id": "reading"
+   },
+   "blocks": [
+    {
+     "kind": "p",
+     "digest": "e4d1454a34b37dbb"
+    },
+    {
+     "kind": "p",
+     "digest": "23170b4e39e227e9"
+    },
+    {
+     "kind": "h2",
+     "digest": "a9a2dc4a4935e504",
+     "set": {
+      "dataKPart": "Why one check is not enough"
+     }
+    },
+    {
+     "kind": "p",
+     "digest": "d4ef08a3e2898176"
+    },
+    {
+     "kind": "p",
+     "digest": "98429ff07502e0be"
+    }
+   ]
+  },
+  {
+   "node": {
+    "type": "element",
+    "tagName": "section",
+    "properties": {
+     "className": [
+      "tq-q"
+     ],
+     "dataKWide": "",
+     "ariaLabelledby": "question-one-is-the-answer-already-in-the-input"
+    },
+    "children": [
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "block",
+      "kind": "h2",
+      "digest": "c4d31a80b85ea19c",
+      "set": {
+       "className": [
+        "tq-q__h",
+        "k-big-line"
+       ],
+       "dataKPart": "Question one: the input"
+      },
+      "children": [
+       {
+        "type": "element",
+        "tagName": "span",
+        "properties": {},
+        "children": [
+         {
+          "type": "text",
+          "value": "Question one:"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "value": " "
+       },
+       {
+        "type": "element",
+        "tagName": "span",
+        "properties": {
+         "className": [
+          "tq-q__ask"
+         ]
+        },
+        "children": [
+         {
+          "type": "text",
+          "value": "is the answer already in the input?"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "element",
+      "tagName": "figure",
+      "properties": {
+       "className": [
+        "k-figure",
+        "k-figure--wide",
+        "tq-fig"
+       ],
+       "dataFigure": "ladder",
+       "ariaDescribedby": "ladder-cap"
+      },
+      "children": [
+       {
+        "type": "text",
+        "value": "\n      "
+       },
+       {
+        "type": "element",
+        "tagName": "div",
+        "properties": {
+         "className": [
+          "k-art"
+         ]
+        },
+        "children": [
+         {
+          "type": "still",
+          "file": "ladder.svg",
+          "properties": {
+           "className": [
+            "k-still",
+            "k-still--both"
+           ],
+           "dataKStill": "ladder"
+          }
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "value": "\n      "
+       },
+       {
+        "type": "element",
+        "tagName": "div",
+        "properties": {
+         "className": [
+          "k-fig-ctl"
+         ]
+        },
+        "children": []
+       },
+       {
+        "type": "text",
+        "value": "\n      "
+       },
+       {
+        "type": "element",
+        "tagName": "figcaption",
+        "properties": {
+         "className": [
+          "k-cap"
+         ],
+         "id": "ladder-cap"
+        },
+        "children": [
+         {
+          "type": "text",
+          "value": "Association strength becomes edge weight by one fixed map, so a pair is weight-blind only when both associates land on the same rung."
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "value": "\n    "
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "value": "\n  "
+     }
+    ]
+   }
+  },
+  {
+   "read": {
+    "className": [
+     "k-read",
+     "tq-read"
+    ]
+   },
+   "blocks": [
+    {
+     "kind": "p",
+     "digest": "2e728e9ec923dc16"
+    },
+    {
+     "kind": "pre",
+     "digest": "2f319c3a6869ebe3"
+    },
+    {
+     "kind": "p",
+     "digest": "cc568d3cc2f1f70a"
+    },
+    {
+     "kind": "p",
+     "digest": "ef3bf91c05f39a02"
+    },
+    {
+     "kind": "pre",
+     "digest": "cbd81fc0de0481f7"
+    },
+    {
+     "kind": "p",
+     "digest": "2a906ca74e4c22f6"
+    },
+    {
+     "kind": "p",
+     "digest": "1ed1a20d82be4da9"
+    }
+   ]
+  },
+  {
+   "node": {
+    "type": "element",
+    "tagName": "section",
+    "properties": {
+     "className": [
+      "tq-q"
+     ],
+     "dataKWide": "",
+     "ariaLabelledby": "question-two-is-the-mechanism-there"
+    },
+    "children": [
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "block",
+      "kind": "h2",
+      "digest": "97115820ace67e11",
+      "set": {
+       "className": [
+        "tq-q__h",
+        "k-big-line"
+       ],
+       "dataKPart": "Question two: the mechanism"
+      },
+      "children": [
+       {
+        "type": "element",
+        "tagName": "span",
+        "properties": {},
+        "children": [
+         {
+          "type": "text",
+          "value": "Question two:"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "value": " "
+       },
+       {
+        "type": "element",
+        "tagName": "span",
+        "properties": {
+         "className": [
+          "tq-q__ask"
+         ]
+        },
+        "children": [
+         {
+          "type": "text",
+          "value": "is the mechanism there?"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "element",
+      "tagName": "figure",
+      "properties": {
+       "className": [
+        "k-figure",
+        "k-figure--wide",
+        "tq-fig"
+       ],
+       "dataFigure": "star",
+       "ariaDescribedby": "star-cap"
+      },
+      "children": [
+       {
+        "type": "text",
+        "value": "\n      "
+       },
+       {
+        "type": "element",
+        "tagName": "div",
+        "properties": {
+         "className": [
+          "k-art"
+         ]
+        },
+        "children": [
+         {
+          "type": "still",
+          "file": "star.svg",
+          "properties": {
+           "className": [
+            "k-still",
+            "k-still--both"
+           ],
+           "dataKStill": "star"
+          }
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "value": "\n      "
+       },
+       {
+        "type": "element",
+        "tagName": "div",
+        "properties": {
+         "className": [
+          "k-fig-ctl"
+         ]
+        },
+        "children": []
+       },
+       {
+        "type": "text",
+        "value": "\n      "
+       },
+       {
+        "type": "element",
+        "tagName": "figcaption",
+        "properties": {
+         "className": [
+          "k-cap"
+         ],
+         "id": "star-cap"
+        },
+        "children": [
+         {
+          "type": "text",
+          "value": "One leaf of a star read as the fan doubles: flat on the engine, halving on the scratch copy that divides the source among its roads."
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "value": "\n    "
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "value": "\n  "
+     }
+    ]
+   }
+  },
+  {
+   "read": {
+    "className": [
+     "k-read",
+     "tq-read"
+    ]
+   },
+   "blocks": [
+    {
+     "kind": "p",
+     "digest": "8957aa601ad36f91"
+    },
+    {
+     "kind": "pre",
+     "digest": "09da7c844fa803f4"
+    },
+    {
+     "kind": "p",
+     "digest": "39b0763547aa82e0"
+    },
+    {
+     "kind": "p",
+     "digest": "79649ca4e9b12fd9"
+    },
+    {
+     "kind": "p",
+     "digest": "166ad2c6065fb981"
+    }
+   ]
+  },
+  {
+   "node": {
+    "type": "element",
+    "tagName": "section",
+    "properties": {
+     "className": [
+      "tq-q"
+     ],
+     "dataKWide": "",
+     "ariaLabelledby": "question-three-does-the-signal-move"
+    },
+    "children": [
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "block",
+      "kind": "h2",
+      "digest": "a5ef442cf0444cab",
+      "set": {
+       "className": [
+        "tq-q__h",
+        "k-big-line"
+       ],
+       "dataKPart": "Question three: the signal"
+      },
+      "children": [
+       {
+        "type": "element",
+        "tagName": "span",
+        "properties": {},
+        "children": [
+         {
+          "type": "text",
+          "value": "Question three:"
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "value": " "
+       },
+       {
+        "type": "element",
+        "tagName": "span",
+        "properties": {
+         "className": [
+          "tq-q__ask"
+         ]
+        },
+        "children": [
+         {
+          "type": "text",
+          "value": "does the signal move?"
+         }
+        ]
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "element",
+      "tagName": "figure",
+      "properties": {
+       "className": [
+        "k-figure",
+        "k-figure--wide",
+        "tq-fig"
+       ],
+       "dataFigure": "stall",
+       "ariaDescribedby": "stall-cap"
+      },
+      "children": [
+       {
+        "type": "text",
+        "value": "\n      "
+       },
+       {
+        "type": "element",
+        "tagName": "div",
+        "properties": {
+         "className": [
+          "k-art"
+         ]
+        },
+        "children": [
+         {
+          "type": "still",
+          "file": "stall.svg",
+          "properties": {
+           "className": [
+            "k-still",
+            "k-still--both"
+           ],
+           "dataKStill": "stall"
+          }
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "value": "\n      "
+       },
+       {
+        "type": "element",
+        "tagName": "div",
+        "properties": {
+         "className": [
+          "k-fig-ctl"
+         ]
+        },
+        "children": []
+       },
+       {
+        "type": "text",
+        "value": "\n      "
+       },
+       {
+        "type": "element",
+        "tagName": "figcaption",
+        "properties": {
+         "className": [
+          "k-cap"
+         ],
+         "id": "stall-cap"
+        },
+        "children": [
+         {
+          "type": "text",
+          "value": "The stall fraction over the capture cycles: the injected sleep sets its level, and without it the reading stays near zero however heavy the work."
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "value": "\n    "
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "value": "\n  "
+     }
+    ]
+   }
+  },
+  {
+   "read": {
+    "className": [
+     "k-read",
+     "tq-read"
+    ]
+   },
+   "blocks": [
+    {
+     "kind": "p",
+     "digest": "4db2d4a29a0c9d0c"
+    },
+    {
+     "kind": "pre",
+     "digest": "794ab42e56418bef"
+    },
+    {
+     "kind": "p",
+     "digest": "5574203ef30be0c4"
+    },
+    {
+     "kind": "p",
+     "digest": "e20cc71520997045"
+    },
+    {
+     "kind": "pre",
+     "digest": "b64fb44709b76cac"
+    },
+    {
+     "kind": "p",
+     "digest": "be9fcb53053ba35f"
+    },
+    {
+     "kind": "p",
+     "digest": "f811f0bb29efd266"
+    },
+    {
+     "kind": "h2",
+     "digest": "862bd9bb7a92c482",
+     "set": {
+      "dataKPart": "The proof"
+     }
+    },
+    {
+     "kind": "p",
+     "digest": "3861b96180c9f37e"
+    },
+    {
+     "kind": "h3",
+     "digest": "61f3cdf73f6425ae"
+    },
+    {
+     "kind": "p",
+     "digest": "e8740501a712a88a"
+    },
+    {
+     "kind": "h3",
+     "digest": "69645dcb1ca67a5e"
+    },
+    {
+     "kind": "p",
+     "digest": "ea68f3aaddf3a0a9"
+    },
+    {
+     "kind": "h3",
+     "digest": "2ed1c4af092053f2"
+    },
+    {
+     "kind": "p",
+     "digest": "88be2cb1340faec8"
+    },
+    {
+     "kind": "h2",
+     "digest": "3363ccec67bf68ec",
+     "set": {
+      "dataKPart": "What this does not show"
+     }
+    },
+    {
+     "kind": "ul",
+     "digest": "ae05fac2368661f0",
+     "set": {
+      "className": [
+       "tq-limits"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "node": {
+    "type": "element",
+    "tagName": "section",
+    "properties": {
+     "className": [
+      "k-big"
+     ],
+     "ariaLabel": "Key sentence"
+    },
+    "children": [
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "element",
+      "tagName": "div",
+      "properties": {
+       "className": [
+        "k-big__stage"
+       ]
+      },
+      "children": [
+       {
+        "type": "text",
+        "value": "\n      "
+       },
+       {
+        "type": "element",
+        "tagName": "p",
+        "properties": {
+         "className": [
+          "k-big__line"
+         ]
+        },
+        "children": [
+         {
+          "type": "text",
+          "value": "Asking at which point of the pipeline a test can be trusted (input, mechanism or signal) can be answered before any graded data exists."
+         },
+         {
+          "type": "element",
+          "tagName": "span",
+          "properties": {
+           "className": [
+            "k-big__source"
+           ]
+          },
+          "children": [
+           {
+            "type": "text",
+            "value": "From the general lesson"
+           }
+          ]
+         }
+        ]
+       },
+       {
+        "type": "text",
+        "value": "\n    "
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "value": "\n  "
+     }
+    ]
+   }
+  },
+  {
+   "read": {
+    "className": [
+     "k-read",
+     "tq-read"
+    ]
+   },
+   "blocks": [
+    {
+     "kind": "h2",
+     "digest": "6b0bf2c01e45b9a2",
+     "set": {
+      "dataKPart": "The general lesson"
+     }
+    },
+    {
+     "kind": "p",
+     "digest": "6b63301dfeea435b"
+    },
+    {
+     "kind": "p",
+     "digest": "d11993e56961a91a"
+    },
+    {
+     "kind": "h2",
+     "digest": "4e9b2da60c09498f",
+     "set": {
+      "dataKPart": "Further reading"
+     }
+    },
+    {
+     "kind": "ul",
+     "digest": "0b8e74d6bccdff23",
+     "set": {
+      "className": [
+       "tq-further"
+      ]
+     }
+    }
+   ]
+  }
+ ]
+}

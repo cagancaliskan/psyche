@@ -78,7 +78,7 @@ jobs:
         working-directory: website
         run: npm ci
 
-      - name: Unit tests (plan, maze, battery, search-engine head, head builder, progress feed, sitemap dates, page chrome, search override, kit links, table regions, a11y tool lock)
+      - name: Unit tests (plan, maze, battery, search-engine head, head builder, progress feed, sitemap dates, page chrome, search override, kit links, post figures, table regions, a11y tool lock)
         working-directory: website
         run: npm test
 

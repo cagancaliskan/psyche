@@ -72,6 +72,10 @@ test('sourcesByRoute lists the site pages and every docs page of the manifest', 
     assert.ok(s.battery.includes('website/src/pages/battery.astro') && s.battery.includes('website/src/components/BatteryExplorer.tsx'));
     // a post is dated by its own folder, and the index by every post; the home page lists no post
     assert.deepEqual(s['blog/first-post'], ['docs/blog/first-post']);
+    // a post with designed figures is also dated by their files in the page kit
+    mkdirSync(join(dir, 'website/src/kit/posts/first-post'), { recursive: true });
+    writeFileSync(join(dir, 'website/src/kit/posts/first-post/page.js'), 'a');
+    assert.deepEqual(sourcesByRoute(dir)['blog/first-post'], ['docs/blog/first-post', 'website/src/kit/posts/first-post']);
     assert.ok(s.blog.includes('docs/blog/first-post') && !s[''].some((f) => f.startsWith('docs/blog')));
     assert.ok(!s.blog.includes('docs/blog') && !s[''].includes('docs/blog'), 'the guide and drafts are not sources');
   } finally {

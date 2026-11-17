@@ -16,6 +16,7 @@ import { BLOG_FEED_FILE, BLOG_FEED_TITLE } from './src/lib/blog.ts';
 import { FEED_FILE, FEED_MEDIA_TYPE, FEED_TITLE } from './src/lib/feed.ts';
 import { BASE, ORIGIN, PROJECT_DESCRIPTION, SITE_URL, THEME_COLOR } from './src/lib/seo.ts';
 import { makeSerialize } from './scripts/sitemap-lastmod.mjs';
+import { postFiguresIntegration } from './scripts/post-figures.mjs';
 import { tableRegionIntegration } from './scripts/table-region.mjs';
 
 const REPO_ROOT = fileURLToPath(new URL('../', import.meta.url));
@@ -83,6 +84,10 @@ export default defineConfig({
     // Puts every table of a Markdown page in a named, keyboard-reachable scroll region (WCAG 2.1.1);
     // the Satteri counterpart of a rehype plugin (scripts/table-region.mjs).
     tableRegionIntegration(),
+    // Lays a post that has a page design of its own out in the design's reading columns, with its
+    // figures between them (src/kit/posts/<slug>/figures.json); its words stay the Markdown's
+    // (scripts/post-figures.mjs). Placed after the table step, before the processor's heading ids.
+    postFiguresIntegration(),
     // Registered here so each entry can carry a <lastmod> from git (scripts/sitemap-lastmod.mjs).
     // Starlight adds its own, with no dates, only when none is registered.
     sitemap({ serialize: makeSerialize({ repoRoot: REPO_ROOT, base: BASE }) }),

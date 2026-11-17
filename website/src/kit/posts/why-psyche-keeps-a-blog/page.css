@@ -1,0 +1,48 @@
+  /* This post's own layout. A short post about the blog itself, so the opening stays plain:
+     the title stands low at the left, the description and the dates wait high at the right, and
+     the one figure (the way a post reaches the site) is the page's only drawn moment. */
+
+  /* ---------- Opening: title low at the left, description high at the right ---------- */
+  .wk-open {
+    min-height: 76vh; min-height: 76svh;
+    display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 23em);
+    grid-template-rows: auto 1fr auto; column-gap: 72px;
+    padding: calc(var(--head-h) + 9vh) var(--gutter) 0;
+    max-width: calc(1180px + 2 * var(--gutter)); margin: 0 auto;
+  }
+  .wk-aside { grid-column: 2; grid-row: 1; }
+  .wk-lead { margin: 0; }
+  .wk-dates { margin: 22px 0 0; font-size: 15px; line-height: 1.6; color: var(--soft); }
+  .wk-dates span { display: block; }
+  .wk-title { grid-column: 1 / -1; grid-row: 3; margin: 0 0 0 -.04em; max-width: 9.6em; }
+
+  /* ---------- The reading column ---------- */
+  .wk-intro { padding-top: 120px; }
+  .wk-intro > p:first-child { font-size: var(--t-under); line-height: 1.5; letter-spacing: -.004em; color: var(--ink); }
+  .wk-read h2 { margin: 2.6em 0 .7em; }
+  .wk-read :not(pre) > code { overflow-wrap: anywhere; }
+
+  /* ---------- The figure between two halves of its section ---------- */
+  .wk-fig { margin-top: 24px; margin-bottom: 88px; }
+  .wk-fig .k-cap { max-width: 44em; }
+
+  /* ---------- The close ---------- */
+  .wk-end { margin-top: 120px; }
+  .wk-end .wk-back { margin: 0; font-size: var(--t-part); line-height: 1.15; letter-spacing: -.012em; font-weight: 500; }
+  .wk-end .wk-back a { color: var(--ink); text-decoration-color: var(--quiet); text-underline-offset: .14em; }
+  .wk-end .wk-dates { margin-top: 16px; }
+
+  /* ---------- Phone ---------- */
+  @media (max-width: 700px) {
+    .wk-open { min-height: 0; display: flex; flex-direction: column; padding-top: calc(var(--head-h) + 56px); }
+    .wk-title { order: 1; max-width: none; }
+    .wk-aside { order: 2; margin-top: 28px; }
+    .wk-intro { padding-top: 72px; }
+    .wk-fig { margin-top: 24px; margin-bottom: 64px; }
+  }
+  /* Under 672 px the figure draws its tall phone model (750 high at any width); with script on,
+     its box keeps that height before it mounts, so nothing below it moves when the live figure
+     replaces the baked (wide) still. */
+  @media (max-width: 671px) {
+    .k-js .wk-fig .k-art { min-height: 750px; }
+  }

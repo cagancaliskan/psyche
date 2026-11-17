@@ -1,0 +1,167 @@
+{
+ "post": "why-psyche-keeps-a-blog",
+ "replaces": [
+  "how-a-post-is-published.svg"
+ ],
+ "sequence": [
+  {
+   "read": {
+    "className": [
+     "k-read",
+     "wk-read",
+     "wk-intro"
+    ],
+    "id": "reading"
+   },
+   "blocks": [
+    {
+     "kind": "p",
+     "digest": "54bb94329c14bd85"
+    },
+    {
+     "kind": "h2",
+     "digest": "731ec453e5cf3c50",
+     "set": {
+      "dataKPart": "What the posts cover"
+     }
+    },
+    {
+     "kind": "p",
+     "digest": "de22b31f78dc2e97"
+    },
+    {
+     "kind": "ul",
+     "digest": "8ac81bc793c1db65"
+    },
+    {
+     "kind": "h2",
+     "digest": "ed8a7938ccde5f2e",
+     "set": {
+      "dataKPart": "What they do not cover"
+     }
+    },
+    {
+     "kind": "p",
+     "digest": "b7ef2a3f9d8ffddd"
+    },
+    {
+     "kind": "p",
+     "digest": "d3441c14b031f9b2"
+    },
+    {
+     "kind": "h2",
+     "digest": "9d8bafb6270f1a71",
+     "set": {
+      "dataKPart": "How a post reaches the site"
+     }
+    }
+   ]
+  },
+  {
+   "node": {
+    "type": "element",
+    "tagName": "figure",
+    "properties": {
+     "className": [
+      "k-figure",
+      "k-figure--wide",
+      "wk-fig"
+     ],
+     "dataFigure": "route",
+     "ariaDescribedby": "route-cap"
+    },
+    "children": [
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "element",
+      "tagName": "div",
+      "properties": {
+       "className": [
+        "k-art"
+       ]
+      },
+      "children": [
+       {
+        "type": "still",
+        "file": "route.svg",
+        "properties": {
+         "className": [
+          "k-still",
+          "k-still--both"
+         ],
+         "dataKStill": "route"
+        }
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "element",
+      "tagName": "div",
+      "properties": {
+       "className": [
+        "k-fig-ctl"
+       ]
+      },
+      "children": []
+     },
+     {
+      "type": "text",
+      "value": "\n    "
+     },
+     {
+      "type": "element",
+      "tagName": "figcaption",
+      "properties": {
+       "className": [
+        "k-cap"
+       ],
+       "id": "route-cap"
+      },
+      "children": [
+       {
+        "type": "text",
+        "value": "A post is written as a Markdown file, passes the checks in a pull request, is merged by the project lead and is published from that commit."
+       }
+      ]
+     },
+     {
+      "type": "text",
+      "value": "\n  "
+     }
+    ]
+   }
+  },
+  {
+   "read": {
+    "className": [
+     "k-read",
+     "wk-read"
+    ]
+   },
+   "blocks": [
+    {
+     "kind": "p",
+     "digest": "d777bf545eb37684"
+    },
+    {
+     "kind": "h2",
+     "digest": "0c43b6c6ae281d72",
+     "set": {
+      "dataKPart": "Following it"
+     }
+    },
+    {
+     "kind": "p",
+     "digest": "930708db31c65d2a"
+    }
+   ]
+  }
+ ]
+}

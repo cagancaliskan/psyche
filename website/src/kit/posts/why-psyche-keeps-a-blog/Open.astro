@@ -1,0 +1,16 @@
+---
+// The opening of the post why-psyche-keeps-a-blog, imported from its page design.
+// The post's own title, description and days come from layouts/Post.astro; the figure in it is
+// drawn by the post's script (page.js); the layout links the post's page.css.
+// Written by the page import: do not edit here; a change comes in through the design and a re-import.
+interface Day { iso: string; label: string }
+interface Props { title: string; description: string; published: Day; updated?: Day | null }
+const { title, description, published, updated } = Astro.props;
+---
+<section class="wk-open" aria-labelledby="wk-title">{' '}
+    <div class="wk-aside k-open-rest">{' '}
+      <p class="wk-lead k-under">{description}</p>{' '}
+      <p class="wk-dates"><span>Published <time data-k-date datetime={published.iso}>{published.label}</time></span>{updated && (<span>Revised <time data-k-date datetime={updated.iso}>{updated.label}</time></span>)}</p>{' '}
+    </div>{' '}
+    <h1 class="wk-title k-page-title k-open-title" id="wk-title">{title}</h1>{' '}
+  </section>

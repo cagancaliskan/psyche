@@ -1,7 +1,7 @@
 // Accessibility check of the built site: axe-core over every page of dist/, at WCAG 2.2 AA (the axe
 // tags wcag2a, wcag2aa, wcag21a, wcag21aa and wcag22aa), and over the interface states a reader opens
 // (on a docs page: the search dialog with results, the phone menu, the phone contents list; on a front
-// page: the site's phone menu). Exits 1 when any serious
+// page: the site's phone menu; on a post with designed figures: a figure after its control is used). Exits 1 when any serious
 // or critical violation is found, or when a page cannot be audited at all; moderate and minor ones are
 // listed but never fail the run, and neither does what axe cannot decide (its "incomplete" results:
 // today only text contrast over gradients, pseudo-elements and images, which need a human look).
@@ -177,6 +177,24 @@ const STATES = [
       const before = inertBefore.get(page) ?? 0;
       if (after.inert !== before) throw new Error(`the menu closed but ${after.inert} element(s) are inert (${before} before it opened)`);
       if (!after.focused) throw new Error('the menu closed but focus did not return to its button');
+    },
+  },
+  {
+    // A post's own figure (src/kit/posts/<slug>/), after the reader has used its first control ("Play
+    // again", or "Play"): the figure is mounted live, with its controls and its description, and the
+    // control keeps focus. Audited on the post with the most figures.
+    name: 'post figure played',
+    page: 'blog/three-questions-before-a-number-counts/',
+    viewports: ['desktop', 'phone'],
+    async open(page) {
+      const button = '[data-figure="ladder"] .k-fig-ctl button';
+      await page.waitForSelector(button, { timeout: 20000 });
+      await page.$eval('[data-figure="ladder"]', (f) => f.scrollIntoView({ block: 'center' }));
+      await wait(400);
+      await page.click(button);
+      await wait(800);
+      const live = await page.$eval('[data-figure="ladder"]', (f) => !!f.querySelector('.k-layer-front'));
+      if (!live) throw new Error('the figure did not mount live after its control was used');
     },
   },
 ];

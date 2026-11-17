@@ -1,0 +1,25 @@
+---
+// The opening of the post testing-the-test-before-the-model, imported from its page design.
+// The post's own title, description and days come from layouts/Post.astro; the figure in it is
+// drawn by the post's script (page.js); the layout links the post's page.css.
+// Written by the page import: do not edit here; a change comes in through the design and a re-import.
+import still_shares_both from '@/kit/stills/posts/testing-the-test-before-the-model/shares.svg?raw';
+interface Day { iso: string; label: string }
+interface Props { title: string; description: string; published: Day; updated?: Day | null }
+const { title, description, published } = Astro.props;
+---
+<section class="tt-open" data-figure="shares" aria-labelledby="tt-title">{' '}
+    <div class="k-art k-open-fig"><!--still:shares--><div class="k-still k-still--both" data-k-still="shares"><Fragment set:html={still_shares_both} /></div><!--/still:shares--></div>{' '}
+    <h1 class="tt-title tt-col k-page-title k-open-title" id="tt-title">{title}</h1>{' '}
+    <div class="tt-gap" aria-hidden="true"></div>{' '}
+    <div class="tt-foot tt-col k-open-rest">{' '}
+      <div class="tt-lead">{' '}
+        <p class="tt-under k-under">{description}</p>{' '}
+        <p class="tt-date">Published <time data-k-date datetime={published.iso}>{published.label}</time></p>{' '}
+      </div>{' '}
+      <div class="tt-play">{' '}
+        <div class="k-fig-ctl"></div>{' '}
+        <p class="k-cap" id="shares-cap">Share of cases each reference player succeeded in, over 5 seeds and 50 test environments: the all-knowing reference at 100%, the random player at 22% on average.</p>{' '}
+      </div>{' '}
+    </div>{' '}
+  </section>
