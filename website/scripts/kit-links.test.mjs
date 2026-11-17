@@ -1,11 +1,12 @@
 // Every link and asset address that the page kit (src/kit/) and the front pages built on it write
 // leads somewhere this site has: no design file name (*.html), no path that climbs out of the site
 // (../), no other origin (the repository and mail links are the only exceptions), and every site path
-// names a page under src/pages (a post: a slug in src/data/blog.json, rendered by blog/[slug].astro)
-// or a file under public/.
+// names a page under src/pages (a post: a slug in src/data/blog.json, rendered by blog/[slug].astro;
+// a document: a slug of docs/publish.json) or a file under public/.
 //
-// Read: every file under src/kit/, every layout under src/layouts/, and every page under src/pages/
-// that is built on the kit (imports from @/kit/ or from the layouts). Addresses are read where the
+// Read: every file under src/kit/, every layout under src/layouts/, the documentation's parts under
+// src/components/devdocs/, and every page under src/pages/ that is built on the kit (imports from
+// @/kit/ or from the layouts). Addresses are read where the
 // files write them: withBase('…') and href/src attributes in .astro, url(…) in .css, href in .svg,
 // string literals in .js and .ts, and kit.js's menu, footer, home and asset paths.
 import { test } from 'node:test';
@@ -33,6 +34,10 @@ const BLOG = {
     .filter((e) => !/^draft:\s*true\s*$/m.test(readFileSync(join(POSTS_DIR, e.name, 'index.md'), 'utf8').split(/^---\s*$/m)[1] ?? ''))
     .map((e) => ({ slug: e.name, route: `blog/${e.name}/` })),
 };
+// The documents, read from the committed manifest (docs/publish.json), not from the staged copies: each
+// slug is a page of the site whatever renders it.
+const MANIFEST = JSON.parse(readFileSync(join(WEB, '..', 'docs', 'publish.json'), 'utf8'));
+const DOC_SLUGS = new Set(MANIFEST.sections.flatMap((s) => s.pages.map((p) => p.slug)));
 
 function walk(dir) {
   if (!existsSync(dir)) return [];
@@ -44,9 +49,10 @@ const rel = (p) => relative(WEB, p).split('\\').join('/');
 export function scannedFiles() {
   const kit = walk(KIT).filter((p) => /\.(astro|ts|js|mjs|css|svg|json)$/.test(p));
   const layouts = walk(join(SRC, 'layouts')).filter((p) => p.endsWith('.astro'));
+  const devdocs = walk(join(SRC, 'components', 'devdocs')).filter((p) => p.endsWith('.astro'));
   const pages = walk(PAGES).filter((p) => p.endsWith('.astro'))
     .filter((p) => /from\s+['"](?:@\/kit\/|@\/layouts\/|(?:\.\.\/)+(?:kit|layouts)\/)/.test(readFileSync(p, 'utf8')));
-  return [...kit, ...layouts, ...pages];
+  return [...kit, ...layouts, ...devdocs, ...pages];
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -109,6 +115,7 @@ export function resolveSite(path) {
   for (const f of [`${route}.astro`, `${route}/index.astro`]) if (existsSync(join(PAGES, f))) return `src/pages/${f}`;
   const post = /^blog\/([a-z0-9-]+)$/.exec(route);
   if (post && BLOG.posts.some((x) => x.slug === post[1]) && existsSync(join(PAGES, 'blog', '[slug].astro'))) return 'src/pages/blog/[slug].astro';
+  if (DOC_SLUGS.has(route)) return `docs/publish.json#${route}`;
   return null;
 }
 
@@ -158,10 +165,13 @@ test('the checker itself: it finds each kind of bad address in a sample', () => 
   assert.equal(resolveSite('no-such-page/'), null);
   assert.equal(resolveSite('blog/no-such-post/'), null);
   assert.equal(resolveSite('brand/no-such-file.svg'), null);
+  assert.notEqual(resolveSite('research/roadmap/'), null);
+  assert.equal(resolveSite('research/no-such-page/'), null);
+  assert.equal(resolveSite('research/roadmap'), null);
 });
 
 test('the kit has been imported (this test does not pass on an empty folder)', () => {
-  for (const f of ['kit.js', 'kit.css', 'orb-head.js', 'orb-head.css', 'Header.astro', 'film/Body.astro', 'film/film.js', 'film/gen.js']) {
+  for (const f of ['kit.js', 'kit.css', 'orb-head.js', 'orb-head.css', 'Header.astro', 'film/Body.astro', 'film/film.js', 'film/gen.js', 'docs/docs.css', 'docs/docs.js']) {
     assert.ok(existsSync(join(KIT, f)), `src/kit/${f} is missing: run the page import`);
   }
   for (const page of ['what-were-building', 'experiments', 'about', 'blog', 'not-found']) {
@@ -251,9 +261,9 @@ test("kit.js writes its links from the site's base path, to the four menu pages,
   const nav = [...k.matchAll(/\{ label: [^,]+, file: '([^']*)'/g)].map((m) => m[1]);
   assert.deepEqual(nav, ['what-were-building/', 'experiments/', 'blog/', 'about/'], 'the menu');
   const foot = [...k.matchAll(/\{ label: '[^']*', href: KIT_DIR \+ '([^']*)' \}/g)].map((m) => m[1]);
-  assert.deepEqual(foot, ['blog/', 'about/'], 'the footer');
-  assert.match(k, /\{ label: 'For developers', href: SITE\.developers \}/);
-  assert.equal(/developers: '([^']*)'/.exec(k)?.[1], REPO_URL, 'the footer\'s developers link is the repository (lib/seo.ts REPO_URL)');
+  assert.deepEqual(foot, ['blog/', 'about/', 'developers/'], 'the footer: For developers leads to the documentation\'s home');
+  assert.match(k, /\{ label: 'For developers', href: KIT_DIR \+ 'developers\/' \}/);
+  assert.equal(/developers: '([^']*)'/.exec(k)?.[1], REPO_URL, 'the kit\'s own record of the repository is lib/seo.ts REPO_URL');
   const files = [...k.matchAll(/ASSETS \+ '([^'"]*)/g)].map((m) => assets[1] + m[1]);
   assert.ok(files.length >= 2, 'kit.js loads the wordmarks from ASSETS');
   const missing = [...nav, ...foot, '', ...files].filter((p) => !resolveSite(p)).map((p) => `/${p}`);

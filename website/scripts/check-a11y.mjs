@@ -1,7 +1,8 @@
 // Accessibility check of the built site: axe-core over every page of dist/, at WCAG 2.2 AA (the axe
 // tags wcag2a, wcag2aa, wcag21a, wcag21aa and wcag22aa), and over the interface states a reader opens
 // (on a docs page: the search dialog with results, the phone menu, the phone contents list; on a front
-// page: the site's phone menu; on a post with designed figures: a figure after its control is used). Exits 1 when any serious
+// page: the site's phone menu; on a post with designed figures: a figure after its control is used; on the
+// documentation's home: its filter with words typed). Exits 1 when any serious
 // or critical violation is found, or when a page cannot be audited at all; moderate and minor ones are
 // listed but never fail the run, and neither does what axe cannot decide (its "incomplete" results:
 // today only text contrast over gradients, pseudo-elements and images, which need a human look).
@@ -177,6 +178,41 @@ const STATES = [
       const before = inertBefore.get(page) ?? 0;
       if (after.inert !== before) throw new Error(`the menu closed but ${after.inert} element(s) are inert (${before} before it opened)`);
       if (!after.focused) throw new Error('the menu closed but focus did not return to its button');
+    },
+  },
+  {
+    // The documentation's home (/developers/): its filter, which the server writes hidden and the
+    // documentation script shows, with a word typed. Audited filtered: the count's words must change from
+    // the total to "N pages of <total>" and some page must be left; then Escape in the field must clear
+    // the words, show every page again and put the count back to the total.
+    name: 'documentation filter',
+    page: 'developers/',
+    viewports: ['desktop'],
+    async open(page) {
+      const field = '#k-docfilter';
+      await page.waitForSelector(field, { visible: true, timeout: 20000 });
+      const count = () => page.$eval('#k-docfilter-count', (p) => p.textContent.trim());
+      const total = await count();
+      if (!/^\d+ pages$/.test(total)) throw new Error(`the filter's count reads "${total}" before anything is typed`);
+      await page.click(field);
+      await page.type(field, 'gate');
+      await page.waitForFunction((t) => document.querySelector('#k-docfilter-count')?.textContent.trim() !== t, { timeout: 10000 }, total);
+      const after = await page.evaluate(() => ({
+        count: document.querySelector('#k-docfilter-count')?.textContent.trim(),
+        shown: document.querySelectorAll('.k-docindex__item:not([hidden])').length,
+      }));
+      if (!/^\d+ pages? of \d+$/.test(after.count || '') || after.shown < 1) throw new Error(`the filter left ${after.shown} page(s) and reads "${after.count}"`);
+      await wait(200);
+    },
+    async close(page) {
+      await page.keyboard.press('Escape');
+      const after = await page.evaluate(() => ({
+        value: document.querySelector('#k-docfilter')?.value,
+        count: document.querySelector('#k-docfilter-count')?.textContent.trim(),
+        hidden: document.querySelectorAll('.k-docindex__item[hidden]').length,
+      }));
+      if (after.value !== '') throw new Error(`Escape did not clear the filter (it holds "${after.value}")`);
+      if (after.hidden !== 0 || !/^\d+ pages$/.test(after.count || '')) throw new Error(`Escape cleared the words but ${after.hidden} page(s) stay hidden and the count reads "${after.count}"`);
     },
   },
   {

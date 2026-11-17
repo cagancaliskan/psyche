@@ -10,6 +10,8 @@
 //                          every published post, since a new or revised post changes the list it shows;
 //                          the authoring guide (docs/blog/README.md) and a draft are not read, so a
 //                          change to either moves no date
+//   the documentation's    its page file, the kit page's sources, the documentation's frame and parts,
+//   home (/developers/)    and docs/publish.json, the list of every page it shows with its description
 //   a page of the site     its page file, every layout, component and module it imports whose change can
 //                          change what the page says (not stylesheets), the page kit (src/kit, which
 //                          also holds the home page's film, src/kit/film), and the data the page is drawn from
@@ -52,6 +54,16 @@ const KIT_PAGE = [
   `${SRC}/lib/url.ts`,
   `${SRC}/kit`,
   SOCIAL,
+];
+/** What every page in the documentation's frame is made from besides its own file: the kit page's
+ *  sources, the frame and its parts, and the documentation list, which src/data/docs.json is staged
+ *  from (docs/publish.json: every page's title and description, and their order). */
+const DOCS_PAGE = [
+  ...KIT_PAGE,
+  `${SRC}/layouts/Docs.astro`,
+  `${SRC}/components/devdocs`,
+  `${SRC}/lib/devdocs.ts`,
+  'docs/publish.json',
 ];
 
 /** Pages of the site that are not docs pages, by route below the base ('' is the home page). */
@@ -107,6 +119,7 @@ export const SITE_PAGES = {
     LEDGER,
   ],
   blog: [`${SRC}/pages/blog/index.astro`, ...KIT_PAGE, BLOG],
+  developers: [`${SRC}/pages/developers.astro`, ...DOCS_PAGE],
 };
 
 /**

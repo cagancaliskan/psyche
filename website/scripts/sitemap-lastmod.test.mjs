@@ -199,6 +199,7 @@ const DERIVED = {
   'website/src/data/plan.json': 'tools/research_plan.json',
   'website/src/data/ledger.public.json': 'tools/ledger.json',
   'website/src/data/blog.json': 'docs/blog',
+  'website/src/data/docs.json': 'docs/publish.json',
 };
 
 /** The modules a page file imports, followed to the end, as repository-relative paths. Imports of
@@ -241,6 +242,7 @@ test('every module a site page imports is in that page\'s source list, so a chan
     battery: 'battery',
     status: 'status',
     blog: 'blog/index',
+    developers: 'developers',
   };
   // Not text of the page: stylesheets. Data the build writes into src/data is covered by its source.
   for (const [route, name] of Object.entries(entries)) {

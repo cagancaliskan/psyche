@@ -1,6 +1,6 @@
 /**
  * The <head> of the pages that are not Starlight pages: the home page, What we're building, Experiments,
- * About, the blog's index, the blog's posts and the 404 page. Starlight writes the head of every docs page
+ * About, the blog's index, the blog's posts, the documentation's home (/developers/) and the 404 page. Starlight writes the head of every docs page
  * itself (with astro.config.mjs `head` and src/routeData.ts); these pages have no Starlight, so this
  * module writes the same entries: the ones Starlight wrote (title, canonical, sitemap link, SVG icon,
  * og:* and description), the ones astro.config.mjs gives every docs page (theme colour, icons, manifest,
@@ -70,6 +70,32 @@ export const PAGES = {
     title: 'Blog',
     description:
       "Notes from the road to machine cognition. Psyche is building machines on the brain's own principles: neurons that spike, connections that teach themselves.",
+  },
+  developers: {
+    route: 'developers',
+    title: 'For developers',
+    description:
+      "The documentation, records and source code behind Psyche: the reader's guide, the roadmap and its gates, the test battery and the rules for claims.",
+  },
+  // The three pages of the documentation list that are pages of the site, not documents: the list
+  // (lib/devdocs.ts) shows their title and description from here.
+  roadmap: {
+    route: 'roadmap',
+    title: 'Explore the timeline',
+    description:
+      'The phases and decision gates of stage 2 of Psyche on one timeline, read from the research plan: where today falls and the date of each gate that has one.',
+  },
+  battery: {
+    route: 'battery',
+    title: 'Step through the paradigms',
+    description:
+      'Step through the classic cognitive-map paradigms behind the stage 2 test battery: what the agent does, what changes after learning and what each test measures.',
+  },
+  status: {
+    route: 'status',
+    title: 'Substrate status',
+    description:
+      'The substrate, stage 1 of Psyche: its captured test run, the build status of each brick, what its tests show, and where its development stands.',
   },
   notFound: { route: NOT_FOUND.route, title: NOT_FOUND.title, description: NOT_FOUND.description },
 } as const satisfies Record<string, PageFacts>;

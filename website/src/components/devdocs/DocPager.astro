@@ -1,0 +1,16 @@
+---
+// Previous and next: the page's neighbours in the whole documentation list, the pages of the site
+// included (lib/devdocs.ts neighbours). The first page has an empty <span> where "Previous" would be, so
+// "Next" keeps its place at the right.
+import type { DocsEntry } from '@/lib/devdocs.ts';
+import { withBase } from '@/lib/url.ts';
+
+export interface Props {
+  prev: DocsEntry | null;
+  next: DocsEntry | null;
+}
+
+const { prev, next } = Astro.props;
+---
+
+<nav class="k-docpager" aria-label="Previous and next page">{prev ? <a class="k-docpager__prev" href={withBase(prev.path)}><span class="k-docpager__label">Previous</span><span class="k-docpager__title">{prev.title}</span></a> : <span></span>}{next && <a class="k-docpager__next" href={withBase(next.path)}><span class="k-docpager__label">Next</span><span class="k-docpager__title">{next.title}</span></a>}</nav>

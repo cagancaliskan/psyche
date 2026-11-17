@@ -12,13 +12,15 @@ import { fileURLToPath } from 'node:url';
 
 const DIST = fileURLToPath(new URL('../dist/', import.meta.url));
 // The hand-written pages: the front pages (the home, What we're building, Experiments, About and the
-// blog's index) and the custom pages that are still built (roadmap, battery, status).
+// blog's index), the documentation's home and the custom pages that are still built (roadmap, battery,
+// status).
 const PAGES = [
   'index.html',
   'what-were-building/index.html',
   'experiments/index.html',
   'about/index.html',
   'blog/index.html',
+  'developers/index.html',
   'roadmap/index.html',
   'battery/index.html',
   'status/index.html',

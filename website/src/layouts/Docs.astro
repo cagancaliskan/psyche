@@ -1,0 +1,47 @@
+---
+// A page of the developer documentation on the page kit: Kit.astro (the site's header, footer and the
+// kit's script), then the documentation's frame: the navigation of every page of the documentation list
+// (components/devdocs/DocsNav.astro), the page's own <main> (the default slot) and, beside it, its "On
+// this page" (the named slot `aside`, components/devdocs/OnThisPage.astro). The documentation's home
+// (/developers/) has no "On this page", so its frame has two columns (k-doclayout--home).
+//
+// The list is src/data/docs.json, which tools/publish/stage.py writes from docs/publish.json in the
+// commit being built (lib/devdocs.ts reads it). Everything of the frame is in the HTML without script.
+//
+// The documentation's stylesheet and script (src/kit/docs/, written by the page import, never by hand)
+// are loaded by these pages only: the stylesheet after the kit's, whose rules it builds on, and the
+// script after kit.js, as Kit.astro's page script. The body never carries the title attribute that
+// kit.js reads on the design pages: it would put the site-wide sentence in the page's title.
+import Kit from './Kit.astro';
+import '@/kit/docs/docs.css';
+import docsJs from '@/kit/docs/docs.js?url';
+// A document's <em> in real italic, not a slanted roman.
+import '@fontsource-variable/instrument-sans/wght-italic.css';
+import DocsNav from '@/components/devdocs/DocsNav.astro';
+import docs from '@/data/docs.json';
+import { DEVELOPERS_ROUTE, navGroups, type DocsData } from '@/lib/devdocs.ts';
+import type { PageFacts } from '@/lib/head.ts';
+
+export interface Props {
+  /** The page's route, title and description (lib/head.ts PAGES, or a document's front matter). */
+  page: PageFacts;
+  /** The page's route in the documentation list (a document's slug, a site page's route); none on the home. */
+  here?: string;
+  /** The skip link to the page's main text. */
+  skip: { href: string; text: string };
+}
+
+const { page, here, skip } = Astro.props;
+const home = here === undefined;
+if (home && page.route !== DEVELOPERS_ROUTE) throw new Error(`Docs.astro: /${page.route}/ is not in the documentation list; give it \`here\``);
+const groups = navGroups(docs as DocsData, here);
+const body: Record<string, string> = { class: 'k-docs', 'data-page': home ? 'developers' : 'docs', 'data-doc': here ?? DEVELOPERS_ROUTE };
+---
+
+<Kit page={page} body={body} skip={skip} pageScript={docsJs}>
+  <div class={home ? 'k-doclayout k-doclayout--home' : 'k-doclayout'}>
+    <DocsNav groups={groups} home={home} />
+    <slot />
+    <slot name="aside" />
+  </div>
+</Kit>

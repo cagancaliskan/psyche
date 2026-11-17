@@ -1,13 +1,15 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { brotliDecompressSync } from 'node:zlib';
 import { fileURLToPath } from 'node:url';
 import { ADVANCE, ARMS, COVERED, DASHES, DESIGN, OUTPUT, UPM, buildFont, buildGlyphs, checksum, readWoff2, toWoff2, unionRects } from './make-lines-font.mjs';
 
 const text = (relative) => readFileSync(new URL(relative, import.meta.url), 'utf8');
 const FONTS_CSS = text('../src/styles/fonts.css');
-const GLOBAL_CSS = text('../src/styles/global.css');
+// The page kit's stylesheet (src/kit/kit.css, written by the page import): every page on the kit and the
+// documentation set their code in its --mono stack.
+const KIT_CSS = text('../src/kit/kit.css');
 const MARTIAN = fileURLToPath(new URL('../node_modules/@fontsource-variable/martian-mono/files/martian-mono-latin-wght-normal.woff2', import.meta.url));
 
 const font = buildFont();
@@ -121,7 +123,10 @@ test('it covers all of U+2500 to U+257F, the four triangles and the two arrows, 
 });
 
 test('the mono stack puts the face right after the Martian Mono faces, ahead of every system face', () => {
-  assert.match(GLOBAL_CSS, /--font-mono:\s*'Martian Mono Variable',\s*'Martian Mono Fallback',\s*'Psyche Lines',\s*ui-monospace/);
+  assert.match(KIT_CSS, /--mono:\s*"Martian Mono Variable",\s*"Martian Mono Fallback",\s*"Psyche Lines",\s*ui-monospace/);
+  // the stylesheet of the pages Starlight still renders, while it is there
+  const global = new URL('../src/styles/global.css', import.meta.url);
+  if (existsSync(global)) assert.match(readFileSync(global, 'utf8'), /--font-mono:\s*'Martian Mono Variable',\s*'Martian Mono Fallback',\s*'Psyche Lines',\s*ui-monospace/);
 });
 
 // ---- the grid ------------------------------------------------------------------------------------

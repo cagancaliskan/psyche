@@ -79,6 +79,12 @@ const BASE = '/';
 // why-psyche-keeps-a-blog (one); its stylesheet (page.css, 0.6 to 1.0 KB) is linked on its own page only,
 // and the stills that are folded for both themes carry a small <style> each, which is inline CSS and
 // counted here (about 0.6 to 1.4 KB a post). The stills' drawings are inline SVG, not counted.
+//
+// /developers/, the documentation's home, got a line of its own at its measured size when it was added:
+// the page kit plus the documentation's own stylesheet and script (src/kit/docs/docs.css, about 5.3 KB
+// gzipped as built, and docs.js, about 4.1 KB), which only the documentation pages load. The front pages and the
+// posts did not move: the kit's stylesheet and script grew by a few bytes (the footer's link to the new
+// page, one more face in the mono stack), well inside their lines.
 const DEFAULT_BUDGET = { js: 37100, css: 40200 };
 const PAGE_BUDGETS = {
   '/':                          { js: 207100, css:   6200 }, // 201053,   5944
@@ -89,6 +95,7 @@ const PAGE_BUDGETS = {
   '/blog/three-questions-before-a-number-counts/': { js: 42400, css: 16700 }, // 41146, 16124 (its four figures)
   '/blog/testing-the-test-before-the-model/':      { js: 36200, css: 11700 }, // 35070, 11338 (its three figures)
   '/blog/why-psyche-keeps-a-blog/':                { js: 34400, css: 10800 }, // 33358, 10401 (its one figure)
+  '/developers/':               { js:  34100, css:  14900 }, //  33035,  14377 (the documentation's stylesheet and script)
   '/guide/':                    { js:  34500, css:  36100 }, //  33448,  35024
   '/faq/':                      { js:  34500, css:  36100 }, //  33448,  35024
   '/progress/':                 { js:  34500, css:  36100 }, //  33448,  35024

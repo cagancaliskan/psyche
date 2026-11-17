@@ -78,7 +78,7 @@ jobs:
         working-directory: website
         run: npm ci
 
-      - name: Unit tests (plan, maze, battery, search-engine head, head builder, progress feed, sitemap dates, page chrome, search override, kit links, post figures, table regions, a11y tool lock)
+      - name: Unit tests (plan, maze, battery, search-engine head, head builder, progress feed, sitemap dates, page chrome, search override, kit links, documentation list and hooks, post figures, table regions, a11y tool lock)
         working-directory: website
         run: npm test
 
@@ -97,7 +97,7 @@ jobs:
           fi
 
       # What the disclosure job scans: the HTML of the front pages (the home, What we're building,
-      # Experiments, About), the research, custom and Start here pages, the 404 page included, the
+      # Experiments, About), the documentation's home (/developers/), the research, custom and Start here pages, the 404 page included, the
       # three walls page, the progress feed, which carries the plan's text to feed readers, and the
       # blog (its index, its posts and its feed). Not included on purpose: the rest of
       # dist/substrate/ (the substrate's own pre-existing record, which uses some denylisted words in
@@ -116,6 +116,7 @@ jobs:
             website/dist/what-were-building/
             website/dist/experiments/
             website/dist/about/
+            website/dist/developers/
             website/dist/404.html
             website/dist/roadmap/
             website/dist/battery/
@@ -141,7 +142,8 @@ jobs:
       # local port, drives the runner's Chrome and runs axe-core at WCAG 2.2 AA over every page of the
       # site (found in dist, the 404 page included) and over the interface states a reader opens (the
       # search dialog with results, the phone menu, the phone contents list on a docs page; the site's
-      # phone menu on a front page, which must also close again), light and dark, desktop and phone
+      # phone menu on a front page, which must also close again; the documentation home's filter, which
+      # Escape must clear), light and dark, desktop and phone
       # width. The theme of each load is set and checked, since the front pages ignore the system's
       # colour scheme; the home page, dark by design, is audited dark once per width. The step fails
       # on any serious or critical violation, and on a page or state it cannot audit; moderate and
