@@ -24,16 +24,19 @@ the step that copies governed sources into the site's input. The two are unrelat
 ## What the site is
 
 The site has two parts, both plain Astro pages drawn with the page kit (`src/kit/`): its stylesheet, a
-classic script that writes the header's theme switch and phone menu and the footer and runs the
-figures, a head script that shows an orb while a page opens and between pages, and each page's markup,
-styles, figure script and figure stills.
+classic script that writes the header's theme switch (a drawn icon, named for what it does: "Switch to
+the light theme" or "Switch to the dark theme") and phone menu and the footer and runs the figures, a
+head script that shows an orb while a page opens and between pages, and each page's markup, styles,
+figure script and figure stills.
 
 - The front pages (the home, What we're building, Experiments, About, the blog's index, its posts and
   the 404 page) are on three layouts of their own, `src/layouts/Bare.astro`, `Kit.astro` and
-  `Post.astro`. The home is a scroll film drawn with three.js (`src/kit/film/`).
+  `Post.astro`. The home is a scroll film drawn with three.js (`src/kit/film/`), with the site's header
+  and phone menu over it in its own markup and script; the film is dark only, so it has no theme switch.
 - The documentation (the home at `/developers/`, every governed document, and the `/roadmap/`,
   `/battery/` and `/status/` pages) is on `src/layouts/Docs.astro`, which puts the documentation's
-  frame (its page list, "On this page", previous and next, the edit line) around a page on `Kit.astro`.
+  frame (its page list, "On this page", previous and next, the edit line) around a page on `Kit.astro`,
+  so it has the same header, theme switch and phone menu as the front pages.
   See [The documentation](#the-documentation).
 
 No page runs a framework in the browser: the pages are static HTML and CSS, with small scripts that
@@ -82,9 +85,9 @@ list of posts under it is read from `blog.json`.
 | every other route | `docs/publish.json` | A governed Markdown document, staged into `src/content/docs/`, read as the `docs` collection and rendered by `src/pages/[...slug].astro` on `layouts/Docs.astro` |
 
 - Folders: `public/` (icons, `og.png`, manifest, `robots.txt`, and in `public/brand/` the two wordmarks
-  the kit's header loads), `scripts/` (checks and drawing tools), `src/diagrams/` (committed drawings),
-  `src/assets/fonts/` (the box-drawing face), `src/layouts/` and `src/kit/` (the pages' design),
-  `src/components/devdocs/` (the documentation's frame).
+  the kit's header and the film's header load), `scripts/` (checks and drawing tools), `src/diagrams/`
+  (committed drawings), `src/assets/fonts/` (the box-drawing face), `src/layouts/` and `src/kit/` (the
+  pages' design), `src/components/devdocs/` (the documentation's frame).
 - `astro.config.mjs` takes `site` and `base` from `src/lib/seo.ts`, sets `trailingSlash: 'always'`,
   Markdown code without syntax colour (`markdown.syntaxHighlight: false`), prefetching of every link to
   the site's own pages, the repository root for the "Last updated" dates, and three integrations: the
@@ -452,8 +455,12 @@ document, the page list's field with words that match no page (Escape clears the
 documentation's home, its filter with words typed; on `/roadmap/` at phone width, the "Pages" list
 (Escape closes it and returns focus to "Pages"); on `/roadmap/`, a gate chosen; on `/battery/`, the
 walk-through stepped; on `/status/`, the designed bricks shown; on a post with designed figures, a figure
-played; on `what-were-building/` at phone width, the site's menu (Escape closes it, focus returns to its
-button and the page is left as it was). It exits 1 on a serious or critical
+played; on `what-were-building/` and on the home (the film), at phone width, the site's menu (it must
+hold the four links, take focus to the first and hold the theme switch, on the film no switch; Escape
+closes it, focus returns to its button and the page is left as it was); on `about/`, at desktop width,
+the header's theme switch pressed (the page is audited in the other theme, then the switch is pressed
+again; the run fails if the theme does not change and stay chosen or the switch's spoken name does not
+say what it will do). It exits 1 on a serious or critical
 violation and on anything it cannot audit (a page that does not answer 200, a state that will not open,
 a run where axe tested fewer than 15 rules, a state whose page is missing). Lesser findings, and rules axe cannot decide, are listed
 and never fail it. It exits 2 when it could not set itself up (no Chrome, a failed install), which says

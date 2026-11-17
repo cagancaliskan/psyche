@@ -53,6 +53,10 @@
   // theme, and pages simply appear (no orb).
   var ORB = window.PsycheOrb || null;
   if (ORB && ORB.hold) ORB.hold(); // the kit, not the snippet, says when this page is ready to open
+  // The theme icon waits until the orb has fully opened, then fades in (kit.css, .k-ti-wait). The film
+  // has an empty place there, so while the page opens out of the orb its header is the film's header,
+  // word for word; the icon is the only thing that arrives after.
+  if (ORB && ORB.state !== 'open' && !reduced()) root.classList.add('k-ti-wait');
 
   function queryTheme() {
     var m = /[?&]theme=(light|dark)/.exec(location.search || '');
@@ -80,10 +84,37 @@
   function syncThemeControls() {
     var t = P.theme.get();
     doc.querySelectorAll('[data-k-theme]').forEach(function (b) {
-      b.textContent = t === 'dark' ? 'Light' : 'Dark';
-      b.setAttribute('aria-label', t === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme');
+      if (b.getAttribute('data-state') !== t) b.setAttribute('data-state', t);
+      b.setAttribute('aria-label', themeLabel(t));
     });
   }
+
+  /* ------------------------------------------------------------------ */
+  /* The theme switch: one drawn icon, the only icon on the site           */
+  /* ------------------------------------------------------------------ */
+  // "Hemispheres": the brain seen from above, one hemisphere inked, the other drawn as a line; the inked
+  // half changes sides. A 20 by 20 drawing in the wordmark's line (1.2 px strokes at header size), in
+  // currentColor, with its two states: the drawing for the dark theme and the one for the light. The
+  // button crossfades between them (.22 s; none under reduced motion). Classes: l = a line, f = an
+  // inked area, g = a groove cut into an inked area (field colour).
+  // Two grooves, not three: at density 1 three ran together and the half read as a plain half-ellipse.
+  var THEME_ICON = {
+    dark: '<path class="f" d="M9 1.8C5.2 1.8 2.6 4.8 2.6 9.6S5.2 18.2 9 18.2Z"/><path class="g" d="M7.7 6.3C6.3 5.8 4.9 6.4 4.2 7.6M7.7 12.1C6.3 11.7 4.9 12.4 4.3 13.7"/>' +
+      '<path class="l" d="M11 1.8C14.8 1.8 17.4 4.8 17.4 9.6S14.8 18.2 11 18.2Z"/><path class="l" d="M12.3 6.3C13.7 5.8 15.1 6.4 15.8 7.6M12.3 12.1C13.7 11.7 15.1 12.4 15.7 13.7"/>',
+    light: '<path class="l" d="M9 1.8C5.2 1.8 2.6 4.8 2.6 9.6S5.2 18.2 9 18.2Z"/><path class="l" d="M7.7 6.3C6.3 5.8 4.9 6.4 4.2 7.6M7.7 12.1C6.3 11.7 4.9 12.4 4.3 13.7"/>' +
+      '<path class="f" d="M11 1.8C14.8 1.8 17.4 4.8 17.4 9.6S14.8 18.2 11 18.2Z"/><path class="g" d="M12.3 6.3C13.7 5.8 15.1 6.4 15.8 7.6M12.3 12.1C13.7 11.7 15.1 12.4 15.7 13.7"/>'
+  };
+  function themeLabel(t) { return t === 'dark' ? 'Switch to the light theme' : 'Switch to the dark theme'; }
+  function themeIcon() {
+    return '<svg class="k-ti__svg" viewBox="0 0 20 20" aria-hidden="true" focusable="false">' +
+      '<g class="k-ti__s" data-for="dark">' + THEME_ICON.dark + '</g><g class="k-ti__s" data-for="light">' + THEME_ICON.light + '</g></svg>';
+  }
+  // the button: cls adds a place ("k-head__theme" in the header, "k-ti--menu" in the phone menu)
+  function themeButton(cls) {
+    var t = P.theme.get();
+    return '<button type="button" class="k-ti ' + cls + '" data-k-theme data-state="' + t + '" aria-label="' + themeLabel(t) + '">' + themeIcon() + '</button>';
+  }
+  P.themeIcon = { svg: themeIcon, button: themeButton, label: themeLabel };
 
   /* ------------------------------------------------------------------ */
   /* The five-page site: words around the pages                         */
@@ -725,7 +756,7 @@
   //   to: { field: value } or (model, state) -> { field: value }
   //                                     numeric fields of the state eased from where they are to these
   //                                     values over the step (`ease`: 'inOut' (default), 'in', 'out',
-  //                                     'linear', or a function of 0..1);
+  //                                     'travel', 'settle', 'pass', 'linear', or a function of 0..1);
   //   frame(model, state, u) -> state   every frame, u the eased progress 0..1;
   //   tick: false                       hold the figure's own tick or step during it (they run by default).
   // The kit plays it from initialState when the figure is well in view (60% of it, or of the screen)
@@ -736,8 +767,32 @@
     linear: function (u) { return u; },
     'in': function (u) { return u * u * u; },
     out: function (u) { return 1 - Math.pow(1 - u, 3); },
-    inOut: function (u) { return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; }
+    inOut: function (u) { return u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2; },
+    // travel: from rest to rest, the way a pushed thing or a hand moves. x = 1 - (1-u)^3 (1+3u),
+    // speed 12u(1-u)^2: zero at both ends, peak 16/9 of the average at a third of the step, then a
+    // long slowing over the last two thirds. Never passes 1.
+    travel: function (u) { return 1 - Math.pow(1 - u, 3) * (1 + 3 * u); },
+    // settle: an arrival at a value, from rest, quicker to start and longer to settle. x = 1 - (1-u)^4 (1+4u),
+    // speed 20u(1-u)^3: zero at both ends, peak 135/64 (about 2.1) of the average at a quarter of the
+    // step. Never passes 1 (no overshoot, safe for anything that encodes a number).
+    settle: function (u) { return 1 - Math.pow(1 - u, 4) * (1 + 4 * u); },
+    // pass: one move from rest to rest past a row of marks, a flat middle so evenly spaced marks go by
+    // at an even beat. Over the first 27% of the time it gathers speed (peak about 2.6 times the later
+    // pace at 15%) and eases back to a steady pace, reached at 43% of the way; it holds that pace to 85%
+    // of the way, then slows to rest over the last 30% of the time (smoothstep ramps). Speed is
+    // continuous and zero at both ends; never passes 1.
+    pass: (function () {
+      var xa = 0.27, pa = 0.43, pb = 0.85;
+      var xb = ((pb - pa) + 2 * (1 - pb) * xa) / ((pb - pa) + 2 * (1 - pb)), vc = (pb - pa) / (xb - xa), h = (pa / xa - vc / 2) * 15 / 8;
+      return function (u) {
+        if (u <= 0) return 0; if (u >= 1) return 1;
+        if (u < xa) { var y = u / xa, y3 = y * y * y; return xa * (vc * (y3 - y3 * y / 2) + 16 * h * (y3 / 3 - y3 * y / 2 + y3 * y * y / 5)); }
+        if (u < xb) return pa + (u - xa) * vc;
+        var z = (u - xb) / (1 - xb); return pb + (1 - xb) * vc * (z - z * z * z + z * z * z * z / 2);
+      };
+    })()
   };
+  P.ease = EASE; // the same curves, by name, for a figure whose model eases something the sequence cannot reach
   function seqOf(def) {
     var sq = def.sequence, steps = Array.isArray(sq) ? sq : (sq.steps || []);
     if (!steps.length) throw new Error('Psyche.figure "' + def.id + '": sequence has no steps');
@@ -1146,9 +1201,9 @@
   // WAIT ms at most) and what to stop before leaving.
   P.transition = {
     arrive: function () {
-      if (!ORB || reduced() || ORB.state === 'open') { root.classList.remove('k-arrive'); arrivalDone(); return; }
+      if (!ORB || reduced() || ORB.state === 'open') { root.classList.remove('k-arrive', 'k-ti-wait'); arrivalDone(); return; }
       ORB.onOpen(function () { root.classList.remove('k-arrive'); });
-      ORB.onOpened(arrivalDone);
+      ORB.onOpened(function () { root.classList.remove('k-ti-wait'); arrivalDone(); });
       setTimeout(tellReady, WAIT);
     },
     // every figure stops before the orb gathers, so the orb has the frames to itself
@@ -1160,7 +1215,7 @@
   function beforeLeave() { leaving = true; stopAll(); if (menu && menu.open) closeMenu(false); }
   if (ORB) ORB.beforeLeave = beforeLeave;
   window.addEventListener('pageshow', function (e) {
-    if (e.persisted) { root.classList.remove('k-leaving'); leaving = false; resumeAll(); }
+    if (e.persisted) { root.classList.remove('k-leaving', 'k-ti-wait'); leaving = false; resumeAll(); }
   });
 
   /* ------------------------------------------------------------------ */
@@ -1173,14 +1228,14 @@
   function navLinks(cls) {
     return NAV.map(function (n) {
       var cur = currentOf(n);
-      return '<a class="' + cls + '" href="' + KIT_DIR + n.file + '"' + (cur ? ' aria-current="' + cur + '"' : '') + '>' + esc(n.label) + '</a>';
+      return '<a class="' + cls + '" href="' + KIT_DIR + n.file + '"' + (cur ? ' aria-current="' + cur + '"' : '') + (cls === 'k-head__link' ? ' data-text="' + esc(n.label) + '"' : '') + '>' + esc(n.label) + '</a>';
     }).join('');
   }
   // The header is always written by the kit, so every page carries the same menu.
   P.headerHTML = function () {
     return '<a class="k-head__home" href="' + HOME + '" aria-label="Psyche, home">' + wordmark() + '</a>' +
       '<nav class="k-head__nav" aria-label="Site">' + navLinks('k-head__link') + '</nav>' +
-      '<div class="k-head__end"><button type="button" class="k-ctl k-head__theme" data-k-theme>Light</button>' +
+      '<div class="k-head__end">' + themeButton('k-head__theme') +
       '<button type="button" class="k-ctl k-head__menu" data-k-menu aria-haspopup="dialog" aria-expanded="false">Menu</button></div>';
   };
   var head = null, headHidden = false;
@@ -1222,9 +1277,8 @@
     var node = el('div', { 'class': 'k-menu', id: 'k-menu', role: 'dialog', 'aria-modal': 'true', 'aria-label': 'Menu', hidden: '' });
     node.innerHTML =
       '<div class="k-menu__top"><a class="k-head__home" href="' + HOME + '" aria-label="Psyche, home">' + wordmark() + '</a>' +
-      '<button type="button" class="k-ctl" data-k-close>Close</button></div>' +
-      '<nav class="k-menu__list" aria-label="Site">' + navLinks('k-menu__link') + '</nav>' +
-      '<div class="k-menu__end"><button type="button" class="k-ctl" data-k-theme>Light</button></div>';
+      '<div class="k-menu__ctl">' + themeButton('k-ti--menu') + '<button type="button" class="k-ctl" data-k-close>Close</button></div></div>' +
+      '<nav class="k-menu__list" aria-label="Site">' + navLinks('k-menu__link') + '</nav>';
     doc.body.appendChild(node);
     node.querySelector('[data-k-close]').addEventListener('click', function () { closeMenu(true); });
     node.addEventListener('keydown', function (e) {

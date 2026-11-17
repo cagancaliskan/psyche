@@ -275,6 +275,32 @@ test("kit.js writes its links from the site's base path, to the four menu pages,
   for (const p of BLOG.posts) assert.ok(re.test(p.route), `the Blog item does not mark the post route ${p.route}`);
 });
 
+test("the film's header and phone menu carry the site's menu: the wordmark home and kit.js's four pages, in order", () => {
+  const k = readFileSync(join(KIT, 'kit.js'), 'utf8');
+  const nav = [...k.matchAll(/\{ label: (?:"([^"]*)"|'([^']*)'), file: '([^']*)'/g)].map((m) => `${m[3]} ${m[1] ?? m[2]}`);
+  assert.equal(nav.length, 4, "kit.js's menu");
+  const body = readFileSync(join(KIT, 'film', 'Body.astro'), 'utf8');
+  const part = (start, end) => {
+    const a = body.indexOf(start);
+    assert.ok(a >= 0, `src/kit/film/Body.astro has no ${start}`);
+    assert.equal(body.indexOf(start, a + 1), -1, `src/kit/film/Body.astro has ${start} twice`);
+    return body.slice(a, body.indexOf(end, a));
+  };
+  const head = part('<header class="k-head">', '</header>');
+  const menu = part('<div class="k-menu" id="k-menu"', '</nav>');
+  const links = (text, re) => [...text.matchAll(re)].map((m) => `${m[1]} ${m[2]}`);
+  assert.deepEqual(links(head, /<a class="k-head__link" href=\{withBase\('([^']*)'\)\}[^>]*>([^<]*)<\/a>/g), nav, "the film's header links");
+  assert.deepEqual(links(menu, /<a class="k-menu__link" href=\{withBase\('([^']*)'\)\}>([^<]*)<\/a>/g), nav, "the film's phone menu links");
+  for (const [where, text] of [['header', head], ['phone menu', menu]]) {
+    assert.match(text, /<a class="k-head__home" href=\{withBase\(''\)\} aria-label="Psyche, home"><img src=\{withBase\('brand\/psyche-wordmark-dark\.svg'\)\}/, `the film's ${where} wordmark leads home`);
+  }
+  assert.ok(resolveSite('brand/psyche-wordmark-dark.svg'), "the film's wordmark file is in public/brand/");
+  // the film is dark only: its header keeps the theme switch's place empty and has no switch
+  assert.match(head, /<span class="k-head__theme" aria-hidden="true"><\/span>/);
+  assert.doesNotMatch(head + menu, /data-k-theme/);
+  assert.match(head, /<button type="button" class="k-ctl k-head__menu" data-k-menu aria-haspopup="dialog" aria-expanded="false" aria-controls="k-menu">Menu<\/button>/);
+});
+
 test('every site path the kit and the front pages write leads to a page or file the site has', () => {
   const bad = [];
   let paths = 0;

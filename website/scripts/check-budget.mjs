@@ -80,6 +80,12 @@ const BASE = '/';
 // why-psyche-keeps-a-blog (one); its stylesheet (page.css, 0.6 to 1.0 KB) is linked on its own page only,
 // and the stills that are folded for both themes carry a small <style> each, which is inline CSS and
 // counted here (about 0.6 to 1.4 KB a post). The stills' drawings are inline SVG, not counted.
+// They were raised again, to the measured size plus 3 percent, when the page kit gained three named
+// motion curves for a figure's sequence and the posts' figures were retimed with them: about 0.8 KB
+// more JavaScript on every page of the kit, which the other pages' lines already had room for.
+// The About page and the blog index were raised, to the measured size plus 3 percent, when the header's
+// theme switch became a drawn icon: the icon and the reworked phone menu add about 0.8 KB of JavaScript
+// to every page of the kit, and with the motion curves those two pages no longer fitted their lines.
 //
 // /developers/, the documentation's home, got a line of its own at its measured size when it was added:
 // the page kit plus the documentation's own stylesheet and script (src/kit/docs/docs.css, about 5.3 KB
@@ -109,21 +115,30 @@ const BASE = '/';
 // to the measured size plus 3 percent: three-questions, which was 38 percent over its CSS, and the four
 // pages of the frame, whose CSS line had kept the room of their old size. /roadmap/'s JavaScript also
 // fell with this change, from 36328 to 35530 bytes, and its line was reset with them.
-const DOC_BUDGET = { js: 34200, css: 14800 }; // 33107, 14301 on every document
+//
+// Every line was reset again, to the measured size plus at most 3 percent (rounded down to 100 bytes),
+// when the documentation's frame met the retimed figures and the new header: the page kit's script
+// (motion curves, the drawn theme icon, the phone menu's top row) and its stylesheet now reach every
+// page of the frame too, about 640 bytes of JavaScript and 310 of CSS on each document, which took them
+// over DOC_BUDGET; the front pages and the posts were measured and reset with them in the same build.
+// The home's film was measured and reset too (its header's styles are in its own film.css).
+const DOC_BUDGET = { js: 35700, css: 15000 }; // 34745, 14612 on every document
 const DEFAULT_BUDGET = DOC_BUDGET;
 const PAGE_BUDGETS = {
-  '/':                          { js: 207100, css:   6200 }, // 201053,   5944
-  '/what-were-building/':       { js:  62300, css:  15700 }, //  60449,  15153
-  '/experiments/':              { js:  55900, css:  17600 }, //  54219,  17030
-  '/about/':                    { js:  43700, css:  12000 }, //  42413,  11602
-  '/blog/':                     { js:  34900, css:   9900 }, //  33835,   9554
-  '/blog/three-questions-before-a-number-counts/': { js: 41200, css: 12500 }, // 39977, 12082 (its four figures; no code renderer)
-  '/blog/testing-the-test-before-the-model/':      { js: 36200, css: 11700 }, // 35070, 11338 (its three figures)
-  '/blog/why-psyche-keeps-a-blog/':                { js: 34400, css: 10800 }, // 33358, 10401 (its one figure)
-  '/developers/':               { js:  34100, css:  14800 }, //  33107,  14301 (the documentation's stylesheet and script)
-  '/roadmap/':                  { js:  36600, css:  14800 }, //  35530,  14301 (the timeline, written on the server)
-  '/battery/':                  { js:  34500, css:  14800 }, //  33544,  14301 (the walk-through, written on the server)
-  '/status/':                   { js:  34200, css:  14800 }, //  33266,  14301
+  // '/': CSS raised from 6200 when the film got the site's header and phone menu (their styles are in
+  // the film's own stylesheet, src/kit/film/film.css, since the film does not load kit.css).
+  '/':                          { js: 207600, css:   6800 }, // 201633,   6619
+  '/what-were-building/':       { js:  63900, css:  15800 }, //  62095,  15418
+  '/experiments/':              { js:  57500, css:  17800 }, //  55865,  17295
+  '/about/':                    { js:  45300, css:  12200 }, //  44059,  11867
+  '/blog/':                     { js:  36500, css:  10100 }, //  35481,   9819
+  '/blog/three-questions-before-a-number-counts/': { js: 43400, css: 12700 }, // 42155, 12393 (its four figures; no code renderer)
+  '/blog/testing-the-test-before-the-model/':      { js: 37900, css: 11800 }, // 36804, 11531 (its three figures)
+  '/blog/why-psyche-keeps-a-blog/':                { js: 36300, css: 10900 }, // 35252, 10594 (its one figure)
+  '/developers/':               { js:  35700, css:  15000 }, //  34745,  14612 (the documentation's stylesheet and script)
+  '/roadmap/':                  { js:  38200, css:  15000 }, //  37168,  14612 (the timeline, written on the server)
+  '/battery/':                  { js:  36200, css:  15000 }, //  35182,  14612 (the walk-through, written on the server)
+  '/status/':                   { js:  35900, css:  15000 }, //  34904,  14612
 };
 
 // Every document's route, from the manifest (a source, so the list is the commit's, not a build's).
