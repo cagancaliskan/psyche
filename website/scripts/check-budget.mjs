@@ -133,23 +133,31 @@ const BASE = '/';
 // The developer home's four links into the repository (Discussions, citation, licence, security) added
 // about 55 bytes of CSS to every page of the frame (14690): 310 bytes of room under DOC_BUDGET's 15000,
 // which is inside 3 percent of the new size (15130), so no line moved.
-const DOC_BUDGET = { js: 35700, css: 15000 }; // 34745, 14690 on every document
+// "For developers" joined the header's menu, which now folds behind "Menu" at 860 px and under: about 74
+// bytes more JavaScript (kit.js) on every page of the kit, and 9 bytes more CSS on every page (kit.css,
+// and the film's film.css on the home, whose JavaScript did not change).
+// Every line was measured again; four CSS lines were raised, each to at most the measured size plus 3
+// percent: three-questions (12402) to 12750 and why-psyche-keeps-a-blog (10603) to 10920, which keep
+// 300 bytes of room for the CI build; the home's (6628) and the blog index's (9828) cannot keep 300
+// bytes inside 3 percent, so they are raised to the 3 percent line, 6826 and 10122 (198 and 294 bytes
+// of room). The rest kept at least 300 bytes of room and did not move.
+const DOC_BUDGET = { js: 35700, css: 15000 }; // 34819, 14699 on every document
 const DEFAULT_BUDGET = DOC_BUDGET;
 const PAGE_BUDGETS = {
   // '/': CSS raised from 6200 when the film got the site's header and phone menu (their styles are in
   // the film's own stylesheet, src/kit/film/film.css, since the film does not load kit.css).
-  '/':                          { js: 207600, css:   6800 }, // 201633,   6619
-  '/what-were-building/':       { js:  63900, css:  15800 }, //  62095,  15418
-  '/experiments/':              { js:  57500, css:  17800 }, //  55865,  17295
-  '/about/':                    { js:  45300, css:  12200 }, //  44059,  11867
-  '/blog/':                     { js:  36500, css:  10100 }, //  35481,   9819
-  '/blog/three-questions-before-a-number-counts/': { js: 43400, css: 12700 }, // 42155, 12393 (its four figures; no code renderer)
-  '/blog/testing-the-test-before-the-model/':      { js: 37900, css: 11870 }, // 36804, 11531 (its three figures)
-  '/blog/why-psyche-keeps-a-blog/':                { js: 36300, css: 10900 }, // 35252, 10594 (its one figure)
-  '/developers/':               { js:  35700, css:  15000 }, //  34745,  14690 (the documentation's stylesheet and script)
-  '/roadmap/':                  { js:  38200, css:  15000 }, //  37168,  14690 (the timeline, written on the server)
-  '/battery/':                  { js:  36200, css:  15000 }, //  35182,  14690 (the walk-through, written on the server)
-  '/status/':                   { js:  35900, css:  15000 }, //  34904,  14690
+  '/':                          { js: 207600, css:   6826 }, // 201633,   6628
+  '/what-were-building/':       { js:  63900, css:  15800 }, //  62169,  15427
+  '/experiments/':              { js:  57500, css:  17800 }, //  55939,  17304
+  '/about/':                    { js:  45300, css:  12200 }, //  44133,  11876
+  '/blog/':                     { js:  36500, css:  10122 }, //  35555,   9828
+  '/blog/three-questions-before-a-number-counts/': { js: 43400, css: 12750 }, // 42229, 12402 (its four figures; no code renderer)
+  '/blog/testing-the-test-before-the-model/':      { js: 37900, css: 11870 }, // 36878, 11540 (its three figures)
+  '/blog/why-psyche-keeps-a-blog/':                { js: 36300, css: 10920 }, // 35326, 10603 (its one figure)
+  '/developers/':               { js:  35700, css:  15000 }, //  34819,  14699 (the documentation's stylesheet and script)
+  '/roadmap/':                  { js:  38200, css:  15000 }, //  37242,  14699 (the timeline, written on the server)
+  '/battery/':                  { js:  36200, css:  15000 }, //  35256,  14699 (the walk-through, written on the server)
+  '/status/':                   { js:  35900, css:  15000 }, //  34978,  14699
 };
 
 // Every document's route, from the manifest (a source, so the list is the commit's, not a build's).

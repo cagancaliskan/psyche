@@ -4,9 +4,9 @@
 // writes them.
 //
 // The header is written here as the design writes it for readers without script: the wordmark and the
-// four menu links (src/kit/Header.astro). kit.js writes the live header over it as soon as it runs: the
+// five menu links (src/kit/Header.astro). kit.js writes the live header over it as soon as it runs: the
 // same wordmark and links, the theme switch (a drawn icon whose spoken name says what it will do,
-// "Switch to the light theme" or "Switch to the dark theme"), and on a phone (700 px and under) the Menu button
+// "Switch to the light theme" or "Switch to the dark theme"), and at 860 px and under the Menu button
 // that opens the full-screen list, with the theme switch in its top row beside Close. The footer is an empty <footer class="k-foot">, which kit.js always fills with
 // the slogan and the footer links, so every page carries the same words.
 //
@@ -30,8 +30,8 @@ export interface Props {
   /** The skip link to the page's main text (the page's page.ts `skip`). */
   skip: { href: string; text: string };
   /** The menu item of this page; none on the 404 page. */
-  current?: 'what-were-building' | 'experiments' | 'blog' | 'about';
-  /** True on a page inside that item (a post, under Blog). */
+  current?: 'what-were-building' | 'experiments' | 'blog' | 'developers' | 'about';
+  /** True on a page inside that item (a post under Blog, a documentation page under For developers). */
   within?: boolean;
   /** The address of the page's own classic script, if it has one: a `?url` import of its
    *  src/kit/pages/<page>/page.js. */

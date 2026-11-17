@@ -77,7 +77,7 @@
   .k-menu.is-open { opacity: 1; }
   .k-menu[hidden] { display: none; }
   .k-menu__top { flex: none; height: var(--head-h); display: flex; align-items: center; justify-content: space-between; }
-  .k-menu__top img { display: block; height: 16px; width: auto; }
+  .k-menu__top img { display: block; height: 19px; width: auto; }
   .k-menu__list { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin: 9vh 0 auto; }
   .k-menu__link {
     color: var(--soft); text-decoration: none; font-weight: 400;
@@ -85,11 +85,14 @@
     text-decoration-line: underline; text-decoration-color: transparent; text-decoration-thickness: 2px; text-underline-offset: .14em;
   }
   .k-menu-open { overflow: hidden; }
-  @media (max-width: 700px) {
-    :root { --gutter: 16px; --head-h: 58px; }
-    .k-head__home img { height: 16px; }
+  /* the menu folds behind "Menu" at the kit's width (860 px and under) */
+  @media (max-width: 860px) {
     .k-head__nav, .k-head__theme { display: none; }
     .k-js .k-head__menu { display: inline-block; }
+  }
+  @media (max-width: 700px) {
+    :root { --gutter: 16px; --head-h: 58px; }
+    .k-head__home img, .k-menu__top img { height: 16px; }
   }
   @media (prefers-reduced-motion: reduce) {
     .k-head__link, .k-ctl, .k-menu, .k-leaving .k-head, html.is-static .k-head { transition: none; }

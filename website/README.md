@@ -40,8 +40,10 @@ figure script and figure stills.
   See [The documentation](#the-documentation).
 
 No page runs a framework in the browser: the pages are static HTML and CSS, with small scripts that
-add behaviour to markup the server has already written. The footer's "For developers" link leads to
-`/developers/`, and the blog's posts link to some documents. The build writes plain HTML to `dist/`,
+add behaviour to markup the server has already written. "For developers", the fourth item of the
+header's menu (What we're building, Experiments, Blog, For developers, Contact; at 860 px and under they
+sit behind "Menu") and a link in the footer, leads to `/developers/`, and is marked as the current item
+there and on every page of the documentation; the blog's posts link to some documents. The build writes plain HTML to `dist/`,
 which GitHub Pages serves at the root of `psyche.cagancaliskan.com`. Every dependency is pinned to an
 exact version in `package.json`, which is where the versions of Astro and three.js are; ask the project
 lead before adding one.
@@ -457,7 +459,8 @@ documentation's home, its filter with words typed; on `/roadmap/` at phone width
 returns focus to "Pages"); on `/roadmap/`, a gate chosen; on `/battery/`, the
 walk-through stepped; on `/status/`, the designed bricks shown; on a post with designed figures, a figure
 played; on `what-were-building/`, on `research/gates/` and on the home (the film), at phone width, the
-site's menu (it must hold the four links, take focus to the first and hold the theme switch, on the film
+site's menu (it must hold the five links, mark the page's item, For developers on the document and
+none on the film, take focus to the first and hold the theme switch, on the film
 no switch; Escape closes it, focus returns to its button and the page is left as it was); on `about/`
 and on `research/gates/`, at desktop width, the header's theme switch pressed (the page is audited in
 the other theme, then the switch is pressed again; the run fails if the theme does not change and stay chosen or the switch's spoken name does not

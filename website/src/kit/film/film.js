@@ -69,7 +69,7 @@ const goStatic = () => {
     if (e.shiftKey && (document.activeElement === first || !sheet.contains(document.activeElement))) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
   });
-  addEventListener('resize', () => { if (isOpen && innerWidth > 700) close(false); });
+  addEventListener('resize', () => { if (isOpen && innerWidth > 860) close(false); });
   if (window.PsycheOrb) { const prev = window.PsycheOrb.beforeLeave; window.PsycheOrb.beforeLeave = (h) => { close(false); if (prev) prev(h); }; }
 }
 

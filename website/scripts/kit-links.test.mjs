@@ -251,7 +251,7 @@ test('the kit files never name the design folders or a design tool, and never cl
   assert.deepEqual(bad, []);
 });
 
-test("kit.js writes its links from the site's base path, to the four menu pages, the footer pages and the brand files", () => {
+test("kit.js writes its links from the site's base path, to the five menu pages, the footer pages and the brand files", () => {
   assert.equal(BASE, '/', "kit.js writes links from '/': if the site's base path changes, kit.js's KIT_DIR must change with it");
   const k = readFileSync(join(KIT, 'kit.js'), 'utf8');
   assert.match(k, /^  var KIT_DIR = '\/';$/m);
@@ -259,7 +259,7 @@ test("kit.js writes its links from the site's base path, to the four menu pages,
   const assets = /^  var ASSETS = KIT_DIR \+ '([^']*)';$/m.exec(k);
   assert.ok(assets, 'kit.js sets ASSETS from KIT_DIR');
   const nav = [...k.matchAll(/\{ label: [^,]+, file: '([^']*)'/g)].map((m) => m[1]);
-  assert.deepEqual(nav, ['what-were-building/', 'experiments/', 'blog/', 'about/'], 'the menu');
+  assert.deepEqual(nav, ['what-were-building/', 'experiments/', 'blog/', 'developers/', 'about/'], 'the menu: For developers fourth, Contact last');
   const foot = [...k.matchAll(/\{ label: '[^']*', href: KIT_DIR \+ '([^']*)' \}/g)].map((m) => m[1]);
   assert.deepEqual(foot, ['blog/', 'about/', 'developers/'], 'the footer: For developers leads to the documentation\'s home');
   assert.match(k, /\{ label: 'For developers', href: KIT_DIR \+ 'developers\/' \}/);
@@ -275,10 +275,27 @@ test("kit.js writes its links from the site's base path, to the four menu pages,
   for (const p of BLOG.posts) assert.ok(re.test(p.route), `the Blog item does not mark the post route ${p.route}`);
 });
 
-test("the film's header and phone menu carry the site's menu: the wordmark home and kit.js's four pages, in order", () => {
+test('For developers is marked on the documentation home and on every page of the documentation, by kit.js and by the static header', () => {
+  const k = readFileSync(join(KIT, 'kit.js'), 'utf8');
+  // kit.js: the item carries `docs`, and a page whose body has the documentation's class marks it
+  assert.match(k, /\{ label: 'For developers', file: 'developers\/', docs: true \}/);
+  assert.match(k, /if \(n\.docs && doc\.body && doc\.body\.classList\.contains\('k-docs'\)\) return 'true';/);
+  // the documentation's layout gives every page that class and names the item for the static header
+  const docs = readFileSync(join(WEB, 'src', 'layouts', 'Docs.astro'), 'utf8');
+  assert.match(docs, /class: 'k-docs'/);
+  assert.match(docs, /<Kit [^>]*current="developers" within=\{!home\}/);
+  const header = readFileSync(join(KIT, 'Header.astro'), 'utf8');
+  assert.match(header, /<a class="k-head__link" href=\{withBase\('developers\/'\)\} aria-current=\{mark\('developers'\)\}>For developers<\/a><a class="k-head__link" href=\{withBase\('about\/'\)\}/);
+  // no other layout or page names the item as its own
+  for (const f of ['src/layouts/Kit.astro', 'src/layouts/Post.astro', 'src/pages/about.astro', 'src/pages/blog/index.astro']) {
+    assert.doesNotMatch(readFileSync(join(WEB, f), 'utf8'), /current="developers"/, f);
+  }
+});
+
+test("the film's header and phone menu carry the site's menu: the wordmark home and kit.js's five pages, in order", () => {
   const k = readFileSync(join(KIT, 'kit.js'), 'utf8');
   const nav = [...k.matchAll(/\{ label: (?:"([^"]*)"|'([^']*)'), file: '([^']*)'/g)].map((m) => `${m[3]} ${m[1] ?? m[2]}`);
-  assert.equal(nav.length, 4, "kit.js's menu");
+  assert.equal(nav.length, 5, "kit.js's menu");
   const body = readFileSync(join(KIT, 'film', 'Body.astro'), 'utf8');
   const part = (start, end) => {
     const a = body.indexOf(start);
