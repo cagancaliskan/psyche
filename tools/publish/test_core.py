@@ -99,6 +99,10 @@ Covered:
             the installation documentation and exits 1; the README has the status line above the
             Quick start, four badges, each make target with its plain command, the interpreter
             range and links that resolve. Every check is shown to fail on a mutated copy.
+  name      the one LANGUAGE exemption (check_disclosure.NAME_ALLOWANCE): the name is stored
+            in NFC and holds a Turkish letter, its ASCII spelling is the same length and holds
+            none, it has exactly one path (the About page), no other file in the working tree
+            holds it, and the About page, once it exists, holds it exactly once.
   source    this file holds no Turkish letter and no raw invisible character, and every
             character outside ASCII in its test data is built with chr() or an escape.
 """
@@ -132,6 +136,7 @@ import diagrams as DG          # noqa: E402
 import blog as BL              # noqa: E402
 import og as OG                # noqa: E402
 import stage                   # noqa: E402
+import check_disclosure as CD  # noqa: E402
 
 REPO = core.REPO
 LC = core.ledger_check()
@@ -3579,6 +3584,35 @@ def test_citation_author() -> None:
             check(True, f"{label} is refused")
 
 
+def test_name_allowance_target() -> None:
+    section("the founder's name: the one LANGUAGE exemption has one target, and no other file holds the name")
+    name = CD.NAME_ALLOWANCE
+    check(name == unicodedata.normalize("NFC", name), "the allowed name is stored in NFC")
+    check(CD.turkish_letter(name) is not None,
+          "it holds a Turkish letter (a name without one would need no exemption)")
+    check(CD.turkish_letter(CD.NAME_ALLOWANCE_ASCII) is None
+          and len(CD.NAME_ALLOWANCE_ASCII) == len(name),
+          "its ASCII spelling holds none and has the same length, so columns hold")
+    paths = sorted(CD.NAME_ALLOWANCE_PATHS)
+    check(paths == ["website/src/pages/about.astro"],
+          f"the exemption has exactly one path, the About page: {paths}")
+    listed = subprocess.run(["git", "-C", str(REPO), "ls-files", "-z", "-co", "--exclude-standard"],
+                            capture_output=True)
+    check(listed.returncode == 0, "the repository's files can be listed (git ls-files)")
+    names = [x.decode("utf-8", errors="replace") for x in listed.stdout.split(b"\0") if x]
+    holders = []
+    for rel in names:
+        p = REPO / rel
+        if p.is_file() and name in unicodedata.normalize("NFC", CD.decode_bytes(p.read_bytes())):
+            holders.append(rel)
+    check(len(names) > 100 and set(holders) <= set(paths),
+          f"no file but the About page holds the name (read {len(names)} files): {holders}")
+    page = REPO / paths[0] if paths else None
+    check(page is not None and page.is_file(), f"the About page exists: {paths}")
+    text = unicodedata.normalize("NFC", CD.decode_bytes(page.read_bytes())) if page is not None and page.is_file() else ""
+    check(text.count(name) == 1, f"the About page holds the name exactly once: {text.count(name)}")
+
+
 def cited_doi() -> str:
     """The doi of preferred-citation in CITATION.cff: the one place the project's citation is kept."""
     text = (REPO / core.CITATION_REL).read_text(encoding="utf-8")
@@ -3587,16 +3621,37 @@ def cited_doi() -> str:
     return found.group(1) if found else ""
 
 
+def site_files() -> list[Path]:
+    """Every file under website/src and website/public that git tracks or would track (tracked
+    and untracked, ignored ones left out, so the staged copies and the build are not read)."""
+    out = subprocess.run(["git", "-C", str(REPO), "ls-files", "-z", "-co", "--exclude-standard",
+                          "--", "website/src", "website/public"], capture_output=True)
+    if out.returncode != 0:
+        return []
+    return [REPO / x.decode("utf-8", errors="replace")
+            for x in out.stdout.split(b"\0") if x and (REPO / x.decode("utf-8", errors="replace")).is_file()]
+
+
+DOI_TYPED_RE = re.compile(r"\b10\.\d{4,9}/[^\s\"'`<>)\]]+")
+
+
 def test_cited_doi() -> None:
-    section("citation: the DOI the site prints is the DOI of CITATION.cff's preferred citation")
+    section("citation: every DOI the site, the guide and the README type is CITATION.cff's preferred one")
     doi = cited_doi()
     check(re.fullmatch(r"10\.\d{4,9}/\S+", doi) is not None, f"preferred-citation in CITATION.cff has a DOI: {doi!r}")
-    landing = (REPO / "website/src/components/landing/CiteContact.astro").read_text(encoding="utf-8")
-    typed = re.findall(r"\b10\.\d{4,9}/[^\s\"'`<>)]+", landing)
-    check(typed == [doi] and f"doi: '{doi}'" in landing,
-          f"the landing's cite section holds that DOI, and only that one, as its constant: {typed}")
-    check("https://doi.org/${cite.doi}" in landing and "href={doiUrl}" in landing,
-          "and the DOI is the link in the reference, through that constant")
+    # The site prints no DOI since its cite section left with the earlier home page; any DOI a
+    # site source types must still be the cited one.
+    files = site_files()
+    check(len(files) > 0, "the site's source files can be listed (git ls-files)")
+    site_typed = {}
+    for f in files:
+        text = CD.decode_bytes(f.read_bytes())
+        for x in DOI_TYPED_RE.findall(text):
+            site_typed.setdefault(x.rstrip(".,;:"), []).append(f.relative_to(REPO).as_posix())
+    check(set(site_typed) <= {doi},
+          f"every DOI a site source types is that DOI: {sorted(site_typed.items())}")
+    check(DOI_TYPED_RE.findall("see 10.5281/zenodo.1 and `10.1234/x`") == ["10.5281/zenodo.1", "10.1234/x"],
+          "(the site-wide DOI pattern is able to find a DOI: it reads one in prose and one in a code span)")
     guide = (REPO / "docs/guide.md").read_text(encoding="utf-8")
     links = re.findall(r"https://doi\.org/(\S+?)(?=[>)\s])", guide)
     check(links and all(x == doi for x in links),
@@ -3605,9 +3660,6 @@ def test_cited_doi() -> None:
     seo = (REPO / "website/src/lib/seo.ts").read_text(encoding="utf-8")
     check(f"export const REPO_URL = 'https://github.com/{manifest['repo']}';" in seo,
           "the site's repository address is the manifest's repository")
-    check("href={`${REPO_URL}/discussions`}" in landing,
-          "the landing's cite section links the repository's GitHub Discussions page")
-    check("href={withBase('guide/')}" in landing, "and the Reader's guide")
     readme = (REPO / "README.md").read_text(encoding="utf-8")
     badge = re.findall(r"https://zenodo\.org/badge/DOI/(10\.\d{4,9}/[^\s)]+?)\.svg", readme)
     links = re.findall(r"https://doi\.org/([^\s>)\]*]+)", readme)
@@ -5217,6 +5269,7 @@ def main() -> int:
         test_progress_events()
         test_progress_log()
         test_citation_author()
+        test_name_allowance_target()
         test_cited_doi()
         test_front_door(tmp)
         test_stage_sidebar()

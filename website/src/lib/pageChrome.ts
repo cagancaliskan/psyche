@@ -225,7 +225,7 @@ export function keepDays(text: string): string {
 /**
  * The cells of the title block at the foot of a page: the stage it belongs to and its state, and, on a
  * page of stage 2, the next gate. A cell is left out when its data is absent, so a page outside a stage
- * (the landing page, the 404 page and the Start here pages among them) has no cells. The page's own
+ * (the Start here pages among them) has no cells. The page's own
  * title and its place among the sidebar's pages are not repeated here: the title band above the page
  * names it, and a place in the sidebar's order is not a sequence the reader steps through.
  */
@@ -260,8 +260,8 @@ export interface FooterLink {
 
 /**
  * The footer's links, in the order they are shown. Each says what it does, not the name of the file it
- * opens. The blog comes first, the one page of the site among them, so it is a link from every page,
- * the landing page included, which has no sidebar. The files are the repository's own: the licence, the
+ * opens. The blog comes first, the one page of the site among them, so it is a link from every
+ * page that carries this footer. The files are the repository's own: the licence, the
  * citation file (which GitHub offers as "Cite this repository"), the security policy (how to report a
  * vulnerability). The discussions are where questions go.
  */

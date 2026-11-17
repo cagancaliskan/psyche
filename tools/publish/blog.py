@@ -1161,7 +1161,7 @@ def staged_front_matter(manifest: dict, post: Post, prev: Optional[Post], nxt: O
 
 
 def blog_json(manifest: dict, posts: List[Post], author: str) -> dict:
-    """The data the blog index, the feed and the landing page draw from, newest first."""
+    """The data the blog index and the feed draw from, newest first."""
     return {"author": author,
             "posts": [{"slug": p.slug, "route": f"blog/{p.slug}/", "title": p.title, "date": p.date,
                        "updated": p.updated, "description": p.description, "tags": list(p.tags),

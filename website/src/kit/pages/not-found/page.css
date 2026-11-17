@@ -1,0 +1,39 @@
+  /* Page not found. One scene: a corridor of thin lines runs from the way back to a dead end;
+     a point of light walks it, meets the wall and turns back to where it started. The words stand
+     at the left, the title over the way back; the corridor opens from the way back and climbs to
+     the right of the title, so no line runs behind a letter. */
+  .nf {
+    position: relative; height: 100vh; height: 100svh; min-height: 620px; overflow: hidden;
+  }
+  .nf .k-art { position: absolute; inset: 0; }
+  .nf .k-art > svg, .nf .k-still, .nf .k-still svg { width: 100%; height: 100%; }
+  .nf__words {
+    position: absolute; left: var(--gutter); top: 0; bottom: 0; padding-top: var(--head-h);
+    display: flex; flex-direction: column; justify-content: center; pointer-events: none;
+  }
+  .nf__title { margin: 0; color: var(--ink); }
+  .nf__title span { display: block; }
+  .nf__way { margin: 36px 0 0; pointer-events: auto; }
+  .nf__back {
+    display: inline-block; font-size: var(--t-part); line-height: 1.15; letter-spacing: -.012em; font-weight: 500;
+    color: var(--ink); text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: .22em;
+    text-decoration-color: var(--quiet); padding: 6px 0;
+    transition: text-decoration-color .2s;
+  }
+  .nf__back:hover { text-decoration-color: var(--ink); }
+  .nf__back:focus-visible { outline: none; text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+  .nf__ctl { position: absolute; left: var(--gutter); bottom: 9vh; max-width: 24em; }
+  .nf__ctl .k-fig-ctl { margin: 0; }
+  .nf__ctl .k-cap { margin-top: 2px; }
+  .nf ~ .k-foot { margin-top: 0; }
+
+  @media (max-width: 700px) {
+    .nf { height: auto; min-height: 100svh; display: flex; flex-direction: column; padding-bottom: 32px; }
+    .nf .k-art { position: relative; inset: auto; height: 50vh; height: 50svh; min-height: 340px; margin-top: var(--head-h); }
+    .nf__words { position: static; padding: 8px var(--gutter) 0; display: block; }
+    .nf__way { margin-top: 22px; }
+    .nf__ctl { position: static; padding: 26px var(--gutter) 0; }
+  }
+  @media (max-height: 720px) and (min-width: 701px) {
+    .nf__ctl { bottom: 7vh; }
+  }

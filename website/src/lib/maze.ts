@@ -328,7 +328,7 @@ export function persistentWalk(grid: Grid, start: Cell, steps: number, seed: num
 }
 
 /**
- * The landing hero's field: 8 by 3 rooms of 7 by 7 on a pitch of 8, a 65 by 25 grid. Room columns
+ * A field of 8 by 3 rooms, drawn by the earlier home page and by no page now: 8 by 3 rooms of 7 by 7 on a pitch of 8, a 65 by 25 grid. Room columns
  * 0-3 are a faded wing behind the copy; columns 4-7 are the arena, where the trail and the route
  * stay. The seed and step count are pinned by maze.test.ts: the walk explores every arena room and
  * passes the goal's cell before any goal exists, then the route crosses the field to it.

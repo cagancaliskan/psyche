@@ -176,6 +176,29 @@ def turkish_letter(text: str) -> Optional[str]:
     return f"U+{ord(m.group(0)):04X}" if m else None
 
 
+# The one exception to the English-only letter rule (check_copy LANGUAGE, leak_check
+# LANGUAGE): the founder's name, as he writes it, on the About page and nowhere else. Exact
+# text, compared in NFC, standing as a whole word run (no letter, digit, underscore or
+# combining mark directly before or after it); any other Turkish letter on that page, the
+# name on any other path, a part of the name, and the name in a commit message or a file
+# name are still findings. Escaped, as above. check_disclosure's own scan applies only the
+# denylist and is not affected.
+NAME_ALLOWANCE = "\u00c7a\u011fan \u00c7al\u0131\u015fkan"
+NAME_ALLOWANCE_ASCII = "Cagan Caliskan"          # same length, so columns hold
+NAME_ALLOWANCE_PATHS = frozenset({"website/src/pages/about.astro"})
+_NAME_ALLOWANCE_RE = re.compile(
+    "(?<![\\w\u0300-\u036f])" + re.escape(NAME_ALLOWANCE) + "(?![\\w\u0300-\u036f])")
+
+
+def without_allowed_name(path: str, text: str) -> str:
+    """`text` with each whole occurrence of the allowed name replaced by its ASCII spelling
+    when `path` is exactly the one page that may carry it; otherwise `text` unchanged. The
+    result is meant only for the LANGUAGE test: every other rule reads the text as written."""
+    if path not in NAME_ALLOWANCE_PATHS:
+        return text
+    return _NAME_ALLOWANCE_RE.sub(NAME_ALLOWANCE_ASCII, nfc(text))
+
+
 _BOMS = (
     (codecs.BOM_UTF32_LE, "utf-32"), (codecs.BOM_UTF32_BE, "utf-32"),   # before UTF-16
     (codecs.BOM_UTF8, "utf-8-sig"),

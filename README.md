@@ -28,7 +28,7 @@ phases and gates:
 
 No stage 2 results are reported yet. Its pages describe a plan and put questions, not answers.
 
-- **Read:** the documentation site, <https://psyche.cagancaliskan.com/>, or the
+- **Read:** the site, <https://psyche.cagancaliskan.com/>, or the
   [Reader's guide](docs/guide.md) for a first pass; [MOC.md](MOC.md) is the map of content, and
   [how the project is run](docs/governance.md) and the
   [engineering standards](docs/research/engineering.md) say how the work is kept honest.
@@ -294,7 +294,7 @@ pull request and every push to main. `cogmap/` receives only released versions o
 | `cogmap/` | Released versions of the spiking model, filled only by release | 2 | export-only |
 | `tools/` | The ledger and its checker, the capture tools, the publishing tools, `setup_python.sh` | both | active |
 | `Makefile` | The `make` targets of the quick start above | both | active |
-| `website/` | The docs site, built from the pages listed in `docs/publish.json` | both | active |
+| `website/` | The site: its front pages and the documentation built from the pages listed in `docs/publish.json` | both | active |
 | `.github/` | CI workflows that run the checks | both | active |
 
 ## Running the tests

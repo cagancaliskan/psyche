@@ -56,9 +56,32 @@ const BASE = '/';
 // page's CSS line was reset when its cite and contact section was added (about 110 bytes, styles/landing/
 // cite.css), and the four Start here pages and the three walls page were given lines of their own at the
 // size measured for them, a docs page with no figure, instead of the default's room.
+//
+// Reset again when the home, What we're building, Experiments, About, the blog index and the posts
+// moved to the new front pages (plain Astro pages on src/layouts/Bare.astro and Kit.astro, outside
+// Starlight; the sizes below are gzipped). The home now loads the film (src/kit/film/film.js, about
+// 29.6 KB, with its shape generator, src/kit/film/gen.js, bundled into the same chunk) and three.js
+// r160 (the npm package three, exact-pinned and bundled, about 165 KB), so its JavaScript line rose
+// from 114200 to 207100; its CSS line fell from 43700 to 6200, because it no longer loads Starlight's
+// stylesheets, only the font faces, the film's own styles and the head snippet's. The inner pages
+// load the page kit (src/kit/kit.js, about 23 KB, and kit.css) and their own figure script
+// (src/kit/pages/<page>/page.js), which draws the page's live figures; the baked stills of those
+// figures sit in the HTML as inline SVG, which this check does not count. What we're building,
+// Experiments and About get lines of their own because their figure scripts take them over the
+// default. The blog index and the three posts get lines of their own at their measured size, which
+// is below the default: they are lighter than a docs page (no Starlight search, no Starlight CSS).
+// No docs page and not the default moved. The 404 page is not measured: this check skips
+// dist/404.html.
 const DEFAULT_BUDGET = { js: 37100, css: 40200 };
 const PAGE_BUDGETS = {
-  '/':                          { js: 114200, css:  43700 }, // 110807,  42396
+  '/':                          { js: 207100, css:   6200 }, // 201053,   5944
+  '/what-were-building/':       { js:  62300, css:  15700 }, //  60449,  15153
+  '/experiments/':              { js:  55900, css:  17600 }, //  54219,  17030
+  '/about/':                    { js:  43700, css:  12000 }, //  42413,  11602
+  '/blog/':                     { js:  34900, css:   9900 }, //  33835,   9554
+  '/blog/three-questions-before-a-number-counts/': { js: 31100, css: 13600 }, // 30115, 13196
+  '/blog/testing-the-test-before-the-model/':      { js: 29900, css:  9600 }, // 28947,  9272
+  '/blog/why-psyche-keeps-a-blog/':                { js: 29900, css:  9600 }, // 28947,  9272
   '/guide/':                    { js:  34500, css:  36100 }, //  33448,  35024
   '/faq/':                      { js:  34500, css:  36100 }, //  33448,  35024
   '/progress/':                 { js:  34500, css:  36100 }, //  33448,  35024

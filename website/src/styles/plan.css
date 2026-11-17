@@ -1,6 +1,6 @@
 /*
  * The roadmap's pieces (the now readout, the phase timeline and its list, the gate list), one skin
- * shared by the landing's roadmap section, the roadmap page and the research roadmap and gates
+ * shared by the roadmap page and the research roadmap and gates
  * pages: flat boxes with hairline edges and coloured rules. The timeline sits in one box, the chosen
  * phase under it is a stage block with a coloured top rule, the phase list and the gate list are a
  * box per phase and per gate, and the now readout is a pair of blocks. Every hue means one thing:

@@ -1,6 +1,7 @@
 // Accessibility check of the built site: axe-core over every page of dist/, at WCAG 2.2 AA (the axe
 // tags wcag2a, wcag2aa, wcag21a, wcag21aa and wcag22aa), and over the interface states a reader opens
-// (the search dialog with results, the phone menu, the phone contents list). Exits 1 when any serious
+// (on a docs page: the search dialog with results, the phone menu, the phone contents list; on a front
+// page: the site's phone menu). Exits 1 when any serious
 // or critical violation is found, or when a page cannot be audited at all; moderate and minor ones are
 // listed but never fail the run, and neither does what axe cannot decide (its "incomplete" results:
 // today only text contrast over gradients, pseudo-elements and images, which need a human look).
@@ -8,7 +9,7 @@
 //
 // Run it after `npm run build`:  node scripts/check-a11y.mjs [--chrome PATH] [--json FILE] [--only SLUGS] [--port N]
 // --only takes a comma-separated list of pages (/,research/gates/,404.html) for a quick look while
-// working on some; the interface states run only when research/gates/ is among them. CI runs it whole.
+// working on some; an interface state runs only when its page is among them. CI runs it whole.
 //
 // This is a development tool and nothing the site ships. Its two packages are not in package.json:
 // the script installs them, at the exact versions scripts/a11y-tools/package.json names and with their
@@ -29,7 +30,17 @@
 // Each page is loaded four ways: desktop and phone width, light and dark colour scheme, all with
 // reduced motion so that nothing is mid-fade when axe measures contrast. The page is scrolled
 // through once first, so that islands which hydrate when they come into view have done so. A state
-// is the same page after the click that opens it.
+// is the same page after the click that opens it; a state that has a way to close is closed again
+// after the audit, and the run fails if it does not close as a reader expects.
+//
+// The theme is set, not left to chance. The docs pages (Starlight) follow the system's colour scheme,
+// which the run emulates. The front pages (the page kit) ignore it: they open dark and keep the
+// reader's choice in localStorage ('psyche-theme', the key the kit's switch writes), so each load
+// writes the scheme there before any script of the page runs. After the load the page must show the
+// theme the run asked for (<html data-theme>), or the run fails: a "light" run that shows the dark
+// theme would audit the dark page twice and the light one never. A page whose head script carries
+// data-k-theme fixes its theme (the home page's film is dark by design): it is audited once per width,
+// in that theme, and listed as "fixed dark".
 //
 // What no rule of axe can decide is checked by hand and by pixels, not here: see "Accessibility
 // check" in website/README.md.
@@ -73,16 +84,35 @@ function findPages() {
   if (existsSync(join(DIST, '404.html'))) found.push('404.html');
   return found;
 }
+// The theme a page fixes for itself, or null: the value of data-k-theme on a script of its built HTML
+// (the page kit's head script then ignores the reader's choice; the home page's film is dark only).
+// Only the pages named here may fix it: on any other page a fixed theme would quietly take its light
+// (or dark) audit away, so it fails the run instead.
+const MAY_FIX_THEME = new Set(['']);
+function fixedTheme(slug) {
+  const file = slug.endsWith('.html') ? join(DIST, slug) : join(DIST, slug, 'index.html');
+  const m = readFileSync(file, 'utf8').match(/<script\b[^>]*\bdata-k-theme=["']?(light|dark)["'\s>]/i);
+  const fixed = m ? m[1].toLowerCase() : null;
+  if (fixed && !MAY_FIX_THEME.has(slug)) throw new Error(`${BASE}${slug} fixes its theme to ${fixed}; only ${[...MAY_FIX_THEME].map((p) => BASE + p).join(', ')} may`);
+  return fixed;
+}
+
 const VIEWPORTS = [
   { name: 'desktop', width: 1280, height: 800, isMobile: false },
   { name: 'phone', width: 390, height: 844, isMobile: true },
 ];
 const SCHEMES = ['light', 'dark'];
 
-// What a reader opens on a page, audited on one docs page that has a sidebar, a contents list and
-// headings. Each has to be opened by a click, so axe cannot reach it by loading a page.
+// What a reader opens on a page. Each has to be opened by a click, so axe cannot reach it by loading
+// a page. Starlight's states are audited on one docs page that has a sidebar, a contents list and
+// headings; a state that names a `page` is audited there instead. A state may also say how it is
+// closed (`close`), which is checked after its audit.
 const STATE_PAGE = 'research/gates/';
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
+const stateUrl = (state) => state.page ?? STATE_PAGE;
+// How many elements of a page were inert before its menu opened, so that the close can be held to it.
+const inertBefore = new WeakMap();
+const countInert = (page) => page.evaluate(() => document.querySelectorAll('[inert]').length);
 const STATES = [
   {
     name: 'search dialog with results',
@@ -114,6 +144,39 @@ const STATES = [
       await page.click('mobile-starlight-toc summary');
       await page.waitForSelector('mobile-starlight-toc details[open]', { timeout: 10000 });
       await wait(400);
+    },
+  },
+  {
+    // The front pages' phone menu (the page kit's full-screen list): a modal dialog with the four links
+    // and the theme switch. Audited open; then Escape must close it, hide it, mark its button collapsed,
+    // give the rest of the page back (no more inert elements than before it opened) and return focus to the button.
+    name: 'site menu open',
+    page: 'what-were-building/',
+    viewports: ['phone'],
+    async open(page) {
+      await page.waitForSelector('button[data-k-menu]', { visible: true, timeout: 20000 });
+      inertBefore.set(page, await countInert(page));
+      await page.click('button[data-k-menu]');
+      await page.waitForSelector('#k-menu:not([hidden])', { timeout: 10000 });
+      const expanded = await page.$eval('button[data-k-menu]', (b) => b.getAttribute('aria-expanded'));
+      if (expanded !== 'true') throw new Error(`the menu opened but its button says aria-expanded="${expanded}"`);
+      await wait(400);
+    },
+    async close(page) {
+      await page.keyboard.press('Escape');
+      await page.waitForSelector('#k-menu[hidden]', { timeout: 10000 });
+      const after = await page.evaluate(() => {
+        const button = document.querySelector('button[data-k-menu]');
+        return {
+          expanded: button?.getAttribute('aria-expanded'),
+          focused: document.activeElement === button,
+          inert: document.querySelectorAll('[inert]').length,
+        };
+      });
+      if (after.expanded !== 'false') throw new Error(`the menu closed but its button says aria-expanded="${after.expanded}"`);
+      const before = inertBefore.get(page) ?? 0;
+      if (after.inert !== before) throw new Error(`the menu closed but ${after.inert} element(s) are inert (${before} before it opened)`);
+      if (!after.focused) throw new Error('the menu closed but focus did not return to its button');
     },
   },
 ];
@@ -238,7 +301,7 @@ function serve() {
   });
 }
 
-async function audit(browser, axeSource, url, viewport, scheme, state) {
+async function audit(browser, axeSource, url, viewport, scheme, state, fixed) {
   const page = await browser.newPage();
   try {
     await page.setViewport({
@@ -248,6 +311,15 @@ async function audit(browser, axeSource, url, viewport, scheme, state) {
       hasTouch: viewport.isMobile,
       deviceScaleFactor: 1,
     });
+    // The reader's choice as the page kit's theme switch stores it, written before any script of the
+    // page runs. Starlight's pages do not read this key and follow the emulated scheme below.
+    await page.evaluateOnNewDocument((s) => {
+      try {
+        localStorage.setItem('psyche-theme', s);
+      } catch {
+        // storage refused: the theme check below then fails the light run, which is what should happen
+      }
+    }, scheme);
     await page.emulateMediaFeatures([
       { name: 'prefers-color-scheme', value: scheme },
       { name: 'prefers-reduced-motion', value: 'reduce' },
@@ -255,6 +327,13 @@ async function audit(browser, axeSource, url, viewport, scheme, state) {
     const response = await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
     // A missing page is served as the 404 page, which would be audited in its place and pass.
     if (!response || !response.ok()) throw new Error(`${url} answered ${response ? response.status() : 'nothing'}`);
+    // The page shows the theme this run audits, or the run is not what its label says.
+    const shown = await page.evaluate(() => ({
+      theme: document.documentElement.dataset.theme,
+      pin: document.querySelector('script[data-k-theme]')?.getAttribute('data-k-theme') ?? null,
+    }));
+    if ((shown.pin || null) !== fixed) throw new Error(`${url}: the page fixes its theme to ${shown.pin || 'nothing'}, the built file to ${fixed || 'nothing'}`);
+    if (shown.theme !== scheme) throw new Error(`${url} shows the ${shown.theme || 'no'} theme in a ${scheme} run`);
     await page.evaluate(async () => {
       await document.fonts.ready;
       const step = Math.max(200, Math.floor(innerHeight / 2));
@@ -280,6 +359,7 @@ async function audit(browser, axeSource, url, viewport, scheme, state) {
       TAGS,
     );
     if (result.rulesRun < MIN_RULES_RUN) throw new Error(`${url}: axe tested only ${result.rulesRun} rule(s)`);
+    if (state?.close) await state.close(page);
     return result;
   } finally {
     await page.close();
@@ -322,30 +402,37 @@ async function main() {
     version = await browser.version();
     console.log(`check-a11y: ${version}, axe-core ${TOOLS['axe-core']}, tags ${TAGS.join(' ')}`);
     const everyPage = findPages();
-    if (!everyPage.includes(STATE_PAGE)) throw new Error(`dist/${STATE_PAGE} is missing, so the interface states cannot be audited`);
+    for (const st of STATES) {
+      if (!everyPage.includes(stateUrl(st))) throw new Error(`dist/${stateUrl(st)} is missing, so the state "${st.name}" cannot be audited`);
+    }
     // '/' names the home page.
     const only = arg('--only')?.split(',').map((p) => p.trim()).filter(Boolean).map((p) => (p === '/' ? '' : p));
     const unknown = (only || []).filter((p) => !everyPage.includes(p));
     if (unknown.length) throw new Error(`--only names no page of dist/: ${unknown.join(', ')}`);
     const pages = only ? everyPage.filter((p) => only.includes(p)) : everyPage;
-    const states = pages.includes(STATE_PAGE) ? STATES : [];
-    // Every page, then each state on its page; each in both widths and both colour schemes.
+    const states = STATES.filter((st) => pages.includes(stateUrl(st)));
+    // Every page, then each state on its page; each in both widths and both colour schemes, except that
+    // a page that fixes its theme is audited in that theme only.
     const jobs = [];
     for (const slug of pages) jobs.push({ slug, label: BASE + slug });
-    for (const state of states) jobs.push({ slug: STATE_PAGE, label: `${BASE}${STATE_PAGE} (${state.name})`, state });
+    for (const state of states) jobs.push({ slug: stateUrl(state), label: `${BASE}${stateUrl(state)} (${state.name})`, state });
+    const fixedOf = new Map(jobs.map(({ slug }) => [slug, fixedTheme(slug)]));
+    const fixedPages = pages.filter((slug) => fixedOf.get(slug));
     console.log(`check-a11y: ${pages.length} page(s) and ${states.length} interface state(s)${only ? ' (--only: not the whole site)' : ''}`);
+    for (const slug of fixedPages) console.log(`check-a11y: ${BASE}${slug} fixes its theme (fixed ${fixedOf.get(slug)}): audited once per width, in that theme`);
     for (const { slug, label: route, state } of jobs) {
+      const fixed = fixedOf.get(slug);
       for (const viewport of VIEWPORTS) {
         if (state && !state.viewports.includes(viewport.name)) continue;
-        for (const scheme of SCHEMES) {
+        for (const scheme of fixed ? [fixed] : SCHEMES) {
           const t0 = Date.now();
-          const result = await auditWithRetry(browser, axeSource, origin + BASE + slug, viewport, scheme, state);
+          const result = await auditWithRetry(browser, axeSource, origin + BASE + slug, viewport, scheme, state, fixed);
           runs++;
           for (const { id, targets } of result.incomplete) {
             undecided.set(id, (undecided.get(id) || 0) + 1);
             for (const t of targets) undecidedNodes.add(`${id} ${route} ${t}`);
           }
-          const label = `${viewport.name}, ${scheme}`;
+          const label = `${viewport.name}, ${fixed ? `fixed ${fixed}` : scheme}`;
           console.log(`check-a11y: ${route} [${label}]: ${result.violations.length} violating rule(s), ${result.rulesRun} rules run (${((Date.now() - t0) / 1000).toFixed(1)} s)`);
           for (const v of result.violations) {
             for (const n of v.nodes) {

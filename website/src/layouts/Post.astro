@@ -1,0 +1,138 @@
+---
+// A blog post on the page kit: Kit.astro under Blog, then the post's opening and its text in the
+// reading column, as the post's page design lays them out. The opening is the title at the page-title
+// size, then the post's description and the day it was published, in words (and the day it was revised,
+// if it was). The text is the post's own Markdown, rendered as it is (the default slot), in the kit's
+// reading column (.k-read) with the parts rail beside it: kit.js lists the post's h2 headings, and on a
+// phone puts the same list at the top of the text. The close is the way back to the blog, the day again,
+// and the previous and next posts as plain links.
+//
+// The post designs' own figures are not part of this layout; a post shows the figures of its Markdown.
+// The opening's styles and the reading column's few additions are taken from the post's page design
+// (its .tq-* rules), renamed .post-*.
+import blog from '@/data/blog.json';
+import { postMeta } from '@/lib/blog.ts';
+import { articleFacts } from '@/lib/head.ts';
+import { withBase } from '@/lib/url.ts';
+import Kit from './Kit.astro';
+
+type Neighbour = false | { link: string; label: string } | undefined;
+
+export interface Props {
+  /** The post's slug: its address is /blog/<slug>/. */
+  slug: string;
+  /** The post's front matter, as tools/publish/stage.py writes it (content.config.ts `posts`). */
+  data: {
+    title: string;
+    description: string;
+    date: string;
+    updated?: string;
+    author: string;
+    tags?: string[];
+    prev?: Neighbour;
+    next?: Neighbour;
+  };
+}
+
+const { slug, data } = Astro.props;
+const meta = postMeta(data, blog.author);
+const article = articleFacts(data, blog.author);
+const prev = data.prev || null;
+const next = data.next || null;
+---
+
+<Kit
+  page={{ route: `blog/${slug}`, title: data.title, description: data.description }}
+  article={article}
+  body={{ 'data-page': `blog-${slug}` }}
+  skip={{ href: '#reading', text: 'Skip to the text' }}
+  current="blog"
+  within
+>
+  <main>
+    <article>
+      <section class="post-open" aria-labelledby="post-title">
+        <h1 class="post-title k-page-title k-open-title" id="post-title">{data.title}</h1>
+        <div class="post-foot k-open-rest">
+          <p class="post-lead k-under">{data.description}</p>
+          <p class="post-date">Published <time data-k-date datetime={meta.published.iso}>{meta.published.label}</time></p>
+          {meta.updated && <p class="post-date post-date--rev">Revised <time data-k-date datetime={meta.updated.iso}>{meta.updated.label}</time></p>}
+        </div>
+      </section>
+
+      <div class="k-read post-read post-intro" id="reading" data-k-parts>
+        <slot />
+      </div>
+
+      <div class="k-read post-end">
+        <p class="post-back"><a href={withBase('blog/')}>Back to the blog</a></p>
+        <p class="post-date">Published <time data-k-date datetime={meta.published.iso}>{meta.published.label}</time></p>
+        {
+          (prev || next) && (
+            <nav class="post-near" aria-label="Previous and next posts">
+              {prev && (
+                <p>
+                  <span class="post-near__dir">Previous</span> <a href={withBase(prev.link)}>{prev.label}</a>
+                </p>
+              )}
+              {next && (
+                <p>
+                  <span class="post-near__dir">Next</span> <a href={withBase(next.link)}>{next.label}</a>
+                </p>
+              )}
+            </nav>
+          )
+        }
+      </div>
+    </article>
+  </main>
+</Kit>
+
+<style is:global>
+  /* ---------- Opening: the title across the top, the description and the day under it ---------- */
+  .post-open { padding: calc(var(--head-h) + 2.2vh) var(--gutter) 0; }
+  .post-title { margin: 0 0 0 -.04em; max-width: 12.4em; }
+  .post-foot { margin-top: clamp(40px, 8vh, 96px); max-width: 46em; }
+  .post-lead { margin: 0; }
+  .post-date { margin: 14px 0 0; font-size: 15px; color: var(--ink); }
+  .post-date--rev { margin-top: 4px; color: var(--soft); }
+
+  /* ---------- The text ---------- */
+  .post-intro { padding-top: 132px; }
+  .post-read h2 { margin: 2.6em 0 .7em; }
+  .post-read h3 { position: relative; font-size: 1.3em; margin-top: 2.4em; }
+  .post-read h3::before { /* a short mark in quiet ink: the reading column carries no colour */
+    content: ""; display: block; width: 28px; height: 1px; margin-bottom: 18px; background: var(--quiet);
+  }
+  /* long names in running text may break, so a phone never scrolls sideways */
+  .post-read :not(pre) > code { overflow-wrap: anywhere; }
+  .post-read img { height: auto; margin: 2em 0; }
+  /* The Markdown's headings carry an anchor link for the documentation's pages; a post's parts are
+     reached from the rail, so the link is not shown here (and leaves the tab order with it). */
+  .post-read .sl-anchor-link { display: none; }
+  /* Code blocks: the documentation's code renderer draws them (the site's code colours, which follow
+     the theme), and the kit's .k-read pre sets their place, rule and type. Its copy button takes its
+     colours from the documentation's theme, which these pages do not load, so here it would be an
+     invisible control: it is not shown, as the post's page design has none. */
+  .post-read .expressive-code .copy { display: none; }
+  /* code may run wider than the text, to the right */
+  @media (min-width: 1120px) {
+    .post-read .expressive-code { margin-right: -220px; }
+  }
+
+  /* ---------- The close ---------- */
+  .post-end { margin-top: 120px; }
+  .post-end .post-back { margin: 0; font-size: var(--t-part); line-height: 1.15; letter-spacing: -.012em; font-weight: 500; }
+  .post-end .post-back a { color: var(--ink); text-decoration-color: var(--quiet); text-underline-offset: .14em; }
+  .post-end .post-date { color: var(--soft); margin-top: 16px; }
+  .post-near { margin-top: 48px; font-size: 17px; line-height: 1.45; }
+  .post-near p { margin: 0 0 .8em; }
+  .post-near__dir { display: block; font-size: 15px; color: var(--soft); }
+
+  /* ---------- Phone ---------- */
+  @media (max-width: 700px) {
+    .post-title { max-width: none; }
+    .post-foot { margin-top: 28px; }
+    .post-intro { padding-top: 72px; }
+  }
+</style>

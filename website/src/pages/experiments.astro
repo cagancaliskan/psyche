@@ -1,0 +1,13 @@
+---
+// The five experiments, at /experiments/: the page kit's page as its design lays it out. Every word,
+// figure still and script comes from src/kit/pages/experiments/ (written by the page import, never by
+// hand); this file only puts them on the kit layout with the page's head from lib/head.ts.
+import Kit from '@/layouts/Kit.astro';
+import { PAGES } from '@/lib/head.ts';
+import Main from '@/kit/pages/experiments/Main.astro';
+import { body, skip } from '@/kit/pages/experiments/page.ts';
+import '@/kit/pages/experiments/page.css';
+import pageJs from '@/kit/pages/experiments/page.js?url';
+---
+
+<Kit page={PAGES.experiments} body={body} skip={skip} current="experiments" pageScript={pageJs}><Main /></Kit>

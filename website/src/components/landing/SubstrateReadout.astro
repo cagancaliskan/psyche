@@ -2,11 +2,11 @@
 // A static readout for the substrate's maintained record: a row of stat tiles edged in mint (the
 // hue of stage 1), each a large figure in Unbounded with tabular digits, its label under it and a
 // muted detail below that. Nothing counts up; the server writes the final figures and they never
-// change on the page. The landing page shows the tiles plain; the status page and the substrate
+// change on the page. The status page and the substrate
 // overview show them in a panel (`framed`), and the status page slots its captured-run facts under
 // the tiles, inside the panel. The tile follows the label-over-figure cell "Stats Band" by
-// kuratlielia (21st.dev); the styles are in styles/readout.css, which a docs page loads without
-// the landing's.
+// kuratlielia (21st.dev); the styles are in styles/readout.css, which a docs page loads on its
+// own.
 import '@/styles/readout.css';
 
 interface Item {

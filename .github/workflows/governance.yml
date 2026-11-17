@@ -393,7 +393,7 @@ jobs:
 
       # Scanned: the sources the site publishes from (the research pages, the Start here pages,
       # the substrate overview and three walls pages, the cogmap package, the site's own sources),
-      # CITATION.cff, whose author and DOI reach the feed and the landing, plus the manifest
+      # CITATION.cff, whose author reaches the feed and the posts, plus the manifest
       # and the plan file, whose strings reach the site. The list is named path by path, not
       # as whole top-level directories: a walk of website/ would also read
       # website/package-lock.json, which is not published content, so it does not belong in

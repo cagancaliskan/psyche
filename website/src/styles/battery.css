@@ -1,5 +1,5 @@
 /*
- * The test battery: its pictures (shared with the landing's battery rows, see
+ * The test battery: its pictures (shared with the battery rows, see
  * styles/landing/battery-rows.css) and the battery page. The page is stage 2, so its hue is the map
  * blue. A segmented control of square cells names the five paradigms (T1 to T5) and marks the one in
  * view; each paradigm is a drawing on the arena, the flat night plate the agent's world is drawn on
@@ -671,8 +671,7 @@
     .sx-bs__sheet[data-animate] .sx-pic .trail.draw {
       animation-duration: 2.2s;
     }
-    /* A door, a goal dot or a label fades in. A new goal's ring is drawn along its length, as on the
-       landing's figure, and never grows from its centre. */
+    /* A door, a goal dot or a label fades in. A new goal's ring is drawn along its length, and never grows from its centre. */
     .sx-bs__sheet[data-animate] .sx-pic .appear {
       animation: sx-pic-appear 0.3s linear both;
     }

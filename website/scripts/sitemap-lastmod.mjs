@@ -3,16 +3,20 @@
 // footer of every page (src/lib/lastUpdated.ts) for its "Last updated", so the two always agree.
 //
 //   a docs page            its governed source, as docs/publish.json lists it (docs/research/gates.md)
-//   a blog post            its folder under docs/blog/, the post and its images (docs/blog/<slug>)
-//   the blog's index       its page file and modules, and the folder of every published post, since a
-//                          new or revised post changes the list it shows (the landing page's latest posts
-//                          too); the authoring guide (docs/blog/README.md) and a draft are not read, so a
+//   a blog post            its folder under docs/blog/, the post and its images (docs/blog/<slug>):
+//                          like a docs page, a post is dated by its own source, not by the layout that
+//                          shows it
+//   the blog's index       its page file, the layouts and modules it is drawn with, and the folder of
+//                          every published post, since a new or revised post changes the list it shows;
+//                          the authoring guide (docs/blog/README.md) and a draft are not read, so a
 //                          change to either moves no date
-//   a page of the site     its page file, every component and module it imports whose change can
-//                          change what the page says (not stylesheets), and the data the page is drawn
-//                          from (tools/research_plan.json for the roadmap, tools/ledger.json for the
-//                          status page, both for the landing page), because a moved date or a new test
-//                          run changes what the page says without touching the page file
+//   a page of the site     its page file, every layout, component and module it imports whose change can
+//                          change what the page says (not stylesheets), the page kit (src/kit, which
+//                          also holds the home page's film, src/kit/film), and the data the page is drawn from
+//                          (tools/research_plan.json for the roadmap, tools/ledger.json for the status
+//                          page, brand/psyche-social.json for every page whose head src/lib/head.ts
+//                          writes, since the social card's alt text is in it), because a moved date or a
+//                          new test run changes what the page says without touching the page file
 //
 // A directory in a list stands for every file under it. scripts/sitemap-lastmod.test.mjs reads the
 // imports of each page and fails when one is in no list, so a component added to a page cannot be left
@@ -32,32 +36,42 @@ const LEDGER = 'tools/ledger.json';
 /** The posts' sources: one folder per post (tools/publish/blog.py). */
 export const BLOG = 'docs/blog';
 
-/** Pages of the site that are not docs pages, by route below the base ('' is the landing page). */
+/** The social card's text (its alt text is in the head of every page src/lib/head.ts writes). */
+const SOCIAL = 'brand/psyche-social.json';
+/** What every front page on the page kit is made from besides its own file: its layouts, its head and
+ *  the modules the head reads, and the kit (a directory: every file under it). */
+const KIT_PAGE = [
+  `${SRC}/layouts/Bare.astro`,
+  `${SRC}/layouts/Kit.astro`,
+  `${SRC}/lib/head.ts`,
+  `${SRC}/lib/seo.ts`,
+  `${SRC}/lib/blog.ts`,
+  `${SRC}/lib/feed.ts`,
+  `${SRC}/lib/plan.ts`,
+  `${SRC}/lib/today.ts`,
+  `${SRC}/lib/url.ts`,
+  `${SRC}/kit`,
+  SOCIAL,
+];
+
+/** Pages of the site that are not docs pages, by route below the base ('' is the home page). */
 export const SITE_PAGES = {
   '': [
     `${SRC}/pages/index.astro`,
-    `${SRC}/components/LayersHero.astro`,
-    `${SRC}/components/NowLine.tsx`,
-    `${SRC}/components/Timeline.tsx`,
-    `${SRC}/components/TimelineList.astro`,
-    `${SRC}/components/battery`,
-    `${SRC}/components/brand`,
-    `${SRC}/components/landing`,
-    `${SRC}/lib/battery.ts`,
-    `${SRC}/lib/gateClock.ts`,
-    `${SRC}/lib/ledger.ts`,
-    `${SRC}/lib/maze.ts`,
-    `${SRC}/lib/plan.ts`,
-    `${SRC}/lib/today.ts`,
+    `${SRC}/layouts/Bare.astro`,
+    `${SRC}/lib/head.ts`,
     `${SRC}/lib/seo.ts`,
-    `${SRC}/lib/sheet.ts`,
-    `${SRC}/lib/url.ts`,
     `${SRC}/lib/blog.ts`,
     `${SRC}/lib/feed.ts`,
-    PLAN,
-    LEDGER,
-    BLOG,
+    `${SRC}/lib/plan.ts`,
+    `${SRC}/lib/today.ts`,
+    `${SRC}/lib/url.ts`,
+    `${SRC}/kit`,
+    SOCIAL,
   ],
+  'what-were-building': [`${SRC}/pages/what-were-building.astro`, ...KIT_PAGE],
+  experiments: [`${SRC}/pages/experiments.astro`, ...KIT_PAGE],
+  about: [`${SRC}/pages/about.astro`, ...KIT_PAGE],
   roadmap: [
     `${SRC}/pages/roadmap.astro`,
     `${SRC}/components/GateStepper.astro`,
@@ -92,15 +106,7 @@ export const SITE_PAGES = {
     `${SRC}/lib/url.ts`,
     LEDGER,
   ],
-  blog: [
-    `${SRC}/pages/blog/index.astro`,
-    `${SRC}/lib/blog.ts`,
-    `${SRC}/lib/feed.ts`,
-    `${SRC}/lib/plan.ts`,
-    `${SRC}/lib/today.ts`,
-    `${SRC}/lib/url.ts`,
-    BLOG,
-  ],
+  blog: [`${SRC}/pages/blog/index.astro`, ...KIT_PAGE, BLOG],
 };
 
 /**

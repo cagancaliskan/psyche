@@ -6,7 +6,7 @@
  * focus (the current one) takes a mint edge, the hue of what is current.
  *
  * Catalog source (21st.dev), rewritten in plain CSS: the row anatomy after "Interactive List
- * Preview" by hyperiux; the name's underline after "Underline Link" by balick, as in the hero. The
+ * Preview" by hyperiux; the name's underline after "Underline Link" by balick. The
  * route redraw (a pathLength dash reveal) is the battery's own, see battery.css. The pictures are
  * drawn exactly as on the battery page; the rules below only firm up the trail and thin the wall
  * outline for this size, and set each picture in a small inset with square corners.
@@ -92,7 +92,7 @@
     min-width: 0;
   }
 
-  /* The name carries the hero's Underline Link: a faint rule at rest and an ink line that draws in
+  /* The name carries the Underline Link: a faint rule at rest and an ink line that draws in
      from the left on hover or focus and leaves to the right. It follows a line break. */
   .sx-brow__name {
     --open: 0;

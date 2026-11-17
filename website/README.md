@@ -1,7 +1,7 @@
-# Psyche docs site
+# Psyche site
 
-The documentation site of Psyche, live at <https://psyche.cagancaliskan.com/>. This file is for a
-contributor who needs to change it.
+The site of Psyche, live at <https://psyche.cagancaliskan.com/>: its front pages and its
+documentation. This file is for a contributor who needs to change it.
 
 Read [CONTRIBUTING.md](../CONTRIBUTING.md) first. Site work is builder work under it, and every sentence
 on the site is read against rule 1 (claims discipline) and the
@@ -22,39 +22,65 @@ the step that copies governed sources into the site's input. The two are unrelat
 
 ## What the site is
 
-Astro with Starlight is the documentation shell. React runs three interactive pieces (the "now"
-readout, the timeline, the battery explorer); everything else is static Astro and CSS. The build writes
+The site has two parts. The front pages (the home, What we're building, Experiments, About, the blog's
+index, its posts and the 404 page) are plain Astro pages on three layouts of their own,
+`src/layouts/Bare.astro`, `Kit.astro` and `Post.astro`, drawn with the page kit (`src/kit/`): its
+stylesheet, a classic script that writes the header's theme switch and phone menu and the footer and
+runs the figures, a head script that shows an orb while a page opens and between pages, and each
+page's markup, styles, figure script and figure stills. The home is a scroll film drawn with three.js
+(`src/kit/film/`). Astro with Starlight is the documentation shell: every docs page, and the
+`/roadmap/`, `/battery/` and `/status/` pages. React runs three interactive pieces there (the "now"
+readout, the timeline, the battery explorer); everything else is static Astro and CSS. The front
+pages link to no documentation page; the documentation pages are still built and reachable at their
+addresses, and the blog's posts link to some of them. The build writes
 plain HTML to `dist/`, which GitHub Pages serves at the root of `psyche.cagancaliskan.com`. Every dependency is pinned to an
-exact version in `package.json`, which is where the versions of Astro, Starlight and React are; ask the
-project lead before adding one.
+exact version in `package.json`, which is where the versions of Astro, Starlight, React and three.js are;
+ask the project lead before adding one.
 
-The site holds no figures of its own. Its documentation pages are governed documents, staged from the
-repository. Its hand-written pages carry prose of their own, which lives only in `src/pages/*.astro`,
-`src/components/`, and the files of `src/lib/` that hold wording (`battery.ts`, `seo.ts` and
-`pageChrome.ts`, the footer's labels and links, among them). `tools/publish/check_copy.py` reads all of
-it for counts, claims and language, under the same rules as the docs. The hand-written pages read every
-number, date and status from staged copies of `tools/ledger.json` and `tools/research_plan.json`. A page
-reads a count, a date or a status. It never types one.
+The files under `src/kit/` are brought in from the project lead's design files, which are kept outside
+this repository, by a tool that is not in it either: a hand edit there is overwritten by the next
+import. A change to a front page's markup, styles, figures or words is a change to the design; ask the
+project lead. The page files in `src/pages/` and the layouts only put the kit's parts together.
+
+The site holds no count, date or status of the project's work of its own. Its documentation pages are
+governed documents, staged from the repository. Its hand-written pages carry prose of their own, which
+lives only in `src/pages/*.astro`, `src/components/`, `src/kit/` (the front pages' words, in `.astro`,
+`.js` and `.svg` files) and the files of `src/lib/` that hold wording (`battery.ts`, `seo.ts`, `head.ts`
+and `pageChrome.ts`, the footer's labels and links, among them). `tools/publish/check_copy.py` reads all
+of it for counts, claims and language, under the same rules as the docs (it does not read `.css`). The
+docs-side hand-written pages read every number, date and status from staged copies of
+`tools/ledger.json` and `tools/research_plan.json`. A page reads a count, a date or a status. It never
+types one, with one exception today: the figure on the blog's index draws the three posts and a fixed
+day written into its script (`src/kit/pages/blog/page.js`); it does not read `src/data/blog.json`. The
+list of posts under it is read from `blog.json`.
 
 | Route | Source | What it is |
 |---|---|---|
-| `/` | `src/pages/index.astro` | Landing page |
+| `/` | `src/pages/index.astro` | The home page: the scroll film, on `layouts/Bare.astro` |
+| `/what-were-building/` | `src/pages/what-were-building.astro` | What we're building, on `layouts/Kit.astro` |
+| `/experiments/` | `src/pages/experiments.astro` | The five experiments, on `layouts/Kit.astro` |
+| `/about/` | `src/pages/about.astro` | About and contact, on `layouts/Kit.astro` |
 | `/roadmap/` | `src/pages/roadmap.astro` | The phases and gates of stage 2 on one timeline |
 | `/battery/` | `src/pages/battery.astro` | The test battery's paradigms, one sheet each |
 | `/status/` | `src/pages/status.astro` | The substrate's captured test run and its bricks |
-| `404.html` | `src/pages/404.astro` | The page for an address that does not exist |
+| `404.html` | `src/pages/404.astro` | The page for an address that does not exist, on `layouts/Kit.astro` |
 | `/progress.xml` | `src/pages/progress.xml.ts` | Atom feed of the progress page |
-| `/blog/` | `src/pages/blog/index.astro` | The blog's index: every published post, newest first |
-| `/blog/<slug>/` | `docs/blog/<slug>/index.md` | A post, staged into `src/content/docs/blog/` with its images |
+| `/blog/` | `src/pages/blog/index.astro` | The blog's index: every published post, newest first, on `layouts/Kit.astro` |
+| `/blog/<slug>/` | `docs/blog/<slug>/index.md` | A post, staged into `src/content/docs/blog/` with its images, read as the `posts` collection (`src/content.config.ts`) and rendered by `src/pages/blog/[slug].astro` on `layouts/Post.astro` |
 | `/blog.xml` | `src/pages/blog.xml.ts` | Atom feed of the blog |
 | every other route | `docs/publish.json` | A governed Markdown document, staged into `src/content/docs/` |
 
-- Folders: `public/` (icons, `og.png`, manifest, `robots.txt`), `scripts/` (checks and drawing tools),
-  `src/diagrams/` (committed drawings), `src/assets/brand/` (copies of the two wordmarks in `brand/`).
+- Folders: `public/` (icons, `og.png`, manifest, `robots.txt`, and in `public/brand/` the two wordmarks
+  the kit's header loads), `scripts/` (checks and drawing tools), `src/diagrams/` (committed drawings),
+  `src/assets/brand/` (copies of the two wordmarks in `brand/`), `src/layouts/` and `src/kit/` (the front
+  pages).
 - `astro.config.mjs` takes `site` and `base` from `src/lib/seo.ts` and sets `trailingSlash: 'always'`, the Starlight options and four
   component overrides (`PageTitle`, `Footer`, `Search`, and `SocialIcons`, which puts the blog link
   before the GitHub link in the header and the phone menu). `src/routeData.ts` adds per-page head entries
-  from `src/lib/seo.ts`. Starlight's own 404 route is off; the sidebar is the staged `sidebar.json`.
+  from `src/lib/seo.ts` to the Starlight pages. The front pages, the posts and the 404 page get their whole
+  head from `src/lib/head.ts` (`pageHead`, which ends with `seoHead()` from `seo.ts`; the front pages' titles
+  and descriptions are its `PAGES` table, a post's are its front matter). Starlight's own 404 route is off; the sidebar is the staged
+  `sidebar.json`.
 - **Where the site is served.** GitHub Pages serves it at `psyche.cagancaliskan.com` because of two
   things outside this repository: a DNS record (`psyche` as a CNAME to `cagancaliskan.github.io`) and
   the custom domain in the repository's Pages settings, with HTTPS enforced. The deploy is the
@@ -67,8 +93,8 @@ reads a count, a date or a status. It never types one.
   `README.md` and the governed pages that link to the site, and it
   is printed on the social card (`URL_TEXT` in `tools/publish/og.py`; run `npm run og` and commit the
   three files it writes). Change them together: nothing checks that the address drawn on the card matches,
-  so a stale card passes the build. Search is Starlight's Pagefind index, built by `astro build`; there is
-  none in `npm run dev`.
+  so a stale card passes the build. Search is Starlight's Pagefind index, built by `astro build`, and
+  covers the docs pages only (not the front pages or the posts); there is none in `npm run dev`.
 - Node: CI uses the version in `.nvmrc`; `engines` in `package.json` gives the minimum. Tests and
   checks import `.ts` files directly, which relies on Node's type stripping. Python 3 on the PATH
   runs staging and several checks, standard library only (rule 8). Chrome or Chromium is needed by
@@ -161,12 +187,13 @@ that does otherwise: the drawings stay valid and the labels no longer fit. It in
   reviewed in a pull request.
   `stage.py` writes it to `src/content/docs/blog/<slug>/` with its images and with `prev` and `next`
   set to the neighbouring posts, and writes the published posts, newest first, to
-  `src/data/blog.json`, which the index, the landing page's latest posts and `src/pages/blog.xml.ts`
-  (through `src/lib/blog.ts`) read. A draft is never staged. The feed is dated by the posts' own days.
-  Each post's head carries its days, author and tags and a BlogPosting (`src/lib/seo.ts`).
+  `src/data/blog.json`, which the index and `src/pages/blog.xml.ts` (through `src/lib/blog.ts`) read.
+  A draft is never staged. The feed is dated by the posts' own days. Each post's head carries its days,
+  author and tags and a BlogPosting (`src/lib/head.ts`, through `src/lib/seo.ts`).
 - **Dates.** The sitemap's `<lastmod>` and the footer's "Last updated" are the date of the last commit
   that touched the files a page is made from (`scripts/sitemap-lastmod.mjs`): a docs page's source, or a
-  hand-written page's file, imports and data. With no history, or a shallow clone, no date is written;
+  hand-written page's file, imports and data (for a front page: its layouts, its head, the modules the
+  head reads and the whole of `src/kit/`; a post is dated by its own folder). With no history, or a shallow clone, no date is written;
   the build date is never used.
 
 ## Commands
@@ -189,7 +216,13 @@ Run in `website/` after `npm ci`. From the repository root, `make site` runs `np
 
 ## Design language: neural cartography, in colour
 
-The site is set as a drafting sheet, in the language its drawings already speak: square corners,
+This section describes the documentation pages (Starlight). The front pages follow the page kit
+instead (`src/kit/kit.css` and each page's `page.css`): a dark theme on a first visit and the reader's
+choice kept in `localStorage` (`psyche-theme`), Instrument Sans and Martian Mono, live figures that
+start from a baked still and pause on request, and an orb that a page opens out of and gathers into
+when the reader leaves it (none under reduced motion).
+
+The documentation is set as a drafting sheet, in the language its drawings already speak: square corners,
 hairline edges, flat colour, rulers and registration marks, and no gradient, glow, shadow, pill or
 tinted card. Colour is drawn the way the illustrations draw it: a rule in a hue, a square swatch before
 a label (as in a map's legend), a line, a solid mark. Hairlines separate rows and edge blocks.
@@ -213,9 +246,9 @@ Starlight's `--sl-color-*` point at the same values (`--sl-color-white` is the t
 | `--sx-arena`, `.sx-arena` | The flat night plate the maze and the battery's drawings sit in, dark in both themes: the class sets the dark tokens on itself |
 | `--sx-muted`, `--sx-hairline` | Secondary text; rules and edges |
 | `--sx-rule-strong` | The edge of a control, the mark of a state: 3:1 against canvas and surfaces (WCAG 1.4.11) |
-| `--sx-grid` | The faint drafting grid behind the hero's mark |
+| `--sx-grid` | A faint drafting grid (defined; no page draws it at present) |
 | `--sx-r-xs` to `--sx-r-l`, `--sx-r-pill` | Corners: 2px everywhere, so a control does not cut the hand and nothing is a pill |
-| `--sx-space-section`, `--sx-pad-panel`, `--sx-pad-card` | Space between the landing page's sections, inside a block and inside a smaller block |
+| `--sx-space-section`, `--sx-pad-panel`, `--sx-pad-card` | Space between sections, inside a block and inside a smaller block |
 | `--sx-lab-font`, `--sx-lab-weight`, `--sx-lab-case`, `--sx-lab-size`, `--sx-lab-track` | The label: sentence case in the reading face at weight 600 |
 | `--sx-dur`, `--sx-dur-bar`, `--sx-dur-line`, `--sx-ease` | Durations of chrome state changes; the curve |
 
@@ -248,8 +281,7 @@ one line to the next; the script says what changes if that line height does.
 ### Blocks, labels, links (`global.css`, `docs.css`)
 
 - **Blocks**: a surface fill and a hairline edge with square corners; a block that stands for a stage or
-  a state carries a rule in its hue along its top edge. Lists are rows on rules. The landing page sets
-  some sections on full-bleed bands of the raised surface and its battery section in the arena.
+  a state carries a rule in its hue along its top edge. Lists are rows on rules.
 - **Labels** are legend entries: a square swatch in the hue, then the words. A state's marker keeps
   its shape (a ring, a disc or a square), so colour is never the only cue. An id (P0, Gate A, T1) is
   mono data.
@@ -263,7 +295,7 @@ one line to the next; the script says what changes if that line height does.
 ### Title block and footer title block
 
 `chrome/PageTitle.astro` draws the strip above each title (`.sx-pt`, `docs.css`): the stage, section and
-the stage's state from the ledger, or the sidebar's group name, or "Error 404", as legend entries. It
+the stage's state from the ledger, or the sidebar's group name, as legend entries. It
 sets `data-stage` (1, 2 or 0) from the page's section, which gives the page its hue; three Start here
 pages that show one stage's work (the timeline, the battery, the substrate's status) take that stage's.
 A 3px rule in the stage's hue runs over the strip and the title, and a hairline closes the block.
@@ -297,10 +329,9 @@ Under `src/components/`.
 
 **Top level**
 
-- `LayersHero.astro`: the landing hero, the mark as four CSS 3D sheets beside the statement.
 - `NowLine.tsx`, `Timeline.tsx` (islands), `TimelineList.astro`: the current phase and next gate, the
-  phase timeline and its list form for narrow screens. Used by the landing, `/roadmap/` and the research
-  roadmap's figure.
+  phase timeline and its list form for narrow screens. Used by `/roadmap/` and the research roadmap's
+  figure.
 - `GateStepper.astro`: gates as ruled rows, with the "next" mark moved to the reader's day by a script
   (`lib/gateClock.ts`). Used by `/roadmap/` and the research gates figure. `gateClock.ts` reads and
   writes the `data-gate-*` and `data-next*` attributes that its header comment lists, on the markup of
@@ -310,19 +341,15 @@ Under `src/components/`.
 - `BrickBoard.astro`, `BrickTable.astro`: the status page's brick board; the table sets ARIA roles in
   the markup because its rows are drawn as grids.
 
-**`battery/`**: `BatteryTeaser.astro` (one ruled row per test with a small picture; landing and the
-test-battery figure), `Pictures.tsx` (server-rendered SVG drawings of the paradigms: illustrations,
+**`battery/`**: `BatteryTeaser.astro` (one ruled row per test with a small picture; the test-battery
+figure), `Pictures.tsx` (server-rendered SVG drawings of the paradigms: illustrations,
 never a model or a result; used by the teaser and the explorer).
 
-**`brand/`**: `PMark.astro` (the Psyche mark; hero), `StageGlyph.astro` (the mark with one stage lit;
-`landing/StageLedger.astro`).
-
-**`chrome/`** (every page unless noted): `PageTitle.astro`, `Footer.astro` and `Search.astro` are the
+**`chrome/`** (every Starlight page unless noted): `PageTitle.astro`, `Footer.astro` and `Search.astro` are the
 Starlight overrides. `Footer.astro` copies Starlight's footer markup and adds the title block;
 `Search.astro` copies Starlight's search with the key cap drawn, not written (WCAG 2.5.3).
 `NextGateClock.astro` and `TableRegions.astro` are scripts run from the footer (the first turns the
-next-gate cell into "decision pending" once its day has passed). `NearestPage.astro` is the 404 page's
-"nearest filed page" row.
+next-gate cell into "decision pending" once its day has passed).
 
 **`docs/`**: `Figure.astro` (the frame), `visuals.ts` (route id to figure, read by `PageTitle.astro`)
 and one figure per mapped page: `EvaluationPipeline` (research overview), `StageArc` (origins),
@@ -330,21 +357,31 @@ and one figure per mapped page: `EvaluationPipeline` (research overview), `Stage
 (disclosure policy), `SubstrateOverview`, `LayerStack` (architecture), `RoleLanes` (methodology). Four
 of them reuse components above.
 
-**`landing/`** (all used by the landing page): `SectionHeader.astro` (a section opening), `StageLedger.astro`
-(stages as a ruled table), `MazeFigure.astro` (Fig. 1, from `lib/maze.ts` and `lib/battery.ts`),
-`HowBuilt.astro`, `PublicWithheld.astro`, `CiteContact.astro` (its DOI is typed and must equal
-`CITATION.cff`; `test_cited_doi` in `tools/publish/test_core.py` checks it), `CaliperRail.astro` (the
-measuring rail in the gutter) and `SubstrateReadout.astro` (the captured-run figures, also used by
-`/status/` and the substrate overview's figure).
+**`landing/`**: `SubstrateReadout.astro` (the captured-run figures, used by `/status/` and the
+substrate overview's figure). The folder keeps its name from the earlier home page, which used it too.
+
+Under `src/layouts/`: `Bare.astro` (the document: the head from `lib/head.ts` with the kit's head
+snippet first, the fonts; the home uses it alone), `Kit.astro` (Bare with `kit.css`, the skip link, the
+kit's header, the page's `<main>`, the footer the kit writes, `kit.js` and the page's own script) and
+`Post.astro` (Kit with a post's title, lead, days and body, and links to the previous and next post).
+
+Under `src/kit/` (imported, never edited by hand): `kit.js`, `kit.css`, `orb-head.js` and
+`orb-head.css` (inlined into every front page's head), `Header.astro`, `film/` (the home's film:
+`Body.astro`, `Noscript.astro`, `film.css`, `film.js`, and `gen.js`, the shape generator the film
+bundles as text), `pages/<page>/` (`Main.astro`, `page.css`, `page.js`, `page.ts` for
+what-were-building, experiments, about, blog and not-found) and `stills/<page>/` (each figure's baked
+still, inlined into the page's HTML).
 
 **`src/lib/`**: `plan.ts` (date logic over the plan; "today" is passed in), `today.ts` (`todayIn`, apart
 so a page script loads only it), `gateClock.ts` (brings server-rendered gates to the reader's day),
 `ledger.ts` (types of the public projection), `status.ts` (readout and brick rows, build and meaning
 axes kept apart), `pageChrome.ts` (strip and footer logic), `lastUpdated.ts` (the footer date),
-`seo.ts` (origin, base, `NOT_FOUND`, theme colours, JSON-LD, per-page head), `feed.ts` (Atom
+`seo.ts` (origin, base, `NOT_FOUND`, theme colours, JSON-LD, per-page head), `head.ts` (the whole head
+of a front page or post, and the `PAGES` table of their titles and descriptions), `blog.ts` (the
+blog's posts and feed), `feed.ts` (Atom
 serialiser), `maze.ts` (deterministic grid geometry and seeded walks), `battery.ts` (the paradigms'
 data), `sheet.ts` (wall outlines, grids, rulers), `url.ts` (`withBase`). `battery`, `feed`, `maze`,
-`pageChrome`, `plan`, `seo`, `sheet` and `status` have a unit test beside them;
+`pageChrome`, `plan`, `seo`, `head`, `blog`, `sheet` and `status` have a unit test beside them;
 `searchOverride.test.ts` tests `Search.astro`.
 
 ## Checks
@@ -356,8 +393,8 @@ data), `sheet.ts` (wall outlines, grids, rulers), `url.ts` (`withBase`). `batter
 | `check:og` | The card names a stage other than the ledger's active one, the sidecar does not describe `brand/psyche-social.png` byte for byte, or `public/og.png` is not its copy |
 | Staging | A governed source differs from `HEAD`; the guard refuses a page; a heading or description is missing; a relative link is dead; a fence has no current drawing or a drawing no fence |
 | `astro check` | Type or Astro errors. Warnings and hints do not fail it |
-| Link validation | `starlight-links-validator`, during `astro build`, finds an invalid internal link or fragment in a Markdown page (`errorOnRelativeLinks` is off: staging has rewritten them). It does not read the hand-written pages: a dead root-relative link there passes, so build those with `withBase()` and check them yourself |
-| `check:spacing` | The built landing, roadmap, battery or status page has text glued to an inline element or an expression's output, or a number to a word; or any figure caption has two words run together |
+| Link validation | `starlight-links-validator`, during `astro build`, finds an invalid internal link or fragment in a Markdown page, posts included (`errorOnRelativeLinks` is off: staging has rewritten them). It does not read the hand-written pages: a dead root-relative link there passes, so build those with `withBase()` and check them yourself. For the front pages, `scripts/kit-links.test.mjs` (in `npm test`) fails on a link in the kit or a front page that leads to no page |
+| `check:spacing` | The built home, What we're building, Experiments, About, blog index, roadmap, battery or status page has text glued to an inline element or an expression's output, or a number to a word; or any figure caption has two words run together |
 | `check:refs` | A page has a `<use href>`, `url(#...)`, `aria-labelledby`, `aria-describedby`, `aria-controls` or `<label for>` pointing at an id it lacks |
 | `check:budget` | See below |
 | `check:seo` | See below |
@@ -373,7 +410,10 @@ named for Mermaid, KaTeX, Cytoscape or d3, or a script or stylesheet from anothe
 is 3 percent above the size measured when it was set, rounded up to the next 100 bytes, so another
 zlib build does not trip it and real growth does. A page with no line falls under `DEFAULT_BUDGET`,
 the largest of any docs page without an island. To raise one, change the number and say why in the
-commit; a new page that needs more gets its own measured line.
+commit; a new page that needs more gets its own measured line. The home (the film and three.js), What
+we're building, Experiments and About (the kit and their figure scripts) have lines above the default;
+the blog's index and the posts have lines of their own below it. The comment above `PAGE_BUDGETS` says
+why each weighs what it does.
 
 **SEO and the feed.** `scripts/check-seo.mjs` reads `dist/`. Per page, the 404 page included, it fails
 on: other than one title, canonical address and description (120 to 160 characters, unique); `og:` or
@@ -394,10 +434,16 @@ BlogPosting that matches its head; no other page but the landing page carries st
 
 `scripts/check-a11y.mjs` serves `dist/` on a free local port and runs axe-core (WCAG 2.0, 2.1 and 2.2,
 levels A and AA) over every page it finds, the 404 page included, at desktop and phone width, light and
-dark, reduced motion on. On `research/gates/` it also opens what a reader opens by clicking: the search
-dialog with results, the phone menu and the phone contents list. It exits 1 on a serious or critical
+dark, reduced motion on. The docs pages follow the emulated colour scheme; the front pages ignore it, so
+each load first writes the scheme to `localStorage` (`psyche-theme`), and the run fails if the page
+then shows another theme. The home fixes its own theme (the film is dark), so it is audited once per
+width, dark, and listed as "fixed dark"; any other page that fixes its theme fails the run. On
+`research/gates/` it also opens what a reader opens by clicking: the search dialog with results, the
+phone menu and the phone contents list; on `what-were-building/`, at phone width, it opens the site's
+menu, audits it, and closes it with Escape, failing if the menu does not close, return focus to its
+button or leave the page as it was. It exits 1 on a serious or critical
 violation and on anything it cannot audit (a page that does not answer 200, a state that will not open,
-a run where axe tested fewer than 20 rules). Lesser findings, and rules axe cannot decide, are listed
+a run where axe tested fewer than 20 rules, a state whose page is missing). Lesser findings, and rules axe cannot decide, are listed
 and never fail it. It exits 2 when it could not set itself up (no Chrome, a failed install), which says
 nothing about the site; CI runs it once more on a 2. Flags: `--chrome PATH`, `--json FILE`, `--port N`
 and `--only /,research/gates/,404.html` for a quick look.

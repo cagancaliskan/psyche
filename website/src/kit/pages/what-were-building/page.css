@@ -1,0 +1,73 @@
+  /* ---------- What we're building. Page-only styles. Type sizes come from the kit's scale. ---------- */
+
+  /* The opening: a deep field of model neurons recedes to the upper right; along the bottom the title
+     and its sentences stand side by side, and a pulse leaves the title's full stop into the depth. */
+  .w-open { position: relative; height: 100vh; height: 100svh; min-height: 640px; overflow: hidden; }
+  .w-open .k-art { position: absolute; inset: 0; }
+  .w-open .k-art > svg, .w-open .k-still, .w-open .k-still svg { width: 100%; height: 100%; }
+  .w-open .k-art:focus-visible { outline: none; }
+  .w-open__words {
+    position: absolute; left: var(--gutter); right: var(--gutter); bottom: 104px;
+    display: flex; align-items: flex-end; gap: clamp(40px, 5vw, 80px); pointer-events: none;
+  }
+  .w-title { flex: none; transition: opacity .9s var(--ease), transform 1.1s var(--ease); }
+  .k-arrive .w-title { opacity: 0; transform: translateY(.12em); }
+  .w-title__line { display: block; white-space: nowrap; }
+  .w-lead { margin: 0 0 .2em; pointer-events: auto; }
+  .w-open__foot { position: absolute; left: var(--gutter); bottom: 22px; max-width: calc(100% - 2 * var(--gutter)); }
+  .w-open__foot .k-fig-ctl { margin-top: 0; }
+  .w-open__foot .k-cap { margin: 0; max-width: 46em; }
+
+  /* Each row: the big line and its sentences side by side, then the figure, large, close under them. */
+  .w-row { padding-top: 17vh; }
+  .w-text {
+    max-width: 1440px; margin: 0 auto; padding: 0 var(--gutter);
+    display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); column-gap: clamp(40px, 5vw, 80px); align-items: end;
+  }
+  .w-big { max-width: 11em; }
+  .w-text .k-under { margin: 0 0 .15em; }
+  .w-fig { margin: 44px auto 0; padding: 0 var(--gutter); max-width: 1440px; }
+  .w-fig .k-art { max-width: 1280px; margin: 0 auto; }
+  .w-fig .k-fig-ctl > .k-ctl:first-child { margin-left: -2px; }
+  .w-fig--bleed { max-width: none; padding: 0; }
+  .w-fig--bleed .k-art { max-width: none; }
+  .w-fig--bleed .k-fig-ctl, .w-fig--bleed .k-cap { margin-left: var(--gutter); margin-right: var(--gutter); }
+  @media (min-width: 1505px) { .w-fig--bleed .k-fig-ctl, .w-fig--bleed .k-cap { margin-left: calc(50vw - 720px + var(--gutter)); } }
+  .w-fig--maze .k-art { max-width: 1240px; }
+
+  /* Row 3 turns the other way: the sentences at the left, the big line at the right. */
+  .w-row--right .w-text { grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); }
+  .w-row--right .w-big { order: 2; justify-self: end; text-align: right; }
+  .w-row--right .k-under { order: 1; }
+  .w-row--watts .w-fig { margin-top: 28px; }
+  .w-nb { white-space: nowrap; }
+
+  /* The close: the one steady point of light returns above the line, and the field of the opening
+     comes back around the words (never under them): one pulse leaves the point, then all is still. */
+  .w-close {
+    position: relative; overflow: hidden;
+    min-height: 100vh; min-height: 100svh; padding: 18vh var(--gutter) 16vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+  }
+  .w-close__field { position: absolute; inset: 0; pointer-events: none; }
+  .w-close__field svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+  .w-close > :not(.w-close__field) { position: relative; }
+  .w-close__point { display: block; width: 72px; height: 72px; margin: 0 auto 5vh; }
+  .w-close .w-big { max-width: 10.5em; }
+  .w-close .k-under { margin: 28px auto 0; }
+  .w-close a { transition: text-decoration-color .2s, color .2s; }
+  .w-close a:focus-visible { outline: none; color: var(--ink); text-decoration-color: var(--focus); text-decoration-thickness: 2px; }
+
+  @media (max-width: 700px) {
+    /* the opening grows to hold its words: the field above, then the title, its sentences and the controls */
+    .w-open { height: auto; min-height: 100svh; display: flex; flex-direction: column; justify-content: flex-end; padding: 46svh var(--gutter) 22px; }
+    .w-open__words { position: relative; left: auto; right: auto; bottom: auto; display: block; }
+    .w-lead { margin: 20px 0 0; }
+    .w-open__foot { position: relative; left: auto; bottom: auto; max-width: none; margin-top: 22px; }
+    .w-row { padding-top: 13vh; }
+    .w-text, .w-row--right .w-text { display: block; }
+    .w-row--right .w-big { text-align: left; }
+    .w-text .k-under { margin: 18px 0 0; }
+    .w-fig { margin-top: 28px; }
+    .w-close { padding: 16vh var(--gutter) 14vh; min-height: 92vh; min-height: 92svh; }
+  }

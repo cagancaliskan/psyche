@@ -78,7 +78,7 @@ jobs:
         working-directory: website
         run: npm ci
 
-      - name: Unit tests (plan, maze, battery, search-engine head, progress feed, sitemap dates, page chrome, search override, table regions, a11y tool lock)
+      - name: Unit tests (plan, maze, battery, search-engine head, head builder, progress feed, sitemap dates, page chrome, search override, kit links, table regions, a11y tool lock)
         working-directory: website
         run: npm test
 
@@ -96,10 +96,12 @@ jobs:
             exit 1
           fi
 
-      # What the disclosure job scans: the HTML of the research, custom and Start here pages, the 404
-      # page included, the three walls page, the progress feed, which carries the plan's text to
-      # feed readers, and the blog (its index, its posts and its feed). Not included on purpose: the rest of dist/substrate/ (the substrate's own pre-existing
-      # record, which uses some denylisted words in the substrate's sense), dist/pagefind/
+      # What the disclosure job scans: the HTML of the front pages (the home, What we're building,
+      # Experiments, About), the research, custom and Start here pages, the 404 page included, the
+      # three walls page, the progress feed, which carries the plan's text to feed readers, and the
+      # blog (its index, its posts and its feed). Not included on purpose: the rest of
+      # dist/substrate/ (the substrate's own pre-existing record, which uses some denylisted words in
+      # the substrate's sense), dist/pagefind/
       # (the search index of every page) and dist/_astro/ (library bundles, whose code
       # legitimately contains common words). The research sources and docs/PSYCHE.md are
       # disclosure-scanned by the governance workflow; docs/ARCHITECTURE.md and
@@ -111,6 +113,9 @@ jobs:
           name: research-pages
           path: |
             website/dist/index.html
+            website/dist/what-were-building/
+            website/dist/experiments/
+            website/dist/about/
             website/dist/404.html
             website/dist/roadmap/
             website/dist/battery/
@@ -135,11 +140,14 @@ jobs:
       # Accessibility of the built pages: website/scripts/check-a11y.mjs serves website/dist on a free
       # local port, drives the runner's Chrome and runs axe-core at WCAG 2.2 AA over every page of the
       # site (found in dist, the 404 page included) and over the interface states a reader opens (the
-      # search dialog with results, the phone menu, the phone contents list), light and dark, desktop
-      # and phone width. The step fails on any serious or critical violation, and on a page or state
-      # it cannot audit; moderate and minor ones are listed, and what axe cannot decide (text contrast
-      # over gradients, pseudo-elements and images) is listed for a human look and never fails it. It
-      # closes everything it starts.
+      # search dialog with results, the phone menu, the phone contents list on a docs page; the site's
+      # phone menu on a front page, which must also close again), light and dark, desktop and phone
+      # width. The theme of each load is set and checked, since the front pages ignore the system's
+      # colour scheme; the home page, dark by design, is audited dark once per width. The step fails
+      # on any serious or critical violation, and on a page or state it cannot audit; moderate and
+      # minor ones are listed, and what axe cannot decide (text contrast over gradients,
+      # pseudo-elements and images) is listed for a human look and never fails it. It closes
+      # everything it starts.
       # Its two dev packages (puppeteer-core, axe-core) are installed by the script itself, at the exact
       # versions website/scripts/a11y-tools/package.json names and with their own dependencies as its
       # package-lock.json locks them (`npm ci`, tried three times); they are not site dependencies. That
