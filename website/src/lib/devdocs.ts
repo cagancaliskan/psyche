@@ -19,6 +19,14 @@ import { REPO_URL } from './seo.ts';
 export const DEVELOPERS_ROUTE = 'developers';
 /** The opening sentence of the home. */
 export const DEVELOPERS_LEAD = 'The documentation, records and source code behind Psyche.';
+/** Four more places in the repository, under the home's repository line, in order. "Licence" names no
+ *  licence, so the word stays right when the licence changes. */
+export const DEVELOPERS_LINKS: readonly { text: string; href: string }[] = [
+  { text: 'Discussions', href: `${REPO_URL}/discussions` },
+  { text: 'Cite this repository', href: `${REPO_URL}/blob/main/CITATION.cff` },
+  { text: 'Licence', href: `${REPO_URL}/blob/main/LICENSE` },
+  { text: 'Report a vulnerability', href: `${REPO_URL}/blob/main/SECURITY.md` },
+];
 /** The home's "Where to start" list, in order: slugs of published documents (docs/publish.json). */
 export const START_SLUGS = ['guide', 'research/roadmap', 'research/test-battery'] as const;
 /** What the navigation and the home's filter say when no page matches the words typed. */

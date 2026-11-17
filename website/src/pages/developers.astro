@@ -1,13 +1,13 @@
 ---
 // The documentation's home, at /developers/: where the footer's "For developers" leads. Its opening
-// sentence and the repository, then the filter over every page, "Where to start" and every page of the
+// sentence, the repository and four places in it (lib/devdocs.ts DEVELOPERS_LINKS), then the filter over every page, "Where to start" and every page of the
 // documentation list by group, each with its description (components/devdocs/DocsIndex.astro). The list
 // is src/data/docs.json, which tools/publish/stage.py writes from docs/publish.json; nothing is typed
 // here per page.
 import DocsIndex from '@/components/devdocs/DocsIndex.astro';
 import docs from '@/data/docs.json';
 import Docs from '@/layouts/Docs.astro';
-import { DEVELOPERS_LEAD, entriesOf, navGroups, startEntries, type DocsData } from '@/lib/devdocs.ts';
+import { DEVELOPERS_LEAD, DEVELOPERS_LINKS, entriesOf, navGroups, startEntries, type DocsData } from '@/lib/devdocs.ts';
 import { PAGES } from '@/lib/head.ts';
 import { REPO_URL } from '@/lib/seo.ts';
 
@@ -23,6 +23,9 @@ const repoName = new URL(REPO_URL).pathname.replace(/^\/+/, '');
     <h1 class="k-doc__title">{page.title}</h1>
     <p class="k-devhome__lead">{DEVELOPERS_LEAD}</p>
     <p class="k-devhome__repo">The source code is on GitHub:{' '}<a href={REPO_URL}>{repoName}</a></p>
+    <ul class="k-devhome__links" aria-label="The repository">
+      {DEVELOPERS_LINKS.map((l) => <li><a href={l.href}>{l.text}</a></li>)}
+    </ul>
     <DocsIndex groups={groups} start={start} />
   </main>
 </Docs>

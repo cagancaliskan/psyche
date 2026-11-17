@@ -3,9 +3,10 @@
 // the list is staged from), tools/ledger.json (its program states) and the three site pages' own files.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import {
   DEVELOPERS_LEAD,
+  DEVELOPERS_LINKS,
   DEVELOPERS_ROUTE,
   START_SLUGS,
   countLabel,
@@ -108,6 +109,20 @@ test('the home: its route, its opening sentence, its head facts and its count', 
   assert.equal(DEVELOPERS_LEAD, 'The documentation, records and source code behind Psyche.');
   assert.equal(countLabel(21), '21 pages');
   assert.equal(countLabel(1), '1 page');
+});
+
+test('the home\'s four places in the repository: in order, on the repository named in lib/seo.ts, the licence unnamed', () => {
+  assert.deepEqual(DEVELOPERS_LINKS.map((l) => [l.text, l.href]), [
+    ['Discussions', `${REPO_URL}/discussions`],
+    ['Cite this repository', `${REPO_URL}/blob/main/CITATION.cff`],
+    ['Licence', `${REPO_URL}/blob/main/LICENSE`],
+    ['Report a vulnerability', `${REPO_URL}/blob/main/SECURITY.md`],
+  ]);
+  // the files they open are in the repository
+  for (const l of DEVELOPERS_LINKS) {
+    const file = /\/blob\/main\/(.+)$/.exec(l.href)?.[1];
+    if (file) assert.ok(existsSync(new URL(`../../../${file}`, import.meta.url)), `${file} is not in the repository`);
+  }
 });
 
 test('"On this page": h2 and h3 with an id, in order, h3 as a sub-entry; nothing else', () => {
