@@ -2215,3 +2215,69 @@ check that the aim is named as an aim and that nothing is claimed. `tools/ledger
 `tools/publish/check_copy.py` and `forbidden_claim_terms` are unchanged. The copy check still
 reports any energy figure on a public page; a measured figure passes with the existing
 `ledger:allow-claim` mark beside it, as every reviewed exception does.
+
+## D-038 — The repository moves from the MIT licence to PolyForm Noncommercial 1.0.0
+
+**Date:** 2026-11-17 · **Decided by:** Cagan · **Lane:** architect-pm (licence file, documents,
+citation file); builder (the README badge test, the drawn font's name table) · **Status:** decided
+
+### 1. Context
+
+The repository has been under the MIT licence since it opened, which lets anyone use the work for
+any purpose, commercial use included, without asking. Psyche is now a pre-seed company (D-037). A
+company whose work is its product needs commercial use of that work to pass through it, while the
+work stays public, readable and usable for research and teaching.
+
+### 2. The decision
+
+1. From the commit that carries this entry, everything in this repository that is Psyche's own
+   work (code, documents, figures and the site) is under the **PolyForm Noncommercial License
+   1.0.0** (SPDX `PolyForm-Noncommercial-1.0.0`). Third-party material keeps its own terms, as
+   `THIRD_PARTY_NOTICES.md` lists them. The file `LICENSE` holds that licence's official text,
+   unaltered, with the copyright notice in the form the licence provides for.
+2. What the licence permits is what its text says and nothing in this entry adds to or takes from
+   it. In short: use for a non-commercial purpose, as the licence defines one, is free.
+3. Commercial use needs a separate licence from the project lead. The way to ask is the contact
+   on the site: <https://psyche.cagancaliskan.com/about/#contact>.
+4. Copyright stays with the project lead, Cagan Caliskan.
+5. A contribution is accepted on the terms CONTRIBUTING.md now states: it may be distributed under
+   the repository's licence, and the project lead may also license it under other terms,
+   commercial ones included.
+
+What follows from it:
+
+- Everything published from this repository before this entry was published under the MIT
+  licence and stays available under MIT to whoever obtained it. A licence already given is not
+  withdrawn by this entry.
+- The archived report keeps its own licence, CC BY 4.0, and its archive is not changed.
+- `cogmap/`, the archived report in `docs/report/`, the frozen pre-registrations and the dated
+  blog posts are not edited by this entry. Where one of them names the MIT licence, it says what
+  was true when it was written.
+- The repository is described as public, and where the precise word is wanted as
+  source-available. It is not described as open source: that term is kept for licences that allow
+  commercial use. "Its research is open in this repository" (D-037) is unchanged: the work is
+  public to read and to check.
+
+### 3. Options considered
+
+- Keep the MIT licence: nothing to change, but any company may build a product on the work
+  without asking.
+- A non-commercial licence with commercial licences on request: the work stays public and free
+  for research, teaching and other non-commercial use, and commercial use passes through the
+  company. Chosen, in a standard published text (PolyForm Noncommercial 1.0.0) and not a licence
+  written for this repository, so that its terms are ones others already know.
+- A licence that bars production use and converts to an open-source licence after a set date:
+  it would open commercial use automatically on that date, which is not wanted now.
+- A copyleft licence with a commercial alternative: commercial use would stay allowed without
+  asking, under the duty to publish changes, so it does not do what is wanted.
+
+### 4. Cost
+
+`LICENSE` is replaced. The licence is renamed where the repository states it: `README.md` (the
+badge, the citation note and the License section), `CITATION.cff`, `THIRD_PARTY_NOTICES.md`,
+`docs/PSYCHE.md`, `docs/faq.md`, `docs/governance.md`, `docs/guide.md`, and the name table of the
+project's own drawn font (`website/scripts/make-lines-font.mjs`, with the font file redrawn by
+it). `CONTRIBUTING.md` gains the paragraph on contributions. `tools/publish/test_core.py` follows
+the new badge. `docs/REPORT.md` still describes the archived artifact as MIT-licensed, as it was.
+The licence text speaks of "the software"; this entry applies it to all of Psyche's own work in the
+repository.

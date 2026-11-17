@@ -68,7 +68,9 @@ The preferred citation is the archived report of stage 1:
 
 The archived title uses the project's earlier name; the project is Psyche
 ([D-030](../DECISIONS.md) retired the earlier name). The report is open access under CC BY 4.0
-and the code is MIT-licensed ([LICENSE](../LICENSE)).
+and everything else in the repository that is Psyche's own work is under the PolyForm
+Noncommercial License 1.0.0 ([LICENSE](../LICENSE)): free for any non-commercial purpose as that
+licence defines it, with commercial use by a separate licence from the project lead.
 
 The same citation is in [`CITATION.cff`](../CITATION.cff) at the root of the repository. GitHub
 reads that file and offers it through the "Cite this repository" link on the repository's page.

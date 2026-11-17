@@ -78,9 +78,12 @@ stand on its own as a real, citable artifact. Today that means:
 
 - **The archived report of stage 1**, with its DOI and open access under CC BY 4.0. How to cite
   it is in the [Reader's guide](guide.md#how-to-cite).
-- **The code under the MIT licence**, in this repository. The substrate's suites run on the Python
-  standard library alone, so anyone can run them without installing anything, and the licence lets
-  anyone keep using and building on the code.
+- **The code, public in this repository** under the PolyForm Noncommercial License 1.0.0
+  ([D-038](../DECISIONS.md)). The substrate's suites run on the Python standard library alone, so
+  anyone can run them without installing anything, and the licence lets anyone keep using and
+  building on the code for any non-commercial purpose as it defines one. Commercial use needs a
+  separate licence from the project lead. What was published under the MIT licence before that
+  decision stays available under MIT.
 - **The public plan and record**: the research plan with its change log, the decision record, the
   ledger and the documents of this site, all in the repository's history. The site is built from
   files in the repository, so the record does not depend on the site.

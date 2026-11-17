@@ -32,6 +32,11 @@ Nothing here promises that a change is accepted, or how soon it is read.
 
 Ask in a Discussion before a large change, and before anything the list below does not mention.
 
+The repository is public under the [PolyForm Noncommercial License 1.0.0](LICENSE) (D-038), with
+commercial licences granted by the project lead on request. By sending a pull request you agree
+that your contribution may be distributed under that licence, and that the project lead may also
+license it under other terms, commercial ones included.
+
 - **Closed while the substrate is paused (D-031).** No new substrate brick starts and no
   substrate default changes (see the
   [program state](#what-this-repository-is-d-031-d-033)).

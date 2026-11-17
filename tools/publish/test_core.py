@@ -3956,7 +3956,8 @@ def readme_problems(text: str, versions: list, repo: str, doi: str, root: Path) 
         "Pages": (f"https://github.com/{repo}/actions/workflows/pages.yml/badge.svg",
                   f"https://github.com/{repo}/actions/workflows/pages.yml"),
         "DOI": (f"https://zenodo.org/badge/DOI/{doi}.svg", f"https://doi.org/{doi}"),
-        "License: MIT": ("https://img.shields.io/badge/license-MIT-blue.svg", "LICENSE"),
+        "License: PolyForm Noncommercial": (
+            "https://img.shields.io/badge/license-PolyForm%20Noncommercial-blue.svg", "LICENSE"),
     }
     got = {alt: (img, link) for alt, img, link in badges}
     if got != want:

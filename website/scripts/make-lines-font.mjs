@@ -21,7 +21,7 @@
 //                      in the Latin file, and these two only in the full font)
 //
 // How it is drawn. Every glyph is built from rectangles, arcs and triangles; no outline comes from
-// another font, so there is nothing to credit and no licence beyond the project's own (MIT, LICENSE).
+// another font, so there is nothing to credit and no licence beyond the project's own (LICENSE).
 // All numbers are in font units of a 1000-unit em:
 //   - Every glyph is 700 wide, the advance of every Martian Mono glyph.
 //   - A light line is 100 thick and runs along y = 350: the thickness and the middle of Martian Mono's
@@ -580,14 +580,14 @@ function maxpTable(glyphs) {
 
 function nameTable() {
   const strings = {
-    0: 'Copyright (c) 2026 Cagan Caliskan. MIT License.',
+    0: 'Copyright (c) 2026 Cagan Caliskan. PolyForm Noncommercial License 1.0.0.',
     1: 'Psyche Lines',
     2: 'Regular',
     3: 'Psyche Lines Regular 1.000',
     4: 'Psyche Lines Regular',
     5: 'Version 1.000',
     6: 'PsycheLines-Regular',
-    13: 'Released under the MIT licence of the Psyche repository (LICENSE). Drawn by website/scripts/make-lines-font.mjs; no outline in it comes from another font.',
+    13: 'Released under the licence of the Psyche repository (LICENSE), the PolyForm Noncommercial License 1.0.0. Drawn by website/scripts/make-lines-font.mjs; no outline in it comes from another font.',
     14: 'https://github.com/cagancaliskan/psyche/blob/main/LICENSE',
   };
   const ids = Object.keys(strings).map(Number);
