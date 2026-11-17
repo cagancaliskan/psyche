@@ -94,10 +94,10 @@ If any answer is no, the idea is parked: it is recorded and not started.
 ```mermaid
 %%{init: {"htmlLabels": false, "markdownAutoWrap": false, "flowchart": {"htmlLabels": false, "wrappingWidth": 400}}}%%
 flowchart TD
-    idea["A new idea"] --> q1{"Answers a research<br/>question directly?"}
-    q1 -- "yes" --> q2{"Finished before<br/>Gate C?"}
+    idea["A new idea"] --> q1["Answers a research<br/>question directly?"]
+    q1 -- "yes" --> q2["Finished before<br/>Gate C?"]
     q1 -- "no" --> park["Parked: recorded,<br/>not started"]
-    q2 -- "yes" --> q3{"A reviewer accepts<br/>it without asking<br/>why it is there?"}
+    q2 -- "yes" --> q3["A reviewer accepts<br/>it without asking<br/>why it is there?"]
     q2 -- "no" --> park
     q3 -- "yes" --> take["Joins the line"]
     q3 -- "no" --> park
