@@ -104,7 +104,7 @@ test("each designed post's figures fit its Markdown as committed: every block pl
     const files = [];
     const kids = arrange(blocksOf(md), plan, (f) => { files.push(f); return readFileSync(join(KIT, 'stills', 'posts', slug, f), 'utf8'); });
     assert.ok(kids.length > 0, slug);
-    for (const f of plan.replaces) assert.match(md, new RegExp(`\\]\\(${f.replace(/\./g, '\\.')}\\)`), `${slug}: ${f}`);
+    for (const f of plan.replaces) assert.ok(md.includes(`](${f})`), `${slug}: ${f}`);
     assert.ok(files.length > 0, `${slug}: no still read`);
     // figure ids are unique on the page (the opening's included), and each is drawn by the post's script
     const open = readFileSync(join(KIT, 'posts', slug, 'Open.astro'), 'utf8');

@@ -49,11 +49,21 @@ const decode = (s) =>
     return ENTITIES[e.toLowerCase()] ?? all;
   });
 
+/** A string with its tags left out. Repeated until nothing changes, so that removing one tag cannot leave another behind. */
+const withoutTags = (s) => {
+  let before;
+  do {
+    before = s;
+    s = s.replace(/<[^>]*>/g, '');
+  } while (s !== before);
+  return s;
+};
+
 /** The words of a node: its text, and the text of inline HTML written in the Markdown, tags left out. */
 export function plainText(node) {
   if (!node) return '';
   if (node.type === 'text') return node.value;
-  if (node.type === 'raw') return decode(node.value.replace(/<[^>]*>/g, ''));
+  if (node.type === 'raw') return decode(withoutTags(node.value));
   return (node.children ?? []).map(plainText).join('');
 }
 
