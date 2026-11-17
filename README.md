@@ -10,13 +10,14 @@
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.20474613.svg)](https://doi.org/10.5281/zenodo.20474613)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Psyche is an open research project that builds brain-inspired components in stages, each built
-test-first and kept as a citable artifact, with artificial general intelligence (AGI) as its
-long-term aim. AGI is named as an aim only: nothing built so far is general intelligence, and
-these pages make no such claim. Stage 1, a dependency-free memory-and-activation substrate, is the
-foundation, and its report is archived with a DOI. Stage 2, spiking cognitive maps, is a test of
-whether a spiking network that learns only through local synaptic plasticity shows the behaviours
-that an internal map would explain and memorised responses would not.
+Psyche is a pre-seed company building machines on the brain's own principles, toward machine
+cognition. Its research is open in this repository. The project builds brain-inspired components in
+stages, each built test-first and kept as a citable artifact, with artificial general intelligence
+(AGI) as its long-term aim. AGI is named as an aim only: nothing built so far is general
+intelligence, and these pages make no such claim. Stage 1, a dependency-free memory-and-activation
+substrate, is the foundation, and its report is archived with a DOI. Stage 2, spiking cognitive
+maps, is a test of whether a spiking network that learns only through local synaptic plasticity
+shows the behaviours that an internal map would explain and memorised responses would not.
 
 **Status.** The current phase and the next decision gate of stage 2, rendered from
 [`tools/research_plan.json`](tools/research_plan.json); the [roadmap](#roadmap) below explains the

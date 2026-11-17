@@ -1,4 +1,4 @@
-// The site of Psyche, one open research project in stages (D-031, D-033): its front pages and its
+// The site of Psyche, a pre-seed company whose research is open in stages (D-031, D-033, D-037): its front pages and its
 // documentation.
 //
 // Content is never written here by hand. `npm run stage` (tools/publish/stage.py) copies the

@@ -9,12 +9,13 @@ claims rule that the whole project follows (rule 1 in [CONTRIBUTING.md](../../CO
 
 ## The project's aim
 
-Psyche is an open research project that builds brain-inspired components in stages, with
-artificial general intelligence (AGI) as its long-term aim ([D-033](../../DECISIONS.md)). The aim
-may be named anywhere, as an aim. No public text describes Psyche, the substrate, the spiking
-model or any other component as having reached that aim, and no result of this line is presented
-as a measured step toward it. The line asks a narrow question about one measurable class of
-behaviour, and its claims stay inside that question.
+Psyche is a pre-seed company building machines on the brain's own principles, toward machine
+cognition ([D-037](../../DECISIONS.md)). Its research builds brain-inspired components in stages,
+with artificial general intelligence (AGI) as its long-term aim ([D-033](../../DECISIONS.md)). The
+aim may be named anywhere, as an aim. No public text describes Psyche, the substrate, the spiking
+model or any other component as having reached that aim, and no result of this line is presented as
+a measured step toward it. The line asks a narrow question about one measurable class of behaviour,
+and its claims stay inside that question.
 
 ## The core rule
 
@@ -34,18 +35,23 @@ same estimate for the comparators. A behaviour that was not shown is left out ra
 A cost comparison is stated in whichever direction the captured result gives, and only under the
 [energy claims](#energy-claims) rules below.
 
-## Never
+## Never, and not until shown
 
 Each line below applies to every public text about the cognitive-map line.
 
-- Never: say the model "understands" or "thinks", or use "consciousness" about it.
-- Never: call it a mind, sentient, aware, general intelligence or a validated cognitive model.
+- Not until shown, with evidence the project can show ([D-037](../../DECISIONS.md)): do not
+  say the model "understands" or "thinks", or use "consciousness" about it.
+- Not until shown, with evidence the project can show ([D-037](../../DECISIONS.md)): do not
+  call it a mind, sentient, aware or a validated cognitive model.
+- Never: call it general intelligence ([D-033](../../DECISIONS.md)).
 - Never: "the brain does it this way". Say "brain-inspired" or "biologically plausible".
 - Never: a general claim that spiking networks are more efficient than conventional networks.
 - Never: a priority claim, such as "the first" or "first model to", before release. A decided
   [Gate A](gates.md) does not lift this, whatever its outcome
   ([D-034](../../DECISIONS.md)).
-- Never: energy presented as measured. It is an analytic estimate or a lower bound.
+- Never: energy presented as measured when it was not measured. Measured energy is stated with
+  the measure and the conditions ([D-037](../../DECISIONS.md)); otherwise it is an analytic
+  estimate or a lower bound.
 - Never: a number without a captured source, meaning a results file produced by code.
 - Never: a planned result written as if it had been obtained.
 
@@ -112,15 +118,18 @@ a single no parks it.
 ## Energy claims
 
 A spiking network simulated on a GPU runs on hardware that does not exploit spikes, so its
-energy use says nothing about spiking efficiency. Any energy figure the line reports is therefore
-an estimate of what the computation would cost, never a reading of what it did cost. The
-principles:
+energy use says nothing about spiking efficiency. An energy figure from such a simulation is
+therefore an estimate of what the computation would cost, never a reading of what it did cost. A
+figure that was measured is reported as measured, with what was measured and under what
+conditions ([D-037](../../DECISIONS.md)). The principles:
 
-- **Estimates and lower bounds only, named as such.** Every energy figure is called an analytic
-  estimate or an analytic lower bound wherever it appears: in tables, in figures and in prose.
-  The limitation is stated in the text before a reviewer has to ask for it.
-- **Hardware readings are never evidence.** GPU wall-clock time and watt readings are never
-  presented as evidence of energy efficiency.
+- **Every figure named for what it is.** A measured figure is called measured and states the
+  measure and the conditions. Every other energy figure is called an analytic estimate or an
+  analytic lower bound wherever it appears: in tables, in figures and in prose. The limitation is
+  stated in the text before a reviewer has to ask for it.
+- **GPU readings are never evidence of spiking efficiency.** GPU wall-clock time and watt
+  readings measure hardware that does not exploit spikes, and are never presented as evidence of
+  the energy efficiency of spiking.
 - **No borrowed hardware figures.** The estimates are not set against energy figures reported
   for neuromorphic chips.
 - **No general efficiency claim.** Whether spiking networks save energy depends on the
@@ -150,7 +159,7 @@ the withheld method.
 | Sentences | Short and active. "X does Y (Fig. N)" rather than "we show that". |
 | Terms | One name for one thing, used the same way everywhere. A second name for the same thing is a defect. |
 | Numbers | Mean with a confidence interval. A value rather than "approximately". "Significant" only with a statistical test behind it. |
-| Restraint | "Novel" and "original", as claims about the work, only with evidence. No priority claim before release, whatever a gate decides, no marketing language, no exclamation marks. |
+| Restraint | "Novel" and "original", as claims about the work, only with evidence. No priority claim before release, whatever a gate decides, no marketing language in research documents ([D-037](../../DECISIONS.md)), no exclamation marks. |
 | Figures | Every axis labelled with its unit, a colour-blind-safe palette, and every figure cited in the text. Figures are generated from code. |
 | Citations | Primary sources, with a DOI, and the year and venue checked. A reference is used only after it has been checked against its primary source; a second-hand citation is not enough. |
 | Status words | Lowercase in the line's prose, exactly the vocabulary of `tools/research_plan.json`: planned, active and done for phases; upcoming and decided for gates; upcoming, met and missed for deadlines. |

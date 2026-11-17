@@ -2129,3 +2129,88 @@ now" and an exception in "What is withheld". `docs/blog/README.md`, `docs/faq.md
 "Public summary, private detail" paragraph of `CONTRIBUTING.md` and the post that introduced the
 blog are reworded to match. No tool, check or plan file changes: a progress note passes the same
 commit gate and disclosure scan as every other post.
+
+## D-037 — The front pages speak for the company; a measured claim is always welcome
+
+**Date:** 2026-11-17 · **Decided by:** Cagan · **Lane:** architect-pm (documents,
+`tools/ledger.json` term list); builder (site metadata, social card, tool tests) · **Status:**
+decided
+
+### 1. Context
+
+The site's front pages (home, What we're building, The five experiments, About, the blog) were
+rebuilt for a company audience. Their words outran rule 1 of the project rules as written: rule 1
+said that Psyche and its parts are never called a mind, conscious, sentient or a validated
+cognitive model, that energy appears only as an analytic estimate, and the tone rule barred
+marketing language in all documents. The public description still called Psyche "an open research
+project". A rule that says "never" also blocks the day the work earns the word, and it blocks a
+claim backed by a measurement in the same way as one with nothing behind it.
+
+### 2. The decision
+
+1. Psyche is a pre-seed company. Its research is open in this repository.
+2. The slogan is "Toward machines with a mind of their own." It states where the work is headed.
+   Today, nothing we have built is described as a mind, because nothing built today has earned the
+   word. This is a statement about today, not a permanent limit: when the work earns the word,
+   with evidence we can show, we use it.
+3. The company's pages (home, What we're building, The five experiments, About, the blog) state
+   aims in plain, confident words: "we're building", "ours won't". They never say that something
+   built today has an ability or a measured property it does not have.
+4. A claim about energy or ability that is backed by a measurement is allowed everywhere, without
+   hesitation, stated with what was measured and under what conditions. A claim with no
+   measurement behind it is written as an aim.
+5. The rule against marketing language applies to research documents, records and commit
+   messages. The company's pages are written in the company's voice.
+
+The one sentence that describes Psyche wherever the repository said "open research project":
+
+> Psyche is a pre-seed company building machines on the brain's own principles, toward machine
+> cognition.
+
+What follows from it:
+
+- Rule 1's "never" for a mind, conscious, sentient and a validated cognitive model becomes "not
+  until shown, with evidence the project can show". This supersedes D-033 item 3 in that respect;
+  D-033 stays as written because this file is append-only. The AGI rule of D-033 is unchanged:
+  AGI is named freely as the aim, and no text says that Psyche or any current component is or
+  achieves it.
+- What does not change: every number still traces to a captured source; no text says that a
+  current component has an ability or a measured property it lacks; no priority claim before
+  release (D-034); "the brain does it this way" stays out; a planned result is never written as
+  obtained. No current result or measurement is presented as existing by this entry.
+- The automatic check that flags sentences such as "is a mind", "is conscious" and "is an AGI"
+  (`forbidden_claim_terms`, and the research terms other than the two named in the cost) stays
+  for now. Lifting it later is a separate, small change, and this entry names it as the intended
+  path.
+- This entry goes into the decision log only; it is not shown on the website.
+
+### 3. Options considered
+
+- Keep rule 1 as written and bring the rebuilt front pages back under it: the rules stay
+  untouched, but the pages lose the company's voice and the rule keeps blocking measured claims.
+- Reword the front pages only and leave rule 1 saying "never": the rules and the pages would
+  disagree.
+- Turn "never" into "not until shown", allow measured claims everywhere, and limit the tone rule
+  to research documents, records and commit messages: chosen. A permanent ban would
+  block the project on the day the evidence arrives, and a claim with a measurement behind it
+  should pass without hesitation.
+
+### 4. Cost
+
+`CONTRIBUTING.md` is reworded: "What this repository is" and "What Psyche is" use the sentence
+above, rule 1 and its paragraph on the cognitive-map line say "not until shown" and allow measured
+claims, and the tone rule names its scope. The defining sentence changes in `README.md`,
+`CITATION.cff`, `website/src/lib/seo.ts` (the site description and the structured data built from
+it), `website/public/site.webmanifest`, `tools/publish/og.py` and the social card drawn from it
+(`brand/psyche-social.png`, its sidecar and `website/public/og.png`), and in `docs/guide.md`,
+`docs/research/README.md`, `docs/research/claims-and-scope.md`, `docs/research/glossary.md`,
+`docs/research/origins.md`, `docs/three-walls.md`, `docs/PSYCHE.md`, `MOC.md`, `SECURITY.md` and
+the guide's description in `docs/publish.json`. `docs/faq.md` restates rule 1 in its new wording,
+and `docs/CONSCIOUSNESS-YARDSTICK.md` notes the change beside its quotation of the old one. The "Never" list and the energy rules of `docs/research/claims-and-scope.md`
+are reworded to match items 2 and 4. In `tools/ledger.json`, "measured energy" and "energy was
+measured" leave `research_forbidden_claim_terms`; every other term stays.
+`website/src/lib/seo.test.ts` and `tools/publish/test_core.py` follow the new sentence and still
+check that the aim is named as an aim and that nothing is claimed. `tools/ledger_check.py`,
+`tools/publish/check_copy.py` and `forbidden_claim_terms` are unchanged. The copy check still
+reports any energy figure on a public page; a measured figure passes with the existing
+`ledger:allow-claim` mark beside it, as every reviewed exception does.

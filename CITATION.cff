@@ -9,7 +9,8 @@ repository-code: "https://github.com/cagancaliskan/psyche"
 url: "https://psyche.cagancaliskan.com/"
 license: MIT
 abstract: >-
-  Psyche is an open research project that builds brain-inspired components in stages, with
+  Psyche is a pre-seed company building machines on the brain's own principles, toward machine
+  cognition. Its research is open. The project builds brain-inspired components in stages, with
   artificial general intelligence (AGI) as its long-term aim. Each stage is built test-first and
   kept as a citable artifact. Stage 1, a dependency-free Python memory-and-activation substrate,
   is the foundation; its development is paused and its report is archived with a DOI. Stage 2,

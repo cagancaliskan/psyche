@@ -6,10 +6,11 @@ touch. It ends with [routes for four kinds of reader](#where-to-go-next).
 
 ## What Psyche is, and why
 
-Psyche is an open research project that builds brain-inspired components in stages, with
-artificial general intelligence (AGI) as its long-term aim. Each stage is built test-first and
-kept as a citable artifact, so that if the work stopped at any point, what was behind it would
-stand on its own.
+Psyche is a pre-seed company building machines on the brain's own principles, toward machine
+cognition. Its research is open. The project builds brain-inspired components in stages, with
+artificial general intelligence (AGI) as its long-term aim. Each stage is built test-first and kept
+as a citable artifact, so that if the work stopped at any point, what was behind it would stand on
+its own.
 
 AGI is named as an aim and only as an aim. Nothing built so far is general intelligence, and no
 page of this site says that it is. [Why the aim is named at all](faq.md#why-is-agi-named-as-an-aim)

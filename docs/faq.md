@@ -19,9 +19,9 @@ measured step toward the aim. Later stages are not specified publicly yet
 
 ## Is Psyche a mind, or conscious?
 
-No page claims it. Psyche and its components are never called a mind, conscious or sentient, and
-the spiking model of stage 2 is never described in terms of consciousness, understanding or
-thinking. In stage 2, "cognition" names a class of behaviour that a test can measure. Passing a
+No page claims it. Psyche and its components are not called a mind, conscious or sentient, and
+the spiking model of stage 2 is not described in terms of consciousness, understanding or
+thinking, until that is shown, with evidence the project can show. In stage 2, "cognition" names a class of behaviour that a test can measure. Passing a
 test is evidence of that behaviour and nothing more
 ([Claims and scope](research/claims-and-scope.md#the-core-rule)).
 

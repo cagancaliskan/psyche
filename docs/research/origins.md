@@ -2,8 +2,9 @@
 
 > Public summary. Detail is withheld until submission under the [disclosure policy](disclosure-policy.md).
 
-Psyche is one open research project that builds brain-inspired components in stages, with
-artificial general intelligence (AGI) as its long-term aim, named here only as an aim. This page
+Psyche is a pre-seed company building machines on the brain's own principles, toward machine
+cognition. Its research builds brain-inspired components in stages, with artificial general
+intelligence (AGI) as its long-term aim, named here only as an aim. This page
 tells how the first stage, the substrate, led to the second, spiking cognitive maps: what the
 substrate built and showed, what carries over into the new line, what does not, and where the
 stages point.

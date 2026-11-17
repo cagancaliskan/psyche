@@ -50,10 +50,9 @@ CARD_SIZE = (1200, 630)
 
 DOT = "·"
 URL_TEXT = "psyche.cagancaliskan.com"
-# The line under the wordmark: the project, in the words CONTRIBUTING.md gives, with its aim named
-# as an aim.
-TAGLINE = ("An open research project that builds brain-inspired components in stages, with "
-           "artificial general intelligence as its long-term aim.")
+# The line under the wordmark: the project, in the words CONTRIBUTING.md gives (D-037), with where
+# it is headed named as an aim.
+TAGLINE = "A pre-seed company building machines on the brain's own principles, toward machine cognition."
 
 # program line -> (stage number, the stage's name as the card shows it)
 STAGES: Dict[str, Tuple[int, str]] = {

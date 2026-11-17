@@ -1,8 +1,8 @@
 # The substrate: stage 1 of Psyche
 
-> **Stage 1 of Psyche: the substrate.** This is the foundation of Psyche, an open research
-> project that builds brain-inspired components in stages with AGI as its long-term aim, and the
-> origin of the project's method. Its development has been paused since 2026-10-23 (D-031) while
+> **Stage 1 of Psyche: the substrate.** This is the foundation of Psyche, a pre-seed company
+> building machines on the brain's own principles, toward machine cognition, and the origin of
+> the project's method. Its development has been paused since 2026-10-23 (D-031) while
 > stage 2, spiking cognitive maps, is the active line; its code, suites, ledger and this record
 > stay maintained. Project overview: [README](../README.md); how the substrate led to stage 2:
 > [Origins](research/origins.md). The text below was the repository README until 2026-10-23, when

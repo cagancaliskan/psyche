@@ -325,7 +325,7 @@
     "phenomenal"
   ],
   "research_forbidden_claim_terms": {
-    "_README": "Claim rules for the cognitive-map research line (D-031), from its claims-and-scope discipline. Read by tools/publish/check_copy.py for the public research surfaces (README.md, MOC.md, docs/research/, website/, cogmap/). Matched case-insensitively, with the same negation logic as C4. A decided gate lifts no term (D-034); lifting one at release needs a DECISIONS entry.",
+    "_README": "Claim rules for the cognitive-map research line (D-031), from its claims-and-scope discipline. Read by tools/publish/check_copy.py for the public research surfaces (README.md, MOC.md, docs/research/, website/, cogmap/). Matched case-insensitively, with the same negation logic as C4. A decided gate lifts no term (D-034); lifting one at release needs a DECISIONS entry. D-037 lifted \"measured energy\" and \"energy was measured\": energy that was measured may be stated as measured, with the measure and the conditions.",
     "terms": [
       "the model understands",
       "the network understands",
@@ -339,8 +339,6 @@
       "spiking networks are more efficient",
       "more efficient than anns",
       "more energy-efficient than anns",
-      "measured energy",
-      "energy was measured",
       "the first spiking",
       "first model to",
       "is the first",
