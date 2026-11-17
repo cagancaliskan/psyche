@@ -2394,6 +2394,133 @@ def test_check_copy_blog(tmp: Path) -> None:
     check(copy_findings(make_repo(tmp)) == [], "a repository with no blog is clean")
 
 
+# ─────────────────────────────────────────────────────────────────────────────
+# the founder's name: the one LANGUAGE exemption, and everything it does not exempt
+# ─────────────────────────────────────────────────────────────────────────────
+
+# Built from code points, as every Turkish letter in this file is, and spelled out here
+# rather than read from check_disclosure, so the allowance itself is pinned.
+NAME = "".join(map(chr, (0xC7, 0x61, 0x11F, 0x61, 0x6E, 0x20,
+                           0xC7, 0x61, 0x6C, 0x131, 0x15F, 0x6B, 0x61, 0x6E)))
+NAME_ASCII = "Cagan Caliskan"
+ABOUT = "website/src/pages/about.astro"
+
+
+def test_name_allowance(tmp: Path) -> None:
+    import unicodedata
+    section("the founder's name: the allowance is exactly one name on exactly one path")
+    check(CD.NAME_ALLOWANCE == NAME, "the allowed name is the founder's name, letter for letter")
+    check(CD.NAME_ALLOWANCE_PATHS == frozenset({ABOUT}), "and the About page is its only path")
+    check(CD.without_allowed_name(ABOUT, NAME) == NAME_ASCII,
+          "on the About page the name reads as its ASCII spelling, same length")
+    check(CD.without_allowed_name("website/src/pages/other.astro", NAME) == NAME,
+          "on any other path it is left as written")
+    check(CD.without_allowed_name("", NAME) == NAME, "and with no path at all")
+
+    section("check_copy: the name passes LANGUAGE on the About page and nowhere else")
+    nfd = unicodedata.normalize("NFD", NAME)
+    entities = "".join(c if ord(c) < 128 else f"&#{ord(c)};" for c in NAME)
+    first, last = NAME.split(" ")
+    r = make_repo(tmp, files={
+        ABOUT: "\n".join([
+            "---",                                                       # 1
+            "---",                                                       # 2
+            "<h2 class=\"k-founder\" id=\"ab-person\">" + NAME + "</h2>",  # 3 allowed
+            "<p>" + NAME + " ba" + TR_G + "lam</p>",                     # 4 another word
+            "<p>" + first + "</p>",                                      # 5 a part
+            "<p>" + last + "</p>",                                       # 6 a part
+            "<p>" + nfd + "</p>",                                        # 7 NFD: allowed
+            "<p>" + entities + "</p>",                                   # 8 entities: allowed
+            "<p>" + NAME + "lar</p>",                                    # 9 glued: not the name
+            "<p>x" + NAME + "</p>",                                      # 10 glued before
+            "<p>" + NAME_ASCII + " and " + NAME + ".</p>",               # 11 allowed
+            "<p>" + NAME + TR_C + "</p>",                                # 12 glued letter
+            "<p>" + NAME.replace(" ", "  ") + "</p>",                    # 13 two spaces
+        ]) + "\n",
+        "website/src/pages/other.astro": "<h2>" + NAME + "</h2>\n",
+        "website/src/lib/x.ts": "export const founder = '" + NAME + "';\n",
+        "website/src/pages/ent.astro": "<p>" + entities + "</p>\n",
+        "website/README.md": "# Site\n\nBy " + NAME + ".\n",
+    })
+    f = copy_findings(r)
+    about = sorted({x.line for x in f if x.path == ABOUT})
+    check(about == [4, 5, 6, 9, 10, 12, 13],
+          f"the About page has LANGUAGE findings exactly where the name is not whole (got {about})")
+    check(all(x.rule == "LANGUAGE" for x in f if x.path == ABOUT), "and only LANGUAGE ones")
+    check(rules_at(f, ABOUT, 3) == [], "the name on the About page is not a finding")
+    check(any(x.path == ABOUT and x.line == 4 and "U+011F" in x.message for x in f),
+          "the name next to another Turkish word: that word's letter is still reported")
+    check(rules_at(f, ABOUT, 5) == ["LANGUAGE"] and rules_at(f, ABOUT, 6) == ["LANGUAGE"],
+          "the first name alone, or the surname alone, is a LANGUAGE finding")
+    check(rules_at(f, ABOUT, 7) == [], "the name written decomposed (NFD) is the same name")
+    check(rules_at(f, ABOUT, 8) == [], "the name written as HTML entities reads as the name")
+    check(rules_at(f, ABOUT, 9) == ["LANGUAGE"] and rules_at(f, ABOUT, 10) == ["LANGUAGE"],
+          "the name glued to letters before or after it is not the name")
+    check(rules_at(f, ABOUT, 12) == ["LANGUAGE"], "nor is the name with a Turkish letter after it")
+    check(rules_at(f, ABOUT, 13) == ["LANGUAGE"], "nor the name with its words spaced otherwise")
+    check(rules_at(f, ABOUT, 11) == [], "the ASCII spelling and the name on one line pass")
+    check(rules_at(f, "website/src/pages/other.astro", 1) == ["LANGUAGE"],
+          "the name on another page is a LANGUAGE finding")
+    check(rules_at(f, "website/src/pages/ent.astro", 1) == ["LANGUAGE"],
+          "so is the name written as entities on another page")
+    check(rules_at(f, "website/src/lib/x.ts", 1) == ["LANGUAGE"],
+          "and the name in a script beside the pages")
+    check(rules_at(f, "website/README.md", 3) == ["LANGUAGE"], "and the name in prose")
+
+    # the path is matched exactly: another letter case is another path (a separate
+    # repository, since a case-insensitive file system cannot hold both)
+    r = make_repo(tmp, files={"website/src/pages/About.astro": "<h2>" + NAME + "</h2>\n"})
+    check(rules_at(copy_findings(r), "website/src/pages/About.astro", 1) == ["LANGUAGE"],
+          "the name in About.astro (not the exact path) is a LANGUAGE finding")
+
+    section("leak_check: the name passes on the About page and nowhere else in history")
+    deny = tmp / "name-deny.txt"
+    deny.write_text("# fixture\n" + last + "\n", encoding="utf-8")
+    repo = Repo(tmp / "leak-name")
+    repo.commit("base", {"README.md": "Hello\n"})
+    repo.git("branch", "pub")
+    c1 = repo.commit("feat(site): the about page", {
+        ABOUT: "---\n---\n<h2 class=\"k-founder\" id=\"ab-person\">" + NAME + "</h2>\n",
+    })
+    c2 = repo.commit("feat(site): more about", {
+        ABOUT: "---\n---\n<h2 class=\"k-founder\" id=\"ab-person\">" + NAME + "</h2>\n"
+               "<p>" + first + "</p>\n<p>" + NAME + " ba" + TR_G + "lam</p>\n",
+    })
+    c3 = repo.commit("feat(site): a script", {"website/src/lib/x.ts": "const n = '" + NAME + "';\n"})
+    c4 = repo.commit("docs: credit " + NAME, {"docs/credit.md": "plain\n"})
+    c5 = repo.commit("feat(site): a named page", {"website/src/pages/" + NAME + ".astro": "plain\n"})
+    p = leak(repo, "pub..main", "--denylist", str(deny))
+    out = p.stdout.splitlines()
+    s = {k: v[:10] for k, v in dict(c1=c1, c2=c2, c3=c3, c4=c4, c5=c5).items()}
+
+    def has(where: str, rule: str) -> bool:
+        return any(ln.startswith(where + ": [" + rule + "]") for ln in out)
+
+    check(p.returncode == 1, f"the forbidden cases exit 1 (got {p.returncode}: {p.stderr})")
+    check(not any(ln.startswith(f"{s['c1']}:{ABOUT}") and "[LANGUAGE]" in ln for ln in out),
+          "a commit adding the name to the About page has no LANGUAGE finding")
+    check(has(f"{s['c1']}:{ABOUT}:3", "DENYLIST"),
+          "but every other rule reads that line as written (a denylisted surname is reported)")
+    check(not has(f"{s['c2']}:{ABOUT}:3", "LANGUAGE") and has(f"{s['c2']}:{ABOUT}:4", "LANGUAGE"),
+          "the first name alone added to the About page is a LANGUAGE finding")
+    check(has(f"{s['c2']}:{ABOUT}:5", "LANGUAGE"),
+          "so is another Turkish word next to the name there")
+    check(has(f"{s['c3']}:website/src/lib/x.ts:1", "LANGUAGE"),
+          "the name added to any other file is a LANGUAGE finding")
+    check(has(f"{s['c4']}: message line 1", "LANGUAGE"),
+          "the name in a commit message is a LANGUAGE finding")
+    check(any("file name: [LANGUAGE]" in ln and ln.startswith("website/src/pages/[U+00C7]a")
+              for ln in out),
+          "a file named with the name is a LANGUAGE finding (file name)")
+    clean = Repo(tmp / "leak-name-clean")
+    clean.commit("base", {"README.md": "Hello\n"})
+    clean.git("branch", "pub")
+    clean.commit("feat(site): the about page", {ABOUT: "<h2>" + NAME + "</h2>\n"})
+    p = leak(clean, "pub..main", "--no-denylist")
+    check(p.returncode == 0, f"a range that only adds the name to the About page exits 0 "
+                             f"(got {p.returncode}: {p.stdout.strip()} {p.stderr.strip()})")
+
+
 def main() -> int:
     print("=" * 70)
     print("  PUBLISH CHECKS — TEST SUITE")
@@ -2419,6 +2546,7 @@ def main() -> int:
         test_check_copy_blog(tmp)
         test_check_disclosure_round5(tmp)
         test_decode_denylist(tmp)
+        test_name_allowance(tmp)
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
     print(f"\nRESULT: {PASSED} passed, {FAILED} failed")

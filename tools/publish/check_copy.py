@@ -103,7 +103,10 @@ Surfaces and the rules applied to each:
             number on a public surface is a finding. Pragma: ledger:allow-claim.
   LANGUAGE  any Turkish letter: everything public in this repository is English (D-031).
             Text is compared in Unicode NFC, so a letter written as a base letter plus a
-            combining mark is caught. No pragma.
+            combining mark is caught. No pragma; one exemption: the founder's name
+            (check_disclosure.NAME_ALLOWANCE, exact and whole) on the one path
+            check_disclosure.NAME_ALLOWANCE_PATHS names, the About page. Any other Turkish
+            letter on that page, and the name anywhere else, is still a finding.
 
 How text is read. Every surface is decoded as check_disclosure.decode_bytes decodes it (a
 byte-order mark or the NUL pattern of UTF-16 picks the codec, UTF-8 otherwise), so a UTF-16
@@ -141,7 +144,8 @@ itself is unchanged; its C4 keeps its own matching on the files it reads.
 
 Quarantine. The ledger's count_quarantine_paths exempt a path from COUNT, and its
 claim_quarantine_paths from CLAIM, RESEARCH and ENERGY, matched exactly as C2 and C4 match
-them (a path prefix, or the path itself). LANGUAGE has no exemption.
+them (a path prefix, or the path itself). LANGUAGE has no quarantine; its one exemption is
+the founder's name on the About page (see LANGUAGE above).
 
 Pragmas count on their own line or the line above, as in ledger_check, read from the source
 lines. A pragma inside an HTML or XML comment also counts on the line where that comment
@@ -663,7 +667,7 @@ def check_unit(rules: Rules, unit: Unit) -> List[CopyFinding]:
         for i, line in enumerate(lines):
             n, where = unit.numbers[i], unit.where[i]
             if "LANGUAGE" in unit.rules:
-                cp = rules.language(line)
+                cp = rules.language(CD.without_allowed_name(path, line))
                 if cp:
                     found.add(CopyFinding(
                         path, n, "LANGUAGE",

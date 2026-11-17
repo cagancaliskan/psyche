@@ -60,7 +60,12 @@ Rules:
                   under docs/research/, cogmap/, website/, tools/publish/ and .github/,
                   compared case-folded (a root readme.md is the README GitHub renders).
                   Commit messages are English-only too. Author fields are names, so this
-                  rule skips them.
+                  rule skips them. One exemption: the founder's name
+                  (check_disclosure.NAME_ALLOWANCE, exact and whole, in NFC) in a line
+                  added to the one file check_disclosure.NAME_ALLOWANCE_PATHS names, the
+                  About page. Any other Turkish letter there, the name in any other file,
+                  in a commit message or in a file name, is still a finding; every other
+                  rule reads that line as written.
   HOME-PATH       an absolute home-directory path (macOS slash-Users-slash, or the Windows
                   form), which names the machine's user and its folder layout.
   UNVERIFIED-TAG  the shape of a private working-note tag: a bracket that opens with an
@@ -228,12 +233,15 @@ def _turkish(text: str) -> Optional["re.Match[str]"]:
 
 
 def check_text(text: str, *, language: bool,
-               denylist: Optional[Sequence["CD.Entry"]]) -> List[Tuple[str, str]]:
-    """(rule, message) pairs for one line of text. Messages never quote the text."""
+               denylist: Optional[Sequence["CD.Entry"]],
+               path: str = "") -> List[Tuple[str, str]]:
+    """(rule, message) pairs for one line of text. Messages never quote the text. `path` is
+    the file the line was added to; only there may the founder's name pass LANGUAGE
+    (check_disclosure.without_allowed_name). Messages and file names are given no path."""
     t = CD.nfc(text)
     out: List[Tuple[str, str]] = []
     if language:
-        m = _turkish(t)
+        m = _turkish(CD.without_allowed_name(path, t) if path else t)
         if m:
             out.append(("LANGUAGE", f"Turkish letter U+{ord(m.group(0)):04X} in an "
                                     f"English-only place (D-031)"))
@@ -494,15 +502,17 @@ def commit_paths(root: Path, sha: str, parents: Sequence[str]) -> Set[str]:
 
 def check_hunks(hunks: Sequence[Sequence[Tuple[int, str, bool]]], *, language: bool,
                 denylist: Optional[Sequence["CD.Entry"]],
-                suffix: str = "") -> List[Tuple[int, str, str]]:
+                suffix: str = "", path: str = "") -> List[Tuple[int, str, str]]:
     """(line, rule, message) for decoded hunks: every rule on each added line, and the
     denylist over each hunk's lines joined, in every rendering check_disclosure reads for
-    `suffix`, counted when a hit touches an added line."""
+    `suffix`, counted when a hit touches an added line. `path` is the file the hunks
+    belong to (see check_text)."""
     found: Set[Tuple[int, str, str]] = set()
     for h in hunks:
         for n, text, added in h:
             if added:
-                for rule, msg in check_text(text, language=language, denylist=None):
+                for rule, msg in check_text(text, language=language, denylist=None,
+                                            path=path):
                     found.add((n, rule, msg))
         if denylist and h:
             lines = [text for _, text, _ in h]
@@ -527,7 +537,7 @@ def check_commit_diff(root: Path, sha: str, short: str,
             hunks = [[(n, CD.nfc(text.decode("utf-8", errors="replace")), added)
                       for n, text, added in h] for h in byte_hunks]
             for n, rule, msg in check_hunks(hunks, language=lang, denylist=denylist,
-                                            suffix=suffix):
+                                            suffix=suffix, path=f.path):
                 out.append(Leak(f"{where}:{n}", rule, msg))
 
         is_utf8 = f.added_is_utf8()
@@ -545,7 +555,7 @@ def check_commit_diff(root: Path, sha: str, short: str,
             lines = CD.nfc(CD.decode_bytes(data)).replace("\r\n", "\n").split("\n")
             whole = [[(i, ln, True) for i, ln in enumerate(lines, 1)]]
             for n, rule, msg in check_hunks(whole, language=lang, denylist=denylist,
-                                            suffix=suffix):
+                                            suffix=suffix, path=f.path):
                 out.append(Leak(f"{where}:{n}", rule, msg))
             continue
         if is_utf8:
