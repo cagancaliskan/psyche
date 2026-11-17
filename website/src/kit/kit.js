@@ -528,7 +528,7 @@
     var id = def.id + '-live';
     var fit = rec.host.getAttribute('data-fit') || 'xMidYMid meet';
     var glow = !!pal.glow, fg = glow && def.frontGlow !== false;
-    var vb = 'xmlns="' + SVGNS + '" viewBox="0 0 ' + v.w + ' ' + v.h + '" preserveAspectRatio="' + fit + '"';
+    var vb = 'xmlns="' + SVGNS + '" viewBox="0 0 ' + v.w + ' ' + v.h + '"';
     var html =
       '<svg class="k-layer k-layer-back" ' + vb + ' aria-hidden="true" focusable="false">' +
         (glow ? '<defs>' + backGlow(id + '-bglow', v) + '</defs>' : '') +
@@ -542,6 +542,7 @@
     old.forEach(function (n) { n.remove(); });
     var svgs = rec.art.querySelectorAll(':scope > svg.k-layer');
     rec.layers = [svgs[svgs.length - 2], svgs[svgs.length - 1]];
+    rec.layers.forEach(function (s) { s.setAttribute('preserveAspectRatio', fit); });
     rec.svg = rec.layers[1];
     rec.backSvg = rec.layers[0];
     rec.g = { back: doc.getElementById(id + '-b'), front: doc.getElementById(id + '-f'), labels: doc.getElementById(id + '-l'), mark: doc.getElementById(id + '-k') };

@@ -24,7 +24,15 @@ const PUBLIC = join(WEB, 'public');
 const seo = readFileSync(join(SRC, 'lib', 'seo.ts'), 'utf8');
 const BASE = /^export const BASE = '([^']*)';$/m.exec(seo)?.[1];
 const REPO_URL = /^export const REPO_URL = '([^']*)';$/m.exec(seo)?.[1];
-const BLOG = JSON.parse(readFileSync(join(SRC, 'data', 'blog.json'), 'utf8'));
+// The posts, read from the committed sources: docs/blog/<slug>/index.md, a draft left out. The staged
+// list (src/data/blog.json) is not read, because it exists only after staging and this test runs before.
+const POSTS_DIR = join(WEB, '..', 'docs', 'blog');
+const BLOG = {
+  posts: readdirSync(POSTS_DIR, { withFileTypes: true })
+    .filter((e) => e.isDirectory() && existsSync(join(POSTS_DIR, e.name, 'index.md')))
+    .filter((e) => !/^draft:\s*true\s*$/m.test(readFileSync(join(POSTS_DIR, e.name, 'index.md'), 'utf8').split(/^---\s*$/m)[1] ?? ''))
+    .map((e) => ({ slug: e.name, route: `blog/${e.name}/` })),
+};
 
 function walk(dir) {
   if (!existsSync(dir)) return [];
@@ -264,6 +272,6 @@ test('every site path the kit and the front pages write leads to a page or file 
     }
   }
   assert.ok(paths >= 10, `only ${paths} site path(s) read`);
-  for (const post of BLOG.posts) if (!resolveSite(post.route)) bad.push(`src/data/blog.json: /${post.route} is not a page of the site`);
+  for (const post of BLOG.posts) if (!resolveSite(post.route)) bad.push(`docs/blog/${post.slug}: /${post.route} is not a page of the site`);
   assert.deepEqual(bad, []);
 });
